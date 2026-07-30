@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -10,7 +11,7 @@ class ShopController extends Controller
 {
     public function index(Request $request, ?Category $category = null)
     {
-        $query = Product::published()->with('images', 'category');
+        $query = Product::published()->with('images', 'category', 'brand');
 
         if ($category) {
             $query->where('category_id', $category->id);
@@ -20,6 +21,7 @@ class ShopController extends Controller
             $query->where(function ($q) use ($term) {
                 $q->where('name', 'like', "%{$term}%")
                     ->orWhere('brand', 'like', "%{$term}%")
+                    ->orWhereHas('brand', fn ($bq) => $bq->where('name', 'like', "%{$term}%"))
                     ->orWhere('short_description', 'like', "%{$term}%");
             });
         }
@@ -57,12 +59,14 @@ class ShopController extends Controller
             $query->where('is_best_seller', true);
         }
 
-        if ($brand = trim((string) $request->input('brand'))) {
-            $query->where('brand', $brand);
+        if ($brandParam = trim((string) $request->input('brand'))) {
+            $query->where(function ($q) use ($brandParam) {
+                $q->where('brand', $brandParam)
+                  ->orWhereHas('brand', fn ($bq) => $bq->where('slug', $brandParam)->orWhere('name', $brandParam));
+            });
         }
 
         if ($request->filled('min_rating')) {
-            // Round average so 4.5–5.0 counts as 5★ (& Up), 3.5–4.4 as 4★, etc.
             $minStars = max(1, min(5, (int) $request->input('min_rating')));
             $query->whereRaw('ROUND(rating) >= ?', [$minStars]);
         }
@@ -88,13 +92,20 @@ class ShopController extends Controller
             ->value('max_price');
         $priceCeiling = max(5000, (int) (ceil(max($priceCeiling, 5000) / 50) * 50));
 
-        $brands = Product::published()
+        // Legacy string brands list fallback
+        $rawBrands = Product::published()
             ->when($category, fn ($q) => $q->where('category_id', $category->id))
             ->whereNotNull('brand')
             ->where('brand', '!=', '')
             ->orderBy('brand')
             ->distinct()
             ->pluck('brand');
+
+        $brandModels = Brand::where('is_active', true)
+            ->withCount(['products' => fn ($q) => $q->published()])
+            ->orderBy('position')
+            ->orderBy('name')
+            ->get();
 
         $categories = Category::where('is_active', true)
             ->withCount(['products' => fn ($q) => $q->published()])
@@ -105,13 +116,36 @@ class ShopController extends Controller
             'products'         => $products,
             'activeCategory'   => $category,
             'categories'       => $categories,
-            // True catalog size (not a sum of visible sidebar rows — products may lack a category).
             'allProductsCount' => Product::published()->count(),
-            'brands'           => $brands,
+            'brands'           => $rawBrands,
+            'brandModels'      => $brandModels,
             'sort'             => $request->input('sort'),
             'minRating'        => $request->input('min_rating'),
             'q'                => $term,
             'priceCeiling'     => $priceCeiling,
+        ]);
+    }
+
+    public function brandPage(Brand $brand)
+    {
+        abort_unless($brand->is_active, 404);
+
+        $products = $brand->products()
+            ->published()
+            ->with('images', 'category', 'brand')
+            ->latest()
+            ->paginate(12)
+            ->withQueryString();
+
+        $categories = Category::where('is_active', true)
+            ->withCount(['products' => fn ($q) => $q->published()])
+            ->orderBy('position')
+            ->get();
+
+        return view('brand.show', [
+            'brand'      => $brand,
+            'products'   => $products,
+            'categories' => $categories,
         ]);
     }
 }

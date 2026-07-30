@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Banner;
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Coupon;
 use App\Models\Feature;
@@ -19,6 +20,12 @@ class HomeController extends Controller
         $categories = Category::where('is_active', true)
             ->withCount(['products' => fn ($q) => $q->published()])
             ->orderBy('position')
+            ->get();
+
+        $featuredBrands = Brand::where('is_active', true)
+            ->withCount(['products' => fn ($q) => $q->published()])
+            ->orderBy('position')
+            ->orderBy('name')
             ->get();
 
         $banners = fn (string $placement) => Banner::active()
@@ -46,12 +53,28 @@ class HomeController extends Controller
             }])
             ->get();
 
+        $featuredHomeBrands = Brand::where('is_active', true)
+            ->where('is_featured', true)
+            ->orderBy('position')
+            ->with(['products' => function ($q) {
+                $q->published()->with('images', 'category', 'brand')->latest()->take(8);
+            }])
+            ->get();
+
+        $onSaleProducts = Product::query()
+            ->tap($withImages)
+            ->whereNotNull('sale_price')
+            ->whereColumn('sale_price', '<', 'regular_price')
+            ->latest()
+            ->take(12)
+            ->get();
+
         return view('storefront.home', [
             'heroBanners'            => $banners('hero')->get(),
-            'heroSideBanners'        => $banners('hero_side')->take(4)->get(),
             'features'               => Feature::where('is_active', true)->orderBy('position')->get(),
             'categories'             => $categories,
             'featuredHomeCategories' => $featuredHomeCategories,
+            'featuredHomeBrands'     => $featuredHomeBrands,
             'coupons'                => Coupon::query()
                 ->where('is_active', true)
                 ->orderByDesc('created_at')
@@ -60,12 +83,14 @@ class HomeController extends Controller
                 ->values()
                 ->take(4),
             'flashProducts'          => Product::query()->tap($withImages)->where('is_flash_sale', true)->orderBy('flash_sale_position')->orderBy('id')->get(),
+            'onSaleProducts'         => $onSaleProducts,
             'trending'               => $trending,
             'hasMoreProducts'        => $totalFeatured > 8,
             'initialLoadedCount'     => min(8, $totalFeatured),
             'totalFeaturedCount'     => $totalFeatured,
             'bestSellers'            => Product::query()->tap($withImages)->where('is_best_seller', true)->latest()->take(12)->get(),
             'newArrivals'            => $newArrivalsQuery->take(12)->get(),
+            'featuredBrands'         => $featuredBrands,
         ]);
     }
 

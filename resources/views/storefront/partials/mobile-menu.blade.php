@@ -43,11 +43,37 @@
     <a href="{{ route('contact') }}" class="block py-2.5 hover:text-brand-600">Help &amp; Support</a>
     <a href="{{ route('login') }}" class="block py-2.5 hover:text-brand-600 sm:hidden">Account</a>
 
-    @if($navCategories->isNotEmpty())
-      <p class="mt-4 mb-2 text-[11px] font-bold uppercase tracking-wider text-stone-400">Categories</p>
-      @foreach($navCategories as $cat)
-        <a href="{{ route('shop.category', $cat) }}" class="block py-2.5 hover:text-brand-600">{{ $cat->name }}</a>
-      @endforeach
+    @if(isset($navCategories) && $navCategories->isNotEmpty())
+      <div class="mt-4 pt-3 border-t border-stone-100">
+        <p class="mb-2 text-[11px] font-extrabold uppercase tracking-wider text-stone-400">Categories</p>
+        <div class="space-y-1">
+          @foreach($navCategories as $cat)
+            <a href="{{ route('shop.category', $cat) }}" class="flex items-center justify-between py-2 px-2 hover:bg-brand-50 hover:text-brand-600 rounded-lg transition-colors">
+              <span class="truncate">@if($cat->icon)<span class="mr-2">{{ $cat->icon }}</span>@endif{{ $cat->name }}</span>
+              @if(isset($cat->products_count) && $cat->products_count > 0)
+                <span class="text-[10px] text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-full font-mono">{{ $cat->products_count }}</span>
+              @endif
+            </a>
+          @endforeach
+        </div>
+      </div>
+    @endif
+
+    @if(isset($navBrands) && $navBrands->isNotEmpty())
+      <div class="mt-4 pt-3 border-t border-stone-100">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-[11px] font-extrabold uppercase tracking-wider text-stone-400">Featured Brands</p>
+          <a href="{{ route('shop') }}" class="text-[11px] font-semibold text-brand-600">View All &rarr;</a>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          @foreach($navBrands->take(8) as $b)
+            <a href="{{ route('shop.brand', $b) }}" class="flex items-center gap-2 p-2 rounded-xl border border-stone-100 hover:border-brand-500/40 hover:bg-brand-50 transition-all">
+              <img src="{{ $b->logoUrl() }}" class="h-6 w-6 object-contain rounded border border-stone-100 bg-white p-0.5 shrink-0" alt="">
+              <span class="text-xs font-bold text-ink truncate">{{ $b->name }}</span>
+            </a>
+          @endforeach
+        </div>
+      </div>
     @endif
 
     <div class="mt-6 pt-4 border-t border-stone-100">

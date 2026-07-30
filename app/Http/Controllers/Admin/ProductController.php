@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
@@ -15,7 +16,7 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with('category', 'images')->latest();
+        $query = Product::with('category', 'brand', 'images')->latest();
 
         if ($term = trim((string) $request->input('q'))) {
             $query->where('name', 'like', "%{$term}%")->orWhere('sku', 'like', "%{$term}%");
@@ -37,6 +38,7 @@ class ProductController extends Controller
         return view('admin.products.form', [
             'product'    => new Product(['is_published' => true]),
             'categories' => Category::orderBy('name')->get(),
+            'brands'     => Brand::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
@@ -44,6 +46,9 @@ class ProductController extends Controller
     {
         $data = $this->validateData($request);
         unset($data['spec_labels'], $data['spec_values']);
+        if (!empty($data['brand_id'])) {
+            $data['brand'] = Brand::find($data['brand_id'])?->name;
+        }
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? '') ?: $data['name']);
         $this->applyFlags($request, $data, null);
         $data['specifications'] = $this->normalizeSpecifications($request);
@@ -62,6 +67,7 @@ class ProductController extends Controller
         return view('admin.products.form', [
             'product'    => $product,
             'categories' => Category::orderBy('name')->get(),
+            'brands'     => Brand::where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
@@ -69,6 +75,11 @@ class ProductController extends Controller
     {
         $data = $this->validateData($request, $product);
         unset($data['spec_labels'], $data['spec_values']);
+        if (!empty($data['brand_id'])) {
+            $data['brand'] = Brand::find($data['brand_id'])?->name;
+        } else if ($request->has('brand_id')) {
+            $data['brand'] = null;
+        }
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? '') ?: $data['name'], $product->id);
         $this->applyFlags($request, $data, $product);
         $data['specifications'] = $this->normalizeSpecifications($request);
@@ -113,6 +124,7 @@ class ProductController extends Controller
     {
         return $request->validate([
             'category_id'      => ['required', 'exists:categories,id'],
+            'brand_id'         => ['nullable', 'exists:brands,id'],
             'name'             => ['required', 'string', 'max:180'],
             'slug'             => ['nullable', 'string', 'max:180'],
             'sku'              => ['nullable', 'string', 'max:60'],

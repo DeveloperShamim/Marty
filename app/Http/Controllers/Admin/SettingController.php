@@ -112,6 +112,9 @@ class SettingController extends Controller
                 'instagram_url'   => ['nullable', 'string', 'max:255'],
                 'twitter_url'     => ['nullable', 'string', 'max:255'],
                 'search_placeholder' => ['nullable', 'string', 'max:120'],
+                'theme_primary_color' => ['nullable', 'string', 'regex:/^#([a-fA-F0-9]{3}){1,2}$/'],
+                'theme_dark_color'    => ['nullable', 'string', 'regex:/^#([a-fA-F0-9]{3}){1,2}$/'],
+                'theme_surface_color' => ['nullable', 'string', 'regex:/^#([a-fA-F0-9]{3}){1,2}$/'],
                 'logo_file'       => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,webp', 'max:2048'],
                 'favicon_file'    => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,webp,ico', 'max:1024'],
                 'remove_logo'     => ['nullable', 'boolean'],
@@ -189,6 +192,7 @@ class SettingController extends Controller
                 'contact_hours', 'contact_title', 'contact_intro',
                 'facebook_url', 'instagram_url', 'twitter_url',
                 'search_placeholder',
+                'theme_primary_color', 'theme_dark_color', 'theme_surface_color',
             ],
             'homepage' => [
                 'header_promo_text', 'header_promo_link',
@@ -274,6 +278,14 @@ Setting::put('show_cards_in_footer', $request->boolean('show_cards_in_footer') ?
             $this->deleteStored(Setting::get($settingKey));
             $path = $request->file($fileField)->store('branding', 'public');
             Setting::put($settingKey, $path);
+
+            if ($settingKey === 'logo') {
+                $fullPath = storage_path('app/public/' . $path);
+                $extractedColor = extract_dominant_color_from_image($fullPath);
+                if ($extractedColor) {
+                    Setting::put('brand_primary_color', $extractedColor);
+                }
+            }
         }
     }
 

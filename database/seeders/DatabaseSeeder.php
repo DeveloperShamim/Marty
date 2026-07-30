@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Coupon;
 use App\Models\Feature;
@@ -24,10 +25,11 @@ class DatabaseSeeder extends Seeder
         $this->seedUsers();
         $this->seedSettings();
         $categories = $this->seedCategories();
+        $brands = $this->seedBrands();
         $this->seedFeatures();
         $this->seedCoupons();
         $this->call(BannerSeeder::class);
-        $this->seedProducts($categories);
+        $this->seedProducts($categories, $brands);
         $this->seedReviews();
         $this->seedOrders();
     }
@@ -123,7 +125,11 @@ class DatabaseSeeder extends Seeder
             'mail_password' => '',
             'mail_encryption' => 'tls',
             'mail_from_address' => 'no-reply@unilifebd.com',
-            'mail_from_name' => 'Unilife',
+            'mail_from_name'    => 'Unilife',
+            // Theme colours (3-colour engine)
+            'theme_primary_color'  => '#E8751B',
+            'theme_dark_color'     => '#1C1917',
+            'theme_surface_color'  => '#FFF8F3',
         ];
 
         foreach ($settings as $key => $value) {
@@ -161,6 +167,184 @@ class DatabaseSeeder extends Seeder
         }
 
         return $categories;
+    }
+
+    private function seedBrands(): array
+    {
+        Brand::query()->delete();
+
+        $brandList = [
+            [
+                'name' => 'Nike',
+                'slug' => 'nike',
+                'logo' => 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=300&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1556906781-9a412961c28c?auto=format&fit=crop&w=1200&q=80',
+                'description' => 'World leader in athletic footwear, apparel, and sports innovation.',
+                'website' => 'https://www.nike.com',
+                'is_featured' => true,
+                'position' => 1,
+            ],
+            [
+                'name' => 'Adidas',
+                'slug' => 'adidas',
+                'logo' => 'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?auto=format&fit=crop&w=300&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1511556532299-8f662fc26c06?auto=format&fit=crop&w=1200&q=80',
+                'description' => 'Global sportswear brand known for iconic performance and street culture shoes.',
+                'website' => 'https://www.adidas.com',
+                'is_featured' => true,
+                'position' => 2,
+            ],
+            [
+                'name' => 'Apex',
+                'slug' => 'apex',
+                'logo' => 'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?auto=format&fit=crop&w=300&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1449505278894-297fdb3edbc1?auto=format&fit=crop&w=1200&q=80',
+                'description' => 'Premier footwear & genuine leather brand crafted for comfort and elegance.',
+                'website' => 'https://www.apexfootwear.com',
+                'is_featured' => true,
+                'position' => 3,
+            ],
+            [
+                'name' => 'Casio',
+                'slug' => 'casio',
+                'logo' => 'https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=300&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&w=1200&q=80',
+                'description' => 'Legendary Japanese timepieces featuring G-Shock and Edifice chronographs.',
+                'website' => 'https://www.casio.com',
+                'is_featured' => true,
+                'position' => 4,
+            ],
+            [
+                'name' => 'Seiko',
+                'slug' => 'seiko',
+                'logo' => 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=300&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80',
+                'description' => 'Pioneer of quartz technology and fine automatic mechanical watches.',
+                'website' => 'https://www.seikowatches.com',
+                'is_featured' => true,
+                'position' => 5,
+            ],
+            [
+                'name' => 'Fossil',
+                'slug' => 'fossil',
+                'logo' => 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=300&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80',
+                'description' => 'American vintage-inspired fashion watches and authentic leather accessories.',
+                'website' => 'https://www.fossil.com',
+                'is_featured' => true,
+                'position' => 6,
+            ],
+            [
+                'name' => 'Ray-Ban',
+                'slug' => 'ray-ban',
+                'logo' => 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=300&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=1200&q=80',
+                'description' => 'Iconic eyewear manufacturer famous for Aviator and Wayfarer sunglasses.',
+                'website' => 'https://www.ray-ban.com',
+                'is_featured' => true,
+                'position' => 7,
+            ],
+            [
+                'name' => 'Clarks',
+                'slug' => 'clarks',
+                'logo' => 'https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=300&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?auto=format&fit=crop&w=1200&q=80',
+                'description' => 'British shoemaker crafting premium leather boots, dress shoes, and desert boots.',
+                'website' => 'https://www.clarks.com',
+                'is_featured' => false,
+                'position' => 8,
+            ],
+            [
+                'name' => 'Woodland',
+                'slug' => 'woodland',
+                'logo' => 'https://images.unsplash.com/photo-1520639888713-7851133b1ed0?auto=format&fit=crop&w=300&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1460353581641-37babbab0fa6?auto=format&fit=crop&w=1200&q=80',
+                'description' => 'Rugged outdoor footwear, hiking boots, and heavy-duty leather gear.',
+                'website' => 'https://www.woodlandworldwide.com',
+                'is_featured' => false,
+                'position' => 9,
+            ],
+            [
+                'name' => 'Curren',
+                'slug' => 'curren',
+                'logo' => 'https://images.unsplash.com/photo-1533139502658-0198f920d8e8?auto=format&fit=crop&w=300&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=1200&q=80',
+                'description' => 'Affordable luxury chronograph watches with sleek metallic and leather designs.',
+                'website' => 'https://www.currenwatches.com',
+                'is_featured' => false,
+                'position' => 10,
+            ],
+            [
+                'name' => 'Naviforce',
+                'slug' => 'naviforce',
+                'logo' => 'https://images.unsplash.com/photo-1526045612212-70caf35c14df?auto=format&fit=crop&w=300&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=1200&q=80',
+                'description' => 'Military and sports inspired dual-display watches built for action.',
+                'website' => 'https://www.naviforce.com',
+                'is_featured' => false,
+                'position' => 11,
+            ],
+            [
+                'name' => 'Wildhorn',
+                'slug' => 'wildhorn',
+                'logo' => 'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=300&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=1200&q=80',
+                'description' => 'Handcrafted full-grain leather wallets, travel duffels, and belts.',
+                'website' => 'https://www.wildhorn.in',
+                'is_featured' => false,
+                'position' => 12,
+            ],
+            [
+                'name' => 'Bata',
+                'slug' => 'bata',
+                'logo' => 'https://images.unsplash.com/photo-1562183241-b937e95585b6?auto=format&fit=crop&w=300&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=1200&q=80',
+                'description' => 'Trusted global footwear manufacturer providing everyday comfort shoes & accessories.',
+                'website' => 'https://www.bata.com.bd',
+                'is_featured' => false,
+                'position' => 13,
+            ],
+            [
+                'name' => 'Picard',
+                'slug' => 'picard',
+                'logo' => 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=300&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=1200&q=80',
+                'description' => 'German leather goods manufacturer specializing in luxury bags, wallets & cardholders.',
+                'website' => 'https://www.picard-lederwaren.de',
+                'is_featured' => true,
+                'position' => 14,
+            ],
+            [
+                'name' => 'Hugo Boss',
+                'slug' => 'hugo-boss',
+                'logo' => 'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=300&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=80',
+                'description' => 'German luxury fashion house offering premium tailoring, fragrances, and accessories.',
+                'website' => 'https://www.hugoboss.com',
+                'is_featured' => false,
+                'position' => 15,
+            ],
+        ];
+
+        $brands = [];
+        foreach ($brandList as $b) {
+            $brand = Brand::create([
+                'name' => $b['name'],
+                'slug' => $b['slug'],
+                'logo' => $b['logo'],
+                'banner' => $b['banner'],
+                'description' => $b['description'],
+                'website' => $b['website'],
+                'position' => $b['position'],
+                'is_active' => true,
+                'is_featured' => $b['is_featured'],
+                'meta_title' => "Buy {$b['name']} Products Online in Bangladesh",
+                'meta_description' => "Shop 100% authentic {$b['name']} products at best prices in Bangladesh with fast home delivery.",
+            ]);
+            $brands[$b['name']] = $brand;
+        }
+
+        return $brands;
     }
 
     private function seedFeatures(): void
@@ -223,7 +407,7 @@ class DatabaseSeeder extends Seeder
         ]);
     }
 
-    private function seedProducts(array $categories): void
+    private function seedProducts(array $categories, array $brands): void
     {
         Product::query()->delete();
 
@@ -279,17 +463,19 @@ class DatabaseSeeder extends Seeder
             $category = $categories[$categorySlug];
 
             foreach ($items as $item) {
-                [$name, $slug, $brand, $regularPrice, $salePrice, $unit, $variantType, $options, $featured, $newArrival, $bestSeller] = $item;
+                [$name, $slug, $brandName, $regularPrice, $salePrice, $unit, $variantType, $options, $featured, $newArrival, $bestSeller] = $item;
+                $brandObj = $brands[$brandName] ?? null;
 
                 $product = Product::updateOrCreate(
                     ['slug' => $slug],
                     [
                         'category_id' => $category->id,
+                        'brand_id'    => $brandObj?->id,
                         'name' => $name,
                         'sku' => 'UNI-' . strtoupper(Str::substr(md5($slug), 0, 6)),
-                        'brand' => $brand,
-                        'short_description' => "Authentic {$name} by {$brand}. Premium materials, ergonomic build, and elegant craftsmanship.",
-                        'description' => "Elevate your lifestyle with {$name} from {$brand}. Designed with high-precision craftsmanship and durable materials. Backed by our 100% authenticity guarantee and fast delivery across Bangladesh.",
+                        'brand' => $brandName,
+                        'short_description' => "Authentic {$name} by {$brandName}. Premium materials, ergonomic build, and elegant craftsmanship.",
+                        'description' => "Elevate your lifestyle with {$name} from {$brandName}. Designed with high-precision craftsmanship and durable materials. Backed by our 100% authenticity guarantee and fast delivery across Bangladesh.",
                         'regular_price' => $regularPrice,
                         'sale_price' => $salePrice,
                         'stock_quantity' => random_int(15, 60),
@@ -304,7 +490,7 @@ class DatabaseSeeder extends Seeder
                         'rating' => $ratings[array_rand($ratings)],
                         'reviews_count' => random_int(10, 42),
                         'meta_title' => "Buy {$name} Online — Unilife Bangladesh",
-                        'meta_description' => "Order {$name} by {$brand} at best price in Bangladesh with home delivery and warranty.",
+                        'meta_description' => "Order {$name} by {$brandName} at best price in Bangladesh with home delivery and warranty.",
                     ]
                 );
 

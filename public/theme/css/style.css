@@ -11,19 +11,19 @@
 }
 */
 :root {
-  /* Brand colors derived from the orange 'U' */
-  --fk-brand: #f28330;
-  --fk-brand-dark: #cc6a22;
-  --fk-brand-soft: #fdeee3;
+  /* Dynamic 3-color theme mapping */
+  --fk-brand: var(--brand-primary, #E8751B);
+  --fk-brand-dark: var(--brand-hover, #d66512);
+  --fk-brand-soft: var(--brand-soft-bg, #FFF7ED);
 
-  /* Neutral and text colors derived from the dark gray 'NILIFE' */
-  --fk-ink: #595959;
-  --fk-muted: #8c8c8c;
-  --fk-line: #d9d9d9;
+  /* Text & Surface mapping */
+  --fk-ink: var(--brand-dark, #353535);
+  --fk-muted: #64748B;
+  --fk-line: #E2E8F0;
   
-  /* Background colors adjusted to match the warmth of the brand */
-  --fk-surface: #fcfcfc;
-  --fk-cream: #fbf9f6;
+  /* Background colors */
+  --fk-surface: var(--brand-surface, #F8FAFC);
+  --fk-cream: var(--brand-surface, #F8FAFC);
 }
 
 body {

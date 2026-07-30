@@ -3,9 +3,19 @@
   $lightHeader = $lightHeader ?? false;
 @endphp
 <div class="relative" data-account-menu>
-  <button type="button" data-account-toggle class="flex items-center gap-1.5 p-1.5 sm:p-2 text-sm font-semibold rounded-xl transition {{ $lightHeader ? 'text-white hover:text-white/80' : 'text-slate-600 hover:text-brand-600 hover:bg-brand-50' }}" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
-    <svg class="h-6 w-6 shrink-0" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
-    <span class="hidden lg:inline">{{ auth()->check() ? 'My Account' : 'Login / Sign up' }}</span>
+  <button type="button" data-account-toggle class="flex items-center gap-2 px-3 py-2 text-xs sm:text-sm font-bold rounded-xl border border-stone-200/80 bg-stone-50 hover:bg-stone-100 text-stone-800 hover:text-brand-600 transition-all shadow-xs cursor-pointer" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
+    @auth
+      <span class="grid h-6 w-6 place-items-center rounded-full bg-brand-600 text-white text-[11px] font-extrabold shrink-0">
+        {{ strtoupper(substr($accountUser->name, 0, 1)) }}
+      </span>
+      <span class="hidden sm:inline truncate max-w-[100px]">{{ $accountUser->name }}</span>
+    @else
+      <svg class="h-4.5 w-4.5 text-stone-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 20c0-4 4-6 8-6s8 2 8 6"/>
+      </svg>
+      <span class="hidden sm:inline">My Account</span>
+    @endauth
+    <svg class="w-3 h-3 text-stone-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
   </button>
 
   <div data-account-dropdown class="hidden absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-100 bg-white shadow-soft z-50 overflow-hidden" role="menu">

@@ -11,42 +11,76 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
+  @php
+    $theme = generate_3_color_matching_theme();
+  @endphp
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    tailwind.config = { theme: { extend: {
-colors: {
-  brand: {
-    50:  '#FAFAFA',
-    100: '#F3F3F3',
-    200: '#E5E5E5',
-    300: '#D4D4D4',
-    400: '#E8751B',
-    500: '#FC8933', // Primary Orange
-    600: '#E8751B',
-    700: '#545454',
-    800: '#545454', // Logo Dark
-    900: '#353535', // Dark Navigation/Footer
-  },
-
-  accent: {
-    400: '#FFD7B3',
-    500: '#FC8933',
-    600: '#E8751B',
-    700: '#545454',
-  },
-
-  ink: '#2D2D2D',
-
-  surface: {
-    light: '#FFFFFF',
-    soft: '#F7F7F7',
-  },
-},
-      fontFamily: { sans:['Plus Jakarta Sans','Hind Siliguri','sans-serif'], display:['Plus Jakarta Sans','Hind Siliguri','sans-serif'] },
-    } } };
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:  '{{ $theme["primary_soft_bg"] }}',
+              100: '{{ $theme["primary_border"] }}',
+              200: '{{ $theme["primary_border"] }}',
+              300: '{{ $theme["primary"] }}',
+              400: '{{ $theme["primary"] }}',
+              500: '{{ $theme["primary"] }}',
+              600: '{{ $theme["primary"] }}',
+              700: '{{ $theme["primary_hover"] }}',
+              800: '{{ $theme["dark"] }}',
+              900: '{{ $theme["dark"] }}',
+            },
+            accent: {
+              400: '{{ $theme["primary_border"] }}',
+              500: '{{ $theme["primary"] }}',
+              600: '{{ $theme["primary"] }}',
+              700: '{{ $theme["dark"] }}',
+            },
+            ink: '{{ $theme["dark"] }}',
+            surface: {
+              light: '#FFFFFF',
+              soft: '{{ $theme["surface"] }}',
+            },
+          },
+          fontFamily: { sans:['Plus Jakarta Sans','Hind Siliguri','sans-serif'], display:['Plus Jakarta Sans','Hind Siliguri','sans-serif'] },
+        }
+      }
+    };
   </script>
-  <link rel="stylesheet" href="{{ asset('theme/css/style.css') . '?v=ws1' }}" />
+
+  <style>
+    :root {
+      --brand-primary: {{ $theme['primary'] }};
+      --brand-hover: {{ $theme['primary_hover'] }};
+      --brand-soft-bg: {{ $theme['primary_soft_bg'] }};
+      --brand-border: {{ $theme['primary_border'] }};
+      --brand-dark: {{ $theme['dark'] }};
+      --brand-surface: {{ $theme['surface'] }};
+    }
+
+    .fk-add-btn,
+    .add-to-cart-btn,
+    #pdAddToCart,
+    .btn-primary,
+    .fk-badge {
+      background-color: var(--brand-primary) !important;
+      color: #ffffff !important;
+    }
+
+    .fk-add-btn:hover,
+    .add-to-cart-btn:hover,
+    #pdAddToCart:hover,
+    .btn-primary:hover {
+      background-color: var(--brand-hover) !important;
+      color: #ffffff !important;
+    }
+  </style>
+
+  <link rel="stylesheet" href="{{ asset('theme/css/style.css') . '?v=' . time() }}" />
   <link rel="icon" href="{{ favicon_url() }}" />
   <link rel="apple-touch-icon" href="{{ favicon_url() }}" />
 

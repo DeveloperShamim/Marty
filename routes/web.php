@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\BannerController as AdminBannerController;
+use App\Http\Controllers\Admin\BrandController as AdminBrandController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
@@ -38,6 +39,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/load-more-products', [HomeController::class, 'loadMore'])->name('home.load-more');
 Route::get('/shop', [ShopController::class, 'index'])->name('shop');
 Route::get('/category/{category}', [ShopController::class, 'index'])->name('shop.category');
+Route::get('/brand/{brand:slug}', [ShopController::class, 'brandPage'])->name('shop.brand');
 Route::get('/product/{product}', [ProductController::class, 'show'])->name('product.show');
 Route::post('/product/{product}/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])
     ->middleware('auth')
@@ -135,6 +137,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('products', AdminProductController::class)->except('show');
         Route::patch('categories/{category}/toggle-featured', [AdminCategoryController::class, 'toggleFeatured'])->name('categories.toggle-featured');
         Route::resource('categories', AdminCategoryController::class)->except('show');
+        Route::patch('brands/{brand}/toggle-featured', [AdminBrandController::class, 'toggleFeatured'])->name('brands.toggle-featured');
+        Route::resource('brands', AdminBrandController::class)->except('show');
         Route::patch('banners/{banner}/toggle', [AdminBannerController::class, 'toggle'])->name('banners.toggle');
         Route::resource('banners', AdminBannerController::class)->except('show');
         Route::resource('features', AdminFeatureController::class)->except('show');

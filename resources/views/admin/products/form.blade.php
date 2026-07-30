@@ -32,7 +32,20 @@
           <div><label class="lbl">Slug (blank = auto)</label><input name="slug" class="inp" value="{{ old('slug', $product->slug) }}" /></div>
           <div><label class="lbl">SKU</label><input name="sku" class="inp" value="{{ old('sku', $product->sku) }}" /></div>
         </div>
-        <div><label class="lbl">Brand</label><input name="brand" class="inp" value="{{ old('brand', $product->brand) }}" /></div>
+        <div>
+          <div class="flex items-center justify-between">
+            <label class="lbl">Brand</label>
+            <a href="{{ route('admin.brands.create') }}" target="_blank" class="text-xs text-indigo-600 hover:underline">+ Manage Brands</a>
+          </div>
+          <select name="brand_id" class="inp">
+            <option value="">-- Select Brand --</option>
+            @foreach($brands as $b)
+              <option value="{{ $b->id }}" @selected((int) old('brand_id', $product->brand_id) === (int) $b->id)>
+                {{ $b->name }}
+              </option>
+            @endforeach
+          </select>
+        </div>
         <div><label class="lbl">Short description</label><textarea name="short_description" class="inp" rows="2">{{ old('short_description', $product->short_description) }}</textarea></div>
         <div><label class="lbl">Full description</label><textarea name="description" class="inp" rows="6">{{ old('description', $product->description) }}</textarea></div>
       </div>

@@ -10,7 +10,7 @@
     $flashEndsIso = $flashEndsAt ? \Illuminate\Support\Carbon::parse($flashEndsAt)->toIso8601String() : null;
     $homeReviews = \App\Models\ProductReview::approved()->latest()->take(4)->get();
     $mainHero = $heroBanners->first();
-    $sideTiles = $heroSideBanners->take(4);
+    $sideTiles = collect();
     $hasHero = $heroBanners->isNotEmpty() || setting('hero_fallback_title') || setting('hero_fallback_badge');
     $homeProducts = $featuredProducts->isNotEmpty() ? $featuredProducts : $recentProducts;
     $hero = $mainHero;
@@ -233,6 +233,48 @@
       </section>
     @endif
 
+    @if(isset($featuredBrands) && $featuredBrands->isNotEmpty())
+      <section class="mt-12 sm:mt-14" data-reveal>
+        <div class="flex items-center justify-between mb-4 px-1">
+          <div>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-ink">Featured Brands</h2>
+            <p class="text-xs sm:text-sm text-stone-500">Shop authentic products directly from leading brands</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="{{ route('shop') }}" class="text-xs sm:text-sm font-semibold text-brand-600 hover:text-brand-700 mr-1 sm:mr-3">Explore All &rarr;</a>
+            <button type="button" id="brandPrev" class="h-8 w-8 rounded-full border border-stone-200 bg-white hover:bg-brand-600 hover:text-white hover:border-brand-600 text-stone-600 transition-all shadow-sm flex items-center justify-center focus:outline-none" aria-label="Previous Brand">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <button type="button" id="brandNext" class="h-8 w-8 rounded-full border border-stone-200 bg-white hover:bg-brand-600 hover:text-white hover:border-brand-600 text-stone-600 transition-all shadow-sm flex items-center justify-center focus:outline-none" aria-label="Next Brand">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="relative group/carousel">
+          <div class="swiper brandsSwiper !py-3 !px-1 -mx-1">
+            <div class="swiper-wrapper">
+              @foreach($featuredBrands as $b)
+                <div class="swiper-slide">
+                  <a href="{{ route('shop.brand', $b) }}" class="group flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl border border-stone-200/80 bg-white hover:border-brand-500/50 hover:shadow-md transition-all text-center h-full">
+                    <div class="h-14 sm:h-16 w-full flex items-center justify-center mb-2 p-1.5 bg-stone-50/80 rounded-xl group-hover:bg-brand-50/60 transition-colors">
+                      <img src="{{ $b->logoUrl() }}" alt="{{ $b->name }}" loading="lazy" class="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-110" />
+                    </div>
+                    <span class="text-xs sm:text-sm font-bold text-ink group-hover:text-brand-600 truncate w-full">{{ $b->name }}</span>
+                    @if(isset($b->products_count) && $b->products_count > 0)
+                      <span class="text-[10px] text-stone-400 group-hover:text-brand-500 font-medium mt-0.5">{{ $b->products_count }} {{ Str::plural('item', $b->products_count) }}</span>
+                    @else
+                      <span class="text-[10px] text-stone-400 group-hover:text-brand-500 font-medium mt-0.5">Official Brand</span>
+                    @endif
+                  </a>
+                </div>
+              @endforeach
+            </div>
+          </div>
+        </div>
+      </section>
+    @endif
+
     @if(($bestSellers ?? collect())->isNotEmpty())
       <section class="mt-14" data-reveal>
         <div class="flex items-end justify-between border-b border-stone-200 pb-3 mb-6 gap-3">
@@ -328,46 +370,64 @@
       @endforeach
     @endif
 
-    @if($flashProducts->isNotEmpty() || $sideTiles->isNotEmpty())
-      <section class="mt-12" data-reveal>
-        @if($flashProducts->isNotEmpty())
-          <div class="flex items-end justify-between mb-5 gap-3">
-            <div class="flex items-center gap-4 flex-wrap">
-              <h2 class="text-2xl sm:text-3xl font-extrabold">{{ setting('home_hot_deal_title', 'Products With Discounts') }}</h2>
+    @if(($featuredHomeBrands ?? collect())->isNotEmpty())
+      @foreach($featuredHomeBrands as $featuredBrand)
+        @if($featuredBrand->products->isNotEmpty())
+          <section class="mt-14" data-reveal>
+            <div class="flex items-center justify-between border-b border-stone-200 pb-3 mb-6 gap-3">
+              <div class="flex items-center gap-3">
+                <img src="{{ $featuredBrand->logoUrl() }}" class="h-10 w-10 object-contain rounded-xl border border-stone-200 bg-white p-1 shadow-xs" alt="{{ $featuredBrand->name }}">
+                <div>
+                  <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">
+                    {{ $featuredBrand->name }}
+                  </h2>
+                  <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
+                </div>
+              </div>
+              <a href="{{ route('shop.brand', $featuredBrand) }}" class="text-xs sm:text-sm font-extrabold text-brand-500 hover:text-brand-600 tracking-wider uppercase inline-flex items-center gap-1 transition-colors shrink-0">
+                EXPLORE BRAND PAGE <span class="text-base font-normal">&rarr;</span>
+              </a>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              @foreach($featuredBrand->products as $product)
+                @include('storefront.partials.product-card', ['product' => $product])
+              @endforeach
+            </div>
+          </section>
+        @endif
+      @endforeach
+    @endif
+
+    @if($flashProducts->isNotEmpty())
+      <section class="mt-14" data-reveal>
+        <div class="flex items-end justify-between border-b border-stone-200 pb-3 mb-6 gap-3 flex-wrap">
+          <div>
+            <div class="flex items-center gap-2 mb-1.5">
+              <span class="inline-flex items-center gap-1 bg-brand-50 text-brand-700 font-extrabold text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-brand-200/80">
+                ⚡ SPECIAL DISCOUNTS
+              </span>
               @if($flashEndsIso)
-                <div data-countdown-end="{{ $flashEndsIso }}" class="flex items-center gap-1.5 font-bold text-brand-600 text-sm">
-                  <span class="w-8 h-8 grid place-items-center bg-brand-600/10 rounded"><span data-h>00</span></span><span>:</span>
-                  <span class="w-8 h-8 grid place-items-center bg-brand-600/10 rounded"><span data-m>00</span></span><span>:</span>
-                  <span class="w-8 h-8 grid place-items-center bg-brand-600/10 rounded"><span data-s>00</span></span>
+                <div data-countdown-end="{{ $flashEndsIso }}" class="flex items-center gap-1 font-mono font-bold text-stone-600 text-xs">
+                  <span class="text-stone-400 font-sans">Ends in:</span>
+                  <span class="bg-stone-100 text-stone-800 px-1.5 py-0.5 rounded font-mono font-black" data-h>00</span>:
+                  <span class="bg-stone-100 text-stone-800 px-1.5 py-0.5 rounded font-mono font-black" data-m>00</span>:
+                  <span class="bg-stone-100 text-stone-800 px-1.5 py-0.5 rounded font-mono font-black" data-s>00</span>
                 </div>
               @endif
             </div>
-            <a href="{{ route('shop', ['flash' => 1]) }}" class="text-sm font-bold text-brand-600 hover:underline">{{ $viewMore }}</a>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">{{ setting('home_hot_deal_title', 'Products With Discounts') }}</h2>
+            <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
           </div>
-        @endif
-        <div class="grid {{ $sideTiles->isNotEmpty() && $flashProducts->isNotEmpty() ? 'lg:grid-cols-[280px_1fr]' : '' }} gap-4">
-          @if($sideTiles->isNotEmpty())
-            <div class="hidden sm:block {{ $flashProducts->isNotEmpty() ? 'sm:space-y-4' : 'sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4' }}">
-              @foreach($sideTiles as $tile)
-                <a href="{{ $tile->linkHref() }}" class="block rounded-xl overflow-hidden bg-brand-900 text-white p-6 min-h-[160px] relative bg-cover bg-center shadow-md hover:shadow-lg transition-shadow"
-                  @if($tile->image) style="background-image:linear-gradient(135deg,rgba(45,45,45,.88),rgba(232,117,27,.75)),url('{{ $tile->imageUrl() }}')" @else style="background:linear-gradient(135deg,#353535,#E8751B)" @endif>
-                  @if($tile->badge)<p class="text-sm font-bold text-brand-400 uppercase tracking-wide">{{ $tile->badge }}</p>@endif
-                  @if($tile->title)<p class="text-2xl font-extrabold mt-2 leading-tight">{{ $tile->title }}</p>@endif
-                  @if($tile->subtitle)<p class="text-xs uppercase tracking-wide mt-1 opacity-90">{{ $tile->subtitle }}</p>@endif
-                  @if($tile->button_text)
-                    <span class="inline-flex mt-4 text-xs font-bold bg-white text-brand-700 px-3.5 py-1.5 rounded-full shadow-sm hover:bg-brand-500 hover:text-white transition-colors">{{ $tile->button_text }}</span>
-                  @endif
-                </a>
-              @endforeach
-            </div>
-          @endif
-          @if($flashProducts->isNotEmpty())
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-              @foreach($flashProducts->take(6) as $product)
-                @include('storefront.partials.product-card', ['product' => $product, 'flashCard' => true])
-              @endforeach
-            </div>
-          @endif
+          <a href="{{ route('shop', ['flash' => 1]) }}" class="text-xs sm:text-sm font-extrabold text-brand-600 hover:text-brand-700 tracking-wider uppercase inline-flex items-center gap-1 transition-colors shrink-0">
+            VIEW ALL DISCOUNTS <span class="text-base font-normal">&rarr;</span>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          @foreach($flashProducts->take(8) as $product)
+            @include('storefront.partials.product-card', ['product' => $product, 'flashCard' => true])
+          @endforeach
         </div>
       </section>
     @endif
@@ -411,7 +471,7 @@
           <div class="swiper-wrapper">
             @foreach($coupons as $coupon)
               <div class="swiper-slide">
-                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-orange-500 to-amber-600 p-3.5 sm:p-4 text-white shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between h-full group border border-white/10">
+                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-brand-500 to-brand-700 p-3.5 sm:p-4 text-white shadow-md hover:shadow-lg transition-all duration-300 flex flex-col justify-between h-full group border border-white/10">
                   <div class="absolute -right-4 -top-4 w-16 h-16 bg-white/15 rounded-full blur-xl group-hover:scale-125 transition-transform"></div>
 
                   <div>
@@ -420,15 +480,15 @@
                         <svg class="w-3 h-3 text-white/90 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A1 1 0 013 12V7a4 4 0 014-4z"/></svg>
                         {{ $coupon->code }}
                       </span>
-                      <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-emerald-950 bg-emerald-300/90 px-1.5 py-0.5 rounded-full shadow-xs">Active</span>
+                      <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-emerald-950 bg-emerald-300 px-1.5 py-0.5 rounded-full shadow-xs">Active</span>
                     </div>
 
                     <div class="flex items-baseline gap-1 mt-1">
                       <span class="text-lg sm:text-2xl font-black tracking-tight text-white leading-none">{{ $coupon->valueLabel() }}</span>
-                      <span class="text-[9px] sm:text-[10px] font-black uppercase bg-white text-brand-700 px-1.5 py-0.5 rounded leading-none shadow-xs">OFF</span>
+                      <span class="text-[9px] sm:text-[10px] font-black uppercase bg-white text-stone-900 px-1.5 py-0.5 rounded leading-none shadow-xs">OFF</span>
                     </div>
 
-                    <p class="text-[10px] sm:text-xs text-white/85 mt-1.5 line-clamp-1 font-medium leading-tight">
+                    <p class="text-[10px] sm:text-xs text-white/90 mt-1.5 line-clamp-1 font-medium leading-tight">
                       @if($coupon->description)
                         {{ $coupon->description }}
                       @elseif($coupon->min_order_amount)
@@ -440,8 +500,8 @@
                   </div>
 
                   <div class="mt-3 pt-2 border-t border-dashed border-white/25 flex items-center justify-between gap-1">
-                    <span class="text-[9px] sm:text-[11px] font-medium text-white/75">At checkout</span>
-                    <button type="button" onclick="applyAndCopyCoupon('{{ $coupon->code }}')" class="inline-flex items-center gap-1 rounded-full bg-white text-brand-800 hover:bg-stone-900 hover:text-white font-extrabold text-[10px] sm:text-xs px-2.5 py-1 shadow-sm transition-all cursor-pointer">
+                    <span class="text-[9px] sm:text-[11px] font-medium text-white/80">At checkout</span>
+                    <button type="button" onclick="applyAndCopyCoupon('{{ $coupon->code }}')" class="inline-flex items-center gap-1 rounded-full bg-white text-stone-900 hover:bg-stone-900 hover:text-white font-extrabold text-[10px] sm:text-xs px-3 py-1 shadow-sm transition-all cursor-pointer">
                       Use Code <span class="text-xs">→</span>
                     </button>
                   </div>
@@ -603,6 +663,29 @@ document.addEventListener('DOMContentLoaded', function () {
         640: { slidesPerView: 4, spaceBetween: 16 },
         768: { slidesPerView: 5, spaceBetween: 16 },
         1024: { slidesPerView: 6, spaceBetween: 18 },
+      },
+    });
+  }
+  if (typeof Swiper !== 'undefined' && document.querySelector('.brandsSwiper')) {
+    new Swiper('.brandsSwiper', {
+      slidesPerView: 2.3,
+      spaceBetween: 10,
+      loop: true,
+      watchSlidesProgress: true,
+      autoplay: {
+        delay: 3500,
+        disableOnInteraction: false,
+        pauseOnMouseEnter: true,
+      },
+      navigation: {
+        nextEl: '#brandNext',
+        prevEl: '#brandPrev',
+      },
+      breakpoints: {
+        480: { slidesPerView: 3.2, spaceBetween: 12 },
+        640: { slidesPerView: 4.2, spaceBetween: 14 },
+        768: { slidesPerView: 5.2, spaceBetween: 16 },
+        1024: { slidesPerView: 7, spaceBetween: 16 },
       },
     });
   }

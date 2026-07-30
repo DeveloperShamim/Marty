@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\CartService;
@@ -27,6 +28,11 @@ class AppServiceProvider extends ServiceProvider
             $view->with([
                 'siteName'      => site_name(),
                 'navCategories' => Category::where('is_active', true)
+                    ->withCount(['products' => fn ($q) => $q->published()])
+                    ->orderByDesc('products_count')
+                    ->orderBy('position')
+                    ->get(),
+                'navBrands'     => Brand::where('is_active', true)
                     ->withCount(['products' => fn ($q) => $q->published()])
                     ->orderByDesc('products_count')
                     ->orderBy('position')

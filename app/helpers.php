@@ -10,6 +10,200 @@ if (! function_exists('setting')) {
     }
 }
 
+if (! function_exists('generate_3_color_matching_theme')) {
+    /** Automatically calculate hover states, border highlights, and soft tints from 3 user core colors. */
+    function generate_3_color_matching_theme(?string $primaryHex = null, ?string $darkHex = null, ?string $surfaceHex = null): array
+    {
+        $primary = ltrim(trim((string) ($primaryHex ?: setting('theme_primary_color', '#E8751B'))), '#');
+        $dark    = ltrim(trim((string) ($darkHex    ?: setting('theme_dark_color', '#353535'))), '#');
+        $surface = ltrim(trim((string) ($surfaceHex ?: setting('theme_surface_color', '#F8FAFC'))), '#');
+
+        if (strlen($primary) === 3) $primary = $primary[0].$primary[0].$primary[1].$primary[1].$primary[2].$primary[2];
+        if (strlen($dark) === 3)    $dark    = $dark[0].$dark[0].$dark[1].$dark[1].$dark[2].$dark[2];
+        if (strlen($surface) === 3) $surface = $surface[0].$surface[0].$surface[1].$surface[1].$surface[2].$surface[2];
+
+        if (! preg_match('/^[a-fA-F0-9]{6}$/', $primary)) $primary = 'E8751B';
+        if (! preg_match('/^[a-fA-F0-9]{6}$/', $dark))    $dark    = '353535';
+        if (! preg_match('/^[a-fA-F0-9]{6}$/', $surface) || $surface === '000000') $surface = 'F8FAFC';
+
+        $hexToRgb = function ($h) {
+            return [hexdec(substr($h, 0, 2)), hexdec(substr($h, 2, 2)), hexdec(substr($h, 4, 2))];
+        };
+
+        $rgbToHex = function ($r, $g, $b) {
+            return sprintf('#%02X%02X%02X', min(255, max(0, round($r))), min(255, max(0, round($g))), min(255, max(0, round($b))));
+        };
+
+        [$pr, $pg, $pb] = $hexToRgb($primary);
+        $primaryHover  = $rgbToHex($pr * 0.82, $pg * 0.82, $pb * 0.82);
+        $primarySoftBg = $rgbToHex($pr * 0.12 + 255 * 0.88, $pg * 0.12 + 255 * 0.88, $pb * 0.12 + 255 * 0.88);
+        $primaryBorder = $rgbToHex($pr * 0.30 + 255 * 0.70, $pg * 0.30 + 255 * 0.70, $pb * 0.30 + 255 * 0.70);
+
+        [$dr, $dg, $db] = $hexToRgb($dark);
+        $darkHover = $rgbToHex($dr * 0.85, $dg * 0.85, $db * 0.85);
+
+        return [
+            'primary'         => '#' . strtoupper($primary),
+            'primary_hover'   => $primaryHover,
+            'primary_soft_bg' => $primarySoftBg,
+            'primary_border'  => $primaryBorder,
+            'dark'            => '#' . strtoupper($dark),
+            'dark_hover'      => $darkHover,
+            'surface'         => '#' . strtoupper($surface),
+        ];
+    }
+}
+
+if (! function_exists('generate_brand_color_scale')) {
+    /** Generate a harmonious 10-step Tailwind color scale (50-900) from any Hex color. */
+    function generate_brand_color_scale(string $hex): array
+    {
+        $cleanHex = ltrim(trim($hex), '#');
+        if (strlen($cleanHex) === 3) {
+            $cleanHex = $cleanHex[0].$cleanHex[0].$cleanHex[1].$cleanHex[1].$cleanHex[2].$cleanHex[2];
+        }
+        if (! preg_match('/^[a-fA-F0-9]{6}$/', $cleanHex)) {
+            $cleanHex = 'E8751B';
+        }
+
+        $r = hexdec(substr($cleanHex, 0, 2)) / 255;
+        $g = hexdec(substr($cleanHex, 2, 2)) / 255;
+        $b = hexdec(substr($cleanHex, 4, 2)) / 255;
+
+        $max = max($r, $g, $b);
+        $min = min($r, $g, $b);
+        $l = ($max + $min) / 2;
+        $d = $max - $min;
+
+        if ($d == 0) {
+            $h = $s = 0;
+        } else {
+            $s = $l > 0.5 ? $d / (2 - $max - $min) : $d / ($max + $min);
+            switch ($max) {
+                case $r: $h = ($g - $b) / $d + ($g < $b ? 6 : 0); break;
+                case $g: $h = ($b - $r) / $d + 2; break;
+                case $b: $h = ($r - $g) / $d + 4; break;
+            }
+            $h /= 6;
+        }
+
+        $hDeg = $h * 360;
+        $sPct = $s * 100;
+        $lPct = $l * 100;
+
+        $hslToHex = function ($h, $s, $l) {
+            $h /= 360; $s /= 100; $l /= 100;
+            if ($s == 0) {
+                $r = $g = $b = $l;
+            } else {
+                $q = $l < 0.5 ? $l * (1 + $s) : $l + $s - $l * $s;
+                $p = 2 * $l - $q;
+                $calc = function ($p, $q, $t) {
+                    if ($t < 0) $t += 1;
+                    if ($t > 1) $t -= 1;
+                    if ($t < 1/6) return $p + ($q - $p) * 6 * $t;
+                    if ($t < 1/2) return $q;
+                    if ($t < 2/3) return $p + ($q - $p) * (2/3 - $t) * 6;
+                    return $p;
+                };
+                $r = $calc($p, $q, $h + 1/3);
+                $g = $calc($p, $q, $h);
+                $b = $calc($p, $q, $h - 1/3);
+            }
+            return sprintf('#%02x%02x%02x', round($r * 255), round($g * 255), round($b * 255));
+        };
+
+        $base = '#' . strtoupper($cleanHex);
+
+        return [
+            50  => $hslToHex($hDeg, min(100, $sPct * 0.5), 97),
+            100 => $hslToHex($hDeg, min(100, $sPct * 0.6), 93),
+            200 => $hslToHex($hDeg, min(100, $sPct * 0.7), 84),
+            300 => $hslToHex($hDeg, min(100, $sPct * 0.85), 72),
+            400 => $hslToHex($hDeg, $sPct, max(20, $lPct * 1.15)),
+            500 => $base,
+            600 => $base,
+            700 => $hslToHex($hDeg, min(100, $sPct * 1.05), max(15, $lPct * 0.80)),
+            800 => $hslToHex($hDeg, min(100, $sPct * 1.1), max(12, $lPct * 0.60)),
+            900 => $hslToHex($hDeg, min(100, $sPct * 1.15), max(8, $lPct * 0.40)),
+        ];
+    }
+}
+
+if (! function_exists('extract_dominant_color_from_image')) {
+    /** Automatically extract dominant vibrant primary brand color from a logo image file. */
+    function extract_dominant_color_from_image(string $filePath): ?string
+    {
+        if (! file_exists($filePath) || ! is_readable($filePath)) {
+            return null;
+        }
+
+        $info = @getimagesize($filePath);
+        if (! $info) {
+            return null;
+        }
+
+        $mime = $info['mime'] ?? '';
+        $im = match ($mime) {
+            'image/png'  => @imagecreatefrompng($filePath),
+            'image/jpeg' => @imagecreatefromjpeg($filePath),
+            'image/webp' => @imagecreatefromwebp($filePath),
+            default      => null,
+        };
+
+        if (! $im) {
+            return null;
+        }
+
+        $width = imagesx($im);
+        $height = imagesy($im);
+
+        $sampleStepX = max(1, (int) floor($width / 80));
+        $sampleStepY = max(1, (int) floor($height / 80));
+
+        $colorCounts = [];
+
+        for ($x = 0; $x < $width; $x += $sampleStepX) {
+            for ($y = 0; $y < $height; $y += $sampleStepY) {
+                $rgba = imagecolorat($im, $x, $y);
+                $colors = imagecolorsforindex($im, $rgba);
+
+                if (isset($colors['alpha']) && $colors['alpha'] > 70) {
+                    continue;
+                }
+
+                $r = $colors['red'];
+                $g = $colors['green'];
+                $b = $colors['blue'];
+
+                $max = max($r, $g, $b);
+                $min = min($r, $g, $b);
+                $diff = $max - $min;
+
+                if ($max > 240 && $min > 240) continue;
+                if ($max < 30 && $min < 30) continue;
+                if ($diff < 15) continue;
+
+                $qr = (int) (round($r / 16) * 16);
+                $qg = (int) (round($g / 16) * 16);
+                $qb = (int) (round($b / 16) * 16);
+
+                $hex = sprintf('#%02X%02X%02X', min(255, $qr), min(255, $qg), min(255, $qb));
+                $colorCounts[$hex] = ($colorCounts[$hex] ?? 0) + 1;
+            }
+        }
+
+        imagedestroy($im);
+
+        if (empty($colorCounts)) {
+            return null;
+        }
+
+        arsort($colorCounts);
+        return key($colorCounts);
+    }
+}
+
 if (! function_exists('testing_mode')) {
     /**
      * Whether admin write actions are locked (TESTING_MODE in Site 3/shop/.env).

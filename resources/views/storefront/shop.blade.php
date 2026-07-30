@@ -110,10 +110,23 @@
           </ul>
         </div>
 
-        {{-- Product Tags (brands) --}}
+        {{-- Brands --}}
         <div>
-          <h3 class="text-sm font-bold text-ink mb-2">Product Tags</h3>
-          @if($brands->isNotEmpty())
+          <h3 class="text-sm font-bold text-ink mb-2">Brands</h3>
+          @if(isset($brandModels) && $brandModels->isNotEmpty())
+            <ul class="space-y-2 max-h-48 overflow-y-auto text-sm pr-1">
+              @foreach($brandModels as $b)
+                <li>
+                  <label class="flex items-center gap-2.5 cursor-pointer text-gray-700 hover:text-brand-600">
+                    <input type="radio" name="brand" value="{{ $b->slug }}" class="shop-check" @checked($activeBrand === $b->slug || $activeBrand === $b->name)>
+                    <img src="{{ $b->logoUrl() }}" class="h-5 w-5 object-contain rounded border border-gray-100 bg-white" alt="">
+                    <span class="truncate flex-1">{{ $b->name }}</span>
+                    <span class="text-xs text-gray-400">({{ $b->products_count }})</span>
+                  </label>
+                </li>
+              @endforeach
+            </ul>
+          @elseif($brands->isNotEmpty())
             <ul class="space-y-1.5 max-h-36 overflow-y-auto text-sm">
               @foreach($brands as $brand)
                 <li>
@@ -125,7 +138,7 @@
               @endforeach
             </ul>
           @else
-            <p class="text-xs text-gray-400">No tags yet</p>
+            <p class="text-xs text-gray-400">No brands found</p>
           @endif
         </div>
 
