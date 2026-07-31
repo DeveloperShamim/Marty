@@ -1,4 +1,4 @@
-﻿# Marty — Laravel E-Commerce Storefront
+# Marty — Laravel E-Commerce Storefront
 
 A full-featured Laravel e-commerce application for a fashion/lifestyle store (shoes, watches, leather goods, accessories). Includes a beautiful storefront and a complete admin dashboard.
 
@@ -16,6 +16,9 @@ A full-featured Laravel e-commerce application for a fashion/lifestyle store (sh
 | 🎡 Hero Banners | Slideshow banners with background images and text overlays |
 | 🛒 Cart & Checkout | Session cart, coupon codes, mobile payment (bKash, Nagad, Rocket, COD) |
 | 📋 Orders | Order management, status tracking, invoice PDF |
+| 🛡️ Fraud Detection | Zero-API local risk scoring, TrxID validation, blacklist management |
+| 🚚 Courier Sync | 1-click dispatch to Steadfast, Pathao, RedX via API |
+| 🛒 Abandoned Carts | Track uncompleted checkouts, 1-click WhatsApp/SMS recovery |
 | ⚙️ Admin Dashboard | Settings, Banner, Brand, Category, Product, Order, Coupon, User management |
 | 🔐 Auth | Login, Register, Google OAuth, OTP email verification |
 | 📨 Mail & OTP | SMTP config, customer OTP toggle |
