@@ -33,6 +33,21 @@
           <span class="text-xs font-semibold px-3 py-1.5 rounded-full {{ $cancelled ? 'bg-red-100 text-red-700' : 'bg-brand-50 text-brand-700' }}">{{ ucfirst($order->status) }} · Payment {{ ucfirst($order->payment_status) }}</span>
         </div>
 
+        @if($order->isDispatchedToCourier())
+          <div class="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between flex-wrap gap-2 text-xs">
+            <div>
+              <span class="font-bold text-slate-700">Courier Delivery:</span>
+              <span class="font-extrabold text-emerald-700 ml-1">{{ $order->courierLabel() }}</span>
+              <span class="ml-2 font-mono text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200">#{{ $order->courier_tracking_code }}</span>
+            </div>
+            @if($order->courierTrackingUrl())
+              <a href="{{ $order->courierTrackingUrl() }}" target="_blank" rel="noopener" class="font-extrabold text-emerald-800 hover:underline inline-flex items-center gap-1">
+                <span>Live Courier Tracking</span> &rarr;
+              </a>
+            @endif
+          </div>
+        @endif
+
         @if($cancelled)
           <p class="text-sm text-red-600 font-semibold">This order was cancelled.</p>
         @else

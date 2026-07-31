@@ -132,18 +132,18 @@ body {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: #E8751B;
-  color: #ffffff;
+  background: transparent;
+  color: var(--brand-primary, #E8751B);
   font-size: 13px;
   font-weight: 700;
   padding: 9px 12px;
-  border: none;
+  border: 1.5px solid var(--brand-primary, #E8751B);
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 .fk-add-btn:hover {
-  background: #d66512;
+  background: var(--brand-primary, #E8751B);
   color: #ffffff;
 }
 .fk-add-plus {

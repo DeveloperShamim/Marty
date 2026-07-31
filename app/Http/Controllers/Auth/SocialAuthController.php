@@ -14,10 +14,12 @@ class SocialAuthController extends Controller
 {
     public function redirectToGoogle()
     {
+        $this->setupGoogleConfig();
+
         if (empty(config('services.google.client_id')) || empty(config('services.google.client_secret'))) {
             return redirect()->route('login')->with(
                 'status',
-                'Google 1-Click login requires GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET configured in your .env file.'
+                'Google 1-Click login requires GOOGLE_CLIENT_ID & GOOGLE_CLIENT_SECRET configured in Admin -> API Integrations or your .env file.'
             );
         }
 
@@ -26,6 +28,8 @@ class SocialAuthController extends Controller
 
     public function handleGoogleCallback(Request $request)
     {
+        $this->setupGoogleConfig();
+
         try {
             $googleUser = Socialite::driver('google')->user();
         } catch (\Exception $e) {
@@ -57,5 +61,22 @@ class SocialAuthController extends Controller
         Auth::login($user, true);
 
         return redirect()->route('account')->with('status', 'Successfully logged in with Google!');
+    }
+
+    private function setupGoogleConfig(): void
+    {
+        $clientId = setting('google_client_id') ?: config('services.google.client_id');
+        $clientSecret = setting('google_client_secret') ?: config('services.google.client_secret');
+        $redirect = setting('google_redirect_uri') ?: config('services.google.redirect');
+
+        if ($clientId) {
+            config(['services.google.client_id' => $clientId]);
+        }
+        if ($clientSecret) {
+            config(['services.google.client_secret' => $clientSecret]);
+        }
+        if ($redirect) {
+            config(['services.google.redirect' => $redirect]);
+        }
     }
 }

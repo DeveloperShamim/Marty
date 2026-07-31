@@ -275,6 +275,50 @@
       }
     }
   }
+  // Optimized ultra-fast guest contact sync (zero speed impact)
+  (function () {
+    const nameInput = document.querySelector('input[name="customer_name"]');
+    const phoneInput = document.querySelector('input[name="customer_phone"]');
+    const emailInput = document.querySelector('input[name="customer_email"]');
+    const zoneSelect = document.getElementById('shippingZone');
+    let lastPayload = '';
+
+    function syncContact() {
+      const name = nameInput ? nameInput.value.trim() : '';
+      const phone = phoneInput ? phoneInput.value.trim() : '';
+      const email = emailInput ? emailInput.value.trim() : '';
+      const zone = zoneSelect ? zoneSelect.value : 'inside_dhaka';
+
+      if (!phone && !name && !email) return;
+
+      const payload = JSON.stringify({
+        customer_name: name,
+        customer_phone: phone,
+        customer_email: email,
+        shipping_zone: zone
+      });
+
+      if (payload === lastPayload) return;
+      lastPayload = payload;
+
+      fetch('{{ route("checkout.sync-contact") }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}',
+          'Accept': 'application/json'
+        },
+        body: payload,
+        keepalive: true
+      }).catch(function () {});
+    }
+
+    [nameInput, phoneInput, emailInput].forEach(function (inp) {
+      if (!inp) return;
+      inp.addEventListener('change', syncContact);
+      inp.addEventListener('blur', syncContact);
+    });
+  })();
 })();
 </script>
 @endpush

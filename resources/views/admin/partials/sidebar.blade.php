@@ -1,6 +1,7 @@
 @php
     $pendingBadge = \App\Models\Order::where('payment_status', 'pending')->count();
     $pendingReviews = \App\Models\ProductReview::pending()->count();
+    $abandonedBadge = \App\Models\AbandonedCart::abandoned()->count();
     $lowStockBadge = \App\Models\ProductSku::where('stock_quantity', '<=', 3)->count()
         + \App\Models\Product::whereDoesntHave('skus')->where('stock_quantity', '<=', 3)->count();
 
@@ -8,6 +9,7 @@
         'Main' => [
             ['key' => 'dashboard', 'label' => 'Dashboard', 'route' => 'admin.dashboard', 'pattern' => 'admin.dashboard', 'icon' => '<path d="M4 13h6v8H4zM14 3h6v18h-6zM4 3h6v6H4z"/>'],
             ['key' => 'orders', 'label' => 'Orders', 'route' => 'admin.orders.index', 'pattern' => 'admin.orders.*', 'icon' => '<circle cx="6" cy="19" r="2"/><circle cx="17" cy="19" r="2"/><path d="M17 17h-11v-14h-2M6 5l14 1l-1 7h-13"/>', 'badge' => $pendingBadge],
+            ['key' => 'abandoned-carts', 'label' => 'Abandoned Carts', 'route' => 'admin.abandoned-carts.index', 'pattern' => 'admin.abandoned-carts.*', 'icon' => '<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>', 'badge' => $abandonedBadge],
             ['key' => 'reviews', 'label' => 'Reviews', 'route' => 'admin.reviews.index', 'pattern' => 'admin.reviews.*', 'icon' => '<path d="M12 3l2.5 5.5L20 9l-4 4l1 6l-5-3l-5 3l1-6l-4-4l5.5-.5z"/>', 'badge' => $pendingReviews],
         ],
         'Catalog' => [
@@ -21,10 +23,12 @@
         ],
         'Brand & Theme' => [
             ['key' => 'banners', 'label' => 'Hero Banners', 'route' => 'admin.banners.index', 'pattern' => 'admin.banners.*', 'icon' => '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/>'],
+            ['key' => 'integrations', 'label' => 'API Integrations', 'route' => 'admin.integrations.index', 'pattern' => 'admin.integrations.*', 'icon' => '<path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>'],
             ['key' => 'settings', 'label' => 'Site & Theme Settings', 'route' => 'admin.settings.edit', 'pattern' => 'admin.settings.*', 'icon' => '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'],
         ],
         'People' => [
             ['key' => 'customers', 'label' => 'Customers', 'route' => 'admin.customers.index', 'pattern' => 'admin.customers.*', 'icon' => '<circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 3.13a4 4 0 0 1 0 7.75"/>'],
+            ['key' => 'blacklist', 'label' => 'Fraud Blacklist', 'route' => 'admin.blacklist.index', 'pattern' => 'admin.blacklist.*', 'icon' => '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'],
         ],
     ];
     $site = site_name();

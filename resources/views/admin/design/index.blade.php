@@ -151,7 +151,7 @@
 
               <p class="text-xs text-gray-600 font-medium">Sample Storefront Product Card layout with high-contrast text and primary CTA button.</p>
 
-              <button type="button" id="previewButton" class="w-full py-2.5 px-4 text-xs font-bold text-white rounded-xl shadow-xs transition" style="background-color: {{ $brandPrimaryColor }};">
+              <button type="button" id="previewButton" class="w-full py-2.5 px-4 text-xs font-bold rounded-xl shadow-xs transition border-2 bg-transparent" style="border-color: {{ $brandPrimaryColor }}; color: {{ $brandPrimaryColor }};" onmouseenter="this.style.backgroundColor='{{ $brandPrimaryColor }}'; this.style.color='#ffffff';" onmouseleave="this.style.backgroundColor='transparent'; this.style.color='{{ $brandPrimaryColor }}';">
                 + Add to Cart
               </button>
             </div>
@@ -243,7 +243,12 @@ function updatePreview(hex) {
   const button = document.getElementById('previewButton');
   if (badge) badge.style.backgroundColor = hex;
   if (price) price.style.color = hex;
-  if (button) button.style.backgroundColor = hex;
+  if (button) {
+    button.style.borderColor = hex;
+    button.style.color = hex;
+    button.onmouseenter = function() { this.style.backgroundColor = hex; this.style.color = '#ffffff'; };
+    button.onmouseleave = function() { this.style.backgroundColor = 'transparent'; this.style.color = hex; };
+  }
 }
 
 function setPreset(hex) {

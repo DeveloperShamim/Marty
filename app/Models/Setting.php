@@ -27,7 +27,14 @@ class Setting extends Model
 
     public static function get(string $key, $default = null)
     {
-        return static::loadBag()[$key] ?? $default;
+        $val = static::loadBag()[$key] ?? null;
+        if ($val !== null && $val !== '') {
+            return $val;
+        }
+
+        $envVal = env(strtoupper($key));
+
+        return ($envVal !== null && $envVal !== '') ? $envVal : $default;
     }
 
     public static function put(string $key, $value): void

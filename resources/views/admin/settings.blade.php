@@ -22,7 +22,8 @@
     <button type="button" onclick="switchSettingsTab('brand', this)" class="settings-tab-btn px-4 py-2 text-xs font-extrabold rounded-xl bg-brand-600 text-white shadow-xs transition shrink-0 cursor-pointer">🎨 Brand &amp; Theme</button>
     <button type="button" onclick="switchSettingsTab('homepage', this)" class="settings-tab-btn px-4 py-2 text-xs font-extrabold rounded-xl bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 transition shrink-0 cursor-pointer">🏠 Homepage &amp; SEO</button>
     <button type="button" onclick="switchSettingsTab('payments', this)" class="settings-tab-btn px-4 py-2 text-xs font-extrabold rounded-xl bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 transition shrink-0 cursor-pointer">💳 Payments &amp; Delivery</button>
-    <button type="button" onclick="switchSettingsTab('system', this)" class="settings-tab-btn px-4 py-2 text-xs font-extrabold rounded-xl bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 transition shrink-0 cursor-pointer">⚙️ Mail, OTP &amp; Invoice</button>
+    <button type="button" onclick="switchSettingsTab('system', this)" class="settings-tab-btn px-4 py-2 text-xs font-extrabold rounded-xl bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 transition shrink-0 cursor-pointer">⚙️ Mail &amp; Invoice</button>
+    <a href="{{ route('admin.integrations.index') }}" class="px-4 py-2 text-xs font-extrabold rounded-xl bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200 transition shrink-0 cursor-pointer flex items-center gap-1">⚡ API Integrations &rarr;</a>
     <button type="button" onclick="switchSettingsTab('all', this)" class="settings-tab-btn px-4 py-2 text-xs font-extrabold rounded-xl bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 transition shrink-0 cursor-pointer">📄 View All Sections</button>
   </div>
 
@@ -43,6 +44,8 @@
       } else if (tabName === 'homepage' && (sec === 'homepage' || sec === 'seo' || sec === 'tracking')) {
         f.classList.remove('hidden');
       } else if (tabName === 'payments' && (sec === 'payments' || sec === 'shipping')) {
+        f.classList.remove('hidden');
+      } else if (tabName === 'couriers' && sec === 'couriers') {
         f.classList.remove('hidden');
       } else if (tabName === 'system' && (sec === 'mail' || sec === 'invoice')) {
         f.classList.remove('hidden');

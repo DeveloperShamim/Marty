@@ -16,6 +16,9 @@ class Order extends Model
         'shipping_charge' => 'decimal:2',
         'tax'             => 'decimal:2',
         'total'           => 'decimal:2',
+        'fraud_score'     => 'integer',
+        'fraud_flags'     => 'array',
+        'courier_sent_at' => 'datetime',
     ];
 
     public const STATUSES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
@@ -109,5 +112,56 @@ class Order extends Model
     public function shouldRestoreStockOnCancel(): bool
     {
         return ! in_array($this->status, ['cancelled'], true);
+    }
+
+    public function isDispatchedToCourier(): bool
+    {
+        return ! empty($this->courier_name) && ! empty($this->courier_tracking_code);
+    }
+
+    public function courierLabel(): string
+    {
+        return match (strtolower((string) $this->courier_name)) {
+            'steadfast' => 'Steadfast Courier',
+            'pathao'    => 'Pathao Courier',
+            'redx'      => 'RedX Courier',
+            default     => ucfirst((string) $this->courier_name),
+        };
+    }
+
+    public function courierTrackingUrl(): ?string
+    {
+        if (! $this->courier_tracking_code) {
+            return null;
+        }
+
+        return match (strtolower((string) $this->courier_name)) {
+            'steadfast' => 'https://steadfast.com.bd/t/' . rawurlencode($this->courier_tracking_code),
+            'pathao'    => 'https://pathao.com/courier-tracking/?tracking_id=' . rawurlencode($this->courier_tracking_code),
+            'redx'      => 'https://redx.com.bd/track-parcel/' . rawurlencode($this->courier_tracking_code),
+            default     => null,
+        };
+    }
+
+    public function fraudRiskLevel(): string
+    {
+        $score = (int) $this->fraud_score;
+        if ($score >= 55) {
+            return 'high';
+        }
+        if ($score >= 25) {
+            return 'medium';
+        }
+
+        return 'low';
+    }
+
+    public function fraudBadgeClass(): string
+    {
+        return match ($this->fraudRiskLevel()) {
+            'high'   => 'bg-rose-100 text-rose-800 border border-rose-300 font-extrabold',
+            'medium' => 'bg-amber-100 text-amber-800 border border-amber-300 font-extrabold',
+            default  => 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-extrabold',
+        };
     }
 }

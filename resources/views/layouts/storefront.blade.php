@@ -62,20 +62,57 @@
       --brand-surface: {{ $theme['surface'] }};
     }
 
-    .fk-add-btn,
-    .add-to-cart-btn,
-    #pdAddToCart,
-    .btn-primary,
-    .fk-badge {
+    /* Primary Text Color Utilities */
+    .text-brand-600,
+    .text-brand-500 {
+      color: var(--brand-primary);
+    }
+
+    /* Navigation & Menu Hover Text Color -> Primary Color */
+    .site-header nav a:hover,
+    .site-header nav button:hover,
+    .site-header a:hover,
+    #catDropdownMenu a:hover,
+    #catDropdownMenu a:hover span,
+    #brandDropdownMenu a:hover,
+    #brandDropdownMenu a:hover span,
+    .group\/item:hover .group-hover\/item\:text-brand-600,
+    .mobile-menu nav a:hover,
+    .mobile-menu nav a:hover span,
+    [data-mobile-menu] nav a:hover,
+    [data-mobile-menu] nav a:hover span {
+      color: var(--brand-primary) !important;
+    }
+
+    .fk-badge,
+    .btn-primary {
       background-color: var(--brand-primary) !important;
       color: #ffffff !important;
     }
 
-    .fk-add-btn:hover,
-    .add-to-cart-btn:hover,
-    #pdAddToCart:hover,
     .btn-primary:hover {
       background-color: var(--brand-hover) !important;
+      color: #ffffff !important;
+    }
+
+    .fk-add-btn,
+    .add-to-cart-btn,
+    .add-to-cart,
+    #pdAddToCart,
+    #qmAddToCartBtn {
+      background-color: transparent !important;
+      border: 1.5px solid var(--brand-primary) !important;
+      color: var(--brand-primary) !important;
+    }
+
+    .fk-add-btn:hover,
+    .add-to-cart-btn:hover,
+    .add-to-cart:hover,
+    #pdAddToCart:hover,
+    #qmAddToCartBtn:hover,
+    [data-open-cart]:hover {
+      background-color: var(--brand-primary) !important;
+      border-color: var(--brand-primary) !important;
       color: #ffffff !important;
     }
   </style>

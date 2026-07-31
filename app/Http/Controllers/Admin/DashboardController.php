@@ -124,6 +124,9 @@ class DashboardController extends Controller
             ];
         });
 
+        $peakMonth = $monthlySeries->sortByDesc('value')->first() ?? ['full_label' => 'N/A', 'value' => 0];
+        $totalSeriesRevenue = (float) $monthlySeries->sum('value');
+
         return view('admin.dashboard', [
             'ordersCount'         => Order::where('status', '!=', 'cancelled')->count(),
             'cancelledOrdersCount'=> Order::where('status', 'cancelled')->count(),
@@ -143,6 +146,18 @@ class DashboardController extends Controller
             'seriesMax'           => max(1, $monthlySeries->max('value')),
             'firstMonthLabel'     => $monthlySeries->first()['full_label'] ?? '',
             'lastMonthLabel'      => $monthlySeries->last()['full_label'] ?? '',
+            'peakMonth'           => $peakMonth,
+            'totalSeriesRevenue'  => $totalSeriesRevenue,
+            'dispatchedCount'     => Order::whereNotNull('courier_name')->count(),
+            'shippedCount'        => Order::where('status', 'shipped')->count(),
+            'deliveredCount'      => Order::where('status', 'delivered')->count(),
         ]);
+    }
+
+    public function clearCache()
+    {
+        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        
+        return redirect()->back()->with('status', 'Application cache cleared successfully!');
     }
 }

@@ -10,7 +10,7 @@
       </span>
       <span class="hidden sm:inline truncate max-w-[100px]">{{ $accountUser->name }}</span>
     @else
-      <svg class="h-4.5 w-4.5 text-stone-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <svg class="w-4 h-4 text-stone-600 shrink-0" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 20c0-4 4-6 8-6s8 2 8 6"/>
       </svg>
       <span class="hidden sm:inline">My Account</span>

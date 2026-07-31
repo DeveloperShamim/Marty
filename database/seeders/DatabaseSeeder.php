@@ -634,17 +634,17 @@ class DatabaseSeeder extends Seeder
         ];
 
         $scenarios = [
-            ['pending', 'bkash', 'pending'],
-            ['confirmed', 'nagad', 'verified'],
-            ['shipped', 'cod', 'verified'],
-            ['delivered', 'rocket', 'verified'],
+            ['pending', 'bkash', 'pending', 60, ['Duplicate TrxID', 'Invalid TrxID Format']],
+            ['confirmed', 'nagad', 'verified', 30, ['Multiple recent orders']],
+            ['shipped', 'cod', 'verified', 0, []],
+            ['delivered', 'rocket', 'verified', 10, ['First time buyer']],
         ];
 
         $insideFee = (float) setting('shipping_inside_dhaka', 70);
         $outsideFee = (float) setting('shipping_outside_dhaka', 130);
         $customerUser = User::where('email', 'customer@freshkart.test')->first();
 
-        foreach ($scenarios as $index => [$status, $method, $paymentStatus]) {
+        foreach ($scenarios as $index => [$status, $method, $paymentStatus, $fraudScore, $fraudFlags]) {
             [$name, $phone, $email, $address, $city, $zone] = $customers[$index];
             $order = new Order([
                 'user_id' => $email === 'customer@freshkart.test' ? $customerUser?->id : null,
@@ -662,6 +662,8 @@ class DatabaseSeeder extends Seeder
                 'payment_sender_number' => $method === 'cod' ? null : $phone,
                 'payment_txn_id' => $method === 'cod' ? null : strtoupper(Str::random(10)),
                 'shipping_charge' => $zone === 'inside_dhaka' ? $insideFee : $outsideFee,
+                'fraud_score' => $fraudScore,
+                'fraud_flags' => $fraudFlags,
             ]);
             $order->created_at = now()->subDays($index)->subHours(random_int(1, 10));
             $order->updated_at = $order->created_at;

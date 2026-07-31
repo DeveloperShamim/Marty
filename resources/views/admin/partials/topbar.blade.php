@@ -16,6 +16,13 @@
     </a>
     <span class="hidden md:inline text-sm text-gray-600 truncate max-w-[140px]">{{ auth()->user()->name ?? 'Admin' }}</span>
     <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin') }}&background=2540e0&color=fff" class="hidden sm:block h-9 w-9 rounded-full shrink-0" alt="">
+    <form method="POST" action="{{ route('admin.cache.clear') }}" class="shrink-0">
+      @csrf
+      <button type="submit" class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-amber-600 border border-gray-200 hover:border-amber-200 rounded-lg px-2.5 sm:px-3 py-1.5 transition-colors bg-white" title="Clear Cache">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+        <span class="hidden md:inline">Clear Cache</span>
+      </button>
+    </form>
     <form method="POST" action="{{ route('admin.logout') }}" class="shrink-0">
       @csrf
       <button type="submit" class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-red-600 border border-gray-200 hover:border-red-200 rounded-lg px-2.5 sm:px-3 py-1.5 transition-colors bg-white" title="Log out">

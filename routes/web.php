@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FeatureController as AdminFeatureController;
 use App\Http\Controllers\Admin\FlashSaleController as AdminFlashSaleController;
+use App\Http\Controllers\Admin\IntegrationController as AdminIntegrationController;
 use App\Http\Controllers\Admin\InventoryController as AdminInventoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -49,9 +50,11 @@ Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
 Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
 Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
+Route::get('/cart/recover/{token}', [\App\Http\Controllers\CartRecoveryController::class, 'recover'])->name('cart.recover');
 
 Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
 Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::post('/checkout/sync-contact', [CheckoutController::class, 'syncContact'])->name('checkout.sync-contact');
 Route::post('/checkout/coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.coupon.apply');
 Route::post('/checkout/coupon/remove', [CheckoutController::class, 'removeCoupon'])->name('checkout.coupon.remove');
 Route::get('/order/{order}', [CheckoutController::class, 'confirmation'])->name('order.confirmation');
@@ -119,6 +122,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Protected (testing.readonly blocks save/delete/verify while TESTING_MODE=true)
     Route::middleware(['admin', 'testing.readonly'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+        Route::post('cache/clear', [DashboardController::class, 'clearCache'])->name('cache.clear');
 
         // Orders + verification workflow
         Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
@@ -129,6 +133,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::patch('orders/{order}/items/{item}', [AdminOrderController::class, 'updateItemVariant'])->name('orders.items.update-variant');
         Route::post('orders/{order}/verify', [AdminOrderController::class, 'verify'])->name('orders.verify');
         Route::post('orders/{order}/reject', [AdminOrderController::class, 'reject'])->name('orders.reject');
+        Route::post('orders/{order}/courier/{provider}', [AdminOrderController::class, 'dispatchCourier'])->name('orders.dispatch-courier');
+
+        // Abandoned Carts Recovery
+        Route::get('abandoned-carts', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'index'])->name('abandoned-carts.index');
+        Route::post('abandoned-carts/{cart}/send-reminder', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'sendReminder'])->name('abandoned-carts.send-reminder');
+        Route::post('abandoned-carts/{cart}/mark-recovered', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'markRecovered'])->name('abandoned-carts.mark-recovered');
+        Route::delete('abandoned-carts/{cart}', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'destroy'])->name('abandoned-carts.destroy');
+
+        // Fraud Blacklist
+        Route::get('blacklist', [\App\Http\Controllers\Admin\BlacklistController::class, 'index'])->name('blacklist.index');
+        Route::post('blacklist', [\App\Http\Controllers\Admin\BlacklistController::class, 'store'])->name('blacklist.store');
+        Route::delete('blacklist/{blacklist}', [\App\Http\Controllers\Admin\BlacklistController::class, 'destroy'])->name('blacklist.destroy');
 
         // Catalog & Inventory
         Route::get('inventory', [AdminInventoryController::class, 'index'])->name('inventory.index');
@@ -161,6 +177,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // People
         Route::get('customers', [AdminCustomerController::class, 'index'])->name('customers.index');
         Route::get('customers/{phone}', [AdminCustomerController::class, 'show'])->name('customers.show');
+
+        // API Integrations
+        Route::get('integrations', [AdminIntegrationController::class, 'index'])->name('integrations.index');
+        Route::put('integrations/{section}', [AdminIntegrationController::class, 'update'])->name('integrations.update');
+        Route::post('integrations/test-mail', [AdminIntegrationController::class, 'testMail'])->name('integrations.test-mail');
 
         // System
         Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');

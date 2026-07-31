@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Services\Courier\PathaoService;
+use App\Services\Courier\RedxService;
+use App\Services\Courier\SteadfastService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -49,11 +52,17 @@ class OrderController extends Controller
         return view('admin.orders.index', compact('orders', 'status', 'counts') + ['method' => $request->input('method'), 'q' => $term]);
     }
 
-    public function show(Order $order)
+    public function show(Order $order, SteadfastService $steadfast, PathaoService $pathao, RedxService $redx)
     {
         $order->load(['items.product.variants']);
 
-        return view('admin.orders.show', compact('order'));
+        $couriers = [
+            'steadfast' => ['name' => 'Steadfast Courier', 'configured' => $steadfast->isConfigured()],
+            'pathao'    => ['name' => 'Pathao Courier', 'configured' => $pathao->isConfigured()],
+            'redx'      => ['name' => 'RedX Courier', 'configured' => $redx->isConfigured()],
+        ];
+
+        return view('admin.orders.show', compact('order', 'couriers'));
     }
 
     public function invoice(Order $order)
@@ -142,5 +151,38 @@ class OrderController extends Controller
         ]);
 
         return back()->with('status', "Variation updated for '{$item->product_name}'.");
+    }
+
+    /** Dispatch order to selected courier provider (Steadfast, Pathao, RedX). */
+    public function dispatchCourier(
+        Request $request,
+        Order $order,
+        string $provider,
+        SteadfastService $steadfast,
+        PathaoService $pathao,
+        RedxService $redx
+    ) {
+        $provider = strtolower(trim($provider));
+
+        $result = match ($provider) {
+            'steadfast' => $steadfast->createOrder($order),
+            'pathao'    => $pathao->createOrder($order),
+            'redx'      => $redx->createOrder($order),
+            default     => ['success' => false, 'message' => 'Invalid courier provider specified.'],
+        };
+
+        if ($result['success']) {
+            $order->update([
+                'courier_name'          => $provider,
+                'courier_tracking_code' => $result['tracking_code'],
+                'courier_status'        => 'in_transit',
+                'courier_sent_at'       => now(),
+                'status'                => in_array($order->status, ['pending', 'confirmed', 'processing'], true) ? 'shipped' : $order->status,
+            ]);
+
+            return back()->with('status', "Order {$order->order_number} successfully dispatched to {$order->courierLabel()}! Tracking Code: {$result['tracking_code']}");
+        }
+
+        return back()->with('error', $result['message']);
     }
 }

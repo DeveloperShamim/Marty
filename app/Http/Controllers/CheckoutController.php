@@ -14,11 +14,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
+use App\Services\FraudDetectionService;
+
 class CheckoutController extends Controller
 {
     public function __construct(
         private CartService $cart,
         private CouponService $coupons,
+        private FraudDetectionService $fraudService,
     ) {}
 
     public function show()
@@ -33,6 +36,8 @@ class CheckoutController extends Controller
         $zone     = old('shipping_zone', 'inside_dhaka');
         $totals   = $this->orderTotals($subtotal, $coupon['discount'], $zone);
 
+        $this->syncDraftAbandonedCart($items, $subtotal, $totals['total']);
+
         return view('storefront.checkout', [
             'items'       => $items,
             'subtotal'    => $subtotal,
@@ -44,6 +49,27 @@ class CheckoutController extends Controller
             'discount'    => $coupon['discount'],
             'totals'      => $totals,
         ]);
+    }
+
+    public function syncContact(Request $request)
+    {
+        $validated = $request->validate([
+            'customer_name'  => ['nullable', 'string', 'max:120'],
+            'customer_phone' => ['nullable', 'string', 'max:40'],
+            'customer_email' => ['nullable', 'email', 'max:120'],
+        ]);
+
+        $items = $this->cart->items();
+        if ($items->isNotEmpty()) {
+            $subtotal = $this->cart->subtotal();
+            $coupon   = $this->coupons->summary($subtotal);
+            $zone     = $request->input('shipping_zone', 'inside_dhaka');
+            $totals   = $this->orderTotals($subtotal, $coupon['discount'], $zone);
+
+            $this->syncDraftAbandonedCart($items, $subtotal, $totals['total'], $validated);
+        }
+
+        return response()->json(['ok' => true]);
     }
 
     public function applyCoupon(Request $request)
@@ -120,9 +146,12 @@ class CheckoutController extends Controller
         }
 
         $isCod = $validated['payment_method'] === 'cod';
+        $ipAddress = (string) $request->ip();
+
+        $fraudAnalysis = $this->fraudService->analyzeOrder($validated, $total, $ipAddress);
 
         try {
-            $order = DB::transaction(function () use ($validated, $items, $subtotal, $discount, $shipping, $tax, $total, $isCod, $coupon) {
+            $order = DB::transaction(function () use ($validated, $items, $subtotal, $discount, $shipping, $tax, $total, $isCod, $coupon, $ipAddress, $fraudAnalysis) {
                 $order = Order::create([
                     'order_number'    => $this->generateOrderNumber(),
                     'user_id'         => Auth::id(),
@@ -145,6 +174,9 @@ class CheckoutController extends Controller
                     'payment_txn_id'  => $isCod ? null : ($validated['payment_txn_id'] ?? null),
                     'payment_status'  => $isCod ? 'verified' : 'pending',
                     'status'          => $isCod ? 'confirmed' : 'pending',
+                    'ip_address'      => $ipAddress,
+                    'fraud_score'     => $fraudAnalysis['score'] ?? 0,
+                    'fraud_flags'     => $fraudAnalysis['flags'] ?? [],
                 ]);
 
                 foreach ($items as $item) {
@@ -206,6 +238,7 @@ class CheckoutController extends Controller
 
         $this->cart->clear();
         $this->coupons->remove();
+        $this->markCartRecoveredOnOrderPlaced();
 
         session(['recent_order' => $order->order_number]);
 
@@ -266,5 +299,74 @@ class CheckoutController extends Controller
         } while (Order::where('order_number', $number)->exists());
 
         return $number;
+    }
+
+    private function syncDraftAbandonedCart($items, float $subtotal, float $total, ?array $customerData = null): void
+    {
+        if ($items->isEmpty()) {
+            return;
+        }
+
+        $sessionId = session()->getId();
+        $user = Auth::user();
+
+        $cartData = $items->mapWithKeys(function ($item) {
+            $key = $item->key ?? ($item->product_id . '|' . ($item->variant ?? '') . '|' . ($item->sku_id ?? ''));
+            return [
+                $key => [
+                    'product_id' => (int) $item->product_id,
+                    'qty'        => (int) $item->qty,
+                    'variant'    => $item->variant ?? null,
+                    'sku_id'     => $item->sku_id ?? null,
+                ]
+            ];
+        })->toArray();
+
+        $cart = \App\Models\AbandonedCart::where('session_id', $sessionId)
+            ->where('status', '!=', 'recovered')
+            ->first();
+
+        if (! $cart && $user) {
+            $cart = \App\Models\AbandonedCart::where('user_id', $user->id)
+                ->where('status', '!=', 'recovered')
+                ->first();
+        }
+
+        $payload = [
+            'session_id'     => $sessionId,
+            'user_id'        => $user?->id,
+            'customer_name'  => $customerData['customer_name'] ?? $user?->name ?? $cart?->customer_name,
+            'customer_phone' => $customerData['customer_phone'] ?? $user?->phone ?? $cart?->customer_phone,
+            'customer_email' => $customerData['customer_email'] ?? $user?->email ?? $cart?->customer_email,
+            'cart_data'      => $cartData,
+            'subtotal'       => $subtotal,
+            'total'          => $total,
+            'status'         => $cart?->status === 'reminder_sent' ? 'reminder_sent' : 'abandoned',
+        ];
+
+        if ($cart) {
+            $cart->update($payload);
+        } else {
+            $payload['recovery_token'] = \App\Models\AbandonedCart::generateToken();
+            \App\Models\AbandonedCart::create($payload);
+        }
+    }
+
+    private function markCartRecoveredOnOrderPlaced(): void
+    {
+        $sessionId = session()->getId();
+        $userId = Auth::id();
+
+        \App\Models\AbandonedCart::where('status', '!=', 'recovered')
+            ->where(function ($q) use ($sessionId, $userId) {
+                $q->where('session_id', $sessionId);
+                if ($userId) {
+                    $q->orWhere('user_id', $userId);
+                }
+            })
+            ->update([
+                'status'       => 'recovered',
+                'recovered_at' => now(),
+            ]);
     }
 }

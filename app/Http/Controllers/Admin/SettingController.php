@@ -15,7 +15,9 @@ class SettingController extends Controller
         'homepage',
         'payments',
         'shipping',
+        'couriers',
         'mail',
+        'invoice',
         'seo',
         'tracking',
         'legal',
@@ -154,6 +156,21 @@ class SettingController extends Controller
                 'currency_symbol'        => ['nullable', 'string', 'max:8'],
                 'currency_code'          => ['nullable', 'string', 'max:8'],
             ],
+            'couriers' => [
+                'steadfast_enabled'    => ['nullable', 'boolean'],
+                'steadfast_api_key'    => ['nullable', 'string', 'max:255'],
+                'steadfast_secret_key' => ['nullable', 'string', 'max:255'],
+                'pathao_enabled'       => ['nullable', 'boolean'],
+                'pathao_env'           => ['nullable', 'in:sandbox,production'],
+                'pathao_client_id'     => ['nullable', 'string', 'max:255'],
+                'pathao_client_secret' => ['nullable', 'string', 'max:255'],
+                'pathao_username'      => ['nullable', 'string', 'max:255'],
+                'pathao_password'      => ['nullable', 'string', 'max:255'],
+                'pathao_store_id'      => ['nullable', 'numeric'],
+                'redx_enabled'         => ['nullable', 'boolean'],
+                'redx_env'             => ['nullable', 'in:sandbox,production'],
+                'redx_api_token'       => ['nullable', 'string', 'max:1000'],
+            ],
             'mail' => [
                 'otp_enabled'       => ['nullable', 'boolean'],
                 'mail_mailer'       => ['required', 'in:log,smtp'],
@@ -164,6 +181,14 @@ class SettingController extends Controller
                 'mail_encryption'   => ['nullable', 'in:tls,ssl,none'],
                 'mail_from_address' => ['nullable', 'email', 'max:120'],
                 'mail_from_name'    => ['nullable', 'string', 'max:120'],
+            ],
+            'invoice' => [
+                'invoice_company_name' => ['nullable', 'string', 'max:120'],
+                'order_number_prefix'  => ['nullable', 'string', 'max:20'],
+                'invoice_phone'        => ['nullable', 'string', 'max:60'],
+                'invoice_vat_number'   => ['nullable', 'string', 'max:60'],
+                'invoice_address'      => ['nullable', 'string', 'max:500'],
+                'invoice_terms'        => ['nullable', 'string', 'max:2000'],
             ],
             'seo' => [
                 'default_meta_title'       => ['nullable', 'string', 'max:180'],
@@ -208,9 +233,18 @@ class SettingController extends Controller
                 'shipping_inside_label', 'shipping_outside_label',
                 'currency_symbol', 'currency_code',
             ],
+            'couriers' => [
+                'steadfast_api_key', 'steadfast_secret_key',
+                'pathao_env', 'pathao_client_id', 'pathao_client_secret', 'pathao_username', 'pathao_password', 'pathao_store_id',
+                'redx_env', 'redx_api_token',
+            ],
             'mail' => [
                 'mail_mailer', 'mail_host', 'mail_port', 'mail_username',
                 'mail_encryption', 'mail_from_address', 'mail_from_name',
+            ],
+            'invoice' => [
+                'invoice_company_name', 'order_number_prefix', 'invoice_phone',
+                'invoice_vat_number', 'invoice_address', 'invoice_terms',
             ],
             'seo' => ['default_meta_title', 'default_meta_description', 'default_meta_keywords'],
             'tracking' => ['tracking_gtm_id', 'tracking_ga4_id', 'tracking_meta_pixel_id'],
@@ -229,6 +263,12 @@ class SettingController extends Controller
             Setting::put($key, $value);
         }
 
+        if ($section === 'couriers') {
+            Setting::put('steadfast_enabled', $request->boolean('steadfast_enabled') ? '1' : '0');
+            Setting::put('pathao_enabled', $request->boolean('pathao_enabled') ? '1' : '0');
+            Setting::put('redx_enabled', $request->boolean('redx_enabled') ? '1' : '0');
+        }
+
         if ($section === 'mail') {
             Setting::put('otp_enabled', $request->boolean('otp_enabled') ? '1' : '0');
             if ($request->filled('mail_password')) {
@@ -237,11 +277,11 @@ class SettingController extends Controller
         }
 
         if ($section === 'payments') {
-                        Setting::put('pay_cod_enabled', $request->boolean('pay_cod_enabled') ? '1' : '0');
+            Setting::put('pay_cod_enabled', $request->boolean('pay_cod_enabled') ? '1' : '0');
             Setting::put('pay_bkash_enabled', $request->boolean('pay_bkash_enabled') ? '1' : '0');
             Setting::put('pay_nagad_enabled', $request->boolean('pay_nagad_enabled') ? '1' : '0');
             Setting::put('pay_rocket_enabled', $request->boolean('pay_rocket_enabled') ? '1' : '0');
-Setting::put('show_cards_in_footer', $request->boolean('show_cards_in_footer') ? '1' : '0');
+            Setting::put('show_cards_in_footer', $request->boolean('show_cards_in_footer') ? '1' : '0');
         }
 
         if ($section === 'brand') {
@@ -257,7 +297,9 @@ Setting::put('show_cards_in_footer', $request->boolean('show_cards_in_footer') ?
             'homepage' => 'Homepage',
             'payments' => 'Payments',
             'shipping' => 'Shipping & tax',
+            'couriers' => 'Courier APIs',
             'mail' => 'Email & OTP',
+            'invoice' => 'Invoice format',
             'seo' => 'SEO defaults',
             'tracking' => 'Marketing & analytics',
             'legal' => 'Legal pages',
