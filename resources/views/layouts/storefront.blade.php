@@ -159,11 +159,12 @@
   @include('storefront.partials.cart-drawer')
   @include('storefront.partials.mobile-menu')
   @include('storefront.partials.quick-select-modal')
+  @include('storefront.partials.size-guide-modal')
 
   <div id="overlay" data-drawer-overlay class="fixed inset-0 bg-ink/40 z-40 opacity-0 pointer-events-none transition-opacity"></div>
 
   {{-- Floating Side Quick Cart Widget --}}
-  <button type="button" data-open-cart class="fixed right-0 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center rounded-l-lg shadow-xl overflow-hidden focus:outline-none bg-white border border-r-0 border-brand-500/30 min-w-[72px]" aria-label="Quick Cart">
+  <button type="button" data-open-cart class="fixed right-0 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center rounded-l-lg shadow-xl overflow-hidden focus:outline-none bg-white border border-r-0 border-brand-500/30 min-w-[72px]" aria-label="Quick Cart">
     <div class="bg-brand-500 text-white p-2.5 px-3.5 flex flex-col items-center text-center w-full">
       <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
       <span class="cart-count-text text-xs font-extrabold tracking-tight leading-none whitespace-nowrap">{{ ($cartCount ?? 0) }} {{ Str::plural('Item', ($cartCount ?? 0)) }}</span>

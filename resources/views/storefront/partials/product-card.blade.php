@@ -22,8 +22,15 @@
 <article class="fk-card product-card group">
   @if($isOutOfStock)
     <span class="absolute top-2.5 right-2.5 z-10 bg-stone-800/90 text-white font-extrabold text-[10px] tracking-wide uppercase px-2.5 py-1 rounded-md shadow-sm">Out of Stock</span>
-  @elseif($discount > 0)
-    <span class="fk-badge z-10">{{ $discount }}% OFF</span>
+  @else
+    <div class="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1 items-start pointer-events-none">
+      @if($product->is_flash_sale)
+        <span class="bg-gradient-to-r from-red-600 to-amber-500 text-white font-black text-[9px] sm:text-[10px] tracking-wider uppercase px-2.5 py-1 rounded-md shadow-md flex items-center gap-1 animate-pulse">⚡ FLASH SALE</span>
+      @endif
+      @if($discount > 0)
+        <span class="fk-badge static">{{ $discount }}% OFF</span>
+      @endif
+    </div>
   @endif
 
   <a href="{{ route('product.show', $product) }}" class="fk-card-media relative overflow-hidden block rounded-none aspect-square bg-stone-100 group/img">

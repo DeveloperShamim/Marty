@@ -16,10 +16,17 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with('category', 'brand', 'images')->latest();
+        $query = Product::with('category', 'brand', 'images', 'skus')->latest();
 
         if ($term = trim((string) $request->input('q'))) {
-            $query->where('name', 'like', "%{$term}%")->orWhere('sku', 'like', "%{$term}%");
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', "%{$term}%")
+                  ->orWhere('sku', 'like', "%{$term}%")
+                  ->orWhereHas('skus', function ($sq) use ($term) {
+                      $sq->where('sku', 'like', "%{$term}%")
+                         ->orWhere('attributes', 'like', "%{$term}%");
+                  });
+            });
         }
         if ($request->filled('category')) {
             $query->where('category_id', $request->input('category'));
@@ -31,6 +38,350 @@ class ProductController extends Controller
             'q'          => $term,
             'category'   => $request->input('category'),
         ]);
+    }
+
+    public function export(Request $request)
+    {
+        $query = Product::with('category', 'brand', 'images', 'skus')->latest();
+
+        if ($term = trim((string) $request->input('q'))) {
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', "%{$term}%")
+                  ->orWhere('sku', 'like', "%{$term}%")
+                  ->orWhereHas('skus', function ($sq) use ($term) {
+                      $sq->where('sku', 'like', "%{$term}%")
+                         ->orWhere('attributes', 'like', "%{$term}%");
+                  });
+            });
+        }
+        if ($request->filled('category')) {
+            $query->where('category_id', $request->input('category'));
+        }
+
+        $products = $query->get();
+        $fileName = 'products-export-' . date('Y-m-d') . '.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0',
+        ];
+
+        $columns = [
+            'id', 'name', 'sku', 'category', 'brand',
+            'regular_price', 'sale_price', 'stock_quantity',
+            'is_published', 'is_featured', 'is_new_arrival', 'is_best_seller',
+            'short_description', 'description', 'image_urls'
+        ];
+
+        $callback = function () use ($products, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($products as $p) {
+                $imageUrls = $p->images->map(fn($img) => $img->url())->implode(', ');
+
+                fputcsv($file, [
+                    $p->id,
+                    $p->name,
+                    $p->sku,
+                    $p->category?->name ?? '',
+                    $p->brand?->name ?? '',
+                    $p->regular_price,
+                    $p->sale_price,
+                    $p->stock_quantity,
+                    $p->is_published ? '1' : '0',
+                    $p->is_featured ? '1' : '0',
+                    $p->is_new_arrival ? '1' : '0',
+                    $p->is_best_seller ? '1' : '0',
+                    $p->short_description,
+                    $p->description,
+                    $imageUrls,
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function sampleCsv()
+    {
+        $fileName = 'sample-products-import.csv';
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+        ];
+
+        $columns = [
+            'name', 'sku', 'category', 'brand',
+            'regular_price', 'sale_price', 'stock_quantity',
+            'is_published', 'is_featured',
+            'short_description', 'description', 'image_urls'
+        ];
+
+        $sampleData = [
+            [
+                'Premium Leather Sneakers', 'SNK-BLK-42', 'Footwear', 'Nike',
+                '5500.00', '4990.00', '25', '1', '1',
+                'Genuine leather sneakers with comfortable sole.',
+                'Designed for daily wear with high-grade leather upper and memory foam insole.',
+                'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600'
+            ],
+            [
+                'Classic Quartz Watch', 'WCH-GLD-01', 'Watches', 'Casio',
+                '3200.00', '2850.00', '15', '1', '0',
+                'Water resistant quartz watch with stainless steel strap.',
+                'Elegant watch featuring Japanese movement, mineral glass lens, and 30m water resistance.',
+                'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600'
+            ],
+        ];
+
+        $callback = function () use ($columns, $sampleData) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+            foreach ($sampleData as $row) {
+                fputcsv($file, $row);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'csv_file' => ['required', 'file', 'max:10240'],
+        ]);
+
+        $file = $request->file('csv_file');
+        $ext = strtolower($file->getClientOriginalExtension());
+        if (! in_array($ext, ['csv', 'txt'], true)) {
+            return redirect()->back()->with('error', 'Please upload a valid CSV file (.csv format).');
+        }
+
+        $path = $file->getRealPath();
+        $content = file_get_contents($path);
+
+        if (empty(trim($content))) {
+            return redirect()->back()->with('error', 'The uploaded CSV file is empty.');
+        }
+
+        // Strip UTF-8 BOM if present
+        if (substr($content, 0, 3) === "\xEF\xBB\xBF") {
+            $content = substr($content, 3);
+        }
+
+        // Normalize line endings
+        $content = str_replace(["\r\n", "\r"], "\n", $content);
+        $lines = array_filter(explode("\n", $content), fn($line) => trim($line) !== '');
+
+        if (empty($lines)) {
+            return redirect()->back()->with('error', 'No valid rows found in the CSV file.');
+        }
+
+        // Auto-detect delimiter (, or ; or \t)
+        $firstLine = reset($lines);
+        $delimiter = ',';
+        if (substr_count($firstLine, ';') > substr_count($firstLine, ',')) {
+            $delimiter = ';';
+        } elseif (substr_count($firstLine, "\t") > substr_count($firstLine, ',')) {
+            $delimiter = "\t";
+        }
+
+        // Parse header
+        $tempFile = fopen('php://memory', 'r+');
+        fwrite($tempFile, implode("\n", $lines));
+        rewind($tempFile);
+
+        $headerRow = fgetcsv($tempFile, 8192, $delimiter);
+        if (! $headerRow) {
+            fclose($tempFile);
+            return redirect()->back()->with('error', 'Unable to parse CSV headers.');
+        }
+
+        // Normalize headers
+        $cleanHeaders = array_map(function ($h) {
+            return strtolower(trim(preg_replace('/[^a-zA-Z0-9_]/', '', $h)));
+        }, $headerRow);
+
+        $headerMap = array_flip($cleanHeaders);
+
+        // Alias helper
+        $getVal = function ($row, array $keys) use ($headerMap) {
+            foreach ($keys as $k) {
+                if (isset($headerMap[$k])) {
+                    $v = trim((string) ($row[$headerMap[$k]] ?? ''));
+                    if ($v !== '') {
+                        return $v;
+                    }
+                }
+            }
+            return null;
+        };
+
+        $created = 0;
+        $updated = 0;
+        $errors  = [];
+        $lineNum = 1;
+
+        while (($row = fgetcsv($tempFile, 8192, $delimiter)) !== false) {
+            $lineNum++;
+            if (empty(array_filter($row))) {
+                continue;
+            }
+
+            try {
+                $id           = $getVal($row, ['id', 'product_id']);
+                $name         = $getVal($row, ['name', 'title', 'product_name', 'product_title']);
+                $sku          = $getVal($row, ['sku', 'product_sku', 'code', 'item_code']);
+                $categoryName = $getVal($row, ['category', 'category_name', 'categories']);
+                $brandName    = $getVal($row, ['brand', 'brand_name', 'manufacturer']);
+                $regPriceVal  = $getVal($row, ['regular_price', 'price', 'unit_price', 'msrp']);
+                $salePriceVal = $getVal($row, ['sale_price', 'discount_price', 'offer_price', 'special_price']);
+                $stockVal     = $getVal($row, ['stock_quantity', 'stock', 'qty', 'quantity']);
+                $pubVal       = $getVal($row, ['is_published', 'status', 'published', 'active']);
+                $featVal      = $getVal($row, ['is_featured', 'featured']);
+                $shortDesc    = $getVal($row, ['short_description', 'summary', 'excerpt']);
+                $desc         = $getVal($row, ['description', 'detail', 'details', 'body']);
+                $imageUrls    = $getVal($row, ['image_urls', 'images', 'image', 'photo', 'photos', 'picture']);
+
+                if (empty($name)) {
+                    $errors[] = "Line {$lineNum}: Skipped row missing product name.";
+                    continue;
+                }
+
+                $regPrice = (float) (preg_replace('/[^0-9.]/', '', (string) $regPriceVal) ?: 0);
+                $salePrice = (float) (preg_replace('/[^0-9.]/', '', (string) $salePriceVal) ?: 0);
+                if ($salePrice <= 0) {
+                    $salePrice = $regPrice;
+                }
+                $stock = (int) (preg_replace('/[^0-9]/', '', (string) $stockVal) ?: 0);
+                $isPublished = $pubVal === null ? true : in_array(strtolower((string) $pubVal), ['1', 'true', 'yes', 'published', 'active'], true);
+                $isFeatured = in_array(strtolower((string) $featVal), ['1', 'true', 'yes', 'featured'], true);
+
+                // Category Resolution
+                $categoryId = null;
+                if (! empty($categoryName)) {
+                    $cat = Category::firstOrCreate(
+                        ['name' => $categoryName],
+                        ['slug' => Str::slug($categoryName)]
+                    );
+                    $categoryId = $cat->id;
+                } else {
+                    $defaultCat = Category::firstOrCreate(
+                        ['name' => 'General'],
+                        ['slug' => 'general']
+                    );
+                    $categoryId = $defaultCat->id;
+                }
+
+                // Brand Resolution
+                $brandId = null;
+                if (! empty($brandName)) {
+                    $b = Brand::firstOrCreate(
+                        ['name' => $brandName],
+                        ['slug' => Str::slug($brandName)]
+                    );
+                    $brandId = $b->id;
+                }
+
+                // Locate or initialize product
+                $product = null;
+                if (! empty($id)) {
+                    $product = Product::find($id);
+                }
+                if (! $product && ! empty($sku)) {
+                    $product = Product::where('sku', $sku)->first();
+                }
+
+                $isNew = false;
+                if (! $product) {
+                    $product = new Product();
+                    $isNew = true;
+                }
+
+                $product->name              = $name;
+                $product->slug              = Str::slug($name) . ($isNew ? '-' . Str::random(4) : '');
+                $product->sku               = ! empty($sku) ? $sku : ('PRD-' . strtoupper(Str::random(6)));
+                $product->category_id       = $categoryId;
+                $product->brand_id          = $brandId;
+                $product->regular_price     = $regPrice;
+                $product->sale_price        = $salePrice > 0 ? $salePrice : $regPrice;
+                $product->stock_quantity    = $stock;
+                $product->is_published      = $isPublished;
+                $product->is_featured       = $isFeatured;
+                $product->short_description = $shortDesc;
+                $product->description       = $desc;
+                $product->save();
+
+                // Process image URLs if provided
+                if (! empty($imageUrls)) {
+                    $urls = array_filter(array_map('trim', explode(',', $imageUrls)));
+                    if (! empty($urls)) {
+                        $pos = (int) $product->images()->max('position');
+                        foreach ($urls as $uIdx => $u) {
+                            $hasPrimary = $product->images()->where('is_primary', true)->exists();
+                            ProductImage::create([
+                                'product_id' => $product->id,
+                                'path'       => $u,
+                                'alt'        => $product->name,
+                                'is_primary' => ! $hasPrimary && $uIdx === 0,
+                                'position'   => ++$pos,
+                            ]);
+                        }
+                    }
+                }
+
+                if ($isNew) {
+                    $created++;
+                } else {
+                    $updated++;
+                }
+            } catch (\Throwable $e) {
+                $errors[] = "Line {$lineNum}: " . $e->getMessage();
+            }
+        }
+
+        fclose($tempFile);
+
+        $status = "Import successful! Created: {$created}, Updated: {$updated}.";
+        if (count($errors) > 0) {
+            $status .= " (" . count($errors) . " rows skipped or had errors: " . implode(' | ', array_slice($errors, 0, 3)) . ")";
+        }
+
+        return redirect()->route('admin.products.index')->with('status', $status);
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->input('ids');
+        if (is_string($ids)) {
+            $ids = array_filter(explode(',', $ids));
+            $request->merge(['ids' => $ids]);
+        }
+
+        $request->validate([
+            'ids'   => ['required', 'array'],
+            'ids.*' => ['exists:products,id'],
+        ]);
+
+        $products = Product::with('images')->whereIn('id', $request->input('ids'))->get();
+
+        $count = 0;
+        foreach ($products as $p) {
+            foreach ($p->images as $img) {
+                $this->deletePublicUpload($img->path);
+            }
+            $p->delete();
+            $count++;
+        }
+
+        return redirect()->route('admin.products.index')->with('status', "Successfully deleted {$count} " . Str::plural('product', $count) . '.');
     }
 
     public function create()
@@ -87,6 +438,7 @@ class ProductController extends Controller
         $product->update($data);
         $this->syncVariants($product, $request);
         $this->storeImages($product, $request);
+        $this->updateImageColors($product, $request);
 
         return redirect()->route('admin.products.edit', $product)->with('status', 'Product updated.');
     }
@@ -390,6 +742,17 @@ class ProductController extends Controller
         foreach ($candidates as $full) {
             if (is_file($full)) {
                 @unlink($full);
+            }
+        }
+    }
+
+    private function updateImageColors(Product $product, Request $request): void
+    {
+        if ($request->has('image_colors') && is_array($request->input('image_colors'))) {
+            foreach ($request->input('image_colors') as $imgId => $colorVal) {
+                ProductImage::where('id', $imgId)->where('product_id', $product->id)->update([
+                    'color' => trim((string) $colorVal) ?: null,
+                ]);
             }
         }
     }

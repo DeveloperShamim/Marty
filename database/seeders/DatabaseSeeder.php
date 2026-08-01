@@ -534,16 +534,19 @@ class DatabaseSeeder extends Seeder
                     ]
                 );
 
-                // Add 3 product images
+                // Add 3 product images tagged with color variations
                 ProductImage::where('product_id', $product->id)->delete();
+                $colorList = ($variantType === 'Color') ? $options : ['Black', 'Brown', 'Navy'];
                 for ($p = 0; $p < 3; $p++) {
                     $imgUrl = $sampleImages[($imgIndex + $p) % count($sampleImages)];
+                    $imgColor = $colorList[$p % count($colorList)] ?? null;
                     ProductImage::create([
                         'product_id' => $product->id,
-                        'path' => $imgUrl,
-                        'alt' => "{$name} view " . ($p + 1),
+                        'path'       => $imgUrl,
+                        'alt'        => $imgColor ? "{$name} - {$imgColor}" : "{$name} view " . ($p + 1),
+                        'color'      => $imgColor,
                         'is_primary' => $p === 0,
-                        'position' => $p,
+                        'position'   => $p,
                     ]);
                 }
                 $imgIndex++;

@@ -227,6 +227,78 @@
 
   let currentQmProduct = null;
 
+  function updateQuickModalVariantAvailability() {
+    if (!currentQmProduct || !currentQmProduct.skus) return;
+
+    const selectedAttrs = {};
+    $$("[data-qm-variant-group]").forEach((group) => {
+      const type = group.dataset.qmVariantGroup;
+      const sel = group.querySelector(".qm-variant-btn.is-selected");
+      if (sel) {
+        selectedAttrs[type] = sel.dataset.value;
+      }
+    });
+
+    $$("[data-qm-variant-group]").forEach((group) => {
+      const groupType = group.dataset.qmVariantGroup;
+      const buttons = group.querySelectorAll(".qm-variant-btn");
+
+      buttons.forEach((btn) => {
+        const val = btn.dataset.value;
+        const testAttrs = Object.assign({}, selectedAttrs, { [groupType]: val });
+
+        const matchingSkus = currentQmProduct.skus.filter((s) => {
+          let attrs = s.attributes;
+          if (typeof attrs === "string") {
+            try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
+          }
+          if (!attrs || typeof attrs !== "object") return false;
+
+          const attrMap = {};
+          Object.keys(attrs).forEach((k) => {
+            attrMap[String(k).trim().toLowerCase()] = String(attrs[k]).trim().toLowerCase();
+          });
+
+          return Object.keys(testAttrs).every((k) => {
+            const kLower = String(k).trim().toLowerCase();
+            const expectedVal = String(testAttrs[k]).trim().toLowerCase();
+            if (attrMap[kLower] === undefined) return true;
+            return attrMap[kLower] === expectedVal;
+          });
+        });
+
+        let totalStock = 0;
+        if (matchingSkus.length > 0) {
+          totalStock = matchingSkus.reduce((sum, s) => sum + (parseInt(s.stock, 10) || 0), 0);
+        } else if (currentQmProduct.skus.length > 0) {
+          totalStock = 0;
+        } else {
+          totalStock = parseInt(currentQmProduct.stock, 10) || 0;
+        }
+
+        if (totalStock <= 0) {
+          btn.disabled = true;
+          btn.className = "qm-variant-btn relative px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-stone-200 text-stone-400 bg-stone-100 line-through opacity-40 cursor-not-allowed pointer-events-none";
+          btn.title = val + " is out of stock";
+          btn.textContent = val;
+
+          if (btn.classList.contains("is-selected")) {
+            btn.classList.remove("is-selected", "border-2", "border-brand-500", "text-brand-600", "bg-brand-50/40");
+          }
+        } else {
+          btn.disabled = false;
+          if (btn.classList.contains("is-selected")) {
+            btn.className = "qm-variant-btn is-selected px-3.5 py-1.5 rounded-lg text-xs font-semibold border-2 border-brand-500 text-brand-600 bg-brand-50/40 transition-all cursor-pointer";
+          } else {
+            btn.className = "qm-variant-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-stone-200 text-stone-700 hover:border-stone-400 transition-all cursor-pointer";
+          }
+          btn.title = "";
+          btn.textContent = val;
+        }
+      });
+    });
+  }
+
   function syncQuickModalPrice() {
     if (!currentQmProduct || !currentQmProduct.skus || !currentQmProduct.skus.length) return;
 
@@ -243,10 +315,15 @@
     if (!selectedKeys.length) return;
 
     const matchedSku = currentQmProduct.skus.find((s) => {
-      if (!s.attributes) return false;
+      let attrs = s.attributes;
+      if (typeof attrs === "string") {
+        try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
+      }
+      if (!attrs || typeof attrs !== "object") return false;
+
       const attrMap = {};
-      Object.keys(s.attributes).forEach((k) => {
-        attrMap[String(k).trim().toLowerCase()] = String(s.attributes[k]).trim().toLowerCase();
+      Object.keys(attrs).forEach((k) => {
+        attrMap[String(k).trim().toLowerCase()] = String(attrs[k]).trim().toLowerCase();
       });
       return selectedKeys.every((k) => {
         const kLower = String(k).trim().toLowerCase();
@@ -326,22 +403,29 @@
         const flex = document.createElement("div");
         flex.className = "flex flex-wrap gap-2";
 
-        options.forEach((optVal) => {
+        options.forEach((optVal, optIdx) => {
           const btn = document.createElement("button");
           btn.type = "button";
           btn.className = "qm-variant-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-stone-200 text-stone-700 hover:border-stone-400 transition-all cursor-pointer";
           btn.setAttribute("data-value", optVal);
           btn.textContent = optVal;
 
+          if (optIdx === 0) {
+            btn.classList.add("is-selected", "border-2", "border-brand-500", "text-brand-600", "bg-brand-50/40");
+            btn.classList.remove("border-stone-200", "text-stone-700");
+          }
+
           btn.addEventListener("click", () => {
+            if (btn.disabled) return;
             flex.querySelectorAll(".qm-variant-btn").forEach((b) => {
               b.classList.remove("is-selected", "border-2", "border-brand-500", "text-brand-600", "bg-brand-50/40");
-              b.classList.add("border", "border-stone-200", "text-stone-700");
+              if (!b.disabled) b.classList.add("border", "border-stone-200", "text-stone-700");
             });
             btn.classList.add("is-selected", "border-2", "border-brand-500", "text-brand-600", "bg-brand-50/40");
             btn.classList.remove("border-stone-200", "text-stone-700");
             if (qmErrorAlert) qmErrorAlert.classList.add("hidden");
 
+            updateQuickModalVariantAvailability();
             syncQuickModalPrice();
           });
 
@@ -352,6 +436,9 @@
         groupDiv.appendChild(flex);
         qmVariantsBox.appendChild(groupDiv);
       });
+
+      updateQuickModalVariantAvailability();
+      syncQuickModalPrice();
     }
 
     // Show modal
@@ -537,16 +624,21 @@
   $$("[data-stepper]").forEach((wrap) => {
     const input = $("input", wrap);
     if (!input) return;
-    $("[data-inc]", wrap)?.addEventListener("click", () => {
-      input.value = Math.min(3, Math.max(1, (+input.value || 1) + 1));
+
+    $("[data-inc]", wrap)?.addEventListener("click", (e) => {
+      e.preventDefault();
+      const rawMax = parseInt(input.getAttribute("max") || "3", 10) || 3;
+      const maxVal = Math.min(3, rawMax);
+      const curVal = parseInt(input.value, 10) || 1;
+      input.value = Math.min(maxVal, curVal + 1);
     });
-    $("[data-dec]", wrap)?.addEventListener("click", () => {
-      input.value = Math.min(3, Math.max(1, (+input.value || 1) - 1));
+
+    $("[data-dec]", wrap)?.addEventListener("click", (e) => {
+      e.preventDefault();
+      const minVal = parseInt(input.getAttribute("min") || "1", 10) || 1;
+      const curVal = parseInt(input.value, 10) || 1;
+      input.value = Math.max(minVal, curVal - 1);
     });
-    $$("[data-step]", wrap).forEach((b) => b.addEventListener("click", () => {
-      const step = parseInt(b.dataset.step, 10) || 0;
-      input.value = Math.min(3, Math.max(1, (+input.value || 1) + step));
-    }));
   });
 
   let toastTimer;

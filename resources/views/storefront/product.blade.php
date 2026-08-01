@@ -54,8 +54,15 @@
       <div class="flex-1 relative border border-stone-200/80 rounded-2xl aspect-square w-full bg-white overflow-hidden shadow-xs flex items-center justify-center">
         @if($isOutOfStock)
           <span class="absolute top-4 left-4 z-10 bg-stone-800/90 text-white font-extrabold text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg shadow-sm">Out of Stock</span>
-        @elseif($product->on_sale)
-          <span class="absolute top-4 left-4 z-10 bg-red-500 text-white font-extrabold text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg shadow-sm">{{ $product->discount_percent }}% OFF</span>
+        @else
+          <div class="absolute top-4 left-4 z-10 flex flex-col gap-1.5 items-start pointer-events-none">
+            @if($product->is_flash_sale)
+              <span class="bg-gradient-to-r from-red-600 to-amber-500 text-white font-black text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg shadow-md flex items-center gap-1 animate-pulse">⚡ FLASH SALE</span>
+            @endif
+            @if($product->on_sale)
+              <span class="bg-red-500 text-white font-extrabold text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg shadow-sm">{{ $product->discount_percent }}% OFF</span>
+            @endif
+          </div>
         @endif
 
         @if($product->images->count() > 1)
@@ -74,6 +81,7 @@
     {{-- Right: Clean Product Info Panel --}}
     <div class="w-full md:w-1/2 space-y-4">
       <div>
+
         <h1 class="text-2xl sm:text-3xl font-bold text-stone-900 leading-snug mb-3">{{ $product->name }}</h1>
 
         {{-- Pricing Row --}}
@@ -95,6 +103,56 @@
           @endif
         </div>
       </div>
+
+      {{-- Compact High-Energy Flash Sale Strip --}}
+      @if($product->is_flash_sale)
+        @php
+          $flashEndsAt = setting('flash_sale_ends_at');
+          $flashEndsIso = $flashEndsAt ? \Illuminate\Support\Carbon::parse($flashEndsAt)->toIso8601String() : null;
+          $progress = (int) $product->flash_sale_progress;
+          $flashStock = $product->skus()->exists() ? (int) $product->skus()->sum('stock_quantity') : (int) $product->stock_quantity;
+        @endphp
+        <div class="rounded-xl px-3.5 py-3 bg-gradient-to-r from-red-600 via-brand-600 to-amber-500 text-white shadow-md space-y-2.5 my-2.5 relative overflow-hidden border border-white/20">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            {{-- Left Title & Flame --}}
+            <div class="flex items-center gap-1.5">
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-black/20 text-amber-300 text-xs shadow-xs border border-white/20 animate-pulse shrink-0">🔥</span>
+              <span class="font-black text-xs sm:text-sm tracking-wider uppercase text-white drop-shadow-xs">FLASH SALE</span>
+            </div>
+
+            {{-- Compact Timer --}}
+            <div class="flex items-center gap-1 text-xs font-bold bg-black/30 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/15" data-pdp-flash-timer data-ends-at="{{ $flashEndsIso }}">
+              <span class="text-amber-200 text-[11px] font-semibold mr-0.5">Ends in:</span>
+              <span data-timer-days class="font-mono font-black text-amber-300">00</span><span class="text-amber-200 text-[10px]">d</span> :
+              <span data-timer-hours class="font-mono font-black text-white">00</span><span class="text-amber-200 text-[10px]">h</span> :
+              <span data-timer-mins class="font-mono font-black text-white">00</span><span class="text-amber-200 text-[10px]">m</span> :
+              <span data-timer-secs class="font-mono font-black text-amber-300">00</span><span class="text-amber-200 text-[10px]">s</span>
+            </div>
+          </div>
+
+          {{-- Prominent Progress Bar & Stock Alert --}}
+          <div class="relative z-10 space-y-1">
+            <div class="flex justify-between items-center text-[11px] font-extrabold">
+              <span class="text-amber-100 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-300 animate-ping"></span>
+                <span>Sold: {{ $progress }}%</span>
+              </span>
+              <span class="text-white drop-shadow-xs font-extrabold">
+                @if($flashStock > 0)
+                  Only {{ $flashStock }} left in stock!
+                @else
+                  Selling Fast!
+                @endif
+              </span>
+            </div>
+            <div class="w-full h-2.5 bg-black/40 backdrop-blur-xs rounded-full overflow-hidden p-0.5 border border-white/20 shadow-inner">
+              <div class="h-full bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 rounded-full transition-all duration-700 shadow-xs relative" style="width: {{ $progress }}%">
+                <div class="absolute inset-0 bg-white/25 animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      @endif
 
       <hr class="border-stone-100 my-4" />
 
@@ -136,9 +194,9 @@
       <div class="flex items-center gap-3 py-1">
         <span class="text-sm font-semibold text-stone-600">Quantity:</span>
         <div data-qty data-stepper class="inline-flex items-center border border-stone-300 rounded-lg overflow-hidden bg-white shadow-xs">
-          <button type="button" data-step="-1" data-dec class="px-3.5 py-1.5 text-stone-500 hover:bg-stone-100 font-bold text-sm transition-colors">−</button>
-          <input id="pdQty" value="1" class="w-10 text-center border-0 font-bold text-stone-800 focus:outline-none text-sm bg-transparent" readonly />
-          <button type="button" data-step="1" data-inc class="px-3.5 py-1.5 text-stone-500 hover:bg-stone-100 font-bold text-sm transition-colors">+</button>
+          <button type="button" data-dec class="px-3.5 py-1.5 text-stone-500 hover:bg-stone-100 font-bold text-sm transition-colors">−</button>
+          <input id="pdQty" value="1" min="1" max="3" class="w-10 text-center border-0 font-bold text-stone-800 focus:outline-none text-sm bg-transparent" readonly />
+          <button type="button" data-inc class="px-3.5 py-1.5 text-stone-500 hover:bg-stone-100 font-bold text-sm transition-colors">+</button>
         </div>
       </div>
 
@@ -164,11 +222,40 @@
       </div>
 
       {{-- Brand Badge Box --}}
-      @if($product->brand)
+      @php
+        $brandObj = null;
+        if (!empty($product->brand_id)) {
+            $brandObj = \App\Models\Brand::find($product->brand_id);
+        }
+        if (!$brandObj && is_object($product->brand) && $product->brand instanceof \App\Models\Brand) {
+            $brandObj = $product->brand;
+        }
+        if (!$brandObj && is_string($product->brand) && trim($product->brand) !== '') {
+            $bName = trim($product->brand);
+            $brandObj = \App\Models\Brand::where('name', 'LIKE', $bName)
+                ->orWhere('slug', \Illuminate\Support\Str::slug($bName))
+                ->first();
+
+            if (!$brandObj) {
+                $brandObj = \App\Models\Brand::create([
+                    'name' => $bName,
+                    'slug' => \Illuminate\Support\Str::slug($bName),
+                    'is_active' => true,
+                ]);
+            }
+        }
+      @endphp
+
+      @if($brandObj)
         <div class="pt-2">
-          <div class="inline-flex items-center gap-2 border border-stone-200/80 rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold text-stone-700 bg-white shadow-xs">
-            Brand: <span class="font-bold text-stone-900 flex items-center gap-1.5">🐝 {{ $product->brand }}</span>
-          </div>
+          <a href="{{ route('shop.brand', $brandObj) }}" class="inline-flex items-center gap-2.5 border border-stone-200/90 hover:border-brand-500 rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold text-stone-700 bg-white hover:bg-brand-50/50 shadow-xs transition-all duration-200 group">
+            <span class="text-stone-500 font-medium">Brand:</span>
+            <span class="w-5 h-5 rounded-full overflow-hidden bg-stone-100 border border-stone-200 shrink-0 flex items-center justify-center shadow-2xs">
+              <img src="{{ $brandObj->logoUrl() }}" alt="{{ $brandObj->name }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+            </span>
+            <span class="font-extrabold text-stone-900 group-hover:text-brand-600 transition-colors">{{ $brandObj->name }}</span>
+            <svg class="w-3.5 h-3.5 text-stone-400 group-hover:text-brand-600 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </a>
         </div>
       @endif
     </div>
@@ -451,5 +538,35 @@ document.querySelectorAll('[data-variant-group] .variant-btn').forEach((b) => b.
 
 // Run initial sync on load
 syncPdpVariantStockAndPrice();
+
+// Live Flash Sale Countdown Timer
+const pdpTimerEl = document.querySelector('[data-pdp-flash-timer]');
+if (pdpTimerEl) {
+  const endsAt = pdpTimerEl.dataset.endsAt;
+  if (endsAt) {
+    const targetTime = new Date(endsAt).getTime();
+    const updatePdpTimer = () => {
+      const now = new Date().getTime();
+      const diff = Math.max(0, targetTime - now);
+      
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+      const daysEl = pdpTimerEl.querySelector('[data-timer-days]');
+      const hoursEl = pdpTimerEl.querySelector('[data-timer-hours]');
+      const minsEl = pdpTimerEl.querySelector('[data-timer-mins]');
+      const secsEl = pdpTimerEl.querySelector('[data-timer-secs]');
+
+      if (daysEl) daysEl.textContent = String(d).padStart(2, '0');
+      if (hoursEl) hoursEl.textContent = String(h).padStart(2, '0');
+      if (minsEl) minsEl.textContent = String(m).padStart(2, '0');
+      if (secsEl) secsEl.textContent = String(s).padStart(2, '0');
+    };
+    updatePdpTimer();
+    setInterval(updatePdpTimer, 1000);
+  }
+}
 </script>
 @endpush

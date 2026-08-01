@@ -167,6 +167,25 @@
       </div>
     </div>
 
+    <!-- Card 8: Live Product Stock & Inventory -->
+    <div class="rounded-3xl border border-rose-200 bg-gradient-to-br from-rose-50/90 via-white to-white p-6 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all relative overflow-hidden group">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-xs font-extrabold text-rose-800 uppercase tracking-wider block">Live Product Stock</span>
+          <span class="text-[11px] text-rose-600/90 font-medium">{{ number_format($productsCount) }} Catalog Products</span>
+        </div>
+        <div class="h-12 w-12 rounded-2xl bg-rose-500/10 text-rose-600 border border-rose-200/60 flex items-center justify-center text-xl shrink-0">
+          🏭
+        </div>
+      </div>
+      <div class="mt-4 flex items-baseline justify-between">
+        <p class="text-3xl font-black text-rose-700 tracking-tight font-mono">{{ number_format($totalStockUnits) }} <span class="text-xs font-bold text-slate-500">Units</span></p>
+        <a href="{{ route('admin.inventory.index') }}" class="px-2.5 py-1 text-[11px] font-extrabold rounded-full {{ $lowStockCount > 0 ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200' }}">
+          {{ $lowStockCount }} Low Stock Alert
+        </a>
+      </div>
+    </div>
+
   </div>
 
   <!-- Main Analytics Grid: Chart (Left 2 cols) & Pending Approval List (Right 1 col) -->
@@ -310,6 +329,36 @@
             <span class="block text-[10px] text-slate-400 font-bold">Delivered</span>
             <span class="font-black text-emerald-600 font-mono">{{ number_format($deliveredCount ?? 0) }}</span>
           </div>
+        </div>
+      </div>
+
+      <!-- Live Inventory & Low Stock Alert Widget -->
+      <div class="pt-3 border-t border-slate-100 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+            <span>🚨</span> Low Stock Alerts (Live)
+          </span>
+          <a href="{{ route('admin.inventory.index') }}" class="text-[11px] font-bold text-brand-600 hover:underline">
+            Manage Inventory &rarr;
+          </a>
+        </div>
+
+        <div class="space-y-2">
+          @forelse($lowStockProducts as $lowItem)
+            <div class="p-2.5 bg-rose-50/60 rounded-xl border border-rose-200/70 flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <p class="text-xs font-bold text-slate-900 truncate">{{ $lowItem->name }}</p>
+                <p class="text-[10px] text-slate-400 font-mono">{{ $lowItem->sku }}</p>
+              </div>
+              <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full {{ $lowItem->stock_quantity <= 0 ? 'bg-rose-600 text-white' : 'bg-rose-100 text-rose-800' }} shrink-0">
+                {{ $lowItem->stock_quantity <= 0 ? 'Out of Stock' : $lowItem->stock_quantity . ' Left' }}
+              </span>
+            </div>
+          @empty
+            <div class="text-center py-4 bg-emerald-50/60 rounded-xl border border-emerald-200/60 text-xs text-emerald-800 font-bold">
+              <span>✅ Healthy Stock (All items in stock)</span>
+            </div>
+          @endforelse
         </div>
       </div>
     </div>

@@ -157,11 +157,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
         });
 
-        // Catalog & Inventory Routes (Inventory Managers & Admins)
-        Route::middleware(['role:inventory_manager'])->group(function () {
+        // Catalog & Inventory Routes (Inventory Managers, Store Managers & Admins)
+        Route::middleware(['role:inventory_manager,store_manager'])->group(function () {
             Route::get('inventory', [AdminInventoryController::class, 'index'])->name('inventory.index');
             Route::post('inventory/update-stock', [AdminInventoryController::class, 'updateStock'])->name('inventory.update-stock');
             Route::delete('products/{product}/images/{image}', [AdminProductController::class, 'destroyImage'])->name('products.images.destroy');
+            Route::get('products/export', [AdminProductController::class, 'export'])->name('products.export');
+            Route::get('products/sample-csv', [AdminProductController::class, 'sampleCsv'])->name('products.sample-csv');
+            Route::post('products/import', [AdminProductController::class, 'import'])->name('products.import');
+            Route::post('products/bulk-delete', [AdminProductController::class, 'bulkDelete'])->name('products.bulk-delete');
             Route::resource('products', AdminProductController::class)->except('show');
             Route::patch('categories/{category}/toggle-featured', [AdminCategoryController::class, 'toggleFeatured'])->name('categories.toggle-featured');
             Route::resource('categories', AdminCategoryController::class)->except('show');
@@ -179,6 +183,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::put('flash-sale/{product}/progress', [AdminFlashSaleController::class, 'updateProgress'])->name('flash-sale.progress');
             Route::post('flash-sale/{product}', [AdminFlashSaleController::class, 'add'])->name('flash-sale.add');
             Route::delete('flash-sale/{product}', [AdminFlashSaleController::class, 'remove'])->name('flash-sale.remove');
+
+            // Size Guide
+            Route::get('size-guide', [\App\Http\Controllers\Admin\SizeGuideController::class, 'index'])->name('size-guide.index');
+            Route::put('size-guide', [\App\Http\Controllers\Admin\SizeGuideController::class, 'update'])->name('size-guide.update');
         });
 
         // Super Admin Only Routes (Staff, Audit Logs, Settings, Integrations)

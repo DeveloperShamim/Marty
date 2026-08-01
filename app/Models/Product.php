@@ -180,4 +180,34 @@ class Product extends Model
             ->values()
             ->all();
     }
+
+    /**
+     * Smart Auto-calculated Flash Sale progress percentage based on completed orders & current stock.
+     */
+    public function getFlashSaleProgressAttribute($value): int
+    {
+        $currentStock = (int) $this->stock_quantity;
+
+        // Calculate total valid units sold from orders
+        $unitsSold = (int) \App\Models\OrderItem::where('product_id', $this->id)
+            ->whereHas('order', function ($q) {
+                $q->whereNotIn('status', ['cancelled', 'failed', 'refunded']);
+            })
+            ->sum('quantity');
+
+        // Admin baseline floor override (if set, defaults to 0 if not set)
+        $baseline = is_null($value) ? 0 : (int) $value;
+
+        if ($unitsSold <= 0) {
+            return min(99, $baseline);
+        }
+
+        $totalUnits = $unitsSold + max(1, $currentStock);
+        $realRatio = $totalUnits > 0 ? ($unitsSold / $totalUnits) : 0;
+
+        // Scale real sales on top of baseline remaining range
+        $addedProgress = (int) round($realRatio * max(10, 100 - $baseline));
+
+        return min(99, $baseline + $addedProgress);
+    }
 }

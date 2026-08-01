@@ -22,8 +22,8 @@ class EnsureRolePermission
             return $next($request);
         }
 
-        // Store Manager can access both Order Manager and Inventory Manager routes
-        if ($user->role === 'store_manager' && (in_array('order_manager', $roles, true) || in_array('inventory_manager', $roles, true))) {
+        // Store Manager can access all order and inventory manager routes
+        if ($user->role === 'store_manager' && (in_array('order_manager', $roles, true) || in_array('inventory_manager', $roles, true) || in_array('store_manager', $roles, true))) {
             return $next($request);
         }
 

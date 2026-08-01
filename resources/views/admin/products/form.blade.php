@@ -187,10 +187,13 @@
         @if($editing && $product->images->isNotEmpty())
           <div class="flex gap-4 flex-wrap pt-2" id="productImagesGrid">
             @foreach($product->images as $img)
-              <div class="relative group" id="imgcard-{{ $img->id }}">
-                <img src="{{ $img->url() }}" class="h-24 w-24 object-cover rounded-lg bg-gray-100 border border-gray-200 {{ $img->is_primary ? 'ring-2 ring-primary' : '' }}" alt="">
-                @if($img->is_primary)<span class="absolute top-1 left-1 bg-primary text-white text-[10px] font-semibold px-1.5 py-0.5 rounded shadow">Main</span>@endif
-                <button type="button" onclick="deleteProductImage({{ $product->id }}, {{ $img->id }})" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white h-6 w-6 rounded-full text-xs font-bold shadow-md flex items-center justify-center cursor-pointer transition transform hover:scale-110 z-10" title="Delete Image">&times;</button>
+              <div class="relative group flex flex-col items-center gap-1.5" id="imgcard-{{ $img->id }}">
+                <div class="relative">
+                  <img src="{{ $img->url() }}" class="h-24 w-24 object-cover rounded-lg bg-gray-100 border border-gray-200 {{ $img->is_primary ? 'ring-2 ring-primary' : '' }}" alt="">
+                  @if($img->is_primary)<span class="absolute top-1 left-1 bg-primary text-white text-[10px] font-semibold px-1.5 py-0.5 rounded shadow">Main</span>@endif
+                  <button type="button" onclick="deleteProductImage({{ $product->id }}, {{ $img->id }})" class="absolute -top-2 -right-2 bg-red-600 hover:bg-red-700 text-white h-6 w-6 rounded-full text-xs font-bold shadow-md flex items-center justify-center cursor-pointer transition transform hover:scale-110 z-10" title="Delete Image">&times;</button>
+                </div>
+                <input type="text" name="image_colors[{{ $img->id }}]" value="{{ old("image_colors.{$img->id}", $img->color) }}" placeholder="Color (e.g. Black)" class="w-24 text-[11px] font-medium px-2 py-1 bg-gray-50 border border-gray-300 rounded-lg text-center focus:outline-none focus:border-brand-500 focus:bg-white" title="Color variation tag for this photo" />
               </div>
             @endforeach
           </div>
@@ -224,7 +227,6 @@
             'is_featured' => 'Featured',
             'is_new_arrival' => 'New arrival',
             'is_best_seller' => 'Best seller',
-            'is_flash_sale'  => 'Flash sale',
           ];
         @endphp
         @foreach($toggles as $field => $label)
@@ -233,11 +235,6 @@
             <input type="checkbox" name="{{ $field }}" value="1" class="h-5 w-9 accent-primary" @checked(old($field, $product->$field)) />
           </label>
         @endforeach
-        <div class="pt-2 border-t border-gray-100">
-          <label class="lbl">Flash sale progress (0–100%)</label>
-          <input name="flash_sale_progress" type="number" min="0" max="100" class="inp" value="{{ old('flash_sale_progress', $product->flash_sale_progress ?? 50) }}" />
-          <p class="text-xs text-gray-400 mt-1">Homepage progress bar fill when this product is in Flash Sale.</p>
-        </div>
       </div>
 
       <div class="card p-5 space-y-3">

@@ -73,11 +73,15 @@ class DashboardController extends Controller
         }
 
         // Attach Product model to get current stock and live status
-        $productIds = $topProducts->pluck('product_id')->filter();
-        $liveProducts = Product::whereIn('id', $productIds)->get()->keyBy('id');
+        $productIds = $topProducts->pluck('product_id')->filter()->toArray();
+        $productNames = $topProducts->pluck('product_name')->filter()->toArray();
 
-        $topProducts->transform(function ($item) use ($liveProducts) {
-            $item->product = $liveProducts->get($item->product_id);
+        $liveProductsById = Product::whereIn('id', $productIds)->get()->keyBy('id');
+        $liveProductsByName = Product::whereIn('name', $productNames)->get()->keyBy('name');
+
+        $topProducts->transform(function ($item) use ($liveProductsById, $liveProductsByName) {
+            $item->product = ($item->product_id ? $liveProductsById->get($item->product_id) : null)
+                ?? $liveProductsByName->get($item->product_name);
             return $item;
         });
 
@@ -127,6 +131,12 @@ class DashboardController extends Controller
         $peakMonth = $monthlySeries->sortByDesc('value')->first() ?? ['full_label' => 'N/A', 'value' => 0];
         $totalSeriesRevenue = (float) $monthlySeries->sum('value');
 
+        // Inventory / Live Stock Analytics
+        $totalStockUnits = (int) Product::sum('stock_quantity');
+        $lowStockProducts = Product::where('stock_quantity', '<=', 3)->latest()->take(5)->get();
+        $lowStockCount = Product::where('stock_quantity', '<=', 3)->count();
+        $outOfStockCount = Product::where('stock_quantity', '<=', 0)->count();
+
         return view('admin.dashboard', [
             'ordersCount'         => Order::where('status', '!=', 'cancelled')->count(),
             'cancelledOrdersCount'=> Order::where('status', 'cancelled')->count(),
@@ -137,6 +147,10 @@ class DashboardController extends Controller
             'thisMonthRevenue'    => $thisMonthRevenue,
             'avgOrderValue'       => $avgOrderValue,
             'productsCount'       => Product::count(),
+            'totalStockUnits'     => $totalStockUnits,
+            'lowStockProducts'    => $lowStockProducts,
+            'lowStockCount'       => $lowStockCount,
+            'outOfStockCount'     => $outOfStockCount,
             'pendingOrders'       => Order::where('payment_status', 'pending')->where('status', '!=', 'cancelled')->latest()->take(6)->get(),
             'recentOrders'        => Order::latest()->take(8)->get(),
             'topProducts'         => $topProducts,

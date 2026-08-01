@@ -123,6 +123,11 @@ class CartController extends Controller
                     }
 
                     return back()->withErrors(['cart' => $message]);
+                    if ($request->wantsJson() || $request->ajax()) {
+                        return response()->json(['ok' => false, 'message' => $message], 422);
+                    }
+
+                    return back()->withErrors(['cart' => $message]);
                 }
             }
         }
