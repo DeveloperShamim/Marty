@@ -41,7 +41,7 @@
       @if($product->images->count() > 0)
         <div class="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto w-full sm:w-20 shrink-0 pb-1 sm:pb-0 max-h-[460px] no-scrollbar">
           @foreach($product->images as $img)
-            <button type="button" data-thumb="{{ $img->url() }}" class="gallery-thumb-btn w-16 h-16 sm:w-20 sm:h-20 rounded-xl border {{ $loop->first ? 'border-brand-500' : 'border-stone-200 opacity-80 hover:opacity-100' }} shrink-0 bg-white overflow-hidden relative transition-colors focus:outline-none">
+            <button type="button" data-thumb="{{ $img->url() }}" data-color="{{ strtolower(trim($img->color ?? '')) }}" data-alt="{{ strtolower(trim($img->alt ?? '')) }}" class="gallery-thumb-btn w-16 h-16 sm:w-20 sm:h-20 rounded-xl border {{ $loop->first ? 'border-brand-500' : 'border-stone-200 opacity-80 hover:opacity-100' }} shrink-0 bg-white overflow-hidden relative transition-colors focus:outline-none">
               <img src="{{ $img->url() }}" loading="lazy" decoding="async" class="w-full h-full object-cover" alt="{{ $img->alt }}">
               @if($loop->first)
                 <span data-active-check class="absolute inset-0 flex items-center justify-center pointer-events-none"><span class="w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-xs">✓</span></span>
@@ -162,7 +162,7 @@
           <p class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Color</p>
           <div class="flex flex-wrap gap-2">
             @foreach($colors as $v)
-              <button type="button" class="variant-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all {{ $loop->first ? 'border-2 border-brand-500 text-brand-600 bg-brand-50/40 is-selected' : 'border border-stone-200 text-stone-700 hover:border-stone-300' }}" data-type="Color" data-value="{{ $v->value }}">{{ $v->value }}</button>
+              <button type="button" class="variant-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border border-stone-200 text-stone-700 hover:border-stone-300" data-type="Color" data-value="{{ $v->value }}">{{ $v->value }}</button>
             @endforeach
           </div>
         </div>
@@ -173,7 +173,7 @@
           <p class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Size</p>
           <div class="flex flex-wrap gap-2">
             @foreach($sizes as $v)
-              <button type="button" class="variant-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all {{ $loop->first ? 'border-2 border-brand-500 text-brand-600 bg-brand-50/40 is-selected' : 'border border-stone-200 text-stone-700 hover:border-stone-300' }}" data-type="Size" data-value="{{ $v->value }}">{{ $v->value }}</button>
+              <button type="button" class="variant-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border border-stone-200 text-stone-700 hover:border-stone-300" data-type="Size" data-value="{{ $v->value }}">{{ $v->value }}</button>
             @endforeach
           </div>
         </div>
@@ -184,7 +184,7 @@
           <p class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Option</p>
           <div class="flex flex-wrap gap-2">
             @foreach($weights as $v)
-              <button type="button" class="variant-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all {{ $loop->first ? 'border-2 border-brand-500 text-brand-600 bg-brand-50/40 is-selected' : 'border border-stone-200 text-stone-700 hover:border-stone-300' }}" data-type="Weight" data-value="{{ $v->value }}">{{ $v->value }}</button>
+              <button type="button" class="variant-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border border-stone-200 text-stone-700 hover:border-stone-300" data-type="Weight" data-value="{{ $v->value }}">{{ $v->value }}</button>
             @endforeach
           </div>
         </div>
@@ -401,6 +401,19 @@
       if (e.key === 'Escape' && !modal.classList.contains('hidden')) hideModal();
     });
   }
+
+  window.selectProductImageByColor = function(colorVal) {
+    if (!colorVal || !thumbBtns.length) return;
+    const target = String(colorVal).trim().toLowerCase();
+    const foundIndex = thumbBtns.findIndex(btn => {
+      const c = (btn.getAttribute('data-color') || '').trim().toLowerCase();
+      const alt = (btn.getAttribute('data-alt') || '').trim().toLowerCase();
+      return c === target || alt.includes(target) || target.includes(c && c !== '' ? c : '___none___');
+    });
+    if (foundIndex !== -1) {
+      setActiveImage(foundIndex);
+    }
+  };
 })();
 
 window.productSkus = {!! $skusPayload->toJson() !!};
@@ -450,6 +463,10 @@ function syncPdpVariantStockAndPrice() {
   });
 
   const selectedColor = selectedAttrs['Color'] || selectedAttrs['color'] || null;
+
+  if (selectedColor && typeof window.selectProductImageByColor === 'function') {
+    window.selectProductImageByColor(selectedColor);
+  }
 
   // Update Size availability based on selected Color
   if (selectedColor && window.productSkus && window.productSkus.length > 0) {
