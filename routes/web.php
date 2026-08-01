@@ -124,68 +124,80 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('cache/clear', [DashboardController::class, 'clearCache'])->name('cache.clear');
 
-        // Orders + verification workflow
-        Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
-        Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
-        Route::get('orders/{order}/invoice', [AdminOrderController::class, 'invoice'])->name('orders.invoice');
-        Route::patch('orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');
-        Route::delete('orders/{order}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');
-        Route::patch('orders/{order}/items/{item}', [AdminOrderController::class, 'updateItemVariant'])->name('orders.items.update-variant');
-        Route::post('orders/{order}/verify', [AdminOrderController::class, 'verify'])->name('orders.verify');
-        Route::post('orders/{order}/reject', [AdminOrderController::class, 'reject'])->name('orders.reject');
-        Route::post('orders/{order}/courier/{provider}', [AdminOrderController::class, 'dispatchCourier'])->name('orders.dispatch-courier');
+        // Order & Customer Management Routes (Order Managers & Admins)
+        Route::middleware(['role:order_manager'])->group(function () {
+            Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
+            Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+            Route::get('orders/{order}/invoice', [AdminOrderController::class, 'invoice'])->name('orders.invoice');
+            Route::patch('orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');
+            Route::delete('orders/{order}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');
+            Route::patch('orders/{order}/items/{item}', [AdminOrderController::class, 'updateItemVariant'])->name('orders.items.update-variant');
+            Route::post('orders/{order}/verify', [AdminOrderController::class, 'verify'])->name('orders.verify');
+            Route::post('orders/{order}/reject', [AdminOrderController::class, 'reject'])->name('orders.reject');
+            Route::post('orders/{order}/courier/{provider}', [AdminOrderController::class, 'dispatchCourier'])->name('orders.dispatch-courier');
 
-        // Abandoned Carts Recovery
-        Route::get('abandoned-carts', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'index'])->name('abandoned-carts.index');
-        Route::post('abandoned-carts/{cart}/send-reminder', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'sendReminder'])->name('abandoned-carts.send-reminder');
-        Route::post('abandoned-carts/{cart}/mark-recovered', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'markRecovered'])->name('abandoned-carts.mark-recovered');
-        Route::delete('abandoned-carts/{cart}', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'destroy'])->name('abandoned-carts.destroy');
+            // Abandoned Carts Recovery
+            Route::get('abandoned-carts', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'index'])->name('abandoned-carts.index');
+            Route::post('abandoned-carts/{cart}/send-reminder', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'sendReminder'])->name('abandoned-carts.send-reminder');
+            Route::post('abandoned-carts/{cart}/mark-recovered', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'markRecovered'])->name('abandoned-carts.mark-recovered');
+            Route::delete('abandoned-carts/{cart}', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'destroy'])->name('abandoned-carts.destroy');
 
-        // Fraud Blacklist
-        Route::get('blacklist', [\App\Http\Controllers\Admin\BlacklistController::class, 'index'])->name('blacklist.index');
-        Route::post('blacklist', [\App\Http\Controllers\Admin\BlacklistController::class, 'store'])->name('blacklist.store');
-        Route::delete('blacklist/{blacklist}', [\App\Http\Controllers\Admin\BlacklistController::class, 'destroy'])->name('blacklist.destroy');
+            // Fraud Blacklist, Visitors & Customers
+            Route::get('blacklist', [\App\Http\Controllers\Admin\BlacklistController::class, 'index'])->name('blacklist.index');
+            Route::post('blacklist', [\App\Http\Controllers\Admin\BlacklistController::class, 'store'])->name('blacklist.store');
+            Route::delete('blacklist/{blacklist}', [\App\Http\Controllers\Admin\BlacklistController::class, 'destroy'])->name('blacklist.destroy');
+            Route::get('visitors', [\App\Http\Controllers\Admin\VisitorController::class, 'index'])->name('visitors.index');
+            Route::get('customers', [AdminCustomerController::class, 'index'])->name('customers.index');
+            Route::get('customers/{phone}', [AdminCustomerController::class, 'show'])->name('customers.show');
 
-        // Catalog & Inventory
-        Route::get('inventory', [AdminInventoryController::class, 'index'])->name('inventory.index');
-        Route::post('inventory/update-stock', [AdminInventoryController::class, 'updateStock'])->name('inventory.update-stock');
-        Route::delete('products/{product}/images/{image}', [AdminProductController::class, 'destroyImage'])->name('products.images.destroy');
-        Route::resource('products', AdminProductController::class)->except('show');
-        Route::patch('categories/{category}/toggle-featured', [AdminCategoryController::class, 'toggleFeatured'])->name('categories.toggle-featured');
-        Route::resource('categories', AdminCategoryController::class)->except('show');
-        Route::patch('brands/{brand}/toggle-featured', [AdminBrandController::class, 'toggleFeatured'])->name('brands.toggle-featured');
-        Route::resource('brands', AdminBrandController::class)->except('show');
-        Route::patch('banners/{banner}/toggle', [AdminBannerController::class, 'toggle'])->name('banners.toggle');
-        Route::resource('banners', AdminBannerController::class)->except('show');
-        Route::resource('features', AdminFeatureController::class)->except('show');
-        Route::resource('coupons', AdminCouponController::class)->except('show');
+            // Reviews
+            Route::get('reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
+            Route::post('reviews/{review}/approve', [AdminReviewController::class, 'approve'])->name('reviews.approve');
+            Route::post('reviews/{review}/reject', [AdminReviewController::class, 'reject'])->name('reviews.reject');
+            Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
+        });
 
-        // Flash sale
-        Route::get('flash-sale', [AdminFlashSaleController::class, 'index'])->name('flash-sale.index');
-        Route::put('flash-sale/ends-at', [AdminFlashSaleController::class, 'updateEndsAt'])->name('flash-sale.ends-at');
-        Route::put('flash-sale/reorder', [AdminFlashSaleController::class, 'reorder'])->name('flash-sale.reorder');
-        Route::put('flash-sale/{product}/progress', [AdminFlashSaleController::class, 'updateProgress'])->name('flash-sale.progress');
-        Route::post('flash-sale/{product}', [AdminFlashSaleController::class, 'add'])->name('flash-sale.add');
-        Route::delete('flash-sale/{product}', [AdminFlashSaleController::class, 'remove'])->name('flash-sale.remove');
+        // Catalog & Inventory Routes (Inventory Managers & Admins)
+        Route::middleware(['role:inventory_manager'])->group(function () {
+            Route::get('inventory', [AdminInventoryController::class, 'index'])->name('inventory.index');
+            Route::post('inventory/update-stock', [AdminInventoryController::class, 'updateStock'])->name('inventory.update-stock');
+            Route::delete('products/{product}/images/{image}', [AdminProductController::class, 'destroyImage'])->name('products.images.destroy');
+            Route::resource('products', AdminProductController::class)->except('show');
+            Route::patch('categories/{category}/toggle-featured', [AdminCategoryController::class, 'toggleFeatured'])->name('categories.toggle-featured');
+            Route::resource('categories', AdminCategoryController::class)->except('show');
+            Route::patch('brands/{brand}/toggle-featured', [AdminBrandController::class, 'toggleFeatured'])->name('brands.toggle-featured');
+            Route::resource('brands', AdminBrandController::class)->except('show');
+            Route::patch('banners/{banner}/toggle', [AdminBannerController::class, 'toggle'])->name('banners.toggle');
+            Route::resource('banners', AdminBannerController::class)->except('show');
+            Route::resource('features', AdminFeatureController::class)->except('show');
+            Route::resource('coupons', AdminCouponController::class)->except('show');
 
-        // Reviews
-        Route::get('reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
-        Route::post('reviews/{review}/approve', [AdminReviewController::class, 'approve'])->name('reviews.approve');
-        Route::post('reviews/{review}/reject', [AdminReviewController::class, 'reject'])->name('reviews.reject');
-        Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
+            // Flash sale
+            Route::get('flash-sale', [AdminFlashSaleController::class, 'index'])->name('flash-sale.index');
+            Route::put('flash-sale/ends-at', [AdminFlashSaleController::class, 'updateEndsAt'])->name('flash-sale.ends-at');
+            Route::put('flash-sale/reorder', [AdminFlashSaleController::class, 'reorder'])->name('flash-sale.reorder');
+            Route::put('flash-sale/{product}/progress', [AdminFlashSaleController::class, 'updateProgress'])->name('flash-sale.progress');
+            Route::post('flash-sale/{product}', [AdminFlashSaleController::class, 'add'])->name('flash-sale.add');
+            Route::delete('flash-sale/{product}', [AdminFlashSaleController::class, 'remove'])->name('flash-sale.remove');
+        });
 
-        // People
-        Route::get('customers', [AdminCustomerController::class, 'index'])->name('customers.index');
-        Route::get('customers/{phone}', [AdminCustomerController::class, 'show'])->name('customers.show');
+        // Super Admin Only Routes (Staff, Audit Logs, Settings, Integrations)
+        Route::middleware(['role:admin'])->group(function () {
+            Route::get('staff', [\App\Http\Controllers\Admin\StaffController::class, 'index'])->name('staff.index');
+            Route::post('staff', [\App\Http\Controllers\Admin\StaffController::class, 'store'])->name('staff.store');
+            Route::patch('staff/{staff}/toggle', [\App\Http\Controllers\Admin\StaffController::class, 'toggleStatus'])->name('staff.toggle');
+            Route::delete('staff/{staff}', [\App\Http\Controllers\Admin\StaffController::class, 'destroy'])->name('staff.destroy');
+            Route::get('activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
+            
+            // API Integrations
+            Route::get('integrations', [AdminIntegrationController::class, 'index'])->name('integrations.index');
+            Route::put('integrations/{section}', [AdminIntegrationController::class, 'update'])->name('integrations.update');
+            Route::post('integrations/test-mail', [AdminIntegrationController::class, 'testMail'])->name('integrations.test-mail');
 
-        // API Integrations
-        Route::get('integrations', [AdminIntegrationController::class, 'index'])->name('integrations.index');
-        Route::put('integrations/{section}', [AdminIntegrationController::class, 'update'])->name('integrations.update');
-        Route::post('integrations/test-mail', [AdminIntegrationController::class, 'testMail'])->name('integrations.test-mail');
-
-        // System
-        Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
-        Route::put('settings/{section}', [SettingController::class, 'updateSection'])->name('settings.update-section');
-        Route::post('settings/test-mail', [SettingController::class, 'testMail'])->name('settings.test-mail');
+            // System Settings
+            Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
+            Route::put('settings/{section}', [SettingController::class, 'updateSection'])->name('settings.update-section');
+            Route::post('settings/test-mail', [SettingController::class, 'testMail'])->name('settings.test-mail');
+        });
     });
 });

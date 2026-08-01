@@ -86,6 +86,32 @@ class Order extends Model
         };
     }
 
+    public function utmSourceIcon(): string
+    {
+        $source = strtolower($this->utm_source ?? '');
+        
+        if (str_contains($source, 'facebook') || str_contains($source, 'fb') || str_contains($source, 'meta')) {
+            return '🟦';
+        }
+        if (str_contains($source, 'google')) {
+            return '🔍';
+        }
+        if (str_contains($source, 'instagram') || str_contains($source, 'ig')) {
+            return '📷';
+        }
+        if (str_contains($source, 'tiktok')) {
+            return '📱';
+        }
+        if (str_contains($source, 'youtube')) {
+            return '▶️';
+        }
+        if ($source) {
+            return '🔗';
+        }
+        
+        return '🌐'; // Direct or unknown
+    }
+
     /** Return reserved stock to product SKUs & products (e.g. when an order is cancelled or refunded). */
     public function restoreStock(): void
     {

@@ -48,13 +48,18 @@ class BlacklistController extends Controller
 
         Blacklist::add($validated['type'], $validated['value'], $validated['reason'] ?? null);
 
+        \App\Services\ActivityLogger::log('Added Fraud Blacklist Entry', "Blacklisted {$validated['type']} '{$validated['value']}'. Reason: " . ($validated['reason'] ?? 'None specified'));
+
         return back()->with('status', "Added {$validated['type']} '{$validated['value']}' to fraud blacklist.");
     }
 
     public function destroy(Blacklist $blacklist)
     {
         $value = $blacklist->value;
+        $type = $blacklist->type;
         $blacklist->delete();
+
+        \App\Services\ActivityLogger::log('Removed Fraud Blacklist Entry', "Removed {$type} '{$value}' from blacklist.");
 
         return back()->with('status', "Removed '{$value}' from blacklist.");
     }

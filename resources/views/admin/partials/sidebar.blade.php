@@ -28,12 +28,28 @@
         ],
         'People' => [
             ['key' => 'customers', 'label' => 'Customers', 'route' => 'admin.customers.index', 'pattern' => 'admin.customers.*', 'icon' => '<circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 3.13a4 4 0 0 1 0 7.75"/>'],
+            ['key' => 'staff', 'label' => 'Staff & Roles', 'route' => 'admin.staff.index', 'pattern' => 'admin.staff.*', 'icon' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'],
+            ['key' => 'activity-logs', 'label' => 'Staff Audit Logs', 'route' => 'admin.activity-logs.index', 'pattern' => 'admin.activity-logs.*', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>'],
+            ['key' => 'visitors', 'label' => 'Visitor Traffic', 'route' => 'admin.visitors.index', 'pattern' => 'admin.visitors.*', 'icon' => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'],
             ['key' => 'blacklist', 'label' => 'Fraud Blacklist', 'route' => 'admin.blacklist.index', 'pattern' => 'admin.blacklist.*', 'icon' => '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'],
         ],
     ];
+    $user = auth()->user();
+    
+    // Role-based navigation filtering
+    if ($user && !$user->isAdmin()) {
+        if ($user->role === 'order_manager') {
+            unset($nav['Catalog'], $nav['Brand & Theme']);
+            $nav['People'] = array_filter($nav['People'], fn($i) => in_array($i['key'], ['customers', 'visitors', 'blacklist'], true));
+        } elseif ($user->role === 'inventory_manager') {
+            unset($nav['Brand & Theme'], $nav['People']);
+            $nav['Main'] = array_filter($nav['Main'], fn($i) => in_array($i['key'], ['dashboard', 'reviews'], true));
+        }
+    }
+
     $site = site_name();
-    $adminName = auth()->user()->name ?? 'Admin';
-    $adminEmail = auth()->user()->email ?? '';
+    $adminName = $user->name ?? 'Admin';
+    $adminEmail = $user->email ?? '';
 @endphp
 <aside id="sidebar" class="fixed lg:sticky lg:top-0 lg:self-start inset-y-0 left-0 z-50 w-64 max-w-[88vw] h-dvh bg-white border-r border-gray-200 flex flex-col -translate-x-full lg:translate-x-0 transition-transform duration-200">
   <div class="h-16 flex items-center gap-2 px-5 sm:px-6 border-b border-gray-200 shrink-0 relative">

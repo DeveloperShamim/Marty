@@ -148,6 +148,25 @@
       </div>
     </div>
 
+    <!-- Card 7: Unique Visitors Today -->
+    <div class="rounded-3xl border border-violet-200 bg-gradient-to-br from-violet-50/90 via-white to-white p-6 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all relative overflow-hidden group">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-xs font-extrabold text-violet-800 uppercase tracking-wider block">Unique Visitors</span>
+          <span class="text-[11px] text-violet-700/90 font-medium">Storefront traffic today</span>
+        </div>
+        <div class="h-12 w-12 rounded-2xl bg-violet-500/10 text-violet-600 border border-violet-200/60 flex items-center justify-center text-xl shrink-0">
+          👥
+        </div>
+      </div>
+      <div class="mt-4 flex items-baseline justify-between">
+        <p class="text-3xl font-black text-violet-700 tracking-tight">{{ number_format($visitorsToday) }}</p>
+        <span class="text-xs font-medium text-slate-500">
+          Yesterday: <strong class="text-slate-800 font-mono">{{ number_format($visitorsYesterday) }}</strong>
+        </span>
+      </div>
+    </div>
+
   </div>
 
   <!-- Main Analytics Grid: Chart (Left 2 cols) & Pending Approval List (Right 1 col) -->

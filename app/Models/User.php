@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'role', 'phone', 'address', 'city', 'postal_code', 'google_id', 'avatar'])]
+#[Fillable(['name', 'email', 'password', 'role', 'is_suspended', 'phone', 'address', 'city', 'postal_code', 'google_id', 'avatar'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -22,17 +22,38 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_suspended' => 'boolean',
         ];
+    }
+
+    public function isStaff(): bool
+    {
+        return in_array($this->role, ['admin', 'store_manager', 'order_manager', 'inventory_manager'], true) && !$this->is_suspended;
     }
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === 'admin' && !$this->is_suspended;
+    }
+
+    public function isStoreManager(): bool
+    {
+        return in_array($this->role, ['admin', 'store_manager'], true) && !$this->is_suspended;
+    }
+
+    public function isOrderManager(): bool
+    {
+        return in_array($this->role, ['admin', 'store_manager', 'order_manager'], true) && !$this->is_suspended;
+    }
+
+    public function isInventoryManager(): bool
+    {
+        return in_array($this->role, ['admin', 'store_manager', 'inventory_manager'], true) && !$this->is_suspended;
     }
 
     public function isCustomer(): bool
     {
-        return $this->role !== 'admin';
+        return $this->role === 'customer';
     }
 
     public function hasVerifiedEmail(): bool

@@ -19,6 +19,9 @@
         <span class="px-3 py-1 text-xs font-extrabold rounded-full {{ $order->paymentBadge() }}">
           Payment: {{ ucfirst($order->payment_status) }}
         </span>
+        <span class="px-3 py-1 text-xs font-extrabold rounded-full bg-slate-100 text-slate-700 border border-slate-200" title="Source: {{ $order->utm_source ?? 'Direct' }}">
+          Source: {{ $order->utmSourceIcon() }}
+        </span>
       </div>
       <p class="text-xs text-slate-400">Placed on {{ $order->created_at->format('d M Y, g:i A') }} ({{ $order->created_at->diffForHumans() }})</p>
     </div>
@@ -53,7 +56,7 @@
                 </h3>
                 <p class="text-xs font-bold {{ $headerColor }} opacity-80 mt-1">Fraud Risk Score: {{ (int) $order->fraud_score }} / 100</p>
               </div>
-              <form action="{{ route('blacklist.store') }}" method="POST" class="shrink-0">
+              <form action="{{ route('admin.blacklist.store') }}" method="POST" class="shrink-0">
                 @csrf
                 <input type="hidden" name="type" value="phone">
                 <input type="hidden" name="value" value="{{ $order->customer_phone }}">

@@ -94,6 +94,7 @@
             <th class="py-3.5 px-3 sm:px-4">Customer Info</th>
             <th class="py-3.5 px-3 sm:px-4 text-center">Total Amount</th>
             <th class="py-3.5 px-3 sm:px-4 text-center">Payment Status</th>
+            <th class="py-3.5 px-3 sm:px-4 text-center">Source</th>
             <th class="py-3.5 px-3 sm:px-4 text-center">Risk Check</th>
             <th class="py-3.5 px-3 sm:px-4 text-center">Fulfillment Status</th>
             <th class="py-3.5 px-3 sm:px-4 text-center">Date</th>
@@ -135,6 +136,13 @@
                     {{ ucfirst($order->payment_status) }}
                   </span>
                 </div>
+              </td>
+
+              <!-- Order Source -->
+              <td class="py-4 px-3 sm:px-4 text-center whitespace-nowrap">
+                <span class="text-base" title="Source: {{ $order->utm_source ?? 'Direct' }}">
+                  {{ $order->utmSourceIcon() }}
+                </span>
               </td>
 
               <!-- Fraud Risk Check Badge (Color Badge Only) -->

@@ -80,6 +80,8 @@ class OrderController extends Controller
             'status'         => $order->status === 'pending' ? 'confirmed' : $order->status,
         ]);
 
+        \App\Services\ActivityLogger::log('Verified Order Payment', "Verified payment for order #{$order->order_number} ({$order->customer_name})");
+
         return back()->with('status', "Payment verified for {$order->order_number}.");
     }
 
@@ -95,6 +97,8 @@ class OrderController extends Controller
             'payment_status' => 'rejected',
             'status'         => 'cancelled',
         ]);
+
+        \App\Services\ActivityLogger::log('Rejected Order Payment', "Rejected payment for order #{$order->order_number} ({$order->customer_name})");
 
         return back()->with('status', "Payment rejected for {$order->order_number}.");
     }

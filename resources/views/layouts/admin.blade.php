@@ -42,6 +42,11 @@
           <div class="bg-primary/10 border border-primary/20 text-primary text-sm font-medium px-4 py-3 rounded-xl">{{ session('status') }}</div>
         </div>
       @endif
+      @if(session('error'))
+        <div class="px-3 sm:px-4 lg:px-6 pt-4">
+          <div class="bg-red-50 border border-red-200 text-red-700 text-sm font-medium px-4 py-3 rounded-xl">⚠️ {{ session('error') }}</div>
+        </div>
+      @endif
       @if($errors->any())
         <div class="px-3 sm:px-4 lg:px-6 pt-4">
           <div class="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">

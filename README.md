@@ -15,10 +15,14 @@ A full-featured Laravel e-commerce application for a fashion/lifestyle store (sh
 | 🗂️ Categories | Hierarchical categories with icons and featured flags |
 | 🎡 Hero Banners | Slideshow banners with background images and text overlays |
 | 🛒 Cart & Checkout | Session cart, coupon codes, mobile payment (bKash, Nagad, Rocket, COD) |
-| 📋 Orders | Order management, status tracking, invoice PDF |
+| 📋 Orders | Order management, status tracking, invoice PDF, UTM source tracking |
 | 🛡️ Fraud Detection | Zero-API local risk scoring, TrxID validation, blacklist management |
+| 👥 Staff & Role Control | Role-based access control (RBAC), 4 staff roles, account suspension |
+| 📜 Staff Audit Logs | Automated activity log timeline for all staff actions |
+| 👥 Visitor Analytics | Live real-time visitor monitor, 14-day Chart.js line chart, device tracking |
 | 🚚 Courier Sync | 1-click dispatch to Steadfast, Pathao, RedX via API |
 | 🛒 Abandoned Carts | Track uncompleted checkouts, 1-click WhatsApp/SMS recovery |
+| ⚡ Admin Cache Clear | 1-click topbar cache optimization (`optimize:clear`) |
 | ⚙️ Admin Dashboard | Settings, Banner, Brand, Category, Product, Order, Coupon, User management |
 | 🔐 Auth | Login, Register, Google OAuth, OTP email verification |
 | 📨 Mail & OTP | SMTP config, customer OTP toggle |
@@ -98,12 +102,14 @@ Visit: **http://localhost:8000**
 
 ## 🔑 Default Login Credentials
 
-### Admin Panel — `/admin`
+### Admin & Staff Panel — `/admin`
 
-| Field    | Value                    |
-|----------|--------------------------|
-| Email    | `admin@freshkart.test`   |
-| Password | `password`               |
+| Role | Email Login | Password | Access Level |
+| :--- | :--- | :--- | :--- |
+| 👑 **Super Admin** | `admin@freshkart.test` | `password` | 100% Full Access |
+| 👔 **Store Manager** | `store.manager@freshkart.test` | `password` | Both Orders & Catalog Access |
+| 📦 **Order Manager** | `order.manager@freshkart.test` | `password` | Orders, Support & Customer Access |
+| 🏭 **Inventory Manager** | `inventory.manager@freshkart.test` | `password` | Products, Stock & Catalog Access |
 
 ### Customer Account
 
@@ -118,18 +124,20 @@ Visit: **http://localhost:8000**
 
 ### What `php artisan migrate --seed` seeds
 
-| Seeder            | Contents                                                                 |
-|-------------------|--------------------------------------------------------------------------|
-| `seedUsers()`     | 1 admin + 1 sample customer                                              |
-| `seedSettings()`  | All site settings (name, theme colors, contact, payment, SEO, etc.)      |
-| `seedCategories()`| 5 categories: Shoes, Watches, Leather Belts, Leather Bags, Accessories   |
-| `seedBrands()`    | 11 brands: Nike, Adidas, Apex, Casio, Seiko, Fossil, Ray-Ban, etc.       |
-| `seedFeatures()`  | Homepage trust/feature badges                                            |
-| `seedCoupons()`   | Sample discount coupons                                                  |
-| `BannerSeeder`    | Homepage hero banner slides                                              |
-| `seedProducts()`  | Sample product catalog linked to categories and brands                   |
-| `seedReviews()`   | Customer product reviews                                                 |
-| `seedOrders()`    | Sample orders with order items                                           |
+| Seeder                  | Contents                                                                 |
+|-------------------------|--------------------------------------------------------------------------|
+| `seedUsers()`           | 4 Staff accounts (Super Admin, Store Manager, Order Manager, Inventory Manager) + 1 Customer |
+| `seedSettings()`        | All site settings (name, theme colors, contact, payment, SEO, etc.)      |
+| `seedCategories()`      | 5 categories: Shoes, Watches, Leather Belts, Leather Bags, Accessories   |
+| `seedBrands()`          | 11 brands: Nike, Adidas, Apex, Casio, Seiko, Fossil, Ray-Ban, etc.       |
+| `seedFeatures()`        | Homepage trust/feature badges                                            |
+| `seedCoupons()`         | Sample discount coupons                                                  |
+| `BannerSeeder`          | Homepage hero banner slides                                              |
+| `seedProducts()`        | Sample product catalog linked to categories and brands                   |
+| `seedReviews()`         | Customer product reviews                                                 |
+| `seedOrders()`          | Sample orders with fraud risk scores and UTM source tracking             |
+| `seedVisitorLogs()`     | 14 days of realistic storefront traffic for Visitor Analytics            |
+| `seedStaffActivityLogs()`| Sample audit timeline entries for employee action logs                   |
 
 ### Re-seed only (without dropping tables)
 

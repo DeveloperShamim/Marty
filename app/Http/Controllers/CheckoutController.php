@@ -172,12 +172,16 @@ class CheckoutController extends Controller
                     'payment_method'  => $validated['payment_method'],
                     'payment_sender_number' => $isCod ? null : ($validated['payment_sender_number'] ?? null),
                     'payment_txn_id'  => $isCod ? null : ($validated['payment_txn_id'] ?? null),
+                    'utm_source'      => session('utm_source'),
                     'payment_status'  => $isCod ? 'verified' : 'pending',
                     'status'          => $isCod ? 'confirmed' : 'pending',
                     'ip_address'      => $ipAddress,
                     'fraud_score'     => $fraudAnalysis['score'] ?? 0,
                     'fraud_flags'     => $fraudAnalysis['flags'] ?? [],
                 ]);
+
+                // Clear utm_source after order is placed
+                session()->forget('utm_source');
 
                 foreach ($items as $item) {
                     $product = Product::where('id', $item->product_id)->lockForUpdate()->first();
@@ -238,7 +242,7 @@ class CheckoutController extends Controller
 
         $this->cart->clear();
         $this->coupons->remove();
-        $this->markCartRecoveredOnOrderPlaced();
+        $this->markCartRecoveredOnOrderPlaced($order);
 
         session(['recent_order' => $order->order_number]);
 
@@ -352,16 +356,24 @@ class CheckoutController extends Controller
         }
     }
 
-    private function markCartRecoveredOnOrderPlaced(): void
+    private function markCartRecoveredOnOrderPlaced(Order $order): void
     {
         $sessionId = session()->getId();
         $userId = Auth::id();
+        $phone = trim((string) $order->customer_phone);
+        $email = trim((string) $order->customer_email);
 
         \App\Models\AbandonedCart::where('status', '!=', 'recovered')
-            ->where(function ($q) use ($sessionId, $userId) {
+            ->where(function ($q) use ($sessionId, $userId, $phone, $email) {
                 $q->where('session_id', $sessionId);
                 if ($userId) {
                     $q->orWhere('user_id', $userId);
+                }
+                if ($phone !== '') {
+                    $q->orWhere('customer_phone', $phone);
+                }
+                if ($email !== '') {
+                    $q->orWhere('customer_email', $email);
                 }
             })
             ->update([

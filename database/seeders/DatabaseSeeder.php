@@ -32,14 +32,17 @@ class DatabaseSeeder extends Seeder
         $this->seedProducts($categories, $brands);
         $this->seedReviews();
         $this->seedOrders();
+        $this->seedVisitorLogs();
+        $this->seedStaffActivityLogs();
     }
 
     private function seedUsers(): void
     {
+        // 1. Super Admin
         User::updateOrCreate(
             ['email' => 'admin@freshkart.test'],
             [
-                'name' => 'Unilife Admin',
+                'name' => 'Unilife Super Admin',
                 'password' => Hash::make('password'),
                 'role' => 'admin',
                 'phone' => '+880 1700-000000',
@@ -47,6 +50,43 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // 2. Store Manager (Orders & Catalog Access)
+        User::updateOrCreate(
+            ['email' => 'store.manager@freshkart.test'],
+            [
+                'name' => 'Tanvir Alam (Store Manager)',
+                'password' => Hash::make('password'),
+                'role' => 'store_manager',
+                'phone' => '+880 1711-222333',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // 3. Order Manager (Orders & Support Access)
+        User::updateOrCreate(
+            ['email' => 'order.manager@freshkart.test'],
+            [
+                'name' => 'Rafi Ahmed (Order Manager)',
+                'password' => Hash::make('password'),
+                'role' => 'order_manager',
+                'phone' => '+880 1822-222222',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // 4. Inventory Manager (Catalog & Stock Access)
+        User::updateOrCreate(
+            ['email' => 'inventory.manager@freshkart.test'],
+            [
+                'name' => 'Kalam Hossain (Inventory Manager)',
+                'password' => Hash::make('password'),
+                'role' => 'inventory_manager',
+                'phone' => '+880 1933-333333',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // 5. Customer Account
         User::updateOrCreate(
             ['email' => 'customer@freshkart.test'],
             [
@@ -694,6 +734,78 @@ class DatabaseSeeder extends Seeder
                 'tax' => 0,
                 'total' => $subtotal + $order->shipping_charge,
             ]);
+        }
+    }
+
+    private function seedVisitorLogs(): void
+    {
+        // Seed 14 days of realistic visitor traffic logs
+        for ($daysAgo = 13; $daysAgo >= 0; $daysAgo--) {
+            $date = \Illuminate\Support\Carbon::today()->subDays($daysAgo)->toDateString();
+            $visitorCount = random_int(12, 48);
+
+            for ($i = 0; $i < $visitorCount; $i++) {
+                $ip = '103.' . random_int(10, 99) . '.' . random_int(100, 255) . '.' . random_int(1, 254);
+                $isMobile = (bool) random_int(0, 1);
+                $ua = $isMobile
+                    ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'
+                    : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
+                \App\Models\VisitorLog::updateOrCreate(
+                    ['ip_address' => $ip, 'visit_date' => $date],
+                    ['user_agent' => $ua, 'created_at' => now()->subDays($daysAgo), 'updated_at' => now()->subDays($daysAgo)]
+                );
+            }
+        }
+    }
+
+    private function seedStaffActivityLogs(): void
+    {
+        $superAdmin = User::where('role', 'admin')->first();
+        $storeManager = User::where('role', 'store_manager')->first();
+        $orderManager = User::where('role', 'order_manager')->first();
+
+        $logs = [
+            [
+                'user_id'     => $superAdmin?->id,
+                'staff_name'  => $superAdmin?->name ?? 'Unilife Super Admin',
+                'staff_role'  => 'admin',
+                'action'      => 'System Initialization',
+                'description' => 'Configured site settings, payment gateways, and staff roles.',
+                'ip_address'  => '127.0.0.1',
+                'created_at'  => now()->subDays(3),
+            ],
+            [
+                'user_id'     => $storeManager?->id,
+                'staff_name'  => $storeManager?->name ?? 'Tanvir Alam',
+                'staff_role'  => 'store_manager',
+                'action'      => 'Created Product Variant',
+                'description' => "Added new size variants for 'Nike Air Max 270' in Shoes catalog.",
+                'ip_address'  => '103.45.12.89',
+                'created_at'  => now()->subDays(2),
+            ],
+            [
+                'user_id'     => $orderManager?->id,
+                'staff_name'  => $orderManager?->name ?? 'Rafi Ahmed',
+                'staff_role'  => 'order_manager',
+                'action'      => 'Verified Order Payment',
+                'description' => 'Verified bKash transaction for Order #UNI-260731-NYJD.',
+                'ip_address'  => '103.112.44.12',
+                'created_at'  => now()->subDays(1),
+            ],
+            [
+                'user_id'     => $orderManager?->id,
+                'staff_name'  => $orderManager?->name ?? 'Rafi Ahmed',
+                'staff_role'  => 'order_manager',
+                'action'      => 'Dispatched Steadfast Courier',
+                'description' => 'Dispatched order #UNI-260731-NYJD to Steadfast Courier with tracking code STDF-998822.',
+                'ip_address'  => '103.112.44.12',
+                'created_at'  => now()->subHours(5),
+            ],
+        ];
+
+        foreach ($logs as $log) {
+            \App\Models\StaffActivityLog::create($log);
         }
     }
 }

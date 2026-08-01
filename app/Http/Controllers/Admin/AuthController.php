@@ -10,7 +10,7 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
-        if (Auth::check() && Auth::user()->isAdmin()) {
+        if (Auth::check() && Auth::user()->isStaff()) {
             return redirect()->route('admin.dashboard');
         }
 
@@ -25,13 +25,20 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            if (! Auth::user()->isAdmin()) {
+            $user = Auth::user();
+
+            if (!$user->isStaff()) {
+                $errorMsg = $user->is_suspended
+                    ? 'Your staff account has been suspended. Please contact the administrator.'
+                    : 'This account does not have staff permissions.';
+
                 Auth::logout();
 
-                return back()->withErrors(['email' => 'This account is not an administrator.'])->onlyInput('email');
+                return back()->withErrors(['email' => $errorMsg])->onlyInput('email');
             }
 
             $request->session()->regenerate();
+            \App\Services\ActivityLogger::log('Staff Login', "Logged into Admin Panel");
 
             return redirect()->intended(route('admin.dashboard'));
         }
