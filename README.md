@@ -88,9 +88,32 @@ php artisan migrate:fresh --seed
 
 ### 6. Link storage (for image uploads)
 
+#### Standard Local / VPS Setup:
 ```bash
 php artisan storage:link
 ```
+
+#### Shared Hosting / cPanel Setup (`public_html`):
+If your web host uses `public_html` instead of `public`:
+
+**Option A (SSH Command Line):**
+```bash
+# 1. Symlink public folder to public_html
+ln -s public public_html
+
+# 2. Run Artisan storage link (supports both public and public_html automatically)
+php artisan storage:link
+```
+
+**Option B (Without SSH / PHP Helper Script):**
+Create a `link.php` script inside your `public_html` folder with the following code:
+```php
+<?php
+// Symlink storage/app/public to public_html/storage
+symlink(__DIR__.'/../storage/app/public', __DIR__.'/storage');
+echo "Storage link created successfully!";
+```
+Visit `http://yourdomain.com/link.php` once in your browser, then delete `link.php`.
 
 ### 7. Start the dev server
 
