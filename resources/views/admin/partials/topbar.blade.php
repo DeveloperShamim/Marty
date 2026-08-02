@@ -14,8 +14,10 @@
         <span class="absolute top-2 right-2 h-2 w-2 bg-amber-500 rounded-full"></span>
       @endif
     </a>
-    <span class="hidden md:inline text-sm text-gray-600 truncate max-w-[140px]">{{ auth()->user()->name ?? 'Admin' }}</span>
-    <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin') }}&background=2540e0&color=fff" class="hidden sm:block h-9 w-9 rounded-full shrink-0" alt="">
+    <a href="{{ route('admin.profile.edit') }}" class="hidden sm:inline-flex items-center gap-2 text-sm text-gray-700 hover:text-brand-600 font-medium py-1 px-2 rounded-xl hover:bg-gray-100 transition-colors" title="Edit Profile & Password">
+      <span class="hidden md:inline truncate max-w-[140px] font-bold">{{ auth()->user()->name ?? 'Admin' }}</span>
+      <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin') }}&background=2540e0&color=fff" class="h-8 w-8 rounded-lg shrink-0 object-cover" alt="">
+    </a>
     <form method="POST" action="{{ route('admin.cache.clear') }}" class="shrink-0">
       @csrf
       <button type="submit" class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-amber-600 border border-gray-200 hover:border-amber-200 rounded-lg px-2.5 sm:px-3 py-1.5 transition-colors bg-white" title="Clear Cache">

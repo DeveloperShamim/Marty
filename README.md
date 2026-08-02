@@ -1,6 +1,6 @@
-# Marty — Laravel E-Commerce Storefront
+# SoleBd — Premium E-Commerce Storefront (Laravel)
 
-A full-featured Laravel e-commerce application for a fashion/lifestyle store (shoes, watches, leather goods, accessories). Includes a beautiful storefront and a complete admin dashboard.
+A full-featured Laravel e-commerce application for a fashion & lifestyle store (shoes, luxury watches, genuine leather goods, bags & eyewear). Includes a high-converting storefront and a comprehensive admin panel.
 
 ---
 
@@ -8,23 +8,24 @@ A full-featured Laravel e-commerce application for a fashion/lifestyle store (sh
 
 | Area | Details |
 |---|---|
-| 🏪 Storefront | Homepage, Shop, Single Product, Contact, Cart |
-| 🎨 3-Color Theme Engine | Pick 3 colors in admin → site colors update instantly |
-| 🏷️ Brands | Full brand catalog with logos, filtering, and featured display |
-| 📦 Products | SKUs, variants, flash sales, specifications, reviews |
-| 🗂️ Categories | Hierarchical categories with icons and featured flags |
-| 🎡 Hero Banners | Slideshow banners with background images and text overlays |
-| 🛒 Cart & Checkout | Session cart, coupon codes, mobile payment (bKash, Nagad, Rocket, COD) |
-| 📋 Orders | Order management, status tracking, invoice PDF, UTM source tracking |
+| 🏪 Storefront | Modern responsive homepage, shop catalog, single product, contact, cart, order confirmation |
+| 🎨 3-Color Theme Engine | Pick 3 theme colors in admin → site colors update live across storefront |
+| 🏷️ Brands | 9 Official brand pages (Nike, Adidas, Apex, Casio, Seiko, Picard, Fossil, Ray-Ban, Woodland) with logos and product counts |
+| 📦 Products | SKUs, color/size variants, flash sales, specs, customer reviews, square product media |
+| 🗂️ Categories | 6 Categories (Sneakers & Running Shoes, Formal & Dress Footwear, Luxury & Sport Watches, Leather Belts & Wallets, Bags & Backpacks, Eyewear & Accessories) |
+| 🎡 Hero Banners | Widescreen hero slider banners with custom background fit and call-to-action buttons |
+| 🛒 Cart & Checkout | Session cart, coupon codes, mobile payment (bKash, Nagad, Rocket, COD), auto contact sync |
+| 📋 Orders | Order management, status tracking, invoice PDF printing, UTM source tracking |
 | 🛡️ Fraud Detection | Zero-API local risk scoring, TrxID validation, blacklist management |
 | 👥 Staff & Role Control | Role-based access control (RBAC), 4 staff roles, account suspension |
-| 📜 Staff Audit Logs | Automated activity log timeline for all staff actions |
+| 📜 Staff Audit Logs | Automated activity log timeline for all staff actions + 1-click Clear Audit Logs feature |
+| 👤 Admin Profile | Super Admin profile management to update email address & password credentials (`/admin/profile`) |
 | 👥 Visitor Analytics | Live real-time visitor monitor, 14-day Chart.js line chart, device tracking |
 | 🚚 Courier Sync | 1-click dispatch to Steadfast, Pathao, RedX via API |
 | 🛒 Abandoned Carts | Track uncompleted checkouts, 1-click WhatsApp/SMS recovery |
 | ⚡ Admin Cache Clear | 1-click topbar cache optimization (`optimize:clear`) |
 | ⚙️ Admin Dashboard | Settings, Banner, Brand, Category, Product, Order, Coupon, User management |
-| 🔐 Auth | Login, Register, Google OAuth, OTP email verification |
+| 🔐 Auth | Login, Register, Google OAuth 1-click login, OTP email verification |
 | 📨 Mail & OTP | SMTP config, customer OTP toggle |
 | 📈 SEO & Tracking | Meta tags, Facebook Pixel, Google Analytics / GTM |
 
@@ -38,7 +39,7 @@ A full-featured Laravel e-commerce application for a fashion/lifestyle store (sh
 - MySQL or any supported DB
 - Node.js and npm
 
-### 1. Clone the repo
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/DeveloperShamim/Marty.git
@@ -68,7 +69,8 @@ php artisan key:generate
 Open `.env` and set your database credentials:
 
 ```env
-DB_DATABASE=marty
+APP_NAME=SoleBd
+DB_DATABASE=solebd
 DB_USERNAME=root
 DB_PASSWORD=your_password
 ```
@@ -76,13 +78,13 @@ DB_PASSWORD=your_password
 ### 5. Run migrations and seed the database
 
 ```bash
-php artisan migrate --seed
+php artisan migrate:fresh --seed
 ```
 
 > This runs **all** migrations and seeds:
-> - Admin user (see credentials below)
-> - Default site settings (including theme colors)
-> - Sample categories, brands, products, banners, coupons, reviews, and orders
+> - Super Admin and staff accounts (see credentials below)
+> - Default site settings for **SoleBd**
+> - 9 Brands, 6 Categories, 72 Products, SKUs, variants, banners, coupons, reviews, orders, visitor traffic, and audit logs
 
 ### 6. Link storage (for image uploads)
 
@@ -96,7 +98,7 @@ php artisan storage:link
 php artisan serve
 ```
 
-Visit: **http://localhost:8000**
+Visit: **http://127.0.0.1:8000**
 
 ---
 
@@ -106,149 +108,41 @@ Visit: **http://localhost:8000**
 
 | Role | Email Login | Password | Access Level |
 | :--- | :--- | :--- | :--- |
-| 👑 **Super Admin** | `admin@freshkart.test` | `password` | 100% Full Access |
-| 👔 **Store Manager** | `store.manager@freshkart.test` | `password` | Both Orders & Catalog Access |
-| 📦 **Order Manager** | `order.manager@freshkart.test` | `password` | Orders, Support & Customer Access |
-| 🏭 **Inventory Manager** | `inventory.manager@freshkart.test` | `password` | Products, Stock & Catalog Access |
+| 👑 **Super Admin** | `admin@solebd.com` | `password` | 100% Full Access |
+| 👔 **Store Manager** | `store.manager@solebd.com` | `password` | Both Orders & Catalog Access |
+| 📦 **Order Manager** | `order.manager@solebd.com` | `password` | Orders, Support & Customer Access |
+| 🏭 **Inventory Manager** | `inventory.manager@solebd.com` | `password` | Products, Stock & Catalog Access |
 
 ### Customer Account
 
-| Field    | Value                      |
-|----------|----------------------------|
-| Email    | `customer@freshkart.test`  |
-| Password | `password`                 |
+| Field    | Value               |
+|----------|---------------------|
+| Email    | `customer@solebd.com` |
+| Password | `password`          |
 
 ---
 
 ## 🌱 Seeding Details
 
-### What `php artisan migrate --seed` seeds
+### What `php artisan migrate:fresh --seed` seeds
 
 | Seeder                  | Contents                                                                 |
 |-------------------------|--------------------------------------------------------------------------|
 | `seedUsers()`           | 4 Staff accounts (Super Admin, Store Manager, Order Manager, Inventory Manager) + 1 Customer |
-| `seedSettings()`        | All site settings (name, theme colors, contact, payment, SEO, etc.)      |
-| `seedCategories()`      | 5 categories: Shoes, Watches, Leather Belts, Leather Bags, Accessories   |
-| `seedBrands()`          | 11 brands: Nike, Adidas, Apex, Casio, Seiko, Fossil, Ray-Ban, etc.       |
+| `seedSettings()`        | All SoleBd site settings (name, theme colors, contact, payment, SEO)     |
+| `seedCategories()`      | 6 categories: Sneakers & Running Shoes, Formal Footwear, Luxury Watches, Leather Belts & Wallets, Bags & Backpacks, Eyewear |
+| `seedBrands()`          | 9 brands: Nike, Adidas, Apex, Casio, Seiko, Picard, Fossil, Ray-Ban, Woodland |
 | `seedFeatures()`        | Homepage trust/feature badges                                            |
 | `seedCoupons()`         | Sample discount coupons                                                  |
 | `BannerSeeder`          | Homepage hero banner slides                                              |
-| `seedProducts()`        | Sample product catalog linked to categories and brands                   |
+| `seedProducts()`        | 72 product catalog items linked to categories and brands                |
 | `seedReviews()`         | Customer product reviews                                                 |
 | `seedOrders()`          | Sample orders with fraud risk scores and UTM source tracking             |
 | `seedVisitorLogs()`     | 14 days of realistic storefront traffic for Visitor Analytics            |
 | `seedStaffActivityLogs()`| Sample audit timeline entries for employee action logs                   |
 
-### Re-seed only (without dropping tables)
-
-```bash
-php artisan db:seed
-```
-
-### Fresh migration + reseed — WARNING: wipes all data
-
-```bash
-php artisan migrate:fresh --seed
-```
-
 ---
 
-## 🎨 Theme Colors
+## 📄 License
 
-The site uses a **3-color engine**. You can change all colors from the admin panel:
-
-**Admin → Settings → Brand & Theme → Theme Colors**
-
-| Setting                            | Key                    | Default   |
-|------------------------------------|------------------------|-----------|
-| Primary Accent (buttons, links)    | `theme_primary_color`  | `#E8751B` |
-| Dark Heading (text, navbar)        | `theme_dark_color`     | `#1C1917` |
-| Soft Surface (page backgrounds)    | `theme_surface_color`  | `#FFF8F3` |
-
-Click **"Reset to Defaults"** in the admin panel to restore these values, or choose a **preset theme** (Warm Orange, Royal Sapphire, Emerald Luxe, Ruby Crimson).
-
----
-
-## 🏷️ Brands
-
-Brands are seeded automatically. To manage brands:
-
-**Admin → Brands**
-
-- Add brand logo, website, and description
-- Toggle **Featured** to show brand on the homepage brands strip
-- Assign brands to products in the product edit form
-
----
-
-## 📁 Project Structure (Key Folders)
-
-```
-app/
-  Http/Controllers/
-    Admin/          ← Admin controllers (Products, Orders, Brands, Settings…)
-    Auth/           ← Login, Register, OTP
-  Models/           ← Eloquent models (Product, Brand, Category, Order…)
-  helpers.php       ← Global helpers: setting(), generate_3_color_matching_theme()
-
-database/
-  migrations/       ← All table migrations (run in date order)
-  seeders/
-    DatabaseSeeder.php   ← Main seeder (users, settings, products, brands…)
-    BannerSeeder.php     ← Hero banner slides
-
-resources/
-  views/
-    admin/          ← Admin panel Blade views
-    storefront/     ← Public storefront views
-      partials/     ← header.blade.php, footer.blade.php, cart-drawer.blade.php
-      home.blade.php
-      shop.blade.php
-      product.blade.php
-
-public/storage/     ← Symlinked uploaded files (run php artisan storage:link)
-```
-
----
-
-## 🔧 Environment Variables Reference
-
-Key variables in `.env`:
-
-```env
-APP_NAME=Marty
-APP_URL=http://localhost:8000
-
-DB_CONNECTION=mysql
-DB_DATABASE=marty
-DB_USERNAME=root
-DB_PASSWORD=
-
-# Google OAuth (optional)
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=http://localhost:8000/auth/google/callback
-
-# Mail (optional — defaults to log driver for local dev)
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.mailpit.test
-MAIL_PORT=1025
-MAIL_USERNAME=null
-MAIL_PASSWORD=null
-MAIL_FROM_ADDRESS=no-reply@example.com
-MAIL_FROM_NAME="${APP_NAME}"
-```
-
----
-
-## 🧪 Running Tests
-
-```bash
-php artisan test
-```
-
----
-
-## 📜 License
-
-MIT
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

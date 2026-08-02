@@ -12,17 +12,35 @@
       <p class="text-xs text-gray-500 mt-1">Audit timeline of actions performed by your employees inside the Admin Panel.</p>
     </div>
 
-    <!-- Search Form -->
-    <form method="GET" action="{{ route('admin.activity-logs.index') }}" class="flex items-center gap-2 w-full md:w-auto">
-      <div class="relative flex-1 md:w-72">
-        <input type="text" name="q" value="{{ $search }}" placeholder="Search staff name, action, or IP..." class="inp text-xs pr-8 py-2 w-full" />
-        @if($search !== '')
-          <a href="{{ route('admin.activity-logs.index') }}" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">✕</a>
-        @endif
-      </div>
-      <button type="submit" class="btn-primary text-xs px-4 py-2 shrink-0">Search</button>
-    </form>
+    <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+      <!-- Search Form -->
+      <form method="GET" action="{{ route('admin.activity-logs.index') }}" class="flex items-center gap-2 flex-1 md:flex-initial">
+        <div class="relative flex-1 md:w-64">
+          <input type="text" name="q" value="{{ $search }}" placeholder="Search staff name, action, or IP..." class="inp text-xs pr-8 py-2 w-full" />
+          @if($search !== '')
+            <a href="{{ route('admin.activity-logs.index') }}" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">✕</a>
+          @endif
+        </div>
+        <button type="submit" class="btn-primary text-xs px-3.5 py-2 shrink-0">Search</button>
+      </form>
+
+      <!-- Clear Audit Logs Button (Super Admin Only) -->
+      @if(auth()->user()->isAdmin())
+        <button type="button" onclick="document.getElementById('clearLogsModal').classList.remove('hidden')" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl transition-all shadow-xs shrink-0 flex items-center gap-1.5 cursor-pointer">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          <span>Clear Audit Logs</span>
+        </button>
+      @endif
+    </div>
   </div>
+
+  <!-- Status Alert Messages -->
+  @if(session('status'))
+    <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold shadow-xs flex items-center gap-2">
+      <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      <span>✓ {{ session('status') }}</span>
+    </div>
+  @endif
 
   <!-- Activity Logs Table Card -->
   <div class="card overflow-hidden">
@@ -99,6 +117,39 @@
       </div>
     @endif
   </div>
-
 </div>
+
+<!-- Clear Logs Confirmation Modal -->
+@if(auth()->user()->isAdmin())
+  <div id="clearLogsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 backdrop-blur-xs p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-stone-200">
+      <div class="flex items-center gap-3 text-rose-600">
+        <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center font-bold text-lg shrink-0">
+          ⚠️
+        </div>
+        <div>
+          <h3 class="font-extrabold text-base text-stone-900">Clear All Activity Logs?</h3>
+          <p class="text-xs text-stone-500">Super Admin Security Action</p>
+        </div>
+      </div>
+
+      <p class="text-xs text-stone-600 leading-relaxed">
+        Are you sure you want to permanently clear all staff activity audit log records? This action cannot be undone.
+      </p>
+
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button type="button" onclick="document.getElementById('clearLogsModal').classList.add('hidden')" class="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold rounded-xl transition-colors">
+          Cancel
+        </button>
+        <form method="POST" action="{{ route('admin.activity-logs.clear') }}">
+          @csrf
+          @method('DELETE')
+          <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold rounded-xl transition-colors shadow-xs cursor-pointer">
+            Yes, Clear All Logs
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+@endif
 @endsection

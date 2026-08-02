@@ -26,8 +26,8 @@
         <div id="heroSlider" class="absolute inset-0">
           @foreach($heroBanners as $i => $slide)
             <div data-slide class="hero-slide absolute inset-0 {{ $i > 0 ? 'is-hidden' : '' }}">
-              <div class="absolute inset-0 bg-cover bg-center"
-                @if($slide->image) style="background-image:linear-gradient(105deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.2) 45%,transparent 100%),url('{{ $slide->imageUrl() }}')" @else style="background:linear-gradient(105deg,#1e293b,var(--brand-primary,#E8751B))" @endif>
+              <div class="absolute inset-0 bg-cover bg-right-bottom bg-no-repeat"
+                @if($slide->image) style="background-image:linear-gradient(105deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,.15) 50%,transparent 100%),url('{{ $slide->imageUrl() }}')" @else style="background:linear-gradient(105deg,#1e293b,var(--brand-primary,#E8751B))" @endif>
               </div>
               @php
                 $sBadge = $slide->badge ?: setting('hero_fallback_badge');
@@ -83,8 +83,8 @@
           </button>
         </div>
       @elseif($mainHero)
-        <div class="absolute inset-0 bg-cover bg-center"
-          @if($mainHero->image) style="background-image:linear-gradient(105deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,.2) 45%,transparent 100%),url('{{ $mainHero->imageUrl() }}')" @else style="background:linear-gradient(105deg,#1e293b,var(--brand-primary,#E8751B))" @endif></div>
+        <div class="absolute inset-0 bg-cover bg-right-bottom bg-no-repeat"
+          @if($mainHero->image) style="background-image:linear-gradient(105deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,.15) 50%,transparent 100%),url('{{ $mainHero->imageUrl() }}')" @else style="background:linear-gradient(105deg,#1e293b,var(--brand-primary,#E8751B))" @endif></div>
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-5 py-10 sm:py-20 lg:py-24 text-white">
           <div class="max-w-xl">
             @if($heroBadge)

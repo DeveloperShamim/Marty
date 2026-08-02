@@ -196,6 +196,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::patch('staff/{staff}/toggle', [\App\Http\Controllers\Admin\StaffController::class, 'toggleStatus'])->name('staff.toggle');
             Route::delete('staff/{staff}', [\App\Http\Controllers\Admin\StaffController::class, 'destroy'])->name('staff.destroy');
             Route::get('activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
+            Route::delete('activity-logs/clear', [\App\Http\Controllers\Admin\ActivityLogController::class, 'clearLogs'])->name('activity-logs.clear');
             
             // API Integrations
             Route::get('integrations', [AdminIntegrationController::class, 'index'])->name('integrations.index');
@@ -207,5 +208,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::put('settings/{section}', [SettingController::class, 'updateSection'])->name('settings.update-section');
             Route::post('settings/test-mail', [SettingController::class, 'testMail'])->name('settings.test-mail');
         });
+
+        // Admin Profile & Security Credentials
+        Route::get('profile', [\App\Http\Controllers\Admin\ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('profile', [\App\Http\Controllers\Admin\ProfileController::class, 'updateProfile'])->name('profile.update');
+        Route::put('profile/password', [\App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('profile.password');
     });
 });

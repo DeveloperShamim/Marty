@@ -3,8 +3,7 @@
   $promoLink = trim((string) setting('header_promo_link', ''));
   $navCats = ($navCategories ?? collect());
   $navBrs = ($navBrands ?? collect());
-  $topCats = $navCats->take(3);
-  $otherCats = $navCats->skip(3);
+  $topCats = $navCats->take(4);
 @endphp
 
 @if($promoText !== '')
@@ -79,39 +78,18 @@
   <div class="hidden lg:block bg-white border-b border-stone-200/80 text-stone-700 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-5 h-11 text-sm font-semibold">
       <nav class="flex items-center justify-between h-full py-1">
+        {{-- 1. Home --}}
         <a href="{{ route('home') }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ request()->routeIs('home') ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">Home</a>
-        <a href="{{ route('shop') }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ request()->routeIs('shop') && ! request('flash') && ! request('brand') && ! isset($activeCategory) ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">All Products</a>
         
-        {{-- CATEGORIES DROPDOWN --}}
-        @if($navCats->isNotEmpty())
-          <div class="relative group/catdropdown" id="catDropdownContainer">
-            <button type="button" 
-                    onclick="event.stopPropagation(); document.getElementById('catDropdownMenu').classList.toggle('hidden');" 
-                    class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ isset($activeCategory) ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }} inline-flex items-center gap-1 cursor-pointer">
-              <span>Categories</span>
-              <svg class="w-3.5 h-3.5 transition-transform group-hover/catdropdown:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
-            </button>
-            <div id="catDropdownMenu" class="absolute left-0 top-full pt-1.5 hidden group-hover/catdropdown:block z-50 min-w-[260px] max-w-sm">
-              <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 p-2 space-y-1 max-h-80 overflow-y-auto">
-                <a href="{{ route('shop') }}" class="flex items-center justify-between gap-2 px-3 py-2 text-xs font-bold text-brand-600 hover:bg-brand-50 rounded-lg transition-colors">
-                  <span>Browse All Categories</span>
-                  <span class="text-xs">&rarr;</span>
-                </a>
-                <div class="h-px bg-stone-100 my-1"></div>
-                @foreach($navCats as $cat)
-                  <a href="{{ route('shop.category', $cat) }}" class="flex items-center justify-between gap-2 px-3 py-2 text-xs font-semibold text-stone-700 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors">
-                    <span class="truncate">@if($cat->icon)<span class="mr-1.5">{{ $cat->icon }}</span>@endif{{ $cat->name }}</span>
-                    @if(isset($cat->products_count) && $cat->products_count > 0)
-                      <span class="text-[10px] text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-full font-mono">{{ $cat->products_count }}</span>
-                    @endif
-                  </a>
-                @endforeach
-              </div>
-            </div>
-          </div>
-        @endif
+        {{-- 2. All Products --}}
+        <a href="{{ route('shop') }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ request()->routeIs('shop') && ! request('flash') && ! request('brand') && ! isset($activeCategory) ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">All Products</a>
 
-        {{-- BRANDS DROPDOWN --}}
+        {{-- 3. 4 Categories --}}
+        @foreach($topCats as $cat)
+          <a href="{{ route('shop.category', $cat) }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ optional($activeCategory ?? null)->id === $cat->id ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">{{ $cat->name }}</a>
+        @endforeach
+
+        {{-- 4. Brands Dropdown --}}
         @if($navBrs->isNotEmpty())
           <div class="relative group/branddropdown" id="brandDropdownContainer">
             <button type="button" 
@@ -149,17 +127,43 @@
           </div>
         @endif
 
-        {{-- Direct Top Categories --}}
-        @foreach($topCats as $cat)
-          <a href="{{ route('shop.category', $cat) }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ optional($activeCategory ?? null)->id === $cat->id ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">{{ $cat->name }}</a>
-        @endforeach
+        {{-- 5. More Categories Dropdown --}}
+        @if($navCats->isNotEmpty())
+          <div class="relative group/catdropdown" id="catDropdownContainer">
+            <button type="button" 
+                    onclick="event.stopPropagation(); document.getElementById('catDropdownMenu').classList.toggle('hidden');" 
+                    class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ isset($activeCategory) && ! $topCats->pluck('id')->contains($activeCategory->id) ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }} inline-flex items-center gap-1 cursor-pointer">
+              <span>More Categories</span>
+              <svg class="w-3.5 h-3.5 transition-transform group-hover/catdropdown:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
+            </button>
+            <div id="catDropdownMenu" class="absolute right-0 top-full pt-1.5 hidden group-hover/catdropdown:block z-50 min-w-[260px] max-w-sm">
+              <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 p-2 space-y-1 max-h-80 overflow-y-auto">
+                <a href="{{ route('shop') }}" class="flex items-center justify-between gap-2 px-3 py-2 text-xs font-bold text-brand-600 hover:bg-brand-50 rounded-lg transition-colors">
+                  <span>Browse All Categories</span>
+                  <span class="text-xs">&rarr;</span>
+                </a>
+                <div class="h-px bg-stone-100 my-1"></div>
+                @foreach($navCats as $cat)
+                  <a href="{{ route('shop.category', $cat) }}" class="flex items-center justify-between gap-2 px-3 py-2 text-xs font-semibold text-stone-700 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors">
+                    <span class="truncate">@if($cat->icon)<span class="mr-1.5">{{ $cat->icon }}</span>@endif{{ $cat->name }}</span>
+                    @if(isset($cat->products_count) && $cat->products_count > 0)
+                      <span class="text-[10px] text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-full font-mono">{{ $cat->products_count }}</span>
+                    @endif
+                  </a>
+                @endforeach
+              </div>
+            </div>
+          </div>
+        @endif
 
-        @if($hasFlashSale ?? false)
+        {{-- 6. Deals --}}
+        @if($hasFlashSale ?? true)
           <a href="{{ route('shop', ['flash' => 1]) }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors text-amber-700 bg-amber-50 font-bold hover:bg-amber-100 flex items-center gap-1">
             <span>⚡ Deals</span>
           </a>
         @endif
-        
+
+        {{-- 7. Help & Support --}}
         <a href="{{ route('contact') }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ request()->routeIs('contact') ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">Help &amp; Support</a>
       </nav>
     </div>

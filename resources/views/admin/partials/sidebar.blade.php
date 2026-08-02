@@ -33,6 +33,7 @@
             ['key' => 'blacklist', 'label' => 'Fraud Blacklist', 'route' => 'admin.blacklist.index', 'pattern' => 'admin.blacklist.*', 'icon' => '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'],
         ],
         'System Settings' => [
+            ['key' => 'profile', 'label' => 'My Account & Security', 'route' => 'admin.profile.edit', 'pattern' => 'admin.profile.*', 'icon' => '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'],
             ['key' => 'integrations', 'label' => 'API Integrations', 'route' => 'admin.integrations.index', 'pattern' => 'admin.integrations.*', 'icon' => '<path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>'],
             ['key' => 'settings', 'label' => 'Site & Theme Settings', 'route' => 'admin.settings.edit', 'pattern' => 'admin.settings.*', 'icon' => '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'],
         ],
@@ -128,11 +129,13 @@
     </a>
 
     <div class="flex items-center gap-2.5 p-2 bg-white rounded-xl border border-stone-200/80 shadow-xs">
-      <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName) }}&background=0f766e&color=fff" class="h-8 w-8 rounded-lg shrink-0 object-cover" alt="" />
-      <div class="min-w-0 flex-1">
-        <p class="text-xs font-bold text-stone-900 truncate leading-tight">{{ $adminName }}</p>
-        <p class="text-[10px] font-medium text-stone-400 truncate">{{ $userRoleTitle }}</p>
-      </div>
+      <a href="{{ route('admin.profile.edit') }}" class="flex items-center gap-2.5 flex-1 min-w-0 group/prof" title="Edit Profile & Password">
+        <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName) }}&background=0f766e&color=fff" class="h-8 w-8 rounded-lg shrink-0 object-cover group-hover/prof:scale-105 transition-transform" alt="" />
+        <div class="min-w-0 flex-1">
+          <p class="text-xs font-bold text-stone-900 truncate leading-tight group-hover/prof:text-brand-600 transition-colors">{{ $adminName }}</p>
+          <p class="text-[10px] font-medium text-stone-400 truncate">{{ $userRoleTitle }}</p>
+        </div>
+      </a>
 
       <form method="POST" action="{{ route('admin.logout') }}" class="shrink-0">
         @csrf
