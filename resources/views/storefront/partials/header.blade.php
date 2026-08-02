@@ -4,6 +4,8 @@
   $navCats = ($navCategories ?? collect());
   $navBrs = ($navBrands ?? collect());
   $topCats = $navCats->take(4);
+  $moreCats = $navCats->skip(4);
+  $dropdownCats = $moreCats->isNotEmpty() ? $moreCats : $navCats;
 @endphp
 
 @if($promoText !== '')
@@ -143,7 +145,7 @@
                   <span class="text-xs">&rarr;</span>
                 </a>
                 <div class="h-px bg-stone-100 my-1"></div>
-                @foreach($navCats as $cat)
+                @foreach($dropdownCats as $cat)
                   <a href="{{ route('shop.category', $cat) }}" class="flex items-center justify-between gap-2 px-3 py-2 text-xs font-semibold text-stone-700 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors">
                     <span class="truncate">@if($cat->icon)<span class="mr-1.5">{{ $cat->icon }}</span>@endif{{ $cat->name }}</span>
                     @if(isset($cat->products_count) && $cat->products_count > 0)
