@@ -7,9 +7,34 @@ use Illuminate\Http\Request;
 
 class TrackOrderController extends Controller
 {
-    public function show()
+    public function show(Request $request)
     {
-        return view('storefront.track', ['order' => null]);
+        $order = null;
+        $orderQuery = trim((string) ($request->query('order_number') ?: ($request->query('order_id') ?: $request->query('order', ''))));
+        $token = trim((string) $request->query('token', ''));
+
+        if ($orderQuery !== '') {
+            $foundOrder = Order::with('items')
+                ->where('order_number', $orderQuery)
+                ->orWhere('id', $orderQuery)
+                ->first();
+
+            if ($foundOrder) {
+                // Security verification: Token match OR authenticated owner match
+                $tokenValid = $token !== '' && hash_equals($foundOrder->secureTrackingToken(), $token);
+                $isOwner = auth()->check() && auth()->id() === $foundOrder->user_id;
+
+                if ($tokenValid || $isOwner) {
+                    $order = $foundOrder;
+                } else {
+                    return redirect()->route('track')
+                        ->withInput(['order_number' => $foundOrder->order_number])
+                        ->withErrors(['order_number' => 'Security verification required: Please enter the phone number used at checkout to view order details.']);
+                }
+            }
+        }
+
+        return view('storefront.track', ['order' => $order]);
     }
 
     public function find(Request $request)

@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
         $this->seedProducts($categories, $brands);
         $this->seedReviews();
         $this->seedOrders();
+        $this->seedConversations();
         $this->seedVisitorLogs();
         $this->seedStaffActivityLogs();
     }
@@ -2085,5 +2086,45 @@ class DatabaseSeeder extends Seeder
         foreach ($logs as $log) {
             \App\Models\StaffActivityLog::create($log);
         }
+    }
+
+    private function seedConversations(): void
+    {
+        $customer = User::where('role', 'customer')->first();
+        if (! $customer) return;
+
+        $conv = \App\Models\Conversation::updateOrCreate(
+            ['user_id' => $customer->id],
+            [
+                'customer_name'      => $customer->name,
+                'customer_phone'     => $customer->phone ?? '01700-111111',
+                'customer_email'     => $customer->email ?? 'customer@solebd.com',
+                'status'             => 'open',
+                'unread_admin_count' => 1,
+                'last_message_at'    => now(),
+            ]
+        );
+
+        \App\Models\ConversationMessage::updateOrCreate(
+            ['conversation_id' => $conv->id, 'message' => 'Hello! 👋 I have a question about my order delivery.'],
+            [
+                'sender_type' => 'customer',
+                'sender_id'   => $customer->id,
+                'type'        => 'text',
+                'is_read'     => true,
+                'created_at'  => now()->subMinutes(15),
+            ]
+        );
+
+        \App\Models\ConversationMessage::updateOrCreate(
+            ['conversation_id' => $conv->id, 'message' => 'Welcome to SoleBd Live Support! We are happy to help.'],
+            [
+                'sender_type' => 'admin',
+                'sender_id'   => 1,
+                'type'        => 'text',
+                'is_read'     => true,
+                'created_at'  => now()->subMinutes(10),
+            ]
+        );
     }
 }

@@ -243,6 +243,7 @@ class CheckoutController extends Controller
         $this->cart->clear();
         $this->coupons->remove();
         $this->markCartRecoveredOnOrderPlaced($order);
+        $this->linkConversationOnOrderPlaced($order);
 
         session(['recent_order' => $order->order_number]);
 
@@ -380,5 +381,42 @@ class CheckoutController extends Controller
                 'status'       => 'recovered',
                 'recovered_at' => now(),
             ]);
+    }
+
+    private function linkConversationOnOrderPlaced(Order $order): void
+    {
+        $guestToken = request()->cookie('guest_chat_token');
+        $query = \App\Models\Conversation::query();
+
+        if ($guestToken) {
+            $query->where('guest_token', $guestToken);
+        } elseif ($order->user_id) {
+            $query->where('user_id', $order->user_id);
+        } else {
+            return;
+        }
+
+        $conversation = $query->latest()->first();
+
+        if ($conversation) {
+            $updateData = [];
+
+            if ($order->user_id && !$conversation->user_id) {
+                $updateData['user_id'] = $order->user_id;
+            }
+            if ($order->customer_phone && !$conversation->customer_phone) {
+                $updateData['customer_phone'] = $order->customer_phone;
+            }
+            if ($order->customer_email && !$conversation->customer_email) {
+                $updateData['customer_email'] = $order->customer_email;
+            }
+            if ($order->customer_name && ($conversation->customer_name === 'Guest Visitor' || empty($conversation->customer_name))) {
+                $updateData['customer_name'] = $order->customer_name;
+            }
+
+            if (!empty($updateData)) {
+                $conversation->update($updateData);
+            }
+        }
     }
 }

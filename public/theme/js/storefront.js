@@ -41,6 +41,11 @@
     (filterPanel && !filterPanel.classList.contains("-translate-x-full"));
   const maybeClose = () => { if (!anyOpen()) { overlay && overlay.classList.add("opacity-0", "pointer-events-none"); document.body.classList.remove("no-scroll"); } };
   const closeAll = () => {
+    if (window.closeLiveChatPanel) window.closeLiveChatPanel();
+    const chatRoot = document.getElementById("liveChatRoot");
+    if (chatRoot) chatRoot.style.visibility = "";
+    const sideCartBtn = document.querySelector("[data-open-cart]");
+    if (sideCartBtn) sideCartBtn.style.visibility = "";
     cartDrawer && cartDrawer.classList.add("translate-x-full");
     mobileMenu && mobileMenu.classList.add("-translate-x-full");
     filterPanel && filterPanel.classList.add("-translate-x-full");
@@ -49,8 +54,23 @@
     maybeClose();
   };
 
-  function openCart() { cartDrawer && cartDrawer.classList.remove("translate-x-full"); openOverlay(); }
-  function closeCart() { cartDrawer && cartDrawer.classList.add("translate-x-full"); maybeClose(); }
+  function openCart() { 
+    if (window.closeLiveChatPanel) window.closeLiveChatPanel();
+    const chatRoot = document.getElementById("liveChatRoot");
+    if (chatRoot) chatRoot.style.visibility = "hidden";
+    const sideCartBtn = document.querySelector("[data-open-cart]");
+    if (sideCartBtn) sideCartBtn.style.visibility = "hidden";
+    cartDrawer && cartDrawer.classList.remove("translate-x-full"); 
+    openOverlay(); 
+  }
+  function closeCart() { 
+    const chatRoot = document.getElementById("liveChatRoot");
+    if (chatRoot) chatRoot.style.visibility = "";
+    const sideCartBtn = document.querySelector("[data-open-cart]");
+    if (sideCartBtn) sideCartBtn.style.visibility = "";
+    cartDrawer && cartDrawer.classList.add("translate-x-full"); 
+    maybeClose(); 
+  }
 
   // Phone taskbar: hamburger opens slide-out drawer (Sites 1–3 pattern)
   function openMobileMenu() {

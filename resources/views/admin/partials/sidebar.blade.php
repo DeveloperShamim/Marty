@@ -2,12 +2,14 @@
     $pendingBadge = \App\Models\Order::where('payment_status', 'pending')->count();
     $pendingReviews = \App\Models\ProductReview::pending()->count();
     $abandonedBadge = \App\Models\AbandonedCart::abandoned()->count();
+    $unreadChatBadge = \App\Models\Conversation::where('status', 'open')->sum('unread_admin_count');
     $lowStockBadge = \App\Models\ProductSku::where('stock_quantity', '<=', 3)->count()
         + \App\Models\Product::whereDoesntHave('skus')->where('stock_quantity', '<=', 3)->count();
 
     $nav = [
         'Operations' => [
             ['key' => 'dashboard', 'label' => 'Dashboard', 'route' => 'admin.dashboard', 'pattern' => 'admin.dashboard', 'icon' => '<path d="M4 13h6v8H4zM14 3h6v18h-6zM4 3h6v6H4z"/>'],
+            ['key' => 'conversations', 'label' => 'Live Support Chat', 'route' => 'admin.conversations.index', 'pattern' => 'admin.conversations.*', 'icon' => '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>', 'badge' => $unreadChatBadge, 'badge_color' => 'bg-indigo-100 text-indigo-800 border border-indigo-200'],
             ['key' => 'orders', 'label' => 'Orders', 'route' => 'admin.orders.index', 'pattern' => 'admin.orders.*', 'icon' => '<circle cx="6" cy="19" r="2"/><circle cx="17" cy="19" r="2"/><path d="M17 17h-11v-14h-2M6 5l14 1l-1 7h-13"/>', 'badge' => $pendingBadge, 'badge_color' => 'bg-emerald-100 text-emerald-800 border border-emerald-200'],
             ['key' => 'abandoned-carts', 'label' => 'Abandoned Carts', 'route' => 'admin.abandoned-carts.index', 'pattern' => 'admin.abandoned-carts.*', 'icon' => '<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>', 'badge' => $abandonedBadge, 'badge_color' => 'bg-amber-100 text-amber-800 border border-amber-200'],
             ['key' => 'reviews', 'label' => 'Customer Reviews', 'route' => 'admin.reviews.index', 'pattern' => 'admin.reviews.*', 'icon' => '<path d="M12 3l2.5 5.5L20 9l-4 4l1 6l-5-3l-5 3l1-6l-4-4l5.5-.5z"/>', 'badge' => $pendingReviews, 'badge_color' => 'bg-sky-100 text-sky-800 border border-sky-200'],

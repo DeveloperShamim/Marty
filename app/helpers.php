@@ -368,6 +368,16 @@ if (! function_exists('has_custom_logo')) {
     }
 }
 
+if (! function_exists('store_phone')) {
+    /** Store contact phone number (Settings → contact_phone). */
+    function store_phone(): string
+    {
+        $phone = trim((string) setting('contact_phone', ''));
+
+        return $phone !== '' ? $phone : '01700000000';
+    }
+}
+
 if (! function_exists('tracking_gtm_id')) {
     /** Valid Google Tag Manager container ID (GTM-XXXX), or null when unset/invalid. */
     function tracking_gtm_id(): ?string

@@ -1,4 +1,4 @@
-<aside id="cartDrawer" data-cart-drawer class="fixed top-0 right-0 h-full w-full max-w-sm bg-white z-50 shadow-2xl translate-x-full transition-transform duration-300 flex flex-col">
+<aside id="cartDrawer" data-cart-drawer class="fixed top-0 right-0 h-full w-full max-w-sm bg-white z-[70] shadow-2xl translate-x-full transition-transform duration-300 flex flex-col">
   <div class="flex items-center justify-between p-5 bg-brand-600 text-white shrink-0">
     <h2 class="font-bold">Your Cart</h2>
     <button type="button" data-close-cart class="p-1 hover:bg-white/10 rounded-lg" aria-label="Close">

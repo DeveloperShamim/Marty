@@ -160,6 +160,7 @@
   @include('storefront.partials.mobile-menu')
   @include('storefront.partials.quick-select-modal')
   @include('storefront.partials.size-guide-modal')
+  @include('storefront.partials.chat-widget')
 
   <div id="overlay" data-drawer-overlay class="fixed inset-0 bg-ink/40 z-40 opacity-0 pointer-events-none transition-opacity"></div>
 

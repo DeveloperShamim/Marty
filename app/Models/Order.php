@@ -45,6 +45,11 @@ class Order extends Model
         return 'order_number';
     }
 
+    public function secureTrackingToken(): string
+    {
+        return substr(hash_hmac('sha256', $this->id . '|' . $this->customer_phone . '|' . $this->created_at, config('app.key')), 0, 20);
+    }
+
     public function paymentMethodLabel(): string
     {
         return match ($this->payment_method) {

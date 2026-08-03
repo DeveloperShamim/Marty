@@ -8,26 +8,27 @@ A full-featured Laravel e-commerce application for a fashion & lifestyle store (
 
 | Area | Details |
 |---|---|
-| 🏪 Storefront | Modern responsive homepage, shop catalog, single product, contact, cart, order confirmation |
-| 🎨 3-Color Theme Engine | Pick 3 theme colors in admin → site colors update live across storefront |
-| 🏷️ Brands | 9 Official brand pages (Nike, Adidas, Apex, Casio, Seiko, Picard, Fossil, Ray-Ban, Woodland) with logos and product counts |
-| 📦 Products | SKUs, color/size variants, flash sales, specs, customer reviews, square product media |
-| 🗂️ Categories | 6 Categories (Sneakers & Running Shoes, Formal & Dress Footwear, Luxury & Sport Watches, Leather Belts & Wallets, Bags & Backpacks, Eyewear & Accessories) |
-| 🎡 Hero Banners | Widescreen hero slider banners with custom background fit and call-to-action buttons |
-| 🛒 Cart & Checkout | Session cart, coupon codes, mobile payment (bKash, Nagad, Rocket, COD), auto contact sync |
-| 📋 Orders | Order management, status tracking, invoice PDF printing, UTM source tracking |
-| 🛡️ Fraud Detection | Zero-API local risk scoring, TrxID validation, blacklist management |
-| 👥 Staff & Role Control | Role-based access control (RBAC), 4 staff roles, account suspension |
-| 📜 Staff Audit Logs | Automated activity log timeline for all staff actions + 1-click Clear Audit Logs feature |
-| 👤 Admin Profile | Super Admin profile management to update email address & password credentials (`/admin/profile`) |
-| 👥 Visitor Analytics | Live real-time visitor monitor, 14-day Chart.js line chart, device tracking |
-| 🚚 Courier Sync | 1-click dispatch to Steadfast, Pathao, RedX via API |
-| 🛒 Abandoned Carts | Track uncompleted checkouts, 1-click WhatsApp/SMS recovery |
-| ⚡ Admin Cache Clear | 1-click topbar cache optimization (`optimize:clear`) |
-| ⚙️ Admin Dashboard | Settings, Banner, Brand, Category, Product, Order, Coupon, User management |
-| 🔐 Auth | Login, Register, Google OAuth 1-click login, OTP email verification |
-| 📨 Mail & OTP | SMTP config, customer OTP toggle |
-| 📈 SEO & Tracking | Meta tags, Facebook Pixel, Google Analytics / GTM |
+| 💬 **Live Customer Support Chat** | Floating widget with home & thread views, voice notes 🎙️, photo attachments 📷, product cards 🛍️, coupon sharing 🎟️, order tracking 🧾, status dropdown, 1-click storage cleanup 🧹, and Asia/Dhaka local timezone |
+| 🏪 **Storefront** | Modern responsive homepage, shop catalog, single product, contact, cart, order confirmation |
+| 🎨 **3-Color Theme Engine** | Pick 3 theme colors in admin → site colors update live across storefront & chat widget |
+| 🏷️ **Brands** | 9 Official brand pages (Nike, Adidas, Apex, Casio, Seiko, Picard, Fossil, Ray-Ban, Woodland) with logos and product counts |
+| 📦 **Products** | SKUs, color/size variants, flash sales, specs, customer reviews, square product media |
+| 🗂️ **Categories** | 6 Categories (Sneakers & Running Shoes, Formal & Dress Footwear, Luxury & Sport Watches, Leather Belts & Wallets, Bags & Backpacks, Eyewear & Accessories) |
+| 🎡 **Hero Banners** | Widescreen hero slider banners with custom background fit and call-to-action buttons |
+| 🛒 **Cart & Checkout** | Session cart, coupon codes, mobile payment (bKash, Nagad, Rocket, COD), auto contact sync |
+| 📋 **Orders** | Order management, status tracking, invoice PDF printing, UTM source tracking |
+| 🛡️ **Fraud Detection** | Zero-API local risk scoring, TrxID validation, blacklist management |
+| 👥 **Staff & Role Control** | Role-based access control (RBAC), 4 staff roles, account suspension |
+| 📜 **Staff Audit Logs** | Automated activity log timeline for all staff actions + 1-click Clear Audit Logs feature |
+| 👤 **Admin Profile** | Super Admin profile management to update email address & password credentials (`/admin/profile`) |
+| 👥 **Visitor Analytics** | Live real-time visitor monitor, 14-day Chart.js line chart, device tracking |
+| 🚚 **Courier Sync** | 1-click dispatch to Steadfast, Pathao, RedX via API |
+| 🛒 **Abandoned Carts** | Track uncompleted checkouts, 1-click WhatsApp/SMS recovery |
+| ⚡ **Admin Cache Clear** | 1-click topbar cache optimization (`optimize:clear`) |
+| ⚙️ **Admin Dashboard** | Settings, Banner, Brand, Category, Product, Order, Coupon, User management |
+| 🔐 **Auth** | Login, Register, Google OAuth 1-click login, OTP email verification |
+| 📨 **Mail & OTP** | SMTP config, customer OTP toggle |
+| 📈 **SEO & Tracking** | Meta tags, Facebook Pixel, Google Analytics / GTM |
 
 ---
 
@@ -84,7 +85,7 @@ php artisan migrate:fresh --seed
 > This runs **all** migrations and seeds:
 > - Super Admin and staff accounts (see credentials below)
 > - Default site settings for **SoleBd**
-> - 9 Brands, 6 Categories, 72 Products, SKUs, variants, banners, coupons, reviews, orders, visitor traffic, and audit logs
+> - 9 Brands, 6 Categories, 72 Products, SKUs, variants, banners, coupons, reviews, orders, support chats, visitor traffic, and audit logs
 
 ### 6. Link storage (for image uploads)
 
@@ -125,6 +126,19 @@ Visit: **http://127.0.0.1:8000**
 
 ---
 
+## 🧹 Chat Storage Maintenance
+
+To clean up old voice notes and attachment media files from your server storage:
+```bash
+# Clean chat media files older than 90 days
+php artisan chat:prune --days=90
+
+# Clean ONLY attachment files (keeping text history)
+php artisan chat:prune --days=60 --attachments-only
+```
+
+---
+
 ## 🔑 Default Login Credentials
 
 ### Admin & Staff Panel — `/admin`
@@ -161,6 +175,7 @@ Visit: **http://127.0.0.1:8000**
 | `seedProducts()`        | 72 product catalog items linked to categories and brands                |
 | `seedReviews()`         | Customer product reviews                                                 |
 | `seedOrders()`          | Sample orders with fraud risk scores and UTM source tracking             |
+| `seedConversations()`   | Sample customer live support chat threads & messages                     |
 | `seedVisitorLogs()`     | 14 days of realistic storefront traffic for Visitor Analytics            |
 | `seedStaffActivityLogs()`| Sample audit timeline entries for employee action logs                   |
 
