@@ -20,37 +20,40 @@
 @endif
 
 <header class="site-header sticky top-0 z-40 bg-white shadow-sm border-b border-emerald-100">
-  {{-- ROW 1: Logo + Modern Search + Actions --}}
+  {{-- ROW 1: Logo + Ultra-Sleek Search + Aligned Actions --}}
   <div class="bg-white border-b border-stone-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3 sm:gap-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 sm:gap-6">
       
       {{-- Mobile Menu Toggle & Brand Logo --}}
       <div class="flex items-center gap-3 shrink-0">
-        <button type="button" data-open-menu class="lg:hidden text-stone-700 hover:text-emerald-700 p-2 rounded-xl hover:bg-emerald-50 transition cursor-pointer" aria-label="Open Menu">
+        <button type="button" data-open-menu class="lg:hidden text-stone-700 hover:text-emerald-700 p-2 rounded-2xl hover:bg-emerald-50 transition cursor-pointer" aria-label="Open Menu">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
 
         @include('partials.brand')
       </div>
 
-      {{-- Modern Search Bar --}}
+      {{-- Modern Search Bar (Pill Shaped & Spacious) --}}
       <form action="{{ route('shop') }}" method="GET" class="hidden md:flex flex-1 max-w-xl lg:max-w-2xl mx-auto">
-        <div class="flex w-full rounded-2xl border border-emerald-200/80 bg-emerald-50/30 hover:bg-white focus-within:bg-white focus-within:border-emerald-600 focus-within:ring-4 focus-within:ring-emerald-600/10 transition-all duration-200 overflow-hidden shadow-2xs">
-          <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ setting('search_placeholder', 'Search raw honey, mustard oil, deshi ghee, chia seeds...') }}" class="flex-1 px-4 py-2.5 text-xs sm:text-sm font-medium bg-transparent focus:outline-none text-stone-800 placeholder:text-stone-400" autocomplete="off" />
-          <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 flex items-center justify-center transition-colors group cursor-pointer" aria-label="Search">
-            <svg class="w-4 h-4 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+        <div class="relative flex items-center w-full h-11 sm:h-12 rounded-full border border-emerald-200/90 bg-emerald-50/20 hover:bg-white focus-within:bg-white focus-within:border-emerald-600 focus-within:ring-4 focus-within:ring-emerald-600/10 transition-all duration-200 shadow-2xs overflow-hidden px-1.5">
+          <div class="pl-3.5 pr-1 text-emerald-600 shrink-0">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+          </div>
+          <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ setting('search_placeholder', 'Search raw honey, mustard oil, deshi ghee, chia seeds...') }}" class="flex-1 px-2.5 text-xs sm:text-sm font-semibold bg-transparent focus:outline-none text-stone-800 placeholder:text-stone-400 placeholder:font-normal" autocomplete="off" />
+          <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-5 h-8 sm:h-9 rounded-full flex items-center justify-center transition-colors shadow-2xs shrink-0 cursor-pointer" aria-label="Search">
+            <span>Search</span>
           </button>
         </div>
       </form>
 
-      {{-- Top Actions: Track Order, Account, Cart --}}
+      {{-- Top Actions: Track Order, Account, Cart (All Uniform h-11 Height) --}}
       <div class="ml-auto flex items-center gap-2 sm:gap-3 shrink-0">
-        <button type="button" data-toggle-search class="md:hidden p-2 text-stone-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl" aria-label="Search" aria-expanded="false" aria-controls="mobileSearchPanel">
+        <button type="button" data-toggle-search class="md:hidden p-2 text-stone-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-2xl" aria-label="Search" aria-expanded="false" aria-controls="mobileSearchPanel">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
         </button>
 
         {{-- Track Order Pill --}}
-        <a href="{{ route('track') }}" class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-extrabold text-stone-700 bg-stone-50 hover:bg-emerald-50 hover:text-emerald-700 border border-stone-200/80 transition-all duration-200 shadow-2xs group">
+        <a href="{{ route('track') }}" class="hidden sm:inline-flex items-center gap-2 h-10 sm:h-11 px-3.5 rounded-2xl text-xs sm:text-sm font-extrabold text-stone-700 bg-stone-50 hover:bg-emerald-50 hover:text-emerald-700 border border-stone-200/80 transition-all duration-200 shadow-2xs group">
           <svg class="w-4 h-4 text-emerald-600 group-hover:scale-110 transition-transform shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
             <path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a2 2 0 104 0m-5-8h2.5"/>
@@ -62,7 +65,7 @@
         @include('storefront.partials.account-dropdown', ['lightHeader' => false])
 
         {{-- Cart Module Button --}}
-        <button type="button" data-open-cart class="relative flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm transition-all shadow-sm group cursor-pointer" aria-label="Cart">
+        <button type="button" data-open-cart class="h-10 sm:h-11 relative flex items-center gap-2 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm transition-all shadow-xs group cursor-pointer" aria-label="Cart">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="group-hover:scale-110 transition-transform">
             <path d="M6 6h15l-1.5 9H7.5L6 6Zm0 0-.7-3H3"/>
             <circle cx="9" cy="20" r="1.3"/>
