@@ -3,19 +3,19 @@
   $lightHeader = $lightHeader ?? false;
 @endphp
 <div class="relative" data-account-menu>
-  <button type="button" data-account-toggle class="h-10 sm:h-11 flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-extrabold rounded-2xl border border-stone-200/80 bg-stone-50 hover:bg-emerald-50 hover:border-emerald-200 text-stone-800 hover:text-emerald-700 transition-all shadow-2xs cursor-pointer" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
+  <button type="button" data-account-toggle class="h-10 sm:h-11 flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-extrabold rounded-2xl border transition-all shadow-2xs cursor-pointer {{ $lightHeader ? 'border-white/20 bg-white/10 hover:bg-white/20 text-white' : 'border-stone-200/80 bg-stone-50 hover:bg-emerald-50 hover:border-emerald-200 text-stone-800 hover:text-emerald-700' }}" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
     @auth
-      <span class="grid h-6 w-6 place-items-center rounded-full bg-emerald-600 text-white text-[11px] font-extrabold shrink-0">
+      <span class="grid h-6 w-6 place-items-center rounded-full {{ $lightHeader ? 'bg-amber-400 text-stone-950' : 'bg-emerald-600 text-white' }} text-[11px] font-extrabold shrink-0">
         {{ strtoupper(substr($accountUser->name, 0, 1)) }}
       </span>
       <span class="hidden sm:inline truncate max-w-[90px]">{{ Str::before($accountUser->name, ' ') }}</span>
     @else
-      <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <svg class="w-4 h-4 {{ $lightHeader ? 'text-amber-300' : 'text-emerald-600' }} shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 20c0-4 4-6 8-6s8 2 8 6"/>
       </svg>
       <span class="hidden sm:inline">Account</span>
     @endauth
-    <svg class="w-3 h-3 text-stone-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
+    <svg class="w-3 h-3 {{ $lightHeader ? 'text-white/60' : 'text-stone-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
   </button>
 
   <div data-account-dropdown class="hidden absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-100 bg-white shadow-soft z-50 overflow-hidden" role="menu">
