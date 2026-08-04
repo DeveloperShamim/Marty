@@ -77,48 +77,72 @@
     </div>
   </div>
 
-  {{-- ROW 2: Redesigned Organic Navigation Bar --}}
-  <div class="hidden lg:block bg-stone-900 text-stone-100 shadow-md">
-    <div class="max-w-7xl mx-auto px-4 sm:px-5 h-12 text-xs sm:text-sm font-semibold">
-      <nav class="flex items-center justify-between h-full">
-        {{-- Left Navigation Links --}}
-        <div class="flex items-center gap-1 sm:gap-1.5 h-full">
-          {{-- Home --}}
-          <a href="{{ route('home') }}" class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 {{ request()->routeIs('home') ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-stone-200 hover:text-white hover:bg-stone-800' }}">
-            <span>🏠 Home</span>
-          </a>
+  {{-- ROW 2: Clean Farm-Fresh Organic Navigation Bar --}}
+  <div class="hidden lg:block bg-white border-t border-stone-100 border-b border-stone-200/80 shadow-2xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-12 text-xs sm:text-sm font-semibold">
+      <div class="flex items-center justify-between h-full gap-4">
+        
+        {{-- Left: Browse Categories Dropdown Button --}}
+        <div class="relative group/catdropdown shrink-0">
+          <button type="button" 
+                  onclick="event.stopPropagation(); document.getElementById('catDropdownMenu').classList.toggle('hidden');" 
+                  class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-4 py-2 rounded-xl flex items-center gap-2 shadow-xs transition-all cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            <span>Browse Categories</span>
+            <svg class="w-3.5 h-3.5 transition-transform group-hover/catdropdown:rotate-180 text-emerald-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
+          </button>
           
-          {{-- All Products --}}
-          <a href="{{ route('shop') }}" class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 {{ request()->routeIs('shop') && ! request('flash') && ! request('brand') && ! isset($activeCategory) ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-stone-200 hover:text-white hover:bg-stone-800' }}">
-            <span>🌿 All Products</span>
+          {{-- Categories Dropdown Menu --}}
+          <div id="catDropdownMenu" class="absolute left-0 top-full pt-1.5 hidden group-hover/catdropdown:block z-50 w-72">
+            <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 p-2 space-y-1">
+              <a href="{{ route('shop') }}" class="flex items-center justify-between gap-2 px-3 py-2 text-xs font-extrabold text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors">
+                <span>🌿 View All Categories</span>
+                <span>&rarr;</span>
+              </a>
+              <div class="h-px bg-stone-100 my-1"></div>
+              @foreach($navCats as $cat)
+                <a href="{{ route('shop.category', $cat) }}" class="flex items-center justify-between gap-2 px-3.5 py-2.5 text-xs font-bold text-stone-700 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors">
+                  <span class="flex items-center gap-2">
+                    @if($cat->icon)<span class="text-sm">{{ $cat->icon }}</span>@endif
+                    <span>{{ $cat->name }}</span>
+                  </span>
+                  @if(isset($cat->products_count) && $cat->products_count > 0)
+                    <span class="text-[10px] text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-full font-mono">{{ $cat->products_count }}</span>
+                  @endif
+                </a>
+              @endforeach
+            </div>
+          </div>
+        </div>
+
+        {{-- Center: Clean Category Links (Single Line, Spacious) --}}
+        <nav class="flex items-center gap-1 sm:gap-2 overflow-x-auto whitespace-nowrap scrollbar-none py-1">
+          <a href="{{ route('home') }}" class="px-3 py-1.5 rounded-xl transition-all font-bold {{ request()->routeIs('home') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' : 'text-stone-700 hover:text-emerald-700 hover:bg-stone-50' }}">
+            Home
           </a>
 
-          <div class="h-4 w-px bg-stone-700/80 mx-1"></div>
-
-          {{-- Top Categories with Icons --}}
           @foreach($topCats as $cat)
-            <a href="{{ route('shop.category', $cat) }}" class="px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap {{ optional($activeCategory ?? null)->id === $cat->id ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-stone-200 hover:text-white hover:bg-stone-800' }}">
+            <a href="{{ route('shop.category', $cat) }}" class="px-3 py-1.5 rounded-xl transition-all font-bold flex items-center gap-1.5 {{ optional($activeCategory ?? null)->id === $cat->id ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' : 'text-stone-700 hover:text-emerald-700 hover:bg-stone-50' }}">
               @if($cat->icon)<span class="text-sm">{{ $cat->icon }}</span>@endif
               <span>{{ $cat->name }}</span>
             </a>
           @endforeach
-        </div>
+        </nav>
 
-        {{-- Right Action Menus: Brands, Deals & Support --}}
-        <div class="flex items-center gap-1 sm:gap-2 h-full">
-          {{-- Brands Dropdown --}}
+        {{-- Right: Brands & Deals --}}
+        <div class="flex items-center gap-2 shrink-0">
           @if($navBrs->isNotEmpty())
             <div class="relative group/branddropdown" id="brandDropdownContainer">
               <button type="button" 
                       onclick="event.stopPropagation(); document.getElementById('brandDropdownMenu').classList.toggle('hidden');" 
-                      class="px-3 py-1.5 rounded-lg transition-all {{ request()->routeIs('shop.brand') || request('brand') ? 'bg-emerald-600 text-white font-bold shadow-xs' : 'text-stone-200 hover:text-white hover:bg-stone-800' }} inline-flex items-center gap-1.5 cursor-pointer">
+                      class="px-3.5 py-1.5 rounded-xl transition-all text-xs font-extrabold text-stone-700 hover:text-emerald-700 hover:bg-emerald-50 border border-stone-200/80 inline-flex items-center gap-1.5 cursor-pointer shadow-2xs">
                 <span>🏷️ Brands</span>
                 <svg class="w-3.5 h-3.5 transition-transform group-hover/branddropdown:rotate-180 text-stone-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
               </button>
-              <div id="brandDropdownMenu" class="absolute right-0 top-full pt-1 hidden group-hover/branddropdown:block z-50 w-[400px]">
+              <div id="brandDropdownMenu" class="absolute right-0 top-full pt-1.5 hidden group-hover/branddropdown:block z-50 w-[380px]">
                 <div class="bg-white text-stone-800 rounded-2xl shadow-2xl border border-stone-200 p-4 space-y-3">
                   <div class="flex items-center justify-between border-b border-stone-100 pb-2">
-                    <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-800 flex items-center gap-1">🌱 Trusted Organic Brands</span>
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-800">🌱 Organic Brands</span>
                     <a href="{{ route('shop') }}" class="text-xs font-bold text-emerald-600 hover:underline">View All &rarr;</a>
                   </div>
                   <div class="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
@@ -127,7 +151,7 @@
                         <img src="{{ $b->logoUrl() }}" class="h-7 w-7 object-contain rounded-md border border-stone-100 bg-white p-0.5 shrink-0" alt="{{ $b->name }}">
                         <div class="min-w-0 flex-1">
                           <span class="block text-xs font-bold text-stone-900 group-hover/item:text-emerald-700 truncate">{{ $b->name }}</span>
-                          <span class="block text-[10px] text-stone-400">100% Organic</span>
+                          <span class="block text-[10px] text-stone-400">Organic</span>
                         </div>
                       </a>
                     @endforeach
@@ -137,18 +161,15 @@
             </div>
           @endif
 
-          {{-- Deals --}}
           @if($hasFlashSale ?? true)
-            <a href="{{ route('shop', ['flash' => 1]) }}" class="px-3 py-1.5 rounded-lg transition-all text-amber-300 bg-amber-950/80 hover:bg-amber-900 border border-amber-500/30 font-bold flex items-center gap-1.5 shadow-xs">
-              <span class="animate-pulse text-xs">⚡</span>
+            <a href="{{ route('shop', ['flash' => 1]) }}" class="px-3.5 py-1.5 rounded-xl transition-all text-xs font-extrabold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 flex items-center gap-1.5 shadow-2xs">
+              <span class="animate-pulse">⚡</span>
               <span>Deals</span>
             </a>
           @endif
-
-          {{-- Help & Support --}}
-          <a href="{{ route('contact') }}" class="px-3 py-1.5 rounded-lg transition-all {{ request()->routeIs('contact') ? 'bg-emerald-600 text-white font-bold' : 'text-stone-300 hover:text-white hover:bg-stone-800' }}">Help</a>
         </div>
-      </nav>
+
+      </div>
     </div>
   </div>
 
