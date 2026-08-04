@@ -20,11 +20,11 @@
 @endif
 
 <header class="site-header sticky top-0 z-40 bg-white shadow-sm border-b border-emerald-100">
-  {{-- ROW 1: Logo + Ultra-Sleek Search + Aligned Actions --}}
-  <div class="bg-white border-b border-stone-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-3 sm:gap-6">
+  {{-- ROW 1: Completely Redesigned Farm-Fresh Header --}}
+  <div class="bg-white border-b border-emerald-100/80 py-3 sm:py-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 sm:gap-6">
       
-      {{-- Mobile Menu Toggle & Brand Logo --}}
+      {{-- 1. Brand Logo --}}
       <div class="flex items-center gap-3 shrink-0">
         <button type="button" data-open-menu class="lg:hidden text-stone-700 hover:text-emerald-700 p-2 rounded-2xl hover:bg-emerald-50 transition cursor-pointer" aria-label="Open Menu">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -33,24 +33,50 @@
         @include('partials.brand')
       </div>
 
-      {{-- Modern Search Bar (Pill Shaped & Spacious) --}}
+      {{-- 2. Integrated Category + Search Engine (Center) --}}
       <form action="{{ route('shop') }}" method="GET" class="hidden md:flex flex-1 max-w-xl lg:max-w-2xl mx-auto">
-        <div class="relative flex items-center w-full h-11 sm:h-12 rounded-full border border-emerald-200/90 bg-emerald-50/20 hover:bg-white focus-within:bg-white focus-within:border-emerald-600 focus-within:ring-4 focus-within:ring-emerald-600/10 transition-all duration-200 shadow-2xs overflow-hidden px-1.5">
-          <div class="pl-3.5 pr-1 text-emerald-600 shrink-0">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+        <div class="flex w-full h-11 sm:h-12 rounded-2xl border-2 border-emerald-600 bg-white shadow-sm overflow-hidden transition-all focus-within:ring-4 focus-within:ring-emerald-600/10">
+          
+          {{-- Category Selector Dropdown --}}
+          <div class="hidden lg:flex items-center border-r border-stone-200 bg-stone-50/80 px-3 text-xs font-bold text-stone-700 shrink-0">
+            <select name="category" onchange="this.form.submit()" class="bg-transparent text-stone-700 text-xs font-bold focus:outline-none cursor-pointer pr-1">
+              <option value="">All Categories</option>
+              @foreach($navCats as $cat)
+                <option value="{{ $cat->slug }}" {{ request('category') === $cat->slug ? 'selected' : '' }}>{{ $cat->name }}</option>
+              @endforeach
+            </select>
           </div>
-          <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ setting('search_placeholder', 'Search raw honey, mustard oil, deshi ghee, chia seeds...') }}" class="flex-1 px-2.5 text-xs sm:text-sm font-semibold bg-transparent focus:outline-none text-stone-800 placeholder:text-stone-400 placeholder:font-normal" autocomplete="off" />
-          <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-5 h-8 sm:h-9 rounded-full flex items-center justify-center transition-colors shadow-2xs shrink-0 cursor-pointer" aria-label="Search">
-            <span>Search</span>
+
+          {{-- Search Input --}}
+          <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ setting('search_placeholder', 'Search raw honey, mustard oil, deshi ghee, chia seeds...') }}" class="flex-1 px-4 text-xs sm:text-sm font-semibold bg-transparent focus:outline-none text-stone-900 placeholder:text-stone-400 placeholder:font-normal" autocomplete="off" />
+
+          {{-- Search Action Button --}}
+          <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-6 flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0" aria-label="Search">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+            <span class="hidden sm:inline">Search</span>
           </button>
         </div>
       </form>
 
-      {{-- Top Actions: Track Order, Account, Cart (All Uniform h-11 Height) --}}
+      {{-- 3. Right Quick Actions (Helpline, Track, Account, Cart) --}}
       <div class="ml-auto flex items-center gap-2 sm:gap-3 shrink-0">
+        {{-- Mobile Search Toggle --}}
         <button type="button" data-toggle-search class="md:hidden p-2 text-stone-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-2xl" aria-label="Search" aria-expanded="false" aria-controls="mobileSearchPanel">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
         </button>
+
+        {{-- Phone Hotline Badge (Desktop) --}}
+        @if(setting('contact_phone'))
+          <a href="tel:{{ setting('contact_phone') }}" class="hidden xl:flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-emerald-50/80 border border-emerald-200/60 text-stone-800 hover:bg-emerald-100/80 transition-all">
+            <div class="h-8 w-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-xs shrink-0 shadow-2xs">
+              📞
+            </div>
+            <div class="text-left leading-tight">
+              <span class="block text-[10px] font-extrabold uppercase tracking-wider text-emerald-800">Helpline</span>
+              <span class="block text-xs font-black text-stone-900">{{ setting('contact_phone') }}</span>
+            </div>
+          </a>
+        @endif
 
         {{-- Track Order Pill --}}
         <a href="{{ route('track') }}" class="hidden sm:inline-flex items-center gap-2 h-10 sm:h-11 px-3.5 rounded-2xl text-xs sm:text-sm font-extrabold text-stone-700 bg-stone-50 hover:bg-emerald-50 hover:text-emerald-700 border border-stone-200/80 transition-all duration-200 shadow-2xs group">
@@ -64,8 +90,8 @@
         {{-- My Account Dropdown --}}
         @include('storefront.partials.account-dropdown', ['lightHeader' => false])
 
-        {{-- Cart Module Button --}}
-        <button type="button" data-open-cart class="h-10 sm:h-11 relative flex items-center gap-2 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm transition-all shadow-xs group cursor-pointer" aria-label="Cart">
+        {{-- Cart Button --}}
+        <button type="button" data-open-cart class="h-10 sm:h-11 relative flex items-center gap-2 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm transition-all shadow-sm group cursor-pointer" aria-label="Cart">
           <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="group-hover:scale-110 transition-transform">
             <path d="M6 6h15l-1.5 9H7.5L6 6Zm0 0-.7-3H3"/>
             <circle cx="9" cy="20" r="1.3"/>
