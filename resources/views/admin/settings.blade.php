@@ -126,7 +126,7 @@
           <p class="text-xs text-gray-500 mt-0.5">Set 3 core colors (60-30-10 rule) — system matches hover states &amp; soft tints</p>
         </div>
 
-        <button type="button" onclick="setThemeColors('#E8751B', '#353535', '#F8FAFC')" class="px-3 py-1.5 text-xs font-bold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200 rounded-xl transition inline-flex items-center gap-1.5 cursor-pointer">
+        <button type="button" onclick="setThemeColors('#16A34A', '#1C1917', '#FAFAF5')" class="px-3 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition inline-flex items-center gap-1.5 cursor-pointer">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           <span>Reset Default Colors</span>
         </button>
@@ -136,8 +136,8 @@
         <div class="bg-gray-50/70 p-3.5 rounded-xl border border-gray-200/80 space-y-2">
           <label class="lbl text-xs font-bold text-gray-800">1. Primary Accent (10%)</label>
           <div class="flex items-center gap-2">
-            <input type="color" id="primaryPicker" value="{{ $settings['theme_primary_color'] ?? '#E8751B' }}" class="h-9 w-12 rounded-lg border border-gray-300 p-0.5 bg-white cursor-pointer shrink-0" onchange="document.getElementById('primaryInput').value = this.value" />
-            <input type="text" id="primaryInput" name="theme_primary_color" class="inp font-mono text-xs uppercase" value="{{ $settings['theme_primary_color'] ?? '#E8751B' }}" placeholder="#E8751B" oninput="document.getElementById('primaryPicker').value = this.value" />
+            <input type="color" id="primaryPicker" value="{{ $settings['theme_primary_color'] ?? '#16A34A' }}" class="h-9 w-12 rounded-lg border border-gray-300 p-0.5 bg-white cursor-pointer shrink-0" onchange="document.getElementById('primaryInput').value = this.value" />
+            <input type="text" id="primaryInput" name="theme_primary_color" class="inp font-mono text-xs uppercase" value="{{ $settings['theme_primary_color'] ?? '#16A34A' }}" placeholder="#16A34A" oninput="document.getElementById('primaryPicker').value = this.value" />
           </div>
           <p class="text-[10px] text-gray-500">Action buttons, badges, pills</p>
         </div>
@@ -145,8 +145,8 @@
         <div class="bg-gray-50/70 p-3.5 rounded-xl border border-gray-200/80 space-y-2">
           <label class="lbl text-xs font-bold text-gray-800">2. Dark Heading (30%)</label>
           <div class="flex items-center gap-2">
-            <input type="color" id="darkPicker" value="{{ $settings['theme_dark_color'] ?? '#353535' }}" class="h-9 w-12 rounded-lg border border-gray-300 p-0.5 bg-white cursor-pointer shrink-0" onchange="document.getElementById('darkInput').value = this.value" />
-            <input type="text" id="darkInput" name="theme_dark_color" class="inp font-mono text-xs uppercase" value="{{ $settings['theme_dark_color'] ?? '#353535' }}" placeholder="#353535" oninput="document.getElementById('darkPicker').value = this.value" />
+            <input type="color" id="darkPicker" value="{{ $settings['theme_dark_color'] ?? '#1C1917' }}" class="h-9 w-12 rounded-lg border border-gray-300 p-0.5 bg-white cursor-pointer shrink-0" onchange="document.getElementById('darkInput').value = this.value" />
+            <input type="text" id="darkInput" name="theme_dark_color" class="inp font-mono text-xs uppercase" value="{{ $settings['theme_dark_color'] ?? '#1C1917' }}" placeholder="#1C1917" oninput="document.getElementById('darkPicker').value = this.value" />
           </div>
           <p class="text-[10px] text-gray-500">Headings, titles, top nav bar</p>
         </div>
@@ -154,8 +154,8 @@
         <div class="bg-gray-50/70 p-3.5 rounded-xl border border-gray-200/80 space-y-2">
           <label class="lbl text-xs font-bold text-gray-800">3. Soft Surface (60%)</label>
           <div class="flex items-center gap-2">
-            <input type="color" id="surfacePicker" value="{{ $settings['theme_surface_color'] ?? '#F8FAFC' }}" class="h-9 w-12 rounded-lg border border-gray-300 p-0.5 bg-white cursor-pointer shrink-0" onchange="document.getElementById('surfaceInput').value = this.value" />
-            <input type="text" id="surfaceInput" name="theme_surface_color" class="inp font-mono text-xs uppercase" value="{{ $settings['theme_surface_color'] ?? '#F8FAFC' }}" placeholder="#F8FAFC" oninput="document.getElementById('surfacePicker').value = this.value" />
+            <input type="color" id="surfacePicker" value="{{ $settings['theme_surface_color'] ?? '#FAFAF5' }}" class="h-9 w-12 rounded-lg border border-gray-300 p-0.5 bg-white cursor-pointer shrink-0" onchange="document.getElementById('surfaceInput').value = this.value" />
+            <input type="text" id="surfaceInput" name="theme_surface_color" class="inp font-mono text-xs uppercase" value="{{ $settings['theme_surface_color'] ?? '#FAFAF5' }}" placeholder="#FAFAF5" oninput="document.getElementById('surfacePicker').value = this.value" />
           </div>
           <p class="text-[10px] text-gray-500">Canvas &amp; section backgrounds</p>
         </div>
@@ -164,17 +164,20 @@
       <!-- Presets -->
       <div class="pt-2 border-t border-gray-100 flex flex-wrap gap-2 items-center">
         <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Presets:</span>
-        <button type="button" onclick="setThemeColors('#E8751B', '#353535', '#F8FAFC')" class="text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
-          <span class="h-3 w-3 rounded-full bg-[#E8751B]"></span> Warm Orange
+        <button type="button" onclick="setThemeColors('#16A34A', '#1C1917', '#FAFAF5')" class="text-xs font-extrabold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer shadow-2xs">
+          <span class="h-3 w-3 rounded-full bg-[#16A34A]"></span> 🌿 Fresh Organic Eco Green
         </button>
-        <button type="button" onclick="setThemeColors('#2563EB', '#0F172A', '#F8FAFC')" class="text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
-          <span class="h-3 w-3 rounded-full bg-[#2563EB]"></span> Royal Sapphire
+        <button type="button" onclick="setThemeColors('#D97706', '#064E3B', '#FFFDF9')" class="text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
+          <span class="h-3 w-3 rounded-full bg-[#D97706]"></span> 🍯 Harvest Gold &amp; Green
         </button>
         <button type="button" onclick="setThemeColors('#059669', '#111827', '#F4F4F5')" class="text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
-          <span class="h-3 w-3 rounded-full bg-[#059669]"></span> Emerald Luxe
+          <span class="h-3 w-3 rounded-full bg-[#059669]"></span> 🥦 Emerald Farm Fresh
         </button>
-        <button type="button" onclick="setThemeColors('#DC2626', '#1F2937', '#F9FAFB')" class="text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
-          <span class="h-3 w-3 rounded-full bg-[#DC2626]"></span> Ruby Crimson
+        <button type="button" onclick="setThemeColors('#E8751B', '#353535', '#F8FAFC')" class="text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
+          <span class="h-3 w-3 rounded-full bg-[#E8751B]"></span> 🟠 Warm Sunset Orange
+        </button>
+        <button type="button" onclick="setThemeColors('#2563EB', '#0F172A', '#F8FAFC')" class="text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
+          <span class="h-3 w-3 rounded-full bg-[#2563EB]"></span> 🔵 Royal Sapphire
         </button>
       </div>
 
