@@ -20,39 +20,41 @@ class ProductController extends Controller
             ->take(5)
             ->get();
 
-        $sizes   = $product->variants->where('type', 'Size')->values();
-        $colors  = $product->variants->where('type', 'Color')->values();
-        $weights = $product->variants->where('type', 'Weight')->values();
+        $variantGroups = collect();
 
-        if ($colors->isEmpty() || $sizes->isEmpty()) {
-            $skuColors = collect();
-            $skuSizes = collect();
-            $skuWeights = collect();
+        if ($product->variants && $product->variants->isNotEmpty()) {
+            foreach ($product->variants->groupBy('type') as $type => $items) {
+                $variantGroups->put($type, (object) [
+                    'type'    => $type,
+                    'options' => $items->pluck('value')->unique()->values(),
+                ]);
+            }
+        }
 
+        if ($product->skus && $product->skus->isNotEmpty()) {
+            $skuAttrGroups = [];
             foreach ($product->skus as $sku) {
-                $attrs = $sku->getAttributesData();
-                foreach ($attrs as $k => $v) {
-                    $kLower = strtolower(trim((string)$k));
-                    if (str_contains($kLower, 'col')) {
-                        $skuColors->push((object)['type' => 'Color', 'value' => (string)$v]);
-                    } elseif (str_contains($kLower, 'size')) {
-                        $skuSizes->push((object)['type' => 'Size', 'value' => (string)$v]);
-                    } else {
-                        $skuWeights->push((object)['type' => $k, 'value' => (string)$v]);
+                foreach ($sku->getAttributesData() as $attrKey => $attrVal) {
+                    $kTrim = trim((string) $attrKey);
+                    $vTrim = trim((string) $attrVal);
+                    if ($kTrim !== '' && $vTrim !== '') {
+                        $skuAttrGroups[$kTrim][] = $vTrim;
                     }
                 }
             }
-
-            if ($colors->isEmpty()) {
-                $colors = $skuColors->unique('value')->values();
-            }
-            if ($sizes->isEmpty()) {
-                $sizes = $skuSizes->unique('value')->values();
-            }
-            if ($weights->isEmpty()) {
-                $weights = $skuWeights->unique('value')->values();
+            foreach ($skuAttrGroups as $attrKey => $vals) {
+                if (! $variantGroups->has($attrKey)) {
+                    $variantGroups->put($attrKey, (object) [
+                        'type'    => $attrKey,
+                        'options' => collect($vals)->unique()->values(),
+                    ]);
+                }
             }
         }
+
+        $sizes   = $variantGroups->has('Size') ? $variantGroups->get('Size')->options->map(fn($v) => (object)['type'=>'Size','value'=>$v]) : collect();
+        $colors  = $variantGroups->has('Color') ? $variantGroups->get('Color')->options->map(fn($v) => (object)['type'=>'Color','value'=>$v]) : collect();
+        $weights = $variantGroups->has('Weight') ? $variantGroups->get('Weight')->options->map(fn($v) => (object)['type'=>'Weight','value'=>$v]) : collect();
 
         $reviews = $product->approvedReviews()
             ->with('user')
@@ -71,6 +73,7 @@ class ProductController extends Controller
         return view('storefront.product', compact(
             'product',
             'related',
+            'variantGroups',
             'sizes',
             'colors',
             'weights',

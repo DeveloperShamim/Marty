@@ -156,38 +156,18 @@
 
       <hr class="border-stone-100 my-4" />
 
-      {{-- Variants --}}
-      @if($colors->isNotEmpty())
-        <div data-variant-group="Color">
-          <p class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Color</p>
-          <div class="flex flex-wrap gap-2">
-            @foreach($colors as $v)
-              <button type="button" class="variant-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border border-stone-200 text-stone-700 hover:border-stone-300" data-type="Color" data-value="{{ $v->value }}">{{ $v->value }}</button>
-            @endforeach
+      {{-- Dynamic Variants (Color, Size, Weight, Packaging, Pack Option, etc.) --}}
+      @if(isset($variantGroups) && $variantGroups->isNotEmpty())
+        @foreach($variantGroups as $groupType => $group)
+          <div data-variant-group="{{ $groupType }}" class="mb-3">
+            <p class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">{{ $groupType }}</p>
+            <div class="flex flex-wrap gap-2">
+              @foreach($group->options as $optValue)
+                <button type="button" class="variant-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border border-stone-200 text-stone-700 hover:border-stone-300" data-type="{{ $groupType }}" data-value="{{ $optValue }}">{{ $optValue }}</button>
+              @endforeach
+            </div>
           </div>
-        </div>
-      @endif
-
-      @if($sizes->isNotEmpty())
-        <div data-variant-group="Size">
-          <p class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Size</p>
-          <div class="flex flex-wrap gap-2">
-            @foreach($sizes as $v)
-              <button type="button" class="variant-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border border-stone-200 text-stone-700 hover:border-stone-300" data-type="Size" data-value="{{ $v->value }}">{{ $v->value }}</button>
-            @endforeach
-          </div>
-        </div>
-      @endif
-
-      @if($weights->isNotEmpty())
-        <div data-variant-group="Weight">
-          <p class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Option</p>
-          <div class="flex flex-wrap gap-2">
-            @foreach($weights as $v)
-              <button type="button" class="variant-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border border-stone-200 text-stone-700 hover:border-stone-300" data-type="Weight" data-value="{{ $v->value }}">{{ $v->value }}</button>
-            @endforeach
-          </div>
-        </div>
+        @endforeach
       @endif
 
       {{-- Quantity Stepper --}}
@@ -416,38 +396,49 @@
   };
 })();
 
-window.productSkus = {!! $skusPayload->toJson() !!};
+(function() {
+  window.productSkus = {!! $skusPayload->toJson() !!};
+})();
 
 function findPdpMatchingSku(skus, selectedAttrs) {
-  if (!skus || !skus.length) return null;
-  const selectedKeys = Object.keys(selectedAttrs);
-  if (!selectedKeys.length) return null;
+  if (!skus || skus.length === 0) return null;
+  const selKeys = Object.keys(selectedAttrs).filter(k => selectedAttrs[k]);
+  if (selKeys.length === 0) return null;
 
-  return skus.find(s => {
-    if (!s.attributes) return false;
-    const attrs = s.attributes;
-    const attrMap = {};
-    Object.keys(attrs).forEach(k => {
-      attrMap[String(k).trim().toLowerCase()] = String(attrs[k]).trim().toLowerCase();
+  return skus.find(sku => {
+    const attrs = sku.attributes || {};
+    return selKeys.every(k => {
+      const targetVal = String(selectedAttrs[k] || '').trim().toLowerCase();
+      const skuVal = String(attrs[k] || '').trim().toLowerCase();
+      return skuVal === targetVal;
     });
-
-    return selectedKeys.every(k => {
-      const kLower = String(k).trim().toLowerCase();
-      const expectedVal = String(selectedAttrs[k]).trim().toLowerCase();
-      return attrMap[kLower] === expectedVal;
-    });
-  });
+  }) || null;
 }
 
 function syncPdpVariantStockAndPrice() {
   const priceEl = document.getElementById('pdPrice');
   const regEl = document.getElementById('pdRegularPrice');
+  const badgeEl = document.getElementById('pdDiscountBadge');
+  const percentEl = document.getElementById('pdDiscountPercent');
   const addBtn = document.getElementById('pdAddToCart');
   const buyBtn = document.getElementById('pdBuyNow');
   const btnText = document.getElementById('pdAddToCartText');
 
-  const basePrice = parseFloat(priceEl?.getAttribute('data-base-price') || '0');
-  const baseReg = regEl ? parseFloat(regEl.getAttribute('data-base-regular') || '0') : 0;
+  if (!priceEl) return;
+
+  const basePrice = parseFloat(priceEl.getAttribute('data-base-price') || '0');
+  const baseReg = regEl ? parseFloat(regEl.getAttribute('data-base-regular') || '0') : basePrice;
+
+  // Auto select 1st option in any group that doesn't have a selection yet
+  document.querySelectorAll('[data-variant-group]').forEach(group => {
+    if (!group.querySelector('.variant-btn.is-selected')) {
+      const firstBtn = group.querySelector('.variant-btn:not([disabled])') || group.querySelector('.variant-btn');
+      if (firstBtn) {
+        firstBtn.classList.add('is-selected', 'border-2', 'border-brand-500', 'text-brand-600', 'bg-brand-50/40');
+        firstBtn.classList.remove('border-stone-200', 'text-stone-700');
+      }
+    }
+  });
 
   // Selected attributes
   const selectedAttrs = {};
@@ -468,13 +459,14 @@ function syncPdpVariantStockAndPrice() {
     window.selectProductImageByColor(selectedColor);
   }
 
-  // Update Size availability based on selected Color
-  if (selectedColor && window.productSkus && window.productSkus.length > 0) {
-    const sizeGroup = document.querySelector('[data-variant-group="Size"]');
-    if (sizeGroup) {
-      sizeGroup.querySelectorAll('.variant-btn').forEach(btn => {
-        const sizeVal = btn.getAttribute('data-value');
-        const matchingSku = findPdpMatchingSku(window.productSkus, { Color: selectedColor, Size: sizeVal });
+  // Update option availability dynamically across groups
+  if (window.productSkus && window.productSkus.length > 0) {
+    document.querySelectorAll('[data-variant-group]').forEach(group => {
+      const gType = group.getAttribute('data-variant-group');
+      group.querySelectorAll('.variant-btn').forEach(btn => {
+        const val = btn.getAttribute('data-value');
+        const testAttrs = Object.assign({}, selectedAttrs, { [gType]: val });
+        const matchingSku = findPdpMatchingSku(window.productSkus, testAttrs);
 
         if (matchingSku) {
           if (matchingSku.stock > 0) {
@@ -484,30 +476,25 @@ function syncPdpVariantStockAndPrice() {
           } else {
             btn.disabled = true;
             btn.classList.add('opacity-40', 'line-through', 'cursor-not-allowed');
-            btn.title = `Size ${sizeVal} is out of stock for ${selectedColor}`;
+            btn.title = `${val} is out of stock`;
           }
         }
       });
-    }
+    });
   }
 
   // Find exact matching SKU combination
   const matchedSku = findPdpMatchingSku(window.productSkus, selectedAttrs);
 
   let finalPrice = basePrice;
+  let finalReg = baseReg;
   let isAvailable = true;
 
   if (matchedSku) {
     const adj = parseFloat(matchedSku.price_adjustment) || 0;
-    if (adj > 0) {
-      if (adj >= (basePrice * 0.4)) {
-        finalPrice = adj;
-      } else {
-        finalPrice = basePrice + adj;
-      }
-    } else if (adj < 0) {
-      finalPrice = Math.max(0, basePrice + adj);
-    }
+    finalPrice = Math.max(0, basePrice + adj);
+    finalReg = baseReg > 0 ? Math.max(0, baseReg + adj) : finalPrice;
+
     isAvailable = matchedSku.stock > 0;
     if (addBtn) addBtn.dataset.skuId = matchedSku.id;
   }
@@ -519,13 +506,28 @@ function syncPdpVariantStockAndPrice() {
     qtyInput.value = Math.max(1, maxAllowed);
   }
 
-  if (priceEl) {
-    priceEl.textContent = '৳' + finalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
+  // Update Offer / Sale Price element
+  priceEl.textContent = '৳' + finalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  if (regEl && baseReg > 0) {
-    const finalReg = Math.max(0, baseReg + (matchedSku ? (parseFloat(matchedSku.price_adjustment) || 0) : 0));
-    regEl.textContent = '৳' + finalReg.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // Update Regular / MRP Price element & Discount Badge
+  if (regEl) {
+    if (finalReg > finalPrice) {
+      regEl.textContent = '৳' + finalReg.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      regEl.classList.remove('hidden');
+      
+      if (badgeEl && percentEl) {
+        const discPercent = Math.round(((finalReg - finalPrice) / finalReg) * 100);
+        if (discPercent > 0) {
+          percentEl.textContent = discPercent;
+          badgeEl.classList.remove('hidden');
+        } else {
+          badgeEl.classList.add('hidden');
+        }
+      }
+    } else {
+      regEl.classList.add('hidden');
+      if (badgeEl) badgeEl.classList.add('hidden');
+    }
   }
 
   if (addBtn) {

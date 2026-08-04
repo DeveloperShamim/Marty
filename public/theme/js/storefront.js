@@ -358,15 +358,7 @@
     if (matchedSku) {
       currentQmProduct.selectedSkuId = matchedSku.id;
       const adj = parseFloat(matchedSku.price_adjustment) || 0;
-      if (adj > 0) {
-        if (adj >= (basePrice * 0.4)) {
-          finalPrice = adj;
-        } else {
-          finalPrice = basePrice + adj;
-        }
-      } else if (adj < 0) {
-        finalPrice = Math.max(0, basePrice + adj);
-      }
+      finalPrice = Math.max(0, basePrice + adj);
     } else {
       currentQmProduct.selectedSkuId = null;
     }

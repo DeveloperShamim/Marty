@@ -401,6 +401,9 @@ class ProductController extends Controller
             $data['brand'] = Brand::find($data['brand_id'])?->name;
         }
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? '') ?: $data['name']);
+        if (empty($data['sku'])) {
+            $data['sku'] = 'PRD-' . strtoupper(Str::random(8));
+        }
         $this->applyFlags($request, $data, null);
         $data['specifications'] = $this->normalizeSpecifications($request);
 
@@ -408,7 +411,7 @@ class ProductController extends Controller
         $this->syncVariants($product, $request);
         $this->storeImages($product, $request);
 
-        return redirect()->route('admin.products.edit', $product)->with('status', 'Product created.');
+        return redirect()->route('admin.products.edit', $product)->with('status', 'Product created successfully.');
     }
 
     public function edit(Product $product)

@@ -104,16 +104,27 @@
       </div>
 
       <!-- Variants & Combination Inventory -->
-      <div class="card p-5 space-y-5">
+      <div class="card p-5 space-y-5 border border-emerald-100/80 shadow-xs">
         <input type="hidden" name="sku_matrix_submitted" value="1" />
-        <div>
-          <h3 class="font-semibold text-slate-800 text-base">Variants & Stock Inventory Matrix</h3>
-          <p class="text-xs text-slate-400 mt-1">Define sizes/colors, then set individual stock quantities per combination (e.g. Black / Size 40 = 10 pairs).</p>
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+              <span>🌿 Product Options, Weights &amp; Variant Matrix</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-1">Set product weights or pack options (e.g. <code class="bg-slate-100 px-1 py-0.5 rounded text-emerald-800">250g, 500g, 1kg</code> or <code class="bg-slate-100 px-1 py-0.5 rounded text-emerald-800">250ml, 500ml, 1L</code>), then generate stock &amp; price per option.</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">Weights &amp; Variants</span>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-          <div><label class="lbl">Sizes (Comma-separated)</label><input id="sizesInput" name="sizes" class="inp" value="{{ old('sizes', $sizeValues) }}" placeholder="40, 41, 42" /></div>
-          <div><label class="lbl">Colors (Comma-separated)</label><input id="colorsInput" name="colors" class="inp" value="{{ old('colors', $colorValues) }}" placeholder="Black, Brown" /></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-emerald-50/40 p-4 rounded-xl border border-emerald-100">
+          <div>
+            <label class="lbl font-bold text-slate-800">Weights / Sizes / Pack Options <span class="text-slate-400 font-normal">(Comma-separated)</span></label>
+            <input id="sizesInput" name="sizes" class="inp bg-white" value="{{ old('sizes', $sizeValues) }}" placeholder="e.g. 250g, 500g, 1kg (or 250ml, 500ml, 1L)" />
+          </div>
+          <div>
+            <label class="lbl font-bold text-slate-800">Packaging Types / Variants <span class="text-slate-400 font-normal">(Optional, Comma-separated)</span></label>
+            <input id="colorsInput" name="colors" class="inp bg-white" value="{{ old('colors', $colorValues) }}" placeholder="e.g. Glass Jar, Plastic Bottle" />
+          </div>
         </div>
 
         @php
@@ -121,57 +132,61 @@
         @endphp
 
         <div class="pt-3 border-t border-slate-100 space-y-3">
-          <div class="flex items-center justify-between">
-            <h4 class="font-semibold text-sm text-slate-700">Stock Matrix Per Variant Combination</h4>
-            <button type="button" id="generateMatrixBtn" class="text-xs font-semibold text-teal-600 hover:text-teal-700 cursor-pointer bg-teal-50 px-3 py-1.5 rounded-lg border border-teal-200">
-              ⚡ Generate Combination Matrix
+          <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <h4 class="font-bold text-sm text-slate-800">Stock &amp; Price Adjustment Per Option</h4>
+              <p class="text-xs text-slate-400">Set custom price delta (e.g. +৳150 for 500g) and stock quantity for each weight.</p>
+            </div>
+            <button type="button" id="generateMatrixBtn" class="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition cursor-pointer px-4 py-2 rounded-xl shadow-xs flex items-center gap-1.5">
+              <span>⚡ Generate Combination Matrix</span>
             </button>
           </div>
 
           <div class="overflow-x-auto">
             <table class="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
-              <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+              <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
                 <tr>
-                  <th class="py-2.5 px-3">Variant Combination</th>
+                  <th class="py-2.5 px-3">Option / Weight</th>
                   <th class="py-2.5 px-3">SKU Code</th>
                   <th class="py-2.5 px-3 w-28">Stock Qty</th>
-                  <th class="py-2.5 px-3 w-28">Price Adj (৳)</th>
+                  <th class="py-2.5 px-3 w-32">Price Adj (৳)</th>
                   <th class="py-2.5 px-3 w-16 text-center">Active</th>
                   <th class="py-2.5 px-3 w-10"></th>
                 </tr>
               </thead>
               <tbody id="skuMatrixBody" class="divide-y divide-slate-100">
                 @forelse($skus as $index => $sku)
-                  <tr class="sku-row">
+                  <tr class="sku-row hover:bg-slate-50/80">
                     <td class="py-2.5 px-3">
                       <input type="hidden" name="sku_matrix[{{ $index }}][id]" value="{{ $sku->id }}" />
                       <div class="flex items-center gap-1 flex-wrap">
                         @foreach($sku->getAttributesData() as $k => $v)
                           <input type="hidden" name="sku_matrix[{{ $index }}][attributes][{{ $k }}]" value="{{ $v }}" />
-                          <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px] font-semibold border border-slate-200">{{ $k }}: {{ $v }}</span>
+                          <span class="bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded-md text-[11px] font-bold border border-emerald-200/80">{{ $k }}: {{ $v }}</span>
                         @endforeach
                       </div>
                     </td>
                     <td class="py-2.5 px-3">
-                      <input name="sku_matrix[{{ $index }}][sku]" value="{{ $sku->sku }}" placeholder="e.g. SHOE-BLK-40" class="inp text-xs py-1 px-2 font-mono" />
+                      <input name="sku_matrix[{{ $index }}][sku]" value="{{ $sku->sku }}" placeholder="e.g. HONEY-500G" class="inp text-xs py-1 px-2 font-mono" />
                     </td>
                     <td class="py-2.5 px-3">
                       <input name="sku_matrix[{{ $index }}][stock]" type="number" min="0" value="{{ $sku->stock_quantity }}" class="inp text-xs py-1 px-2 text-center font-bold" required />
                     </td>
                     <td class="py-2.5 px-3">
-                      <input name="sku_matrix[{{ $index }}][price_adjustment]" type="number" step="0.01" value="{{ $sku->price_adjustment }}" class="inp text-xs py-1 px-2 text-center" />
+                      <input name="sku_matrix[{{ $index }}][price_adjustment]" type="number" step="0.01" value="{{ $sku->price_adjustment }}" class="inp text-xs py-1 px-2 text-center font-bold" placeholder="+0.00" />
                     </td>
                     <td class="py-2.5 px-3 text-center">
-                      <input type="checkbox" name="sku_matrix[{{ $index }}][is_active]" value="1" @checked($sku->is_active) class="accent-primary h-4 w-4" />
+                      <input type="checkbox" name="sku_matrix[{{ $index }}][is_active]" value="1" @checked($sku->is_active) class="accent-emerald-600 h-4 w-4 cursor-pointer" />
                     </td>
                     <td class="py-2.5 px-3 text-center">
-                      <button type="button" onclick="this.closest('tr').remove()" class="text-red-400 hover:text-red-600 font-bold text-base">×</button>
+                      <button type="button" onclick="this.closest('tr').remove()" class="text-red-400 hover:text-red-600 font-bold text-base cursor-pointer">×</button>
                     </td>
                   </tr>
                 @empty
                   <tr id="emptyMatrixRow">
-                    <td colspan="6" class="py-4 text-center text-slate-400 italic">
-                      No variant combinations generated yet. Enter Sizes/Colors above and click "Generate Combination Matrix".
+                    <td colspan="6" class="py-5 text-center text-slate-500 italic bg-stone-50/50">
+                      🌿 No weight or size options generated yet.<br/>
+                      Enter weights above (e.g. <strong class="text-slate-800">250g, 500g, 1kg</strong>) and click <strong class="text-emerald-700">"⚡ Generate Combination Matrix"</strong>.
                     </td>
                   </tr>
                 @endforelse
@@ -200,7 +215,8 @@
         @endif
         <div>
           <label class="lbl">Add images (first upload becomes the main image if none set)</label>
-          <input name="images[]" type="file" accept="image/*" multiple class="text-sm" />
+          <input id="imageFileInput" name="images[]" type="file" accept="image/*" multiple class="text-sm border border-slate-200 rounded-xl p-2 w-full bg-white cursor-pointer" />
+          <div id="newImagesPreview" class="flex gap-3 flex-wrap mt-3"></div>
         </div>
       </div>
     </div>
@@ -208,10 +224,11 @@
     <!-- Sidebar -->
     <div class="space-y-6">
       <div class="card p-5 space-y-3">
-        <h3 class="font-semibold">Organization</h3>
+        <h3 class="font-semibold text-slate-900">Organization</h3>
         <div>
-          <label class="lbl">Category</label>
-          <select name="category_id" class="inp" required>
+          <label class="lbl font-semibold text-slate-800">Category <span class="text-red-500">*</span></label>
+          <select name="category_id" class="inp bg-white" required>
+            <option value="">-- Select Category --</option>
             @foreach($categories as $cat)
               <option value="{{ $cat->id }}" @selected((int) old('category_id', $product->category_id) === $cat->id)>{{ $cat->name }}</option>
             @endforeach
@@ -220,19 +237,20 @@
       </div>
 
       <div class="card p-5 space-y-3">
-        <h3 class="font-semibold">Visibility</h3>
+        <h3 class="font-semibold text-slate-900">Visibility &amp; Badges</h3>
         @php
           $toggles = [
-            'is_published' => 'Published',
-            'is_featured' => 'Featured',
-            'is_new_arrival' => 'New arrival',
-            'is_best_seller' => 'Best seller',
+            'is_published'   => 'Published (Visible on storefront)',
+            'is_featured'    => 'Featured Item',
+            'is_new_arrival' => 'New Arrival',
+            'is_best_seller' => 'Best Seller',
+            'is_flash_sale'  => '⚡ Flash Sale Deal',
           ];
         @endphp
         @foreach($toggles as $field => $label)
-          <label class="flex items-center justify-between text-sm cursor-pointer">
+          <label class="flex items-center justify-between text-sm font-medium text-slate-700 cursor-pointer py-1 border-b border-slate-50 last:border-0 hover:text-emerald-700">
             <span>{{ $label }}</span>
-            <input type="checkbox" name="{{ $field }}" value="1" class="h-5 w-9 accent-primary" @checked(old($field, $product->$field)) />
+            <input type="checkbox" name="{{ $field }}" value="1" class="h-5 w-5 accent-emerald-600 rounded cursor-pointer" @checked(old($field, $product->$field)) />
           </label>
         @endforeach
       </div>
@@ -402,6 +420,35 @@ function deleteProductImage(productId, imageId) {
     else window.location.reload();
   });
 }
+
+// Live Image Upload Preview
+(function() {
+  const fileInput = document.getElementById('imageFileInput');
+  const previewBox = document.getElementById('newImagesPreview');
+  if (!fileInput || !previewBox) return;
+
+  fileInput.addEventListener('change', function(e) {
+    previewBox.innerHTML = '';
+    const files = Array.from(e.target.files || []);
+    files.forEach((file, idx) => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const div = document.createElement('div');
+        div.className = 'relative flex flex-col items-center gap-1';
+        div.innerHTML = `
+          <div class="relative">
+            <img src="${evt.target.result}" class="h-20 w-20 object-cover rounded-xl border border-slate-200 shadow-2xs bg-white" />
+            ${idx === 0 ? '<span class="absolute top-1 left-1 bg-emerald-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">Main</span>' : ''}
+          </div>
+          <span class="text-[10px] text-slate-500 font-mono max-w-[80px] truncate">${file.name}</span>
+        `;
+        previewBox.appendChild(div);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+})();
 </script>
 @endpush
 @endsection
