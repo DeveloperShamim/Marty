@@ -18,5 +18,14 @@ class ExampleTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    public function test_non_existent_route_renders_custom_404_page(): void
+    {
+        $response = $this->get('/non-existent-route-path');
+
+        $response->assertStatus(404);
+        $response->assertSee('ERROR 404');
+        $response->assertSee('Page Lost in Transit');
+    }
 }
 

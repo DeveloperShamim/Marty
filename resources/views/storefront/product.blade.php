@@ -585,5 +585,16 @@ if (pdpTimerEl) {
     setInterval(updatePdpTimer, 1000);
   }
 }
+
+// Meta (Facebook) Pixel ViewContent Event
+if (typeof fbq === 'function') {
+  fbq('track', 'ViewContent', {
+    content_name: '{{ addslashes($product->name) }}',
+    content_ids: ['{{ $product->id }}'],
+    content_type: 'product',
+    value: {{ (float) $product->price }},
+    currency: 'BDT'
+  });
+}
 </script>
 @endpush

@@ -271,6 +271,34 @@
       </div>
     </div>
 
+    <!-- Featured Brands Control Card -->
+    <div class="card p-5 sm:p-6 space-y-4 bg-white rounded-2xl border border-gray-200/80 shadow-xs">
+      <div class="border-b border-gray-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 class="font-bold text-base text-ink flex items-center gap-2">
+            <span>🏷️</span> Featured Brands Homepage Section
+          </h3>
+          <p class="text-xs text-gray-500 mt-0.5">Toggle visibility and customize heading/subtitle for the Featured Brands carousel section</p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer shrink-0">
+          <input type="checkbox" name="show_featured_brands" value="1" @checked(($settings['show_featured_brands'] ?? '1') === '1') class="sr-only peer">
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+          <span class="ml-2.5 text-xs font-extrabold text-gray-700">Section Active</span>
+        </label>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="lbl font-bold text-xs text-gray-700">Section Title</label>
+          <input name="home_featured_brands_title" class="inp" value="{{ $settings['home_featured_brands_title'] ?? 'Featured Brands' }}" placeholder="Featured Brands" />
+        </div>
+        <div>
+          <label class="lbl font-bold text-xs text-gray-700">Section Subtitle</label>
+          <input name="home_featured_brands_subtitle" class="inp" value="{{ $settings['home_featured_brands_subtitle'] ?? 'Shop authentic products directly from leading brands' }}" placeholder="Shop authentic products directly from leading brands" />
+        </div>
+      </div>
+    </div>
+
     <div class="card p-5 sm:p-6 space-y-4 bg-white rounded-2xl border border-gray-200/80 shadow-xs">
       <div class="border-b border-gray-100 pb-3">
         <h3 class="font-bold text-base text-ink flex items-center gap-2">

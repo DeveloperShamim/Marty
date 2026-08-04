@@ -8,19 +8,25 @@ class PageController extends Controller
 {
     public function terms(): View
     {
-        return view('storefront.page', [
-            'title'   => 'Terms of Service',
-            'heading' => 'Terms of Service',
-            'body'    => setting('terms_content') ?: $this->defaultTerms(),
+        $customContent = setting('terms_content');
+
+        return view('storefront.terms', [
+            'title'         => 'Terms of Service',
+            'heading'       => 'Terms of Service',
+            'customContent' => $customContent,
+            'body'          => $customContent ?: $this->defaultTerms(),
         ]);
     }
 
     public function privacy(): View
     {
-        return view('storefront.page', [
-            'title'   => 'Privacy Policy',
-            'heading' => 'Privacy Policy',
-            'body'    => setting('privacy_content') ?: $this->defaultPrivacy(),
+        $customContent = setting('privacy_content');
+
+        return view('storefront.privacy', [
+            'title'         => 'Privacy Policy',
+            'heading'       => 'Privacy Policy',
+            'customContent' => $customContent,
+            'body'          => $customContent ?: $this->defaultPrivacy(),
         ]);
     }
 

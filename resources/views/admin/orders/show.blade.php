@@ -248,66 +248,9 @@
 
     </div>
 
-    <!-- Right Column (Fraud Analysis, Order Status Form, Courier & Customer) -->
+    <!-- Right Column (Order Status Form, Courier, Customer & Fraud Analysis) -->
     <div class="space-y-6">
       
-      <!-- Fraud Risk Analysis Card -->
-      <div class="card p-5 space-y-3 border-l-4 {{ $order->fraudRiskLevel() === 'high' ? 'border-l-rose-500 bg-rose-50/30' : ($order->fraudRiskLevel() === 'medium' ? 'border-l-amber-500 bg-amber-50/30' : 'border-l-emerald-500') }}">
-        <div class="flex items-center justify-between border-b border-gray-100 pb-2">
-          <h3 class="font-extrabold text-sm flex items-center gap-1.5 text-slate-900">
-            <span>🛡️</span> Fraud &amp; Risk Check
-          </h3>
-          <span class="px-2.5 py-0.5 text-xs font-extrabold rounded-full {{ $order->fraudBadgeClass() }}">
-            @if($order->fraudRiskLevel() === 'high')
-              🔴 High Risk ({{ $order->fraud_score }}%)
-            @elseif($order->fraudRiskLevel() === 'medium')
-              🟡 Medium Risk ({{ $order->fraud_score }}%)
-            @else
-              🟢 Low Risk ({{ $order->fraud_score }}%)
-            @endif
-          </span>
-        </div>
-
-        @if(!empty($order->fraud_flags))
-          <div class="space-y-1.5 pt-1">
-            <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Triggered Risk Indicators:</span>
-            @foreach($order->fraud_flags as $flag)
-              <div class="p-2 rounded-xl bg-white border border-rose-200 text-xs font-semibold text-rose-800 flex items-start gap-1.5">
-                <span class="shrink-0">🚩</span>
-                <span>{{ $flag }}</span>
-              </div>
-            @endforeach
-          </div>
-        @else
-          <p class="text-xs text-emerald-700 font-medium">✓ No fraud risk indicators detected for this order.</p>
-        @endif
-
-        <!-- Quick Blacklist Action Buttons -->
-        <div class="pt-2 border-t border-gray-100 flex items-center gap-2 flex-wrap text-xs">
-          <form method="POST" action="{{ route('admin.blacklist.store') }}" class="inline">
-            @csrf
-            <input type="hidden" name="type" value="phone" />
-            <input type="hidden" name="value" value="{{ $order->customer_phone }}" />
-            <input type="hidden" name="reason" value="Blacklisted from Order #{{ $order->order_number }}" />
-            <button type="submit" onclick="return confirm('Block phone {{ $order->customer_phone }} from placing future orders?')" class="px-2.5 py-1 text-xs font-extrabold rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 transition cursor-pointer">
-              🚫 Block Phone
-            </button>
-          </form>
-
-          @if($order->ip_address)
-            <form method="POST" action="{{ route('admin.blacklist.store') }}" class="inline">
-              @csrf
-              <input type="hidden" name="type" value="ip" />
-              <input type="hidden" name="value" value="{{ $order->ip_address }}" />
-              <input type="hidden" name="reason" value="Blacklisted IP from Order #{{ $order->order_number }}" />
-              <button type="submit" onclick="return confirm('Block IP {{ $order->ip_address }}?')" class="px-2.5 py-1 text-xs font-extrabold rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 transition cursor-pointer">
-                🌐 Block IP
-              </button>
-            </form>
-          @endif
-        </div>
-      </div>
-
       <!-- Update Order Status Form -->
       <form method="POST" action="{{ route('admin.orders.update', $order) }}" class="card p-5 space-y-4">
         @csrf @method('PATCH')
@@ -410,7 +353,7 @@
         @endif
       </div>
 
-      <!-- Customer Address Card -->
+      <!-- Customer Address Card (Original Position) -->
       <div class="card p-5 space-y-2 text-xs">
         <h3 class="font-extrabold text-sm text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-1.5">
           <span>👤</span> Customer Details
@@ -425,6 +368,63 @@
             <span class="text-slate-400 font-bold block mb-0.5 text-[10px] uppercase">Delivery Address:</span>
             <p class="font-semibold text-slate-800 leading-snug">{{ $order->shipping_address }}, {{ $order->city }} {{ $order->postal_code }}</p>
           </div>
+        </div>
+      </div>
+
+      <!-- Fraud & Risk Check Card (Placed directly after Customer Information) -->
+      <div class="card p-5 space-y-3 border-l-4 {{ $order->fraudRiskLevel() === 'high' ? 'border-l-rose-500 bg-rose-50/30' : ($order->fraudRiskLevel() === 'medium' ? 'border-l-amber-500 bg-amber-50/30' : 'border-l-emerald-500') }}">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+          <h3 class="font-extrabold text-sm flex items-center gap-1.5 text-slate-900">
+            <span>🛡️</span> Fraud &amp; Risk Check
+          </h3>
+          <span class="px-2.5 py-0.5 text-xs font-extrabold rounded-full {{ $order->fraudBadgeClass() }}">
+            @if($order->fraudRiskLevel() === 'high')
+              🔴 High Risk ({{ $order->fraud_score }}%)
+            @elseif($order->fraudRiskLevel() === 'medium')
+              🟡 Medium Risk ({{ $order->fraud_score }}%)
+            @else
+              🟢 Low Risk ({{ $order->fraud_score }}%)
+            @endif
+          </span>
+        </div>
+
+        @if(!empty($order->fraud_flags))
+          <div class="space-y-1.5 pt-1">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Triggered Risk Indicators:</span>
+            @foreach($order->fraud_flags as $flag)
+              <div class="p-2 rounded-xl bg-white border border-rose-200 text-xs font-semibold text-rose-800 flex items-start gap-1.5">
+                <span class="shrink-0">🚩</span>
+                <span>{{ $flag }}</span>
+              </div>
+            @endforeach
+          </div>
+        @else
+          <p class="text-xs text-emerald-700 font-medium">✓ No fraud risk indicators detected for this order.</p>
+        @endif
+
+        <!-- Quick Blacklist Action Buttons -->
+        <div class="pt-2 border-t border-gray-100 flex items-center gap-2 flex-wrap text-xs">
+          <form method="POST" action="{{ route('admin.blacklist.store') }}" class="inline">
+            @csrf
+            <input type="hidden" name="type" value="phone" />
+            <input type="hidden" name="value" value="{{ $order->customer_phone }}" />
+            <input type="hidden" name="reason" value="Blacklisted from Order #{{ $order->order_number }}" />
+            <button type="submit" onclick="return confirm('Block phone {{ $order->customer_phone }} from placing future orders?')" class="px-2.5 py-1 text-xs font-extrabold rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 transition cursor-pointer">
+              🚫 Block Phone
+            </button>
+          </form>
+
+          @if($order->ip_address)
+            <form method="POST" action="{{ route('admin.blacklist.store') }}" class="inline">
+              @csrf
+              <input type="hidden" name="type" value="ip" />
+              <input type="hidden" name="value" value="{{ $order->ip_address }}" />
+              <input type="hidden" name="reason" value="Blacklisted IP from Order #{{ $order->order_number }}" />
+              <button type="submit" onclick="return confirm('Block IP {{ $order->ip_address }}?')" class="px-2.5 py-1 text-xs font-extrabold rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 transition cursor-pointer">
+                🌐 Block IP
+              </button>
+            </form>
+          @endif
         </div>
       </div>
 

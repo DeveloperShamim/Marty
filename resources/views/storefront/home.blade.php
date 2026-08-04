@@ -233,12 +233,12 @@
       </section>
     @endif
 
-    @if(isset($featuredBrands) && $featuredBrands->isNotEmpty())
+    @if(setting('show_featured_brands', '1') === '1' && isset($featuredBrands) && $featuredBrands->isNotEmpty())
       <section class="mt-12 sm:mt-14" data-reveal>
         <div class="flex items-center justify-between mb-4 px-1">
           <div>
-            <h2 class="text-xl sm:text-2xl font-extrabold text-ink">Featured Brands</h2>
-            <p class="text-xs sm:text-sm text-stone-500">Shop authentic products directly from leading brands</p>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-ink">{{ setting('home_featured_brands_title', 'Featured Brands') }}</h2>
+            <p class="text-xs sm:text-sm text-stone-500">{{ setting('home_featured_brands_subtitle', 'Shop authentic products directly from leading brands') }}</p>
           </div>
           <div class="flex items-center gap-2">
             <a href="{{ route('shop') }}" class="text-xs sm:text-sm font-semibold text-brand-600 hover:text-brand-700 mr-1 sm:mr-3">Explore All &rarr;</a>

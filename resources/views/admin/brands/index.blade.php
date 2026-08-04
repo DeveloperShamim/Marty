@@ -11,6 +11,35 @@
     <a href="{{ route('admin.brands.create') }}" class="btn-primary">+ New Brand</a>
   </div>
 
+  <!-- Homepage Featured Brands Section Status Banner -->
+  @php $sectionEnabled = setting('show_featured_brands', '1') === '1'; @endphp
+  <div class="card p-4 bg-white border border-gray-200/80 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+    <div class="space-y-0.5">
+      <div class="flex items-center gap-2">
+        <span class="font-extrabold text-sm text-slate-900">🏷️ Storefront Featured Brands Section</span>
+        <span class="px-2.5 py-0.5 text-[11px] font-extrabold rounded-full {{ $sectionEnabled ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200' }}">
+          {{ $sectionEnabled ? '🟢 Visible on Home Page' : '🔴 Hidden on Home Page' }}
+        </span>
+      </div>
+      <p class="text-xs text-slate-500 font-medium">
+        "{{ setting('home_featured_brands_subtitle', 'Shop authentic products directly from leading brands') }}"
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2 shrink-0">
+      <form method="POST" action="{{ route('admin.settings.update-section', 'homepage') }}">
+        @csrf @method('PUT')
+        <input type="hidden" name="show_featured_brands" value="{{ $sectionEnabled ? '0' : '1' }}">
+        <button type="submit" class="px-3.5 py-2 text-xs font-extrabold rounded-xl transition cursor-pointer {{ $sectionEnabled ? 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100' : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs' }}">
+          {{ $sectionEnabled ? '🚫 Disable Homepage Section' : '✓ Enable Homepage Section' }}
+        </button>
+      </form>
+      <a href="{{ route('admin.settings.edit') }}" class="px-3 py-2 text-xs font-bold text-slate-600 hover:text-brand-600 border border-slate-200 rounded-xl hover:bg-slate-50 transition">
+        ⚙️ Settings
+      </a>
+    </div>
+  </div>
+
   <div class="card overflow-x-auto">
     <table class="w-full text-sm">
       <thead class="text-left text-gray-500 bg-gray-50">

@@ -131,6 +131,9 @@ class SettingController extends Controller
                 'home_hot_deal_title'   => ['nullable', 'string', 'max:80'],
                 'home_featured_title'   => ['nullable', 'string', 'max:80'],
                 'home_reviews_title'    => ['nullable', 'string', 'max:80'],
+                'show_featured_brands'         => ['nullable', 'boolean'],
+                'home_featured_brands_title'   => ['nullable', 'string', 'max:80'],
+                'home_featured_brands_subtitle'=> ['nullable', 'string', 'max:200'],
                 'home_view_more_label'  => ['nullable', 'string', 'max:40'],
                 'default_cta_text'      => ['nullable', 'string', 'max:40'],
                 'hero_fallback_badge'   => ['nullable', 'string', 'max:60'],
@@ -224,6 +227,7 @@ class SettingController extends Controller
                 'shop_subtitle', 'delivery_eta_text',
                 'home_categories_title', 'home_hot_deal_title', 'home_featured_title',
                 'home_reviews_title',
+                'home_featured_brands_title', 'home_featured_brands_subtitle',
                 'home_view_more_label', 'default_cta_text',
                 'hero_fallback_badge', 'hero_fallback_title', 'hero_fallback_subtitle',
             ],
@@ -261,6 +265,10 @@ class SettingController extends Controller
                 $value = strtoupper($value);
             }
             Setting::put($key, $value);
+        }
+
+        if ($section === 'homepage') {
+            Setting::put('show_featured_brands', $request->boolean('show_featured_brands') ? '1' : '0');
         }
 
         if ($section === 'couriers') {
