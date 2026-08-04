@@ -59,22 +59,7 @@
       </div>
     @endif
 
-    @if(isset($navBrands) && $navBrands->isNotEmpty())
-      <div class="mt-4 pt-3 border-t border-stone-100">
-        <div class="flex items-center justify-between mb-2">
-          <p class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-800">Trusted Brands</p>
-          <a href="{{ route('shop') }}" class="text-[11px] font-semibold text-emerald-700">View All &rarr;</a>
-        </div>
-        <div class="grid grid-cols-2 gap-2">
-          @foreach($navBrands->take(8) as $b)
-            <a href="{{ route('shop.brand', $b) }}" class="flex items-center gap-2 p-2 rounded-xl border border-stone-100 hover:border-emerald-500/40 hover:bg-emerald-50 transition-all">
-              <img src="{{ $b->logoUrl() }}" class="h-6 w-6 object-contain rounded border border-stone-100 bg-white p-0.5 shrink-0" alt="">
-              <span class="text-xs font-bold text-ink truncate">{{ $b->name }}</span>
-            </a>
-          @endforeach
-        </div>
-      </div>
-    @endif
+
 
     <div class="mt-6 pt-4 border-t border-stone-100">
       <a href="{{ route('track') }}" class="flex items-center justify-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-4 text-sm shadow-sm transition">

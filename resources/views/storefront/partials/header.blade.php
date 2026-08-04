@@ -118,13 +118,13 @@
           </div>
         </div>
 
-        {{-- Center: Clean Category Links --}}
+        {{-- Center: Clean Category Links (Max 6) --}}
         <nav class="flex items-center gap-1 sm:gap-2 overflow-x-auto whitespace-nowrap scrollbar-none py-1">
           <a href="{{ route('home') }}" class="px-3 py-1.5 rounded-xl transition-all font-bold {{ request()->routeIs('home') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' : 'text-stone-700 hover:text-emerald-700 hover:bg-stone-50' }}">
             Home
           </a>
 
-          @foreach($topCats as $cat)
+          @foreach($topCats->take(6) as $cat)
             <a href="{{ route('shop.category', $cat) }}" class="px-3 py-1.5 rounded-xl transition-all font-bold flex items-center gap-1.5 {{ optional($activeCategory ?? null)->id === $cat->id ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' : 'text-stone-700 hover:text-emerald-700 hover:bg-stone-50' }}">
               @if($cat->icon)<span class="text-sm">{{ $cat->icon }}</span>@endif
               <span>{{ $cat->name }}</span>
@@ -132,38 +132,8 @@
           @endforeach
         </nav>
 
-        {{-- Right: Brands & Deals --}}
+        {{-- Right: Deals --}}
         <div class="flex items-center gap-2 shrink-0">
-          @if($navBrs->isNotEmpty())
-            <div class="relative group/branddropdown" id="brandDropdownContainer">
-              <button type="button" 
-                      onclick="event.stopPropagation(); document.getElementById('brandDropdownMenu').classList.toggle('hidden');" 
-                      class="px-3.5 py-1.5 rounded-xl transition-all text-xs font-extrabold text-stone-700 hover:text-emerald-700 hover:bg-emerald-50 border border-stone-200/80 inline-flex items-center gap-1.5 cursor-pointer shadow-2xs">
-                <span>🏷️ Brands</span>
-                <svg class="w-3.5 h-3.5 transition-transform group-hover/branddropdown:rotate-180 text-stone-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
-              </button>
-              <div id="brandDropdownMenu" class="absolute right-0 top-full pt-1.5 hidden group-hover/branddropdown:block z-50 w-[380px]">
-                <div class="bg-white text-stone-800 rounded-2xl shadow-2xl border border-stone-200 p-4 space-y-3">
-                  <div class="flex items-center justify-between border-b border-stone-100 pb-2">
-                    <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-800">🌱 Organic Brands</span>
-                    <a href="{{ route('shop') }}" class="text-xs font-bold text-emerald-600 hover:underline">View All &rarr;</a>
-                  </div>
-                  <div class="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
-                    @foreach($navBrs as $b)
-                      <a href="{{ route('shop.brand', $b) }}" class="flex items-center gap-2.5 p-2 rounded-xl border border-stone-100 hover:border-emerald-500/40 hover:bg-emerald-50/60 transition-all group/item">
-                        <img src="{{ $b->logoUrl() }}" class="h-7 w-7 object-contain rounded-md border border-stone-100 bg-white p-0.5 shrink-0" alt="{{ $b->name }}">
-                        <div class="min-w-0 flex-1">
-                          <span class="block text-xs font-bold text-stone-900 group-hover/item:text-emerald-700 truncate">{{ $b->name }}</span>
-                          <span class="block text-[10px] text-stone-400">Organic</span>
-                        </div>
-                      </a>
-                    @endforeach
-                  </div>
-                </div>
-              </div>
-            </div>
-          @endif
-
           @if($hasFlashSale ?? true)
             <a href="{{ route('shop', ['flash' => 1]) }}" class="px-3.5 py-1.5 rounded-xl transition-all text-xs font-extrabold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 flex items-center gap-1.5 shadow-2xs">
               <span class="animate-pulse">⚡</span>
