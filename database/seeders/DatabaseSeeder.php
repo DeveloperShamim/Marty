@@ -1860,22 +1860,24 @@ class DatabaseSeeder extends Seeder
 
             $sampleColors = ['Black', 'Brown'];
             if ($pData['variant_type'] === 'Color') {
-                foreach ($pData['options'] as $opt) {
+                foreach ($pData['options'] as $idx => $opt) {
                     $cleanVal = preg_replace('/[^A-Za-z0-9]/', '', explode(' ', trim($opt))[0]);
+                    $priceAdj = ($idx % 2 === 1) ? 100 : 0;
                     \App\Models\ProductSku::create([
                         'product_id' => $product->id,
                         'sku' => "{$productSkuBase}-{$cleanVal}",
                         'attributes' => ['Color' => $opt],
-                        'price_adjustment' => 0,
+                        'price_adjustment' => $priceAdj,
                         'stock_quantity' => random_int(8, 25),
                         'is_active' => true,
                     ]);
                 }
             } elseif ($pData['variant_type'] === 'Size') {
-                foreach ($sampleColors as $c) {
-                    foreach ($pData['options'] as $sOpt) {
+                foreach ($sampleColors as $cIdx => $c) {
+                    foreach ($pData['options'] as $sIdx => $sOpt) {
                         $cleanColor = preg_replace('/[^A-Za-z0-9]/', '', $c);
                         $cleanSize = preg_replace('/[^A-Za-z0-9]/', '', $sOpt);
+                        $priceAdj = ($sIdx * 50) + ($cIdx * 100);
                         \App\Models\ProductSku::create([
                             'product_id' => $product->id,
                             'sku' => "{$productSkuBase}-{$cleanColor}{$cleanSize}",
@@ -1883,20 +1885,21 @@ class DatabaseSeeder extends Seeder
                                 'Color' => $c,
                                 'Size' => $sOpt,
                             ],
-                            'price_adjustment' => 0,
+                            'price_adjustment' => $priceAdj,
                             'stock_quantity' => random_int(5, 15),
                             'is_active' => true,
                         ]);
                     }
                 }
             } else {
-                foreach ($pData['options'] as $opt) {
+                foreach ($pData['options'] as $idx => $opt) {
                     $cleanVal = preg_replace('/[^A-Za-z0-9]/', '', $opt);
+                    $priceAdj = ($idx % 2 === 1) ? 150 : 0;
                     \App\Models\ProductSku::create([
                         'product_id' => $product->id,
                         'sku' => "{$productSkuBase}-{$cleanVal}",
                         'attributes' => [$pData['variant_type'] => $opt],
-                        'price_adjustment' => 0,
+                        'price_adjustment' => $priceAdj,
                         'stock_quantity' => random_int(10, 30),
                         'is_active' => true,
                     ]);

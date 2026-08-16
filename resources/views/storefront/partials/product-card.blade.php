@@ -71,12 +71,13 @@
               data-price="{{ money($product->price) }}"
               data-raw-price="{{ (float) $product->price }}"
               data-regular-price="{{ $product->on_sale ? money($product->regular_price) : '' }}"
+              data-raw-regular-price="{{ $product->on_sale && $product->regular_price ? (float) $product->regular_price : '' }}"
               data-discount="{{ $discount }}"
               data-image="{{ $img }}"
               data-url="{{ route('product.show', $product) }}"
               data-has-variants="{{ $hasVariants ? 'true' : 'false' }}"
               data-variants="{{ json_encode($variantsGrouped) }}"
-              data-skus="{{ json_encode($product->skus ? $product->skus->map(fn($s) => ['id' => $s->id, 'attributes' => $s->getAttributesData(), 'stock' => (int) $s->stock_quantity, 'price_adjustment' => (float) $s->price_adjustment])->values() : []) }}">
+              data-skus="{{ json_encode($product->skus && $product->skus->isNotEmpty() ? $product->skus->map(fn($s) => ['id' => $s->id, 'attributes' => $s->getAttributesData(), 'stock' => (int) $s->stock_quantity, 'price_adjustment' => (float) $s->price_adjustment])->values() : ($product->variants ? $product->variants->map(fn($v) => ['id' => null, 'attributes' => [$v->type => $v->value], 'stock' => (int) $v->stock, 'price_adjustment' => (float) $v->price_delta])->values() : [])) }}">
         <span class="fk-add-plus">+</span> {{ $cta }}
       </button>
     @endif

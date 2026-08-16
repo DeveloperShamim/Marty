@@ -86,7 +86,7 @@ class CartService
             return collect();
         }
 
-        $products = Product::with(['images', 'skus'])
+        $products = Product::with(['images', 'skus', 'variants'])
             ->whereIn('id', collect($lines)->pluck('product_id'))
             ->get()
             ->keyBy('id');
@@ -99,19 +99,38 @@ class CartService
 
             $skuId = $line['sku_id'] ?? null;
             $sku = null;
+            $variantObj = null;
+
             if ($skuId) {
                 $sku = $product->skus->firstWhere('id', $skuId);
-            } elseif (! empty($line['variant']) && $product->skus->isNotEmpty()) {
-                // Find matching SKU by attribute text if sku_id not explicitly set
+            } elseif (! empty($line['variant'])) {
                 $variantText = (string) $line['variant'];
-                $sku = $product->skus->first(function ($s) use ($variantText) {
-                    return $s->matchesVariantString($variantText);
-                });
+                if ($product->skus->isNotEmpty()) {
+                    $sku = $product->skus->first(function ($s) use ($variantText) {
+                        return $s->matchesVariantString($variantText);
+                    });
+                }
+                if (! $sku && $product->variants->isNotEmpty()) {
+                    $variantObj = $product->variants->first(function ($v) use ($variantText) {
+                        return str_contains(mb_strtolower($variantText), mb_strtolower($v->value))
+                            || mb_strtolower(trim($variantText)) === mb_strtolower(trim($v->value));
+                    });
+                }
             }
 
-            $priceAdjustment = $sku ? (float) $sku->price_adjustment : 0.0;
-            $price = max(0, (float) $product->price + $priceAdjustment);
-            $maxStock = $sku ? (int) $sku->stock_quantity : (int) $product->stock_quantity;
+            $priceAdjustment = 0.0;
+            $maxStock = (int) $product->stock_quantity;
+
+            if ($sku) {
+                $priceAdjustment = (float) $sku->price_adjustment;
+                $maxStock = (int) $sku->stock_quantity;
+            } elseif ($variantObj) {
+                $priceAdjustment = (float) $variantObj->price_delta;
+                $maxStock = (int) $variantObj->stock;
+            }
+
+            $basePrice = (float) $product->price;
+            $price = $basePrice <= 0 ? max(0, $priceAdjustment) : max(0, $basePrice + $priceAdjustment);
 
             return (object) [
                 'key'            => $key,

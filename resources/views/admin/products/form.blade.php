@@ -135,7 +135,7 @@
                   <th class="py-2.5 px-3">Variant Combination</th>
                   <th class="py-2.5 px-3">SKU Code</th>
                   <th class="py-2.5 px-3 w-28">Stock Qty</th>
-                  <th class="py-2.5 px-3 w-28">Price Adj (৳)</th>
+                  <th class="py-2.5 px-3 w-32" title="Price adjustment relative to main product price (+50 increases price, -50 decreases price)">Price Adj (+/- ৳)</th>
                   <th class="py-2.5 px-3 w-16 text-center">Active</th>
                   <th class="py-2.5 px-3 w-10"></th>
                 </tr>

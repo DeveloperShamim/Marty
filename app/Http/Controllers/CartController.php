@@ -32,20 +32,30 @@ class CartController extends Controller
         $variant = isset($data['variant']) && trim((string)$data['variant']) !== '' ? trim((string)$data['variant']) : null;
         $skuId   = ! empty($data['sku_id']) ? (int) $data['sku_id'] : null;
 
-        // If no explicit sku_id provided, attempt lookup from variant text if product has SKUs
+        // If no explicit sku_id provided, attempt lookup from variant text if product has SKUs or variants
         $sku = null;
+        $variantObj = null;
         if ($skuId) {
             $sku = $product->skus()->where('is_active', true)->find($skuId);
-        } elseif ($variant && $product->skus()->exists()) {
-            $sku = $product->skus()->where('is_active', true)->get()->first(function ($s) use ($variant) {
-                return $s->matchesVariantString($variant);
-            });
-            if ($sku) {
-                $skuId = $sku->id;
+        } elseif ($variant) {
+            if ($product->skus()->exists()) {
+                $sku = $product->skus()->where('is_active', true)->get()->first(function ($s) use ($variant) {
+                    return $s->matchesVariantString($variant);
+                });
+                if ($sku) {
+                    $skuId = $sku->id;
+                }
+            }
+            if (! $sku && $product->variants()->exists()) {
+                $variantObj = $product->variants()->get()->first(function ($v) use ($variant) {
+                    return str_contains(mb_strtolower($variant), mb_strtolower($v->value))
+                        || mb_strtolower(trim($variant)) === mb_strtolower(trim($v->value));
+                });
             }
         }
 
-        if ($product->skus()->exists() && empty($sku) && empty($variant)) {
+        $hasOptions = $product->skus()->exists() || $product->variants()->exists();
+        if ($hasOptions && empty($sku) && empty($variantObj) && empty($variant)) {
             $message = "Please select a product option before adding to cart.";
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['ok' => false, 'message' => $message], 422);
@@ -54,7 +64,12 @@ class CartController extends Controller
             return back()->withErrors(['cart' => $message]);
         }
 
-        $availableStock = $sku ? (int) $sku->stock_quantity : (int) $product->stock_quantity;
+        $availableStock = (int) $product->stock_quantity;
+        if ($sku) {
+            $availableStock = (int) $sku->stock_quantity;
+        } elseif ($variantObj) {
+            $availableStock = (int) $variantObj->stock;
+        }
         $maxAllowed = min(3, $availableStock);
         $inCart = $this->cart->qtyInCart($product->id, $variant, $skuId);
 

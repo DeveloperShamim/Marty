@@ -320,59 +320,90 @@
   }
 
   function syncQuickModalPrice() {
-    if (!currentQmProduct || !currentQmProduct.skus || !currentQmProduct.skus.length) return;
+    if (!currentQmProduct) return;
 
-    const selectedAttrs = {};
-    $$("[data-qm-variant-group]").forEach((group) => {
-      const type = group.dataset.qmVariantGroup;
-      const sel = group.querySelector(".qm-variant-btn.is-selected");
-      if (sel) {
-        selectedAttrs[type] = sel.dataset.value;
-      }
-    });
+    const basePrice = parseFloat(currentQmProduct.rawPrice || 0) || (currentQmProduct.price ? parseFloat(String(currentQmProduct.price).replace(/[^0-9.]/g, "")) : 0);
+    const baseRegPrice = parseFloat(currentQmProduct.rawRegularPrice || 0) || (currentQmProduct.regularPrice ? parseFloat(String(currentQmProduct.regularPrice).replace(/[^0-9.]/g, "")) : 0);
 
-    const selectedKeys = Object.keys(selectedAttrs);
-    if (!selectedKeys.length) return;
+    let priceAdj = 0;
+    let matchedSku = null;
 
-    const matchedSku = currentQmProduct.skus.find((s) => {
-      let attrs = s.attributes;
-      if (typeof attrs === "string") {
-        try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
-      }
-      if (!attrs || typeof attrs !== "object") return false;
-
-      const attrMap = {};
-      Object.keys(attrs).forEach((k) => {
-        attrMap[String(k).trim().toLowerCase()] = String(attrs[k]).trim().toLowerCase();
-      });
-      return selectedKeys.every((k) => {
-        const kLower = String(k).trim().toLowerCase();
-        const expectedVal = String(selectedAttrs[k]).trim().toLowerCase();
-        return attrMap[kLower] === expectedVal;
-      });
-    });
-
-    const basePrice = parseFloat(currentQmProduct.rawPrice || 0);
-    let finalPrice = basePrice;
-
-    if (matchedSku) {
-      currentQmProduct.selectedSkuId = matchedSku.id;
-      const adj = parseFloat(matchedSku.price_adjustment) || 0;
-      if (adj > 0) {
-        if (adj >= (basePrice * 0.4)) {
-          finalPrice = adj;
-        } else {
-          finalPrice = basePrice + adj;
+    if (currentQmProduct.skus && currentQmProduct.skus.length) {
+      const selectedAttrs = {};
+      $$("[data-qm-variant-group]").forEach((group) => {
+        const type = group.dataset.qmVariantGroup;
+        const sel = group.querySelector(".qm-variant-btn.is-selected");
+        if (sel) {
+          selectedAttrs[type] = sel.dataset.value;
         }
-      } else if (adj < 0) {
-        finalPrice = Math.max(0, basePrice + adj);
+      });
+
+      const selectedKeys = Object.keys(selectedAttrs);
+      if (selectedKeys.length) {
+        matchedSku = currentQmProduct.skus.find((s) => {
+          let attrs = s.attributes;
+          if (typeof attrs === "string") {
+            try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
+          }
+          if (!attrs || typeof attrs !== "object") return false;
+
+          const attrMap = {};
+          Object.keys(attrs).forEach((k) => {
+            attrMap[String(k).trim().toLowerCase()] = String(attrs[k]).trim().toLowerCase();
+          });
+          return selectedKeys.every((k) => {
+            const kLower = String(k).trim().toLowerCase();
+            const expectedVal = String(selectedAttrs[k]).trim().toLowerCase();
+            return attrMap[kLower] === expectedVal;
+          });
+        });
+
+        if (matchedSku) {
+          currentQmProduct.selectedSkuId = matchedSku.id;
+          priceAdj = parseFloat(matchedSku.price_adjustment) || 0;
+        } else {
+          currentQmProduct.selectedSkuId = null;
+        }
       }
+    }
+
+    let finalPrice = basePrice;
+    if (basePrice <= 0) {
+      finalPrice = Math.max(0, priceAdj);
     } else {
-      currentQmProduct.selectedSkuId = null;
+      finalPrice = Math.max(0, basePrice + priceAdj);
+    }
+
+    let finalRegPrice = 0;
+    if (baseRegPrice > 0) {
+      finalRegPrice = Math.max(0, baseRegPrice + priceAdj);
     }
 
     if (qmPrice && finalPrice > 0) {
       qmPrice.textContent = "৳" + finalPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    if (qmRegPrice) {
+      if (finalRegPrice > 0 && finalRegPrice > finalPrice) {
+        qmRegPrice.textContent = "৳" + finalRegPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        qmRegPrice.classList.remove("hidden");
+      } else {
+        qmRegPrice.classList.add("hidden");
+      }
+    }
+
+    if (qmDiscount) {
+      if (finalRegPrice > 0 && finalRegPrice > finalPrice) {
+        const discountPercent = Math.round(100 - (finalPrice / finalRegPrice * 100));
+        if (discountPercent > 0) {
+          qmDiscount.textContent = discountPercent + "% OFF";
+          qmDiscount.classList.remove("hidden");
+        } else {
+          qmDiscount.classList.add("hidden");
+        }
+      } else {
+        qmDiscount.classList.add("hidden");
+      }
     }
   }
 
@@ -597,6 +628,7 @@
         price: btn.dataset.price,
         rawPrice: btn.dataset.rawPrice,
         regularPrice: btn.dataset.regularPrice,
+        rawRegularPrice: btn.dataset.rawRegularPrice,
         discount: btn.dataset.discount,
         image: btn.dataset.image,
         variants: variantsData,

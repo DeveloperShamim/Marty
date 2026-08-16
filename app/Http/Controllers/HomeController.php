@@ -15,7 +15,7 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $withImages = fn ($q) => $q->published()->with('images', 'category');
+        $withImages = fn ($q) => $q->published()->with('images', 'category', 'variants', 'skus');
 
         $categories = Category::where('is_active', true)
             ->withCount(['products' => fn ($q) => $q->published()])
@@ -49,7 +49,7 @@ class HomeController extends Controller
             ->where('is_featured', true)
             ->orderBy('position')
             ->with(['products' => function ($q) {
-                $q->published()->with('images', 'category')->latest()->take(8);
+                $q->published()->with('images', 'category', 'variants', 'skus')->latest()->take(8);
             }])
             ->get();
 
@@ -57,7 +57,7 @@ class HomeController extends Controller
             ->where('is_featured', true)
             ->orderBy('position')
             ->with(['products' => function ($q) {
-                $q->published()->with('images', 'category', 'brand')->latest()->take(8);
+                $q->published()->with('images', 'category', 'brand', 'variants', 'skus')->latest()->take(8);
             }])
             ->get();
 
@@ -100,7 +100,7 @@ class HomeController extends Controller
         $limit = max(1, (int) $request->input('limit', 8));
         $offset = ($page - 1) * $limit;
 
-        $withImages = fn ($q) => $q->published()->with('images', 'category');
+        $withImages = fn ($q) => $q->published()->with('images', 'category', 'variants', 'skus');
 
         $query = Product::query()->tap($withImages)->where('is_featured', true)->latest();
         if ((clone $query)->count() === 0) {

@@ -86,11 +86,22 @@
 
         {{-- Pricing Row --}}
         @php
-          $skusPayload = $product->skus->map(fn($s) => [
-            'id'               => $s->id,
-            'attributes'       => $s->getAttributesData(),
-            'stock'            => (int) $s->stock_quantity,
-            'price_adjustment' => (float) $s->price_adjustment,
+          $skusCollection = $product->skus;
+          if ($skusCollection->isEmpty() && $product->variants->isNotEmpty()) {
+              $skusCollection = $product->variants->map(function($v) {
+                  return (object) [
+                      'id'               => null,
+                      'attributes'       => [$v->type => $v->value],
+                      'stock_quantity'   => (int) $v->stock,
+                      'price_adjustment' => (float) $v->price_delta,
+                  ];
+              });
+          }
+          $skusPayload = $skusCollection->map(fn($s) => [
+            'id'               => is_object($s) && isset($s->id) ? $s->id : null,
+            'attributes'       => is_a($s, \App\Models\ProductSku::class) ? $s->getAttributesData() : (array) ($s->attributes ?? []),
+            'stock'            => (int) ($s->stock_quantity ?? $s->stock ?? 0),
+            'price_adjustment' => (float) ($s->price_adjustment ?? $s->price_delta ?? 0),
           ])->values();
         @endphp
 
@@ -499,20 +510,16 @@ function syncPdpVariantStockAndPrice() {
 
   if (matchedSku) {
     const adj = parseFloat(matchedSku.price_adjustment) || 0;
-    if (adj > 0) {
-      if (adj >= (basePrice * 0.4)) {
-        finalPrice = adj;
-      } else {
-        finalPrice = basePrice + adj;
-      }
-    } else if (adj < 0) {
+    if (basePrice <= 0) {
+      finalPrice = Math.max(0, adj);
+    } else {
       finalPrice = Math.max(0, basePrice + adj);
     }
-    isAvailable = matchedSku.stock > 0;
-    if (addBtn) addBtn.dataset.skuId = matchedSku.id;
+    isAvailable = (parseInt(matchedSku.stock, 10) || 0) > 0;
+    if (addBtn && matchedSku.id) addBtn.dataset.skuId = matchedSku.id;
   }
 
-  const availStock = matchedSku ? matchedSku.stock : 99;
+  const availStock = matchedSku ? (parseInt(matchedSku.stock, 10) || 0) : 99;
   const maxAllowed = Math.min(3, availStock);
   const qtyInput = document.getElementById('pdQty');
   if (qtyInput && parseInt(qtyInput.value, 10) > maxAllowed) {
@@ -524,7 +531,8 @@ function syncPdpVariantStockAndPrice() {
   }
 
   if (regEl && baseReg > 0) {
-    const finalReg = Math.max(0, baseReg + (matchedSku ? (parseFloat(matchedSku.price_adjustment) || 0) : 0));
+    const adj = matchedSku ? (parseFloat(matchedSku.price_adjustment) || 0) : 0;
+    const finalReg = baseReg <= 0 ? Math.max(0, adj) : Math.max(0, baseReg + adj);
     regEl.textContent = '৳' + finalReg.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
