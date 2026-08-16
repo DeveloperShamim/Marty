@@ -13,9 +13,29 @@ class ProductSku extends Model
     protected $casts = [
         'attributes'       => 'array',
         'price_adjustment' => 'decimal:2',
+        'regular_price'    => 'decimal:2',
+        'sale_price'       => 'decimal:2',
         'stock_quantity'   => 'integer',
         'is_active'        => 'boolean',
     ];
+
+    public function getCalculatedRegularPrice(): float
+    {
+        if ($this->regular_price !== null && (float) $this->regular_price > 0) {
+            return (float) $this->regular_price;
+        }
+        $baseReg = (float) ($this->product->regular_price ?? $this->product->price ?? 0);
+        return max(0, $baseReg + (float) $this->price_adjustment);
+    }
+
+    public function getCalculatedSalePrice(): float
+    {
+        if ($this->sale_price !== null && (float) $this->sale_price > 0) {
+            return (float) $this->sale_price;
+        }
+        $baseSale = (float) ($this->product->sale_price ?? $this->product->price ?? 0);
+        return max(0, $baseSale + (float) $this->price_adjustment);
+    }
 
     public function product(): BelongsTo
     {

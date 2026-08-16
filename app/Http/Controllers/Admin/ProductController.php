@@ -387,9 +387,10 @@ class ProductController extends Controller
     public function create()
     {
         return view('admin.products.form', [
-            'product'    => new Product(['is_published' => true]),
-            'categories' => Category::orderBy('name')->get(),
-            'brands'     => Brand::where('is_active', true)->orderBy('name')->get(),
+            'product'        => new Product(['is_published' => true]),
+            'categories'     => Category::orderBy('name')->get(),
+            'brands'         => Brand::where('is_active', true)->orderBy('name')->get(),
+            'attributeTypes' => \App\Models\ProductAttributeType::with('values')->where('is_active', true)->orderBy('position')->orderBy('name')->get(),
         ]);
     }
 
@@ -419,9 +420,10 @@ class ProductController extends Controller
         $product->load('images', 'variants');
 
         return view('admin.products.form', [
-            'product'    => $product,
-            'categories' => Category::orderBy('name')->get(),
-            'brands'     => Brand::where('is_active', true)->orderBy('name')->get(),
+            'product'        => $product,
+            'categories'     => Category::orderBy('name')->get(),
+            'brands'         => Brand::where('is_active', true)->orderBy('name')->get(),
+            'attributeTypes' => \App\Models\ProductAttributeType::with('values')->where('is_active', true)->orderBy('position')->orderBy('name')->get(),
         ]);
     }
 
@@ -567,23 +569,37 @@ class ProductController extends Controller
             $product->variants()->delete();
             $pos = 0;
             foreach ($sizes as $s) {
-                ProductVariant::create(['product_id' => $product->id, 'type' => 'Size', 'value' => $s, 'position' => $pos++]);
+                $type = preg_match('/\d+\s*(g|kg|l|ml|oz|lb|liter|litre|gm|gram)/i', $s) ? 'Weight' : 'Size';
+                ProductVariant::create(['product_id' => $product->id, 'type' => $type, 'value' => $s, 'position' => $pos++]);
             }
             foreach ($colors as $c) {
-                ProductVariant::create(['product_id' => $product->id, 'type' => 'Color', 'value' => $c, 'position' => $pos++]);
+                $type = preg_match('/glass|plastic|plastick|bottle|jar|can|pack|bag|box|container/i', $c) ? 'Packaging' : 'Color';
+                ProductVariant::create(['product_id' => $product->id, 'type' => $type, 'value' => $c, 'position' => $pos++]);
             }
         }
+
+        $baseReg = (float) $product->regular_price;
+        $baseSale = (float) ($product->sale_price ?? $product->regular_price);
 
         // Process SKU Combination Matrix
         if ($request->has('sku_matrix_submitted') || $request->has('sku_matrix')) {
             $submittedSkuIds = [];
             $matrixInput = $request->input('sku_matrix', []);
+            $matrixAttributes = [];
 
             if (is_array($matrixInput)) {
                 foreach ($matrixInput as $item) {
                     $attributes = isset($item['attributes']) && is_array($item['attributes']) ? array_filter($item['attributes']) : [];
                     if (empty($attributes)) {
                         continue;
+                    }
+
+                    foreach ($attributes as $type => $val) {
+                        $tStr = trim((string) $type);
+                        $vStr = trim((string) $val);
+                        if ($tStr !== '' && $vStr !== '') {
+                            $matrixAttributes[$tStr][$vStr] = true;
+                        }
                     }
 
                     $existingId = ! empty($item['id']) ? (int) $item['id'] : null;
@@ -593,9 +609,11 @@ class ProductController extends Controller
                         $skuCode = $this->generateAutoSku($product, $attributes, $existingId);
                     }
 
-                    $stock    = max(0, (int) ($item['stock'] ?? 0));
-                    $priceAdj = (float) ($item['price_adjustment'] ?? 0);
-                    $isActive = isset($item['is_active']) ? (bool) $item['is_active'] : true;
+                    $stock        = max(0, (int) ($item['stock'] ?? 0));
+                    $regularPrice = (isset($item['regular_price']) && $item['regular_price'] !== '' && (float)$item['regular_price'] > 0) ? (float) $item['regular_price'] : ($baseReg > 0 ? $baseReg : null);
+                    $salePrice    = (isset($item['sale_price']) && $item['sale_price'] !== '' && (float)$item['sale_price'] > 0) ? (float) $item['sale_price'] : ($baseSale > 0 ? $baseSale : null);
+                    $priceAdj     = ($salePrice !== null && $baseSale > 0) ? max(0, $salePrice - $baseSale) : 0;
+                    $isActive     = isset($item['is_active']) ? (bool) $item['is_active'] : true;
 
                     $skuRecord = $existingId ? ProductSku::where('product_id', $product->id)->find($existingId) : null;
 
@@ -604,6 +622,8 @@ class ProductController extends Controller
                             'sku'              => $skuCode,
                             'attributes'       => $attributes,
                             'price_adjustment' => $priceAdj,
+                            'regular_price'    => $regularPrice,
+                            'sale_price'       => $salePrice,
                             'stock_quantity'   => $stock,
                             'is_active'        => $isActive,
                         ]);
@@ -614,6 +634,8 @@ class ProductController extends Controller
                             'sku'              => $skuCode,
                             'attributes'       => $attributes,
                             'price_adjustment' => $priceAdj,
+                            'regular_price'    => $regularPrice,
+                            'sale_price'       => $salePrice,
                             'stock_quantity'   => $stock,
                             'is_active'        => $isActive,
                         ]);
@@ -624,6 +646,22 @@ class ProductController extends Controller
 
             // Clean up non-submitted matrix rows for this product
             ProductSku::where('product_id', $product->id)->whereNotIn('id', $submittedSkuIds)->delete();
+
+            // Rebuild product_variants table from matrix attributes
+            if (! empty($matrixAttributes)) {
+                $product->variants()->delete();
+                $pos = 0;
+                foreach ($matrixAttributes as $type => $valsMap) {
+                    foreach (array_keys($valsMap) as $val) {
+                        ProductVariant::create([
+                            'product_id' => $product->id,
+                            'type'       => $type,
+                            'value'      => $val,
+                            'position'   => $pos++,
+                        ]);
+                    }
+                }
+            }
         }
 
         if ($product->skus()->exists()) {
@@ -712,9 +750,7 @@ class ProductController extends Controller
         $position = (int) $product->images()->max('position');
 
         foreach ($request->file('images') as $file) {
-            $filename = Str::uuid()->toString() . '.' . strtolower($file->getClientOriginalExtension() ?: 'jpg');
-            $file->move($dir, $filename);
-            $path = 'uploads/products/' . $filename;
+            $path = $this->saveImageAsWebp($file, $dir);
 
             ProductImage::create([
                 'product_id' => $product->id,
@@ -725,6 +761,39 @@ class ProductController extends Controller
             ]);
             $hasPrimary = true;
         }
+    }
+
+    private function saveImageAsWebp($file, string $dir): string
+    {
+        $uuid = Str::uuid()->toString();
+        $webpFilename = $uuid . '.webp';
+        $fullWebpPath = $dir . '/' . $webpFilename;
+
+        if (function_exists('imagecreatefromstring') && function_exists('imagewebp')) {
+            try {
+                $imageData = @file_get_contents($file->getRealPath());
+                if ($imageData !== false) {
+                    $srcImage = @imagecreatefromstring($imageData);
+                    if ($srcImage !== false) {
+                        imagealphablending($srcImage, true);
+                        imagesavealpha($srcImage, true);
+
+                        if (@imagewebp($srcImage, $fullWebpPath, 82)) {
+                            imagedestroy($srcImage);
+                            return 'uploads/products/' . $webpFilename;
+                        }
+                        imagedestroy($srcImage);
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Fallback to original file
+            }
+        }
+
+        $originalExt = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+        $filename = $uuid . '.' . $originalExt;
+        $file->move($dir, $filename);
+        return 'uploads/products/' . $filename;
     }
 
     private function deletePublicUpload(?string $path): void

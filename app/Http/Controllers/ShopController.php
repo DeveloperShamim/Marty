@@ -11,7 +11,7 @@ class ShopController extends Controller
 {
     public function index(Request $request, ?Category $category = null)
     {
-        $query = Product::published()->with('images', 'category', 'brand');
+        $query = Product::published()->with('images', 'category', 'brand', 'variants', 'skus');
 
         if ($category) {
             $query->where('category_id', $category->id);

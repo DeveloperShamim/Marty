@@ -229,6 +229,200 @@
     return { variant: parts.join(", ") || null, missing };
   }
 
+  /* ---------------- Single Product Detail Page (PDP) Price & Variant Sync ---------------- */
+  function initPdpVariants() {
+    const pdpContainer = $("#pdpPriceContainer");
+    const pdPrice = $("#pdPrice");
+    const pdRegPrice = $("#pdRegularPrice");
+    const pdDiscount = $("#pdDiscountBadge");
+    const pdAddToCartBtn = $("#pdAddToCart");
+    const pdAddToCartText = $("#pdAddToCartText");
+    const pdBuyNowBtn = $("#pdBuyNow");
+
+    const variantGroups = $$("[data-variant-group]");
+    if (!variantGroups.length) return;
+
+    let skus = [];
+    if (pdpContainer && pdpContainer.dataset.skus) {
+      try {
+        skus = JSON.parse(pdpContainer.dataset.skus);
+      } catch (e) {
+        console.warn("PDP skus parse error", e);
+      }
+    }
+
+    const basePriceStr = pdPrice ? (pdPrice.dataset.basePrice || pdPrice.textContent) : "0";
+    const basePrice = parseFloat(String(basePriceStr).replace(/[^0-9.]/g, "")) || 0;
+
+    const baseRegStr = pdRegPrice ? (pdRegPrice.dataset.baseRegular || pdRegPrice.textContent) : "0";
+    const baseRegPrice = parseFloat(String(baseRegStr).replace(/[^0-9.]/g, "")) || 0;
+
+    function formatMoney(amount) {
+      return "৳" + Math.max(0, amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function syncPdpPrice() {
+      const selectedValues = [];
+      variantGroups.forEach((group) => {
+        const sel = group.querySelector(".variant-btn.is-selected");
+        if (sel && sel.dataset.value) {
+          selectedValues.push(String(sel.dataset.value).trim().toLowerCase());
+        }
+      });
+
+      let matchedSku = null;
+      if (skus.length > 0 && selectedValues.length > 0) {
+        matchedSku = skus.find((sku) => {
+          let attrs = sku.attributes || {};
+          if (typeof attrs === "string") {
+            try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
+          }
+          const skuVals = Object.values(attrs).map((v) => String(v).trim().toLowerCase());
+          if (skuVals.length === 0) return false;
+          return selectedValues.every((v) => skuVals.includes(v));
+        });
+
+        if (!matchedSku) {
+          matchedSku = skus.find((sku) => {
+            let attrs = sku.attributes || {};
+            if (typeof attrs === "string") {
+              try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
+            }
+            const skuVals = Object.values(attrs).map((v) => String(v).trim().toLowerCase());
+            return selectedValues.some((v) => skuVals.includes(v));
+          });
+        }
+      }
+
+      let priceAdj = 0;
+      if (matchedSku && typeof matchedSku.price_adjustment !== "undefined") {
+        priceAdj = parseFloat(matchedSku.price_adjustment) || 0;
+      }
+
+      let finalPrice = basePrice;
+      let finalRegPrice = baseRegPrice;
+
+      if (matchedSku) {
+        if (matchedSku.sale_price !== null && typeof matchedSku.sale_price !== "undefined" && parseFloat(matchedSku.sale_price) > 0) {
+          finalPrice = parseFloat(matchedSku.sale_price);
+        } else {
+          finalPrice = Math.max(0, basePrice + priceAdj);
+        }
+
+        if (matchedSku.regular_price !== null && typeof matchedSku.regular_price !== "undefined" && parseFloat(matchedSku.regular_price) > 0) {
+          finalRegPrice = parseFloat(matchedSku.regular_price);
+        } else if (baseRegPrice > 0) {
+          finalRegPrice = Math.max(0, baseRegPrice + priceAdj);
+        } else {
+          finalRegPrice = finalPrice;
+        }
+      } else {
+        finalPrice = Math.max(0, basePrice + priceAdj);
+        finalRegPrice = baseRegPrice > 0 ? Math.max(0, baseRegPrice + priceAdj) : finalPrice;
+      }
+
+      if (pdPrice) pdPrice.textContent = formatMoney(finalPrice);
+
+      if (pdRegPrice) {
+        if (finalRegPrice > finalPrice) {
+          pdRegPrice.textContent = formatMoney(finalRegPrice);
+          pdRegPrice.classList.remove("hidden");
+        } else {
+          pdRegPrice.classList.add("hidden");
+        }
+      }
+
+      if (pdDiscount) {
+        if (finalRegPrice > finalPrice) {
+          const pct = Math.round(((finalRegPrice - finalPrice) / finalRegPrice) * 100);
+          pdDiscount.textContent = `Save ${pct}%`;
+          pdDiscount.classList.remove("hidden");
+        } else {
+          pdDiscount.classList.add("hidden");
+        }
+      }
+
+      if (matchedSku) {
+        if (pdAddToCartBtn) pdAddToCartBtn.dataset.skuId = matchedSku.id;
+        if (pdBuyNowBtn) pdBuyNowBtn.dataset.skuId = matchedSku.id;
+
+        if (matchedSku.stock <= 0) {
+          if (pdAddToCartBtn) pdAddToCartBtn.disabled = true;
+          if (pdBuyNowBtn) pdBuyNowBtn.disabled = true;
+          if (pdAddToCartText) pdAddToCartText.textContent = "OUT OF STOCK";
+        } else {
+          if (pdAddToCartBtn) pdAddToCartBtn.disabled = false;
+          if (pdBuyNowBtn) pdBuyNowBtn.disabled = false;
+          if (pdAddToCartText) pdAddToCartText.textContent = "ADD TO CART";
+        }
+      }
+
+      // Switch gallery image if an uploaded photo is tagged with any selected variation (e.g. 1kg, 2kg, Red, Glass Jar)
+      if (selectedValues.length > 0) {
+        const thumbBtns = document.querySelectorAll(".gallery-thumb-btn, [data-thumb]");
+        let matchedThumb = null;
+
+        thumbBtns.forEach((thumbBtn) => {
+          const imgColor = (thumbBtn.dataset.color || "").trim().toLowerCase();
+          const imgAlt = (thumbBtn.dataset.alt || "").trim().toLowerCase();
+
+          if (imgColor && selectedValues.includes(imgColor)) {
+            matchedThumb = thumbBtn;
+          } else if (!matchedThumb && imgAlt && selectedValues.some((v) => imgAlt.includes(v))) {
+            matchedThumb = thumbBtn;
+          }
+        });
+
+        if (matchedThumb) {
+          const mainImg = document.querySelector("#galleryMain, [data-gallery-main]");
+          if (mainImg && matchedThumb.dataset.thumb) {
+            mainImg.src = matchedThumb.dataset.thumb;
+          }
+          thumbBtns.forEach((b) => {
+            b.classList.remove("border-brand-500", "ring-2", "ring-brand-500");
+            b.classList.add("border-stone-200", "opacity-80");
+            const check = b.querySelector("[data-active-check]");
+            if (check) check.remove();
+          });
+          matchedThumb.classList.add("border-brand-500");
+          matchedThumb.classList.remove("border-stone-200", "opacity-80");
+          if (!matchedThumb.querySelector("[data-active-check]")) {
+            matchedThumb.insertAdjacentHTML("beforeend", '<span data-active-check class="absolute inset-0 flex items-center justify-center pointer-events-none"><span class="w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-xs">✓</span></span>');
+          }
+        }
+      }
+    }
+
+    variantGroups.forEach((group) => {
+      const buttons = group.querySelectorAll(".variant-btn");
+      buttons.forEach((btn, idx) => {
+        if (idx === 0 && !group.querySelector(".variant-btn.is-selected")) {
+          btn.classList.add("is-selected", "border-2", "border-brand-500", "text-brand-600", "bg-brand-50/40");
+          btn.classList.remove("border-stone-200", "text-stone-700");
+        }
+
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          buttons.forEach((b) => {
+            b.classList.remove("is-selected", "border-2", "border-brand-500", "text-brand-600", "bg-brand-50/40");
+            b.classList.add("border-stone-200", "text-stone-700");
+          });
+          btn.classList.add("is-selected", "border-2", "border-brand-500", "text-brand-600", "bg-brand-50/40");
+          btn.classList.remove("border-stone-200", "text-stone-700");
+          syncPdpPrice();
+        });
+      });
+    });
+
+    syncPdpPrice();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPdpVariants);
+  } else {
+    initPdpVariants();
+  }
+
   /* ---------------- Quick Select Variation Modal Logic ---------------- */
   const qm = $("#quickSelectModal");
   const qmContainer = qm ? $("[data-modal-container]", qm) : null;
@@ -320,51 +514,99 @@
   }
 
   function syncQuickModalPrice() {
-    if (!currentQmProduct || !currentQmProduct.skus || !currentQmProduct.skus.length) return;
+    if (!currentQmProduct) return;
 
-    const selectedAttrs = {};
-    $$("[data-qm-variant-group]").forEach((group) => {
-      const type = group.dataset.qmVariantGroup;
-      const sel = group.querySelector(".qm-variant-btn.is-selected");
-      if (sel) {
-        selectedAttrs[type] = sel.dataset.value;
-      }
-    });
+    const basePrice = parseFloat(currentQmProduct.rawPrice || 0) || (currentQmProduct.price ? parseFloat(String(currentQmProduct.price).replace(/[^0-9.]/g, "")) : 0);
+    const baseRegPrice = parseFloat(currentQmProduct.rawRegularPrice || 0) || (currentQmProduct.regularPrice ? parseFloat(String(currentQmProduct.regularPrice).replace(/[^0-9.]/g, "")) : 0);
 
-    const selectedKeys = Object.keys(selectedAttrs);
-    if (!selectedKeys.length) return;
+    let priceAdj = 0;
+    let matchedSku = null;
 
-    const matchedSku = currentQmProduct.skus.find((s) => {
-      let attrs = s.attributes;
-      if (typeof attrs === "string") {
-        try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
-      }
-      if (!attrs || typeof attrs !== "object") return false;
-
-      const attrMap = {};
-      Object.keys(attrs).forEach((k) => {
-        attrMap[String(k).trim().toLowerCase()] = String(attrs[k]).trim().toLowerCase();
+    if (currentQmProduct.skus && currentQmProduct.skus.length) {
+      const selectedAttrs = {};
+      $$("[data-qm-variant-group]").forEach((group) => {
+        const type = group.dataset.qmVariantGroup;
+        const sel = group.querySelector(".qm-variant-btn.is-selected");
+        if (sel) {
+          selectedAttrs[type] = sel.dataset.value;
+        }
       });
-      return selectedKeys.every((k) => {
-        const kLower = String(k).trim().toLowerCase();
-        const expectedVal = String(selectedAttrs[k]).trim().toLowerCase();
-        return attrMap[kLower] === expectedVal;
-      });
-    });
 
-    const basePrice = parseFloat(currentQmProduct.rawPrice || 0);
+      const selectedKeys = Object.keys(selectedAttrs);
+      if (selectedKeys.length) {
+        matchedSku = currentQmProduct.skus.find((s) => {
+          let attrs = s.attributes;
+          if (typeof attrs === "string") {
+            try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
+          }
+          if (!attrs || typeof attrs !== "object") return false;
+
+          const attrMap = {};
+          Object.keys(attrs).forEach((k) => {
+            attrMap[String(k).trim().toLowerCase()] = String(attrs[k]).trim().toLowerCase();
+          });
+          return selectedKeys.every((k) => {
+            const kLower = String(k).trim().toLowerCase();
+            const expectedVal = String(selectedAttrs[k]).trim().toLowerCase();
+            return attrMap[kLower] === expectedVal;
+          });
+        });
+
+        if (matchedSku) {
+          currentQmProduct.selectedSkuId = matchedSku.id;
+          priceAdj = parseFloat(matchedSku.price_adjustment) || 0;
+        } else {
+          currentQmProduct.selectedSkuId = null;
+        }
+      }
+    }
+
     let finalPrice = basePrice;
+    if (basePrice <= 0) {
+      finalPrice = Math.max(0, priceAdj);
+    } else {
+      finalPrice = Math.max(0, basePrice + priceAdj);
+    }
+
+    let finalRegPrice = 0;
+    if (baseRegPrice > 0) {
+      finalRegPrice = Math.max(0, baseRegPrice + priceAdj);
+    }
 
     if (matchedSku) {
-      currentQmProduct.selectedSkuId = matchedSku.id;
-      const adj = parseFloat(matchedSku.price_adjustment) || 0;
-      finalPrice = Math.max(0, basePrice + adj);
-    } else {
-      currentQmProduct.selectedSkuId = null;
+      if (matchedSku.sale_price !== null && typeof matchedSku.sale_price !== "undefined" && parseFloat(matchedSku.sale_price) > 0) {
+        finalPrice = parseFloat(matchedSku.sale_price);
+      }
+      if (matchedSku.regular_price !== null && typeof matchedSku.regular_price !== "undefined" && parseFloat(matchedSku.regular_price) > 0) {
+        finalRegPrice = parseFloat(matchedSku.regular_price);
+      }
     }
 
     if (qmPrice && finalPrice > 0) {
       qmPrice.textContent = "৳" + finalPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    if (qmRegPrice) {
+      if (finalRegPrice > 0 && finalRegPrice > finalPrice) {
+        qmRegPrice.textContent = "৳" + finalRegPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        qmRegPrice.classList.remove("hidden");
+      } else {
+        qmRegPrice.classList.add("hidden");
+      }
+    }
+
+    if (qmDiscount) {
+      if (finalRegPrice > 0 && finalRegPrice > finalPrice) {
+        const discountPercent = Math.round(100 - (finalPrice / finalRegPrice * 100));
+        if (discountPercent > 0) {
+          qmDiscount.textContent = discountPercent + "% OFF";
+          qmDiscount.classList.remove("hidden");
+        } else {
+          qmDiscount.classList.add("hidden");
+        }
+      } else {
+        qmDiscount.classList.add("hidden");
+      }
     }
   }
 
@@ -408,9 +650,16 @@
         const groupDiv = document.createElement("div");
         groupDiv.setAttribute("data-qm-variant-group", type);
 
+        let displayType = type;
+        if (/color/i.test(type) && options.some((opt) => /glass|plastic|plastick|bottle|jar|can|pack|bag|box|container/i.test(opt))) {
+          displayType = "Packaging";
+        } else if (/size/i.test(type) && options.some((opt) => /\d+\s*(g|kg|l|ml|oz|lb|liter|litre|gm|gram)/i.test(opt))) {
+          displayType = "Weight";
+        }
+
         const label = document.createElement("p");
         label.className = "text-xs font-bold uppercase tracking-wider text-stone-600 mb-1.5";
-        label.textContent = type;
+        label.textContent = displayType;
 
         const flex = document.createElement("div");
         flex.className = "flex flex-wrap gap-2";
@@ -589,6 +838,7 @@
         price: btn.dataset.price,
         rawPrice: btn.dataset.rawPrice,
         regularPrice: btn.dataset.regularPrice,
+        rawRegularPrice: btn.dataset.rawRegularPrice,
         discount: btn.dataset.discount,
         image: btn.dataset.image,
         variants: variantsData,

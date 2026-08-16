@@ -34,10 +34,11 @@ class ConversationController extends Controller
             });
         }
 
-        $conversations = $query->orderBy('last_message_at', 'desc')->paginate(30);
+        $conversations = $query->orderByRaw('COALESCE(last_message_at, created_at) DESC')->paginate(50);
         $unreadCount = Conversation::where('status', 'open')->sum('unread_admin_count');
 
         $activeId = $request->query('chat');
+        $hasExplicitChat = $request->has('chat');
         $activeConversation = null;
         $customerOrders = collect();
 
@@ -48,7 +49,9 @@ class ConversationController extends Controller
         }
 
         if ($activeConversation) {
-            $activeConversation->markAsReadForAdmin();
+            if ($hasExplicitChat) {
+                $activeConversation->markAsReadForAdmin();
+            }
             $customerOrders = $activeConversation->getCustomerOrders();
         }
 
@@ -59,6 +62,7 @@ class ConversationController extends Controller
             'status'             => $status,
             'search'             => $search,
             'unreadCount'        => $unreadCount,
+            'hasExplicitChat'    => $hasExplicitChat,
         ]);
     }
 

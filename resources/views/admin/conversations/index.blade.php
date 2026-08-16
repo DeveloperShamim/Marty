@@ -2,37 +2,37 @@
 @section('title', 'Live Support Chat Inbox')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-4 sm:space-y-6">
   {{-- Header --}}
-  <div class="flex items-center justify-between flex-wrap gap-4 border-b border-gray-200 pb-4">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-200 pb-3 sm:pb-4">
     <div>
-      <h2 class="text-2xl font-extrabold text-ink tracking-tight flex items-center gap-2.5">
+      <h2 class="text-xl sm:text-2xl font-extrabold text-ink tracking-tight flex items-center gap-2">
         <span>💬</span> Live Customer Support Chat
       </h2>
-      <p class="text-xs text-gray-500 mt-1">Manage real-time customer inquiries, voice notes, phone calls, product recommendations, and order tracking.</p>
+      <p class="text-xs text-gray-500 mt-0.5">Manage real-time customer inquiries, voice notes, product recommendations, and order tracking.</p>
     </div>
     
-    <div class="flex items-center gap-2">
-      <a href="{{ route('admin.conversations.index', ['status' => 'open']) }}" class="px-3.5 py-1.5 text-xs font-bold rounded-xl {{ $status === 'open' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white text-gray-700 border border-gray-200' }}">
-        Open Chats ({{ \App\Models\Conversation::where('status', 'open')->count() }})
+    <div class="flex items-center gap-1.5 flex-wrap">
+      <a href="{{ route('admin.conversations.index', ['status' => 'open']) }}" class="px-3 py-1.5 text-xs font-bold rounded-xl {{ $status === 'open' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white text-gray-700 border border-gray-200' }}">
+        Open ({{ \App\Models\Conversation::where('status', 'open')->count() }})
       </a>
-      <a href="{{ route('admin.conversations.index', ['status' => 'closed']) }}" class="px-3.5 py-1.5 text-xs font-bold rounded-xl {{ $status === 'closed' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white text-gray-700 border border-gray-200' }}">
-        Closed Chats
+      <a href="{{ route('admin.conversations.index', ['status' => 'closed']) }}" class="px-3 py-1.5 text-xs font-bold rounded-xl {{ $status === 'closed' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white text-gray-700 border border-gray-200' }}">
+        Closed
       </a>
-      <a href="{{ route('admin.conversations.index', ['status' => 'all']) }}" class="px-3.5 py-1.5 text-xs font-bold rounded-xl {{ $status === 'all' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white text-gray-700 border border-gray-200' }}">
+      <a href="{{ route('admin.conversations.index', ['status' => 'all']) }}" class="px-3 py-1.5 text-xs font-bold rounded-xl {{ $status === 'all' ? 'bg-brand-600 text-white shadow-xs' : 'bg-white text-gray-700 border border-gray-200' }}">
         All
       </a>
-      <button type="button" onclick="document.getElementById('storageCleanupModal').classList.remove('hidden')" class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition flex items-center gap-1 cursor-pointer">
-        <span>🧹</span> Clean Storage
+      <button type="button" onclick="document.getElementById('storageCleanupModal').classList.remove('hidden')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition flex items-center gap-1 cursor-pointer">
+        <span>🧹</span> Clean
       </button>
     </div>
   </div>
 
   {{-- Main Inbox Grid --}}
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[740px] max-h-[84vh]">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 h-[calc(100vh-200px)] min-h-[560px] lg:h-[740px] max-h-[86vh]">
     
     {{-- Left Panel: Conversations List --}}
-    <div class="lg:col-span-3 bg-white rounded-2xl border border-gray-200 flex flex-col overflow-hidden shadow-xs">
+    <div class="lg:col-span-3 bg-white rounded-2xl border border-gray-200 {{ $hasExplicitChat ? 'hidden lg:flex' : 'flex' }} flex-col overflow-hidden shadow-xs h-full">
       {{-- Search --}}
       <div class="p-3 border-b border-gray-100 bg-gray-50/50">
         <form method="GET" action="{{ route('admin.conversations.index') }}">
@@ -44,7 +44,7 @@
       {{-- List --}}
       <div class="flex-1 overflow-y-auto divide-y divide-gray-100 no-scrollbar">
         @forelse($conversations as $conv)
-          @php $isActive = $activeConversation && $activeConversation->id === $conv->id; @endphp
+          @php $isActive = $hasExplicitChat && $activeConversation && $activeConversation->id === $conv->id; @endphp
           <a href="{{ route('admin.conversations.index', ['status' => $status, 'chat' => $conv->id, 'q' => $search]) }}" class="block p-3.5 hover:bg-slate-50 transition {{ $isActive ? 'bg-brand-50/60 border-l-4 border-brand-600' : '' }}">
             <div class="flex items-center justify-between mb-1">
               <span class="font-extrabold text-xs text-ink truncate max-w-[140px]">{{ $conv->customer_name }}</span>
@@ -85,40 +85,51 @@
     </div>
 
     {{-- Center Panel: Active Chat Thread --}}
-    <div class="lg:col-span-6 bg-white rounded-2xl border border-gray-200 flex flex-col overflow-hidden shadow-xs">
+    <div class="lg:col-span-6 bg-white rounded-2xl border border-gray-200 {{ $hasExplicitChat ? 'flex' : 'hidden lg:flex' }} flex-col overflow-hidden shadow-xs h-full">
       @if($activeConversation)
         {{-- Thread Header --}}
-        <div class="p-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <div class="flex items-center gap-3">
-            <div class="h-9 w-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-extrabold text-xs border border-brand-200">
+        <div class="p-3 sm:p-3.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 gap-2">
+          <div class="flex items-center gap-2 min-w-0">
+            {{-- Mobile Back Button --}}
+            <a href="{{ route('admin.conversations.index', ['status' => $status, 'q' => $search]) }}" class="lg:hidden p-1.5 rounded-xl bg-white border border-gray-200 text-stone-700 font-extrabold text-xs hover:bg-gray-100 shrink-0 flex items-center gap-1 shadow-2xs" title="Back to List">
+              <span>←</span> <span class="hidden sm:inline">Chats</span>
+            </a>
+
+            <div class="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-extrabold text-xs border border-brand-200 shrink-0">
               {{ strtoupper(substr($activeConversation->customer_name, 0, 1)) }}
             </div>
-            <div>
-              <h3 class="font-extrabold text-xs text-ink flex items-center gap-2">
-                <span>{{ $activeConversation->customer_name }}</span>
+
+            <div class="min-w-0">
+              <h3 class="font-extrabold text-xs text-ink flex items-center gap-1.5 truncate">
+                <span class="truncate">{{ $activeConversation->customer_name }}</span>
                 @if($activeConversation->status === 'open')
-                  <span class="px-2 py-0.5 text-[9px] font-extrabold bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200">Open</span>
+                  <span class="px-2 py-0.5 text-[9px] font-extrabold bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200 shrink-0">Open</span>
                 @else
-                  <span class="px-2 py-0.5 text-[9px] font-extrabold bg-gray-100 text-gray-600 rounded-full border border-gray-200">Closed</span>
+                  <span class="px-2 py-0.5 text-[9px] font-extrabold bg-gray-100 text-gray-600 rounded-full border border-gray-200 shrink-0">Closed</span>
                 @endif
               </h3>
-              <p class="text-[10px] text-gray-400 mt-0.5">
-                @if($activeConversation->customer_phone) 📞 {{ $activeConversation->customer_phone }} @endif
-                @if($activeConversation->customer_email) | ✉️ {{ $activeConversation->customer_email }} @endif
+              <p class="text-[10px] text-gray-400 mt-0.5 truncate">
+                @if($activeConversation->customer_phone) <span>📞 {{ $activeConversation->customer_phone }}</span> @endif
+                @if($activeConversation->customer_email) <span class="hidden sm:inline">| ✉️ {{ $activeConversation->customer_email }}</span> @endif
               </p>
             </div>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5 shrink-0">
+            {{-- Mobile Customer Info Toggle --}}
+            <button type="button" onclick="openMobileCustomerInfoModal()" class="lg:hidden px-2.5 py-1.5 text-xs font-extrabold rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 border border-stone-200 transition shadow-2xs cursor-pointer flex items-center gap-1">
+              <span>👤 Info</span>
+            </button>
+
             <form method="POST" action="{{ route('admin.conversations.toggle-status', $activeConversation) }}">
               @csrf
               @if($activeConversation->status === 'open')
-                <button type="submit" class="px-3 py-1.5 text-xs font-extrabold rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition shadow-2xs cursor-pointer flex items-center gap-1">
-                  <span>🔒</span> Close Chat
+                <button type="submit" class="px-2.5 sm:px-3 py-1.5 text-xs font-extrabold rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition shadow-2xs cursor-pointer flex items-center gap-1">
+                  <span>🔒</span> <span class="hidden sm:inline">Close Chat</span><span class="sm:hidden">Close</span>
                 </button>
               @else
-                <button type="submit" class="px-3 py-1.5 text-xs font-extrabold rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition shadow-2xs cursor-pointer flex items-center gap-1">
-                  <span>🔓</span> Re-open Chat
+                <button type="submit" class="px-2.5 sm:px-3 py-1.5 text-xs font-extrabold rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition shadow-2xs cursor-pointer flex items-center gap-1">
+                  <span>🔓</span> <span class="hidden sm:inline">Re-open Chat</span><span class="sm:hidden">Open</span>
                 </button>
               @endif
             </form>
@@ -141,83 +152,93 @@
         </div>
 
         {{-- Thread Messages List --}}
-        <div id="adminMessageList" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50/40 no-scrollbar">
+        <div id="adminMessageList" class="flex-1 p-3.5 sm:p-5 overflow-y-auto space-y-4 bg-stone-50/60 no-scrollbar">
           @forelse($activeConversation->messages as $msg)
             @php $isAdmin = $msg->sender_type === 'admin'; @endphp
-            <div class="flex flex-col {{ $isAdmin ? 'items-end' : 'items-start' }}">
+            <div class="flex flex-col {{ $isAdmin ? 'items-end' : 'items-start' }} group/msg">
               
               @if($msg->type === 'product' && $msg->metadata)
                 @php $meta = $msg->metadata; @endphp
-                <div class="max-w-[80%] rounded-2xl p-3 bg-white border border-indigo-200 shadow-md text-gray-800 space-y-2">
-                  <div class="flex items-center gap-2.5">
-                    <img src="{{ $meta['image_url'] ?? logo_url() }}" class="h-11 w-11 object-cover rounded-lg border border-gray-100 bg-gray-50 shrink-0" alt="" />
+                <div class="max-w-[85%] sm:max-w-[75%] rounded-2xl p-3.5 bg-white border border-stone-200/90 shadow-sm text-stone-800 space-y-2.5">
+                  <div class="flex items-center gap-3">
+                    <img src="{{ $meta['image_url'] ?? logo_url() }}" class="h-12 w-12 object-cover rounded-xl border border-stone-100 bg-stone-50 shrink-0" alt="" />
                     <div class="min-w-0">
-                      <span class="text-[9px] font-extrabold text-indigo-600 uppercase tracking-wider block">Sent Product Card</span>
+                      <span class="text-[9px] font-extrabold text-indigo-600 uppercase tracking-wider block">Product Recommendation</span>
                       <h5 class="font-extrabold text-xs text-ink truncate">{{ $meta['name'] ?? '' }}</h5>
                       <p class="text-xs font-black text-brand-600 mt-0.5">{{ $meta['formatted_price'] ?? money($meta['price'] ?? 0) }}</p>
                     </div>
                   </div>
-                  <a href="{{ $meta['url'] ?? '#' }}" target="_blank" class="block w-full py-1 text-center bg-indigo-50 text-indigo-700 font-extrabold text-[10px] rounded-md hover:bg-indigo-100">View Product Page ↗</a>
+                  <a href="{{ $meta['url'] ?? '#' }}" target="_blank" class="block w-full py-1.5 text-center bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-xs rounded-xl transition">View Product ↗</a>
                 </div>
 
               @elseif($msg->type === 'order' && $msg->metadata)
                 @php $meta = $msg->metadata; @endphp
-                <div class="max-w-[80%] rounded-2xl p-3 bg-white border border-emerald-200 shadow-md text-gray-800 space-y-2">
-                  <div class="border-b border-gray-100 pb-1.5 flex items-center justify-between">
-                    <span class="font-extrabold text-xs text-emerald-950">Sent Order Details ({{ $meta['order_number'] ?? '' }})</span>
-                    <span class="px-2 py-0.5 text-[9px] font-extrabold bg-emerald-100 text-emerald-800 rounded-full">{{ $meta['delivery_status'] ?? '' }}</span>
+                <div class="max-w-[85%] sm:max-w-[75%] rounded-2xl p-3.5 bg-white border border-stone-200/90 shadow-sm text-stone-800 space-y-2.5">
+                  <div class="border-b border-stone-100 pb-2 flex items-center justify-between gap-2">
+                    <span class="font-extrabold text-xs text-stone-900 truncate">Order {{ $meta['order_number'] ?? '' }}</span>
+                    <span class="px-2.5 py-0.5 text-[9px] font-extrabold bg-emerald-100 text-emerald-800 rounded-full shrink-0">{{ $meta['delivery_status'] ?? '' }}</span>
                   </div>
                   @if(!empty($meta['items_summary']))
-                    <p class="text-[11px] font-medium text-gray-700">📦 {{ $meta['items_summary'] }}</p>
+                    <p class="text-xs font-medium text-stone-700">📦 {{ $meta['items_summary'] }}</p>
                   @endif
-                  <p class="text-[11px] text-gray-600">Total: <strong>{{ $meta['formatted_total'] ?? '' }}</strong> ({{ $meta['items_count'] ?? 1 }} items)</p>
-                  <a href="{{ $meta['tracking_url'] ?? '#' }}" target="_blank" class="block w-full py-1 text-center bg-emerald-50 text-emerald-800 font-extrabold text-[10px] rounded-md hover:bg-emerald-100">Tracking Link ↗</a>
+                  <p class="text-xs text-stone-600">Total: <strong class="text-stone-900">{{ $meta['formatted_total'] ?? '' }}</strong> ({{ $meta['items_count'] ?? 1 }} items)</p>
+                  <a href="{{ $meta['tracking_url'] ?? '#' }}" target="_blank" class="block w-full py-1.5 text-center bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-extrabold text-xs rounded-xl transition">Tracking Link ↗</a>
                 </div>
 
               @elseif($msg->type === 'coupon' && $msg->metadata)
                 @php $meta = $msg->metadata; @endphp
-                <div class="max-w-[80%] rounded-2xl p-3 bg-amber-50 border border-amber-200 shadow-md text-amber-950 space-y-1.5">
+                <div class="max-w-[85%] sm:max-w-[75%] rounded-2xl p-3.5 bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/90 shadow-sm text-amber-950 space-y-2">
                   <div class="flex items-center justify-between">
-                    <span class="text-[9px] font-extrabold text-amber-800 uppercase tracking-wider">🎟️ Discount Coupon Card</span>
-                    <span class="font-extrabold text-xs text-amber-900">{{ $meta['discount_text'] ?? '' }}</span>
+                    <span class="text-[9.5px] font-extrabold text-amber-800 uppercase tracking-wider">🎟️ Discount Coupon Card</span>
+                    <span class="font-black text-xs text-amber-900 bg-white/80 px-2 py-0.5 rounded-full border border-amber-200">{{ $meta['discount_text'] ?? '' }}</span>
                   </div>
-                  <div class="bg-white p-1.5 rounded border border-dashed border-amber-300 font-mono text-xs font-bold text-center tracking-wider text-amber-900">
+                  <div class="bg-white p-2 rounded-xl border border-dashed border-amber-300 font-mono text-xs font-black text-center tracking-widest text-amber-900 shadow-2xs">
                     CODE: {{ $meta['code'] ?? '' }}
                   </div>
                 </div>
 
               @elseif($msg->type === 'voice' && $msg->attachment_url)
-                <div class="max-w-[80%] rounded-2xl p-2.5 bg-white border border-gray-200 shadow-md text-gray-800 space-y-1">
-                  <div class="flex items-center gap-1 text-[10px] font-extrabold text-brand-600">
-                    <span>🎙️ Voice Note Recording</span>
+                <div class="max-w-[85%] sm:max-w-[75%] rounded-2xl p-3 bg-white border border-stone-200/80 shadow-xs text-stone-800 space-y-1.5">
+                  <div class="flex items-center gap-1.5 text-xs font-bold text-brand-600">
+                    <span>🎙️ Voice Note</span>
                   </div>
-                  <audio controls class="w-64 h-8 rounded max-w-full">
+                  <audio controls class="w-56 sm:w-64 h-8 rounded-lg max-w-full">
                     <source src="{{ $msg->attachment_url }}" type="audio/webm">
                     <source src="{{ $msg->attachment_url }}" type="audio/mp3">
                   </audio>
                 </div>
 
               @elseif($msg->type === 'image' || $msg->attachment_url)
-                <div class="max-w-[80%] rounded-2xl p-1 bg-white border border-gray-200 shadow-md overflow-hidden">
+                <div class="max-w-[85%] sm:max-w-[75%] rounded-2xl p-1 bg-white border border-stone-200/80 shadow-xs overflow-hidden">
                   <a href="{{ $msg->attachment_url }}" target="_blank">
-                    <img src="{{ $msg->attachment_url }}" class="max-h-48 w-full object-cover rounded-xl" alt="Attachment" />
+                    <img src="{{ $msg->attachment_url }}" class="max-h-52 w-full object-cover rounded-xl" alt="Attachment" />
                   </a>
                 </div>
 
               @else
-                <div class="max-w-[78%] rounded-2xl px-3.5 py-2 text-xs font-medium leading-relaxed shadow-2xs {{ $isAdmin ? 'bg-brand-600 text-white rounded-br-none' : 'bg-white text-gray-800 border border-gray-200/80 rounded-bl-none shadow-xs' }}">
-                  {{ $msg->message }}
+                <div class="flex items-end gap-2 max-w-[85%] sm:max-w-[75%]">
+                  @if(!$isAdmin)
+                    <div class="w-7 h-7 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-[10px] font-extrabold shrink-0 border border-brand-200">
+                      {{ strtoupper(substr($activeConversation->customer_name, 0, 1)) }}
+                    </div>
+                  @endif
+                  <div class="rounded-2xl px-4 py-2.5 text-xs sm:text-sm font-medium leading-relaxed shadow-2xs {{ $isAdmin ? 'bg-brand-600 text-white rounded-br-xs' : 'bg-white text-stone-800 border border-stone-200/90 rounded-bl-xs' }}">
+                    {{ $msg->message }}
+                  </div>
                 </div>
               @endif
 
-              <div class="text-[9px] font-semibold text-gray-400 mt-1 px-1 flex items-center gap-1">
+              <div class="text-[9.5px] font-bold text-stone-400 mt-1 px-1 flex items-center gap-1">
                 <span>{{ $isAdmin ? 'Support Agent' : $activeConversation->customer_name }}</span>
                 <span>•</span>
                 <span>{{ $msg->created_at->format('h:i A') }}</span>
+                @if($isAdmin)
+                  <span class="text-brand-600 font-extrabold ml-0.5">✓✓</span>
+                @endif
               </div>
             </div>
           @empty
-            <div class="text-center text-xs text-gray-400 py-12">No message history available.</div>
+            <div class="text-center text-xs text-stone-400 py-12">No message history available.</div>
           @endforelse
         </div>
 
@@ -225,30 +246,34 @@
         <div id="adminRecordingOverlay" class="hidden p-2.5 bg-rose-50 border-t border-rose-100 flex items-center justify-between gap-2 animate-pulse">
           <div class="flex items-center gap-2 text-rose-700 text-xs font-extrabold">
             <span class="w-2.5 h-2.5 bg-rose-600 rounded-full animate-ping"></span>
-            <span>Recording Admin Voice Note...</span>
-            <span id="adminRecordTimer" class="font-mono text-rose-900">00:00</span>
+            <span class="truncate">Recording Voice Note...</span>
+            <span id="adminRecordTimer" class="font-mono text-rose-900 shrink-0">00:00</span>
           </div>
-          <div class="flex items-center gap-2">
-            <button type="button" id="adminCancelRecordBtn" class="px-2.5 py-1 bg-white border border-rose-200 text-rose-700 font-bold text-[10px] rounded-lg">Cancel</button>
-            <button type="button" id="adminStopSendRecordBtn" class="px-3 py-1 bg-rose-600 text-white font-extrabold text-[10px] rounded-lg shadow-2xs">Send Voice Note ➔</button>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button type="button" id="adminCancelRecordBtn" class="px-2 py-1 bg-white border border-rose-200 text-rose-700 font-bold text-[10px] rounded-lg">Cancel</button>
+            <button type="button" id="adminStopSendRecordBtn" class="px-2.5 py-1 bg-rose-600 text-white font-extrabold text-[10px] rounded-lg shadow-2xs">Send ➔</button>
           </div>
         </div>
 
         {{-- Admin Reply Form --}}
-        <form method="POST" action="{{ route('admin.conversations.reply', $activeConversation) }}" enctype="multipart/form-data" class="p-3 bg-white border-t border-gray-100 flex items-center gap-2">
+        <form method="POST" action="{{ route('admin.conversations.reply', $activeConversation) }}" enctype="multipart/form-data" class="p-3 bg-white border-t border-stone-100 flex items-center gap-2">
           @csrf
-          <label for="adminAttachmentInput" class="h-9 w-9 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center cursor-pointer shrink-0 transition" title="Attach Photo">
-            📷
-            <input type="file" id="adminAttachmentInput" accept="image/*" class="hidden" onchange="uploadAdminPhotoAttachment()" />
-          </label>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <label for="adminAttachmentInput" class="h-9 w-9 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center cursor-pointer transition shadow-2xs" title="Attach Photo">
+              📷
+              <input type="file" id="adminAttachmentInput" accept="image/*" class="hidden" onchange="uploadAdminPhotoAttachment()" />
+            </label>
 
-          <button type="button" id="adminMicBtn" class="h-9 w-9 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center cursor-pointer shrink-0 transition" title="Record Voice Note">
-            🎙️
-          </button>
+            <button type="button" id="adminMicBtn" class="h-9 w-9 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 flex items-center justify-center cursor-pointer transition shadow-2xs" title="Record Voice Note">
+              🎙️
+            </button>
+          </div>
 
-          <textarea id="adminReplyText" name="message" rows="2" placeholder="Type message to customer..." class="flex-1 text-xs bg-gray-50 border border-gray-200 rounded-xl p-2.5 focus:outline-none focus:border-brand-500 focus:bg-white transition resize-none" required></textarea>
+          <div class="flex-1 flex items-center bg-stone-100/90 border border-stone-200/90 rounded-full px-3.5 py-1 focus-within:bg-white focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/10 transition">
+            <textarea id="adminReplyText" name="message" rows="1" placeholder="Type a message..." class="w-full text-xs sm:text-sm bg-transparent focus:outline-none text-stone-800 placeholder:text-stone-400 resize-none h-8 leading-snug py-1.5" required></textarea>
+          </div>
           
-          <button type="submit" class="btn-primary px-4 py-3 text-xs font-extrabold rounded-xl shadow-xs shrink-0 flex items-center gap-1.5">
+          <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-extrabold px-4 py-2 rounded-full shadow-sm flex items-center gap-1.5 shrink-0 transition cursor-pointer">
             <span>Reply</span>
             <span>➔</span>
           </button>
@@ -262,8 +287,8 @@
       @endif
     </div>
 
-    {{-- Right Sidebar: Customer Context & Past Orders --}}
-    <div class="lg:col-span-3 bg-white rounded-2xl border border-gray-200 flex flex-col overflow-hidden shadow-xs">
+    {{-- Right Sidebar: Customer Context & Past Orders (Desktop Only) --}}
+    <div class="hidden lg:flex lg:col-span-3 bg-white rounded-2xl border border-gray-200 flex-col overflow-hidden shadow-xs h-full">
       @if($activeConversation)
         <div class="p-3.5 border-b border-gray-100 bg-gray-50/50 space-y-2">
           <h4 class="font-extrabold text-xs text-ink">
@@ -347,6 +372,64 @@
   </div>
 </div>
 
+{{-- Mobile Customer Info Modal --}}
+@if($activeConversation)
+<div id="mobileCustomerInfoModal" class="hidden fixed inset-0 bg-ink/50 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+  <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl border border-gray-100 overflow-hidden max-h-[85vh] flex flex-col p-4 space-y-3">
+    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+      <h3 class="font-extrabold text-sm text-ink flex items-center gap-2">
+        <span>👤</span> Customer Info & Orders
+      </h3>
+      <button type="button" onclick="closeMobileCustomerInfoModal()" class="text-gray-400 hover:text-gray-700 text-lg font-bold">×</button>
+    </div>
+
+    <div class="overflow-y-auto space-y-3 flex-1 no-scrollbar pr-1">
+      <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 space-y-1 text-xs text-gray-700">
+        <p><strong>Name:</strong> {{ $activeConversation->customer_name }}</p>
+        @if($activeConversation->customer_phone) <p><strong>Phone:</strong> {{ $activeConversation->customer_phone }}</p> @endif
+        @if($activeConversation->customer_email) <p class="truncate"><strong>Email:</strong> {{ $activeConversation->customer_email }}</p> @endif
+      </div>
+
+      <div class="border-t border-gray-100 pt-2 space-y-2">
+        <h4 class="font-extrabold text-xs text-ink flex items-center gap-1.5">
+          <span>📦</span> Past Orders ({{ $customerOrders->count() }})
+        </h4>
+        @forelse($customerOrders as $ord)
+          @php $ordPrice = $ord->total > 0 ? $ord->total : $ord->grand_total; @endphp
+          <div class="p-3 bg-white border border-gray-200 rounded-xl space-y-2 text-xs shadow-2xs">
+            <div class="flex items-center justify-between">
+              <a href="{{ route('admin.orders.show', $ord) }}" target="_blank" class="font-extrabold text-brand-600 hover:underline">
+                {{ $ord->order_number ?? '#' . $ord->id }}
+              </a>
+              <span class="font-black text-ink">{{ money($ordPrice) }}</span>
+            </div>
+            <div class="bg-gray-50 p-2 rounded-lg border border-gray-100 space-y-1">
+              @foreach($ord->items as $item)
+                <div class="text-[11px] font-medium text-gray-700 flex items-center justify-between gap-2">
+                  <span class="truncate" title="{{ $item->product_name }}">
+                    📦 {{ $item->product_name ?: ($item->product?->name ?? 'Product') }}
+                  </span>
+                  <span class="font-bold shrink-0 text-gray-500">×{{ $item->quantity }}</span>
+                </div>
+              @endforeach
+            </div>
+            <form method="POST" action="{{ route('admin.conversations.send-order', $activeConversation) }}">
+              @csrf
+              <input type="hidden" name="order_id" value="{{ $ord->id }}" />
+              <button type="submit" class="w-full py-1 text-[10px] font-extrabold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded border border-emerald-200/60 transition cursor-pointer">
+                🧾 Send Order Card to Chat
+              </button>
+            </form>
+          </div>
+        @empty
+          <p class="text-xs text-gray-400 italic">No past orders found.</p>
+        @endforelse
+      </div>
+    </div>
+  </div>
+</div>
+@endif
+
 {{-- Product Picker Modal --}}
 @if($activeConversation)
 <div id="productPickerModal" class="hidden fixed inset-0 bg-ink/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
@@ -387,12 +470,53 @@
 
 @push('scripts')
 <script>
+function scrollChatToBottom() {
+  const msgList = document.getElementById('adminMessageList');
+  if (msgList) {
+    msgList.scrollTop = msgList.scrollHeight;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  scrollChatToBottom();
+
+  const activeChatId = "{{ $activeConversation->id ?? '' }}";
+  if (activeChatId) {
+    setInterval(async function() {
+      try {
+        const res = await fetch(`/admin/conversations/${activeChatId}`, {
+          headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.messages) {
+            const msgList = document.getElementById('adminMessageList');
+            if (msgList && data.messages.length > msgList.children.length) {
+              window.location.reload();
+            }
+          }
+        }
+      } catch (e) {}
+    }, 4000);
+  }
+});
+
 function insertQuickReply(text) {
   const replyBox = document.getElementById('adminReplyText');
   if (replyBox) {
     replyBox.value = text;
     replyBox.focus();
   }
+}
+
+function openMobileCustomerInfoModal() {
+  const modal = document.getElementById('mobileCustomerInfoModal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeMobileCustomerInfoModal() {
+  const modal = document.getElementById('mobileCustomerInfoModal');
+  if (modal) modal.classList.add('hidden');
 }
 
 function openProductPickerModal() {
@@ -422,244 +546,79 @@ function closeCouponPickerModal() {
   if (modal) modal.classList.add('hidden');
 }
 
+async function searchProductsForChat() {
+  const query = document.getElementById('productSearchInput')?.value || '';
+  const container = document.getElementById('productSearchResults');
+  if (!container) return;
+
+  try {
+    const res = await fetch(`/admin/conversations/search-products?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="p-4 text-center text-xs text-gray-400">No products found</div>';
+      return;
+    }
+
+    let html = '';
+    data.forEach(p => {
+      html += `
+        <div class="flex items-center justify-between p-2 hover:bg-white rounded-lg border border-transparent hover:border-gray-200 transition">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <img src="${p.image_url}" class="h-9 w-9 object-cover rounded-lg border border-gray-200 shrink-0" />
+            <div class="min-w-0">
+              <h5 class="font-bold text-xs text-ink truncate">${p.name}</h5>
+              <p class="text-[11px] font-extrabold text-brand-600">${p.formatted_price}</p>
+            </div>
+          </div>
+          <form method="POST" action="/admin/conversations/{{ $activeConversation->id ?? 0 }}/send-product">
+            <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+            <input type="hidden" name="product_id" value="${p.id}">
+            <button type="submit" class="px-2.5 py-1 bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-[10px] rounded-md transition shadow-2xs">Send Card ➔</button>
+          </form>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  } catch (e) {
+    container.innerHTML = '<div class="p-4 text-center text-xs text-rose-500 font-bold">Failed to load products</div>';
+  }
+}
+
 async function fetchCouponsForChat() {
   const container = document.getElementById('couponListResults');
   if (!container) return;
 
-  container.innerHTML = `<div class="p-4 text-center text-xs text-gray-400">Loading coupons...</div>`;
-
   try {
-    const res = await fetch("{{ route('admin.conversations.coupons.list') }}");
+    const res = await fetch('/admin/conversations/coupons');
     const data = await res.json();
-
-    if (!data.coupons || data.coupons.length === 0) {
-      container.innerHTML = `<div class="p-4 text-center text-xs text-gray-400">No active discount coupons available. Manage coupons under Admin > Marketing.</div>`;
+    
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="p-4 text-center text-xs text-gray-400">No active coupons available</div>';
       return;
     }
 
-    container.innerHTML = '';
-    data.coupons.forEach(c => {
-      const div = document.createElement('div');
-      div.className = 'flex items-center justify-between p-2.5 rounded-lg bg-amber-50/80 border border-amber-200 gap-3';
-      div.innerHTML = `
-        <div class="min-w-0">
-          <code class="font-mono text-xs font-bold text-amber-900 tracking-wider">${c.code}</code>
-          <p class="text-[10px] text-amber-800 font-semibold mt-0.5">${c.discount_text}</p>
-        </div>
-        <form method="POST" action="{{ route('admin.conversations.send-coupon', $activeConversation ? $activeConversation->id : 0) }}">
-          <input type="hidden" name="_token" value="{{ csrf_token() }}" />
-          <input type="hidden" name="coupon_id" value="${c.id}" />
-          <button type="submit" class="px-2.5 py-1 text-[10px] font-extrabold bg-amber-600 hover:bg-amber-700 text-white rounded-lg shadow-2xs cursor-pointer shrink-0">
-            Send Coupon ➔
-          </button>
-        </form>
-      `;
-      container.appendChild(div);
-    });
-  } catch (e) {
-    container.innerHTML = `<div class="p-4 text-center text-xs text-rose-500">Failed to load coupons</div>`;
-  }
-}
-
-async function uploadAdminPhotoAttachment() {
-  const fileInput = document.getElementById('adminAttachmentInput');
-  if (!fileInput || !fileInput.files[0]) return;
-
-  const formData = new FormData();
-  formData.append('image', fileInput.files[0]);
-  formData.append('_token', '{{ csrf_token() }}');
-
-  try {
-    const res = await fetch("{{ route('admin.conversations.upload-attachment', $activeConversation ? $activeConversation->id : 0) }}", {
-      method: 'POST',
-      headers: { 'Accept': 'application/json' },
-      body: formData
-    });
-    const data = await res.json();
-    if (data.success) {
-      window.location.reload();
-    }
-  } catch (e) {
-    alert('Failed to upload photo attachment');
-  } finally {
-    fileInput.value = '';
-  }
-}
-
-// Admin Voice Recording
-(function() {
-  const micBtn = document.getElementById('adminMicBtn');
-  const overlay = document.getElementById('adminRecordingOverlay');
-  const timerEl = document.getElementById('adminRecordTimer');
-  const cancelBtn = document.getElementById('adminCancelRecordBtn');
-  const stopSendBtn = document.getElementById('adminStopSendRecordBtn');
-
-  if (!micBtn) return;
-
-  let mediaRecorder = null;
-  let audioChunks = [];
-  let recordTimerInterval = null;
-  let recordSeconds = 0;
-
-  micBtn.addEventListener('click', async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
-      audioChunks = [];
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) audioChunks.push(e.data);
-      };
-
-      mediaRecorder.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop());
-        if (audioChunks.length === 0) return;
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-        sendAdminVoiceBlob(audioBlob);
-      };
-
-      mediaRecorder.start();
-      recordSeconds = 0;
-      overlay.classList.remove('hidden');
-      recordTimerInterval = setInterval(() => {
-        recordSeconds++;
-        const m = String(Math.floor(recordSeconds / 60)).padStart(2, '0');
-        const s = String(recordSeconds % 60).padStart(2, '0');
-        timerEl.textContent = `${m}:${s}`;
-      }, 1000);
-    } catch (err) {
-      alert('Microphone permission required for voice notes');
-    }
-  });
-
-  cancelBtn?.addEventListener('click', () => {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      audioChunks = [];
-      mediaRecorder.stop();
-    }
-    clearInterval(recordTimerInterval);
-    overlay.classList.add('hidden');
-  });
-
-  stopSendBtn?.addEventListener('click', () => {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      mediaRecorder.stop();
-    }
-    clearInterval(recordTimerInterval);
-    overlay.classList.add('hidden');
-  });
-
-  async function sendAdminVoiceBlob(blob) {
-    const formData = new FormData();
-    formData.append('audio', blob, 'voice_note.webm');
-    formData.append('_token', '{{ csrf_token() }}');
-
-    try {
-      const res = await fetch("{{ route('admin.conversations.upload-voice', $activeConversation ? $activeConversation->id : 0) }}", {
-        method: 'POST',
-        headers: { 'Accept': 'application/json' },
-        body: formData
-      });
-      const data = await res.json();
-      if (data.success) {
-        window.location.reload();
-      }
-    } catch (e) {
-      alert('Failed to send voice note');
-    }
-  }
-})();
-
-let searchTimer = null;
-function searchProductsForChat() {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(async () => {
-    const q = document.getElementById('productSearchInput')?.value || '';
-    const container = document.getElementById('productSearchResults');
-    if (!container) return;
-
-    container.innerHTML = `<div class="p-4 text-center text-xs text-gray-400">Searching products...</div>`;
-
-    try {
-      const res = await fetch("{{ route('admin.conversations.products.search') }}?q=" + encodeURIComponent(q));
-      const data = await res.json();
-
-      if (!data.products || data.products.length === 0) {
-        container.innerHTML = `<div class="p-4 text-center text-xs text-gray-400">No products found matching "${q}"</div>`;
-        return;
-      }
-
-      container.innerHTML = '';
-      data.products.forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'flex items-center justify-between p-2 rounded-lg bg-white border border-gray-200/80 gap-3';
-        div.innerHTML = `
-          <div class="flex items-center gap-2.5 min-w-0">
-            <img src="${p.image_url}" class="h-9 w-9 object-cover rounded bg-gray-50 border border-gray-100 shrink-0" alt="" />
-            <div class="min-w-0">
-              <h5 class="font-extrabold text-xs text-ink truncate">${p.name}</h5>
-              <p class="text-[10px] text-brand-600 font-bold">${p.formatted_price}</p>
-            </div>
+    let html = '';
+    data.forEach(c => {
+      html += `
+        <div class="flex items-center justify-between p-2.5 hover:bg-white rounded-lg border border-transparent hover:border-amber-200 transition bg-amber-50/50">
+          <div>
+            <span class="font-mono font-extrabold text-xs text-amber-900 bg-white px-2 py-0.5 rounded border border-amber-200">${c.code}</span>
+            <p class="text-[11px] text-gray-600 font-medium mt-1">${c.description}</p>
           </div>
-          <form method="POST" action="{{ route('admin.conversations.send-product', $activeConversation ? $activeConversation->id : 0) }}">
-            <input type="hidden" name="_token" value="{{ csrf_token() }}" />
-            <input type="hidden" name="product_id" value="${p.id}" />
-            <button type="submit" class="px-2.5 py-1 text-[10px] font-extrabold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-2xs cursor-pointer shrink-0">
-              Send Card ➔
-            </button>
+          <form method="POST" action="/admin/conversations/{{ $activeConversation->id ?? 0 }}/send-coupon">
+            <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
+            <input type="hidden" name="coupon_id" value="${c.id}">
+            <button type="submit" class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-[10px] rounded-md transition shadow-2xs">Send Coupon ➔</button>
           </form>
-        `;
-        container.appendChild(div);
-      });
-    } catch (e) {
-      container.innerHTML = `<div class="p-4 text-center text-xs text-rose-500">Failed to load products</div>`;
-    }
-  }, 250);
-}
-
-(function() {
-  const msgList = document.getElementById('adminMessageList');
-  if (msgList) {
-    msgList.scrollTop = msgList.scrollHeight;
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  } catch (e) {
+    container.innerHTML = '<div class="p-4 text-center text-xs text-rose-500 font-bold">Failed to load coupons</div>';
   }
-})();
+}
 </script>
-{{-- Storage Cleanup Modal --}}
-<div id="storageCleanupModal" class="hidden fixed inset-0 bg-ink/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-  <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 overflow-hidden space-y-4 p-5">
-    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-      <h3 class="font-extrabold text-sm text-ink flex items-center gap-2">
-        <span>🧹</span> Prune & Clean Chat Storage Space
-      </h3>
-      <button type="button" onclick="document.getElementById('storageCleanupModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-700 text-lg font-bold">✕</button>
-    </div>
-
-    <form method="POST" action="{{ route('admin.conversations.prune-storage') }}" class="space-y-4">
-      @csrf
-      <p class="text-xs text-gray-600 leading-relaxed">
-        Automatically delete old voice notes (`.webm`), uploaded screenshots, and expired attachment files to free server disk space.
-      </p>
-
-      <div>
-        <label class="block text-xs font-bold text-gray-700 mb-1.5">Delete files older than:</label>
-        <select name="days" class="w-full text-xs font-bold bg-gray-50 border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:border-brand-500">
-          <option value="30">30 Days</option>
-          <option value="60">60 Days</option>
-          <option value="90" selected>90 Days (Recommended)</option>
-          <option value="180">180 Days (6 Months)</option>
-          <option value="365">365 Days (1 Year)</option>
-        </select>
-      </div>
-
-      <div class="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
-        <button type="button" onclick="document.getElementById('storageCleanupModal').classList.add('hidden')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl cursor-pointer">Cancel</button>
-        <button type="submit" onclick="return confirm('Are you sure you want to clean old chat storage files?')" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-xl shadow transition cursor-pointer">
-          🧹 Clean Storage Now
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-
 @endpush
 @endsection

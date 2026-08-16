@@ -16,6 +16,7 @@
         ],
         'Products & Inventory' => [
             ['key' => 'products', 'label' => 'Products', 'route' => 'admin.products.index', 'pattern' => 'admin.products.*', 'icon' => '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z M12 12l8-4.5M12 12v9M12 12L4 7.5"/>'],
+            ['key' => 'variations', 'label' => 'Product Variations', 'route' => 'admin.variations.index', 'pattern' => 'admin.variations.*', 'icon' => '<path d="M4 6h16M4 12h16M4 18h7"/>'],
             ['key' => 'inventory', 'label' => 'Inventory', 'route' => 'admin.inventory.index', 'pattern' => 'admin.inventory.*', 'icon' => '<path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>', 'badge' => $lowStockBadge, 'badge_color' => 'bg-rose-100 text-rose-800 border border-rose-200'],
             ['key' => 'categories', 'label' => 'Categories', 'route' => 'admin.categories.index', 'pattern' => 'admin.categories.*', 'icon' => '<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'],
             ['key' => 'brands', 'label' => 'Brands', 'route' => 'admin.brands.index', 'pattern' => 'admin.brands.*', 'icon' => '<path d="M12 2L2 7l10 5 10-5 10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>'],

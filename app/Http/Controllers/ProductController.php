@@ -22,18 +22,24 @@ class ProductController extends Controller
 
         $variantGroups = collect();
 
-        if ($product->variants && $product->variants->isNotEmpty()) {
-            foreach ($product->variants->groupBy('type') as $type => $items) {
-                $variantGroups->put($type, (object) [
-                    'type'    => $type,
-                    'options' => $items->pluck('value')->unique()->values(),
-                ]);
+        $normalizeLabel = function (string $type, $options): string {
+            $optionsColl = collect($options);
+            if (strcasecmp($type, 'Color') === 0 && $optionsColl->contains(fn ($v) => preg_match('/glass|plastic|plastick|bottle|jar|can|pack|bag|box|container/i', (string) $v))) {
+                return 'Packaging';
             }
-        }
+            if (strcasecmp($type, 'Size') === 0 && $optionsColl->contains(fn ($v) => preg_match('/\d+\s*(g|kg|l|ml|oz|lb|liter|litre|gm|gram)/i', (string) $v))) {
+                return 'Weight';
+            }
+            return $type;
+        };
 
+        // Primary source of truth for storefront variation buttons: Product SKUs
         if ($product->skus && $product->skus->isNotEmpty()) {
             $skuAttrGroups = [];
             foreach ($product->skus as $sku) {
+                if (! $sku->is_active) {
+                    continue;
+                }
                 foreach ($sku->getAttributesData() as $attrKey => $attrVal) {
                     $kTrim = trim((string) $attrKey);
                     $vTrim = trim((string) $attrVal);
@@ -43,12 +49,24 @@ class ProductController extends Controller
                 }
             }
             foreach ($skuAttrGroups as $attrKey => $vals) {
-                if (! $variantGroups->has($attrKey)) {
-                    $variantGroups->put($attrKey, (object) [
-                        'type'    => $attrKey,
-                        'options' => collect($vals)->unique()->values(),
-                    ]);
-                }
+                $opts = collect($vals)->unique()->values();
+                $label = $normalizeLabel($attrKey, $opts);
+                $variantGroups->put($label, (object) [
+                    'type'    => $label,
+                    'options' => $opts,
+                ]);
+            }
+        }
+
+        // Fallback: ProductVariants table if no SKUs exist
+        if ($variantGroups->isEmpty() && $product->variants && $product->variants->isNotEmpty()) {
+            foreach ($product->variants->groupBy('type') as $type => $items) {
+                $opts = $items->pluck('value')->unique()->values();
+                $label = $normalizeLabel($type, $opts);
+                $variantGroups->put($label, (object) [
+                    'type'    => $label,
+                    'options' => $opts,
+                ]);
             }
         }
 

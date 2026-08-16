@@ -91,16 +91,16 @@
             'attributes'       => $s->getAttributesData(),
             'stock'            => (int) $s->stock_quantity,
             'price_adjustment' => (float) $s->price_adjustment,
+            'regular_price'    => $s->getCalculatedRegularPrice(),
+            'sale_price'       => $s->getCalculatedSalePrice(),
           ])->values();
         @endphp
 
         {{-- Pricing Row --}}
-        <div class="flex items-center gap-3 flex-wrap">
-          <span id="pdPrice" class="text-3xl font-extrabold text-brand-500" data-base-price="{{ (float) $product->price }}">{{ money($product->price) }}</span>
-          @if($product->on_sale)
-            <span id="pdRegularPrice" class="text-stone-400 line-through text-lg font-normal" data-base-regular="{{ (float) $product->regular_price }}">{{ money($product->regular_price) }}</span>
-            <span class="bg-emerald-500 text-white font-extrabold text-xs px-2.5 py-1 rounded shadow-xs">Save {{ $product->discount_percent }}%</span>
-          @endif
+        <div id="pdpPriceContainer" class="flex items-center gap-3 flex-wrap" data-skus="{{ json_encode($skusPayload) }}">
+          <span id="pdPrice" class="text-3xl font-extrabold text-brand-500" data-base-price="{{ number_format((float) $product->price, 2, '.', '') }}">{{ money($product->price) }}</span>
+          <span id="pdRegularPrice" class="text-stone-400 line-through text-lg font-normal {{ $product->on_sale ? '' : 'hidden' }}" data-base-regular="{{ number_format((float) ($product->regular_price ?? 0), 2, '.', '') }}">{{ money($product->regular_price) }}</span>
+          <span id="pdDiscountBadge" class="bg-emerald-500 text-white font-extrabold text-xs px-2.5 py-1 rounded shadow-xs {{ $product->on_sale ? '' : 'hidden' }}">Save {{ $product->discount_percent }}%</span>
         </div>
       </div>
 

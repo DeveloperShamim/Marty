@@ -181,6 +181,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Catalog & Inventory Routes (Inventory Managers, Store Managers & Admins)
         Route::middleware(['role:inventory_manager,store_manager'])->group(function () {
+            Route::get('variations', [\App\Http\Controllers\Admin\VariationController::class, 'index'])->name('variations.index');
+            Route::post('variations/types', [\App\Http\Controllers\Admin\VariationController::class, 'storeType'])->name('variations.types.store');
+            Route::patch('variations/types/{type}', [\App\Http\Controllers\Admin\VariationController::class, 'updateType'])->name('variations.types.update');
+            Route::delete('variations/types/{type}', [\App\Http\Controllers\Admin\VariationController::class, 'destroyType'])->name('variations.types.destroy');
+            Route::post('variations/types/{type}/values', [\App\Http\Controllers\Admin\VariationController::class, 'storeValue'])->name('variations.values.store');
+            Route::delete('variations/values/{value}', [\App\Http\Controllers\Admin\VariationController::class, 'destroyValue'])->name('variations.values.destroy');
+
             Route::get('inventory', [AdminInventoryController::class, 'index'])->name('inventory.index');
             Route::post('inventory/update-stock', [AdminInventoryController::class, 'updateStock'])->name('inventory.update-stock');
             Route::delete('products/{product}/images/{image}', [AdminProductController::class, 'destroyImage'])->name('products.images.destroy');

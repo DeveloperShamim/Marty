@@ -109,8 +109,7 @@ class CartService
                 });
             }
 
-            $priceAdjustment = $sku ? (float) $sku->price_adjustment : 0.0;
-            $price = max(0, (float) $product->price + $priceAdjustment);
+            $price = $sku ? $sku->getCalculatedSalePrice() : max(0, (float) $product->price);
             $maxStock = $sku ? (int) $sku->stock_quantity : (int) $product->stock_quantity;
 
             return (object) [

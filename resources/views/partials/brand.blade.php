@@ -34,7 +34,7 @@
       <span class="leading-tight">
         <span class="block {{ $textClass }} font-extrabold tracking-tight {{ $light ? 'text-white' : 'text-brand-700' }}">{{ $name }}</span>
         @if(setting('tagline') && $size !== 'sm')
-          <span class="hidden sm:block text-[10px] font-semibold tracking-[0.18em] {{ $light ? 'text-white/70' : 'text-stone-400' }} uppercase">{{ setting('tagline') }}</span>
+          <span class="hidden xl:block text-[9px] font-bold tracking-wider {{ $light ? 'text-white/70' : 'text-stone-400' }} uppercase truncate max-w-[220px]">{{ setting('tagline') }}</span>
         @endif
       </span>
     @endunless

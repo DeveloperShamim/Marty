@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->seedUsers();
         $this->seedSettings();
+        $this->seedAttributes();
         $categories = $this->seedCategories();
         $brands = $this->seedBrands();
         $this->seedFeatures();
@@ -222,8 +223,8 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'PureHarvest Organic',
                 'slug' => 'pureharvest-organic',
-                'logo' => 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&h=400&q=80',
-                'banner' => 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&h=800&q=80',
+                'logo' => 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=400&h=400&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&h=800&q=80',
                 'description' => '100% Chemical-free organic farm direct pantry essentials and cold-pressed oils.',
                 'website' => 'https://pureharvestbd.com',
                 'is_featured' => true,
@@ -310,7 +311,7 @@ class DatabaseSeeder extends Seeder
             ['Express Delivery', 'Reliable 1–3 days home delivery across Bangladesh.', '🚚', 0],
             ['100% Authentic', 'Guaranteed genuine products from authorized brands.', '🛡️', 1],
             ['Easy Exchange & Returns', '7-day hassle-free size & product replacement.', '🔁', 2],
-            ['Genuine Quality', '100% genuine leather, precision movement & durable soles.', '✨', 3],
+            ['Genuine Quality', '100% chemical-free, unadulterated & farm-direct organic food.', '✨', 3],
         ];
 
         foreach ($features as [$title, $subtitle, $icon, $position]) {
@@ -426,7 +427,7 @@ class DatabaseSeeder extends Seeder
                 'images' => [
                     'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=800&h=800&q=80',
                     'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
             [
@@ -445,7 +446,7 @@ class DatabaseSeeder extends Seeder
                 'images' => [
                     'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=800&h=800&q=80',
                     'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
             [
@@ -464,7 +465,7 @@ class DatabaseSeeder extends Seeder
                 'images' => [
                     'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&h=800&q=80',
                     'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
 
@@ -485,7 +486,7 @@ class DatabaseSeeder extends Seeder
                 'images' => [
                     'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=800&h=800&q=80',
                     'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
             [
@@ -504,7 +505,7 @@ class DatabaseSeeder extends Seeder
                 'images' => [
                     'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=800&h=800&q=80',
                     'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
 
@@ -525,7 +526,7 @@ class DatabaseSeeder extends Seeder
                 'images' => [
                     'https://images.unsplash.com/photo-1596560548464-f010549b84d7?auto=format&fit=crop&w=800&h=800&q=80',
                     'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
             [
@@ -544,7 +545,7 @@ class DatabaseSeeder extends Seeder
                 'images' => [
                     'https://images.unsplash.com/photo-1596560548464-f010549b84d7?auto=format&fit=crop&w=800&h=800&q=80',
                     'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
 
@@ -565,7 +566,7 @@ class DatabaseSeeder extends Seeder
                 'images' => [
                     'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&h=800&q=80',
                     'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
             [
@@ -584,7 +585,7 @@ class DatabaseSeeder extends Seeder
                 'images' => [
                     'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
                     'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
             [
@@ -603,7 +604,7 @@ class DatabaseSeeder extends Seeder
                 'images' => [
                     'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&h=800&q=80',
                     'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
 
@@ -624,7 +625,7 @@ class DatabaseSeeder extends Seeder
                 'images' => [
                     'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
                     'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
             [
@@ -642,7 +643,7 @@ class DatabaseSeeder extends Seeder
                 'is_best_seller' => true,
                 'images' => [
                     'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
                     'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
@@ -719,47 +720,52 @@ class DatabaseSeeder extends Seeder
             $catPrefix = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $category->name), 0, 3)) ?: 'PRD';
             $productSkuBase = ! empty($product->sku) ? $product->sku : $catPrefix;
 
-            $sampleColors = ['Black', 'Brown'];
-            if ($pData['variant_type'] === 'Color') {
-                foreach ($pData['options'] as $opt) {
-                    $cleanVal = preg_replace('/[^A-Za-z0-9]/', '', explode(' ', trim($opt))[0]);
-                    \App\Models\ProductSku::create([
-                        'product_id' => $product->id,
-                        'sku' => "{$productSkuBase}-{$cleanVal}",
-                        'attributes' => ['Color' => $opt],
-                        'price_adjustment' => 0,
-                        'stock_quantity' => random_int(8, 25),
-                        'is_active' => true,
-                    ]);
-                }
-            } elseif ($pData['variant_type'] === 'Size') {
-                foreach ($sampleColors as $c) {
-                    foreach ($pData['options'] as $sOpt) {
-                        $cleanColor = preg_replace('/[^A-Za-z0-9]/', '', $c);
+            $samplePackaging = ['Glass Jar', 'Plastic Bottle'];
+            $baseReg = (float) $product->regular_price;
+            $baseSale = (float) $product->sale_price;
+
+            if ($pData['variant_type'] === 'Weight') {
+                foreach ($pData['options'] as $sIdx => $sOpt) {
+                    foreach ($samplePackaging as $pIdx => $pOpt) {
                         $cleanSize = preg_replace('/[^A-Za-z0-9]/', '', $sOpt);
+                        $cleanPack = preg_replace('/[^A-Za-z0-9]/', '', explode(' ', $pOpt)[0]);
+                        $priceAdj = ($sIdx * 150) + ($pIdx * 50);
+
+                        $skuReg = $baseReg > 0 ? ($baseReg + $priceAdj) : null;
+                        $skuSale = $baseSale > 0 ? ($baseSale + $priceAdj) : null;
+
                         \App\Models\ProductSku::create([
-                            'product_id' => $product->id,
-                            'sku' => "{$productSkuBase}-{$cleanColor}{$cleanSize}",
-                            'attributes' => [
-                                'Color' => $c,
-                                'Size' => $sOpt,
+                            'product_id'       => $product->id,
+                            'sku'              => "{$productSkuBase}-{$cleanSize}{$cleanPack}",
+                            'attributes'       => [
+                                'Weight'    => $sOpt,
+                                'Packaging' => $pOpt,
                             ],
-                            'price_adjustment' => 0,
-                            'stock_quantity' => random_int(5, 15),
-                            'is_active' => true,
+                            'price_adjustment' => $priceAdj,
+                            'regular_price'    => $skuReg,
+                            'sale_price'       => $skuSale,
+                            'stock_quantity'   => random_int(8, 25),
+                            'is_active'        => true,
                         ]);
                     }
                 }
             } else {
-                foreach ($pData['options'] as $opt) {
+                foreach ($pData['options'] as $idx => $opt) {
                     $cleanVal = preg_replace('/[^A-Za-z0-9]/', '', $opt);
+                    $priceAdj = ($idx % 2 === 1) ? 120 : 0;
+
+                    $skuReg = $baseReg > 0 ? ($baseReg + $priceAdj) : null;
+                    $skuSale = $baseSale > 0 ? ($baseSale + $priceAdj) : null;
+
                     \App\Models\ProductSku::create([
-                        'product_id' => $product->id,
-                        'sku' => "{$productSkuBase}-{$cleanVal}",
-                        'attributes' => [$pData['variant_type'] => $opt],
-                        'price_adjustment' => 0,
-                        'stock_quantity' => random_int(10, 30),
-                        'is_active' => true,
+                        'product_id'       => $product->id,
+                        'sku'              => "{$productSkuBase}-{$cleanVal}",
+                        'attributes'       => [$pData['variant_type'] => $opt],
+                        'price_adjustment' => $priceAdj,
+                        'regular_price'    => $skuReg,
+                        'sale_price'       => $skuSale,
+                        'stock_quantity'   => random_int(10, 30),
+                        'is_active'        => true,
                     ]);
                 }
             }
@@ -990,5 +996,33 @@ class DatabaseSeeder extends Seeder
                 'created_at'  => now()->subMinutes(10),
             ]
         );
+    }
+
+    private function seedAttributes(): void
+    {
+        $presets = [
+            'Weight'    => ['250g', '500g', '1kg', '2kg', '5kg'],
+            'Volume'    => ['250ml', '500ml', '1 Liter', '2 Liters', '5 Liters'],
+            'Packaging' => ['Glass Jar', 'Plastic Bottle', 'Pouch', 'Tin Container', 'Carton Box'],
+            'Flavor'    => ['Original', 'Raw Honey', 'Black Seed Infused', 'Spicy'],
+            'Size'      => ['S', 'M', 'L', 'XL', 'EU 40', 'EU 41', 'EU 42'],
+            'Color'     => ['Black', 'Brown', 'Natural Gold', 'White'],
+        ];
+
+        foreach ($presets as $typeName => $vals) {
+            $type = \App\Models\ProductAttributeType::updateOrCreate(
+                ['slug' => Str::slug($typeName)],
+                ['name' => $typeName, 'is_active' => true]
+            );
+
+            foreach ($vals as $pos => $v) {
+                \App\Models\ProductAttributeValue::firstOrCreate([
+                    'product_attribute_type_id' => $type->id,
+                    'value'                     => $v,
+                ], [
+                    'position' => $pos,
+                ]);
+            }
+        }
     }
 }

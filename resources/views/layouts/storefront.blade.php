@@ -60,6 +60,15 @@
       --brand-border: {{ $theme['primary_border'] }};
       --brand-dark: {{ $theme['dark'] }};
       --brand-surface: {{ $theme['surface'] }};
+    /* Hide scrollbar for Chrome, Safari, Opera, Edge, and Firefox */
+    .scrollbar-none::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+    .scrollbar-none {
+      -ms-overflow-style: none !important;  /* IE and Edge */
+      scrollbar-width: none !important;  /* Firefox */
     }
 
     /* Primary Text Color Utilities */
@@ -71,17 +80,12 @@
     /* Navigation & Menu Hover Text Color -> Primary Color */
     .site-header nav a:hover,
     .site-header nav button:hover,
-    .site-header a:hover,
     #catDropdownMenu a:hover,
     #catDropdownMenu a:hover span,
     #brandDropdownMenu a:hover,
     #brandDropdownMenu a:hover span,
-    .group\/item:hover .group-hover\/item\:text-brand-600,
-    .mobile-menu nav a:hover,
-    .mobile-menu nav a:hover span,
-    [data-mobile-menu] nav a:hover,
-    [data-mobile-menu] nav a:hover span {
-      color: var(--brand-primary) !important;
+    .group\/item:hover .group-hover\/item\:text-brand-600 {
+      color: var(--brand-primary);
     }
 
     .fk-badge,
@@ -137,6 +141,7 @@
 </head>
 
 <body class="@yield('body_class', 'bg-white text-ink antialiased')">
+  @include('storefront.partials.preloader')
   @include('partials.tracking-body')
 
   @hasSection('checkout_header')
@@ -179,7 +184,7 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
   </button>
 
-  <script src="{{ asset('theme/js/storefront.js') }}"></script>
+  <script src="{{ asset('theme/js/storefront.js') }}?v={{ filemtime(public_path('theme/js/storefront.js')) }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   @stack('scripts')
 </body>

@@ -16,7 +16,7 @@ class BannerSeeder extends Seeder
                 'title' => "100% Chemical-Free &\nFarm Fresh Organic Food",
                 'subtitle' => 'Shop authentic Sundarban raw honey, wood-milled cold-pressed mustard oil, pure cow ghee, organic grains, spices & imported dates delivered fast to your door.',
                 'badge' => '100% PURE & FARM FRESH',
-                'image' => 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1920&q=80',
+                'image' => 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1920&q=80',
                 'link_url' => '/shop',
                 'button_text' => 'Shop Fresh Organic',
                 'placement' => 'hero',
