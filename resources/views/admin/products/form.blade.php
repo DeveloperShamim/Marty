@@ -74,7 +74,7 @@
 
     <div class="flex items-center gap-2.5 self-end sm:self-auto shrink-0">
       @if($editing && $product->is_published)
-        <a href="{{ route('products.show', $product->slug) }}" target="_blank" class="px-3 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5">
+        <a href="{{ route('product.show', $product->slug) }}" target="_blank" class="px-3 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5">
           <span>👁️ View on Store</span>
         </a>
       @endif
