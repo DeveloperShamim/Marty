@@ -6,8 +6,38 @@
 
 @section('content')
 @php
-  $sizeValues = $editing ? $product->variants->where('type', 'Size')->pluck('value')->implode(', ') : '';
-  $colorValues = $editing ? $product->variants->where('type', 'Color')->pluck('value')->implode(', ') : '';
+  if ($editing) {
+    $sizesFromVariants = $product->variants->whereIn('type', ['Size', 'Weight', 'Volume', 'Unit'])->pluck('value');
+    $colorsFromVariants = $product->variants->whereIn('type', ['Color', 'Packaging', 'Flavor', 'Type'])->pluck('value');
+
+    if ($sizesFromVariants->isEmpty() && $product->skus->isNotEmpty()) {
+      $sizesFromVariants = $product->skus->flatMap(function($sku) {
+        $attrs = $sku->getAttributesData();
+        $res = [];
+        foreach ($attrs as $k => $v) {
+          if (in_array(strtolower($k), ['size', 'weight', 'volume', 'unit'])) $res[] = $v;
+        }
+        return $res;
+      });
+    }
+
+    if ($colorsFromVariants->isEmpty() && $product->skus->isNotEmpty()) {
+      $colorsFromVariants = $product->skus->flatMap(function($sku) {
+        $attrs = $sku->getAttributesData();
+        $res = [];
+        foreach ($attrs as $k => $v) {
+          if (in_array(strtolower($k), ['color', 'packaging', 'flavor', 'type'])) $res[] = $v;
+        }
+        return $res;
+      });
+    }
+
+    $sizeValues = $sizesFromVariants->unique()->filter()->implode(', ');
+    $colorValues = $colorsFromVariants->unique()->filter()->implode(', ');
+  } else {
+    $sizeValues = '';
+    $colorValues = '';
+  }
 @endphp
 
 <form method="POST" action="{{ $editing ? route('admin.products.update', $product) : route('admin.products.store') }}" enctype="multipart/form-data" class="space-y-6">
@@ -230,8 +260,8 @@
           $skus = $editing ? $product->skus : collect();
         @endphp
 
-        {{-- Desktop Combination Table --}}
-        <div class="hidden sm:block overflow-x-auto">
+        {{-- Combination Matrix Table --}}
+        <div class="overflow-x-auto">
           <table class="w-full text-left text-xs border border-stone-200 rounded-xl overflow-hidden">
             <thead class="bg-stone-100 text-stone-700 font-extrabold border-b border-stone-200">
               <tr>

@@ -693,10 +693,9 @@ class ProductController extends Controller
         foreach ($attributes as $k => $v) {
             $kLower = strtolower((string)$k);
             $vStr = (string)$v;
-            if (str_contains($kLower, 'size')) {
+            if (str_contains($kLower, 'size') || str_contains($kLower, 'weight') || str_contains($kLower, 'vol') || str_contains($kLower, 'unit')) {
                 $sizeVal = preg_replace('/[^A-Za-z0-9]/', '', $vStr);
-            } elseif (str_contains($kLower, 'col')) {
-                // Color first word (e.g. "Dark Brown" -> "Dark", "Black" -> "Black")
+            } elseif (str_contains($kLower, 'col') || str_contains($kLower, 'pack') || str_contains($kLower, 'type') || str_contains($kLower, 'flav')) {
                 $words = explode(' ', trim($vStr));
                 $colorVal = preg_replace('/[^A-Za-z0-9]/', '', $words[0]);
             } else {
