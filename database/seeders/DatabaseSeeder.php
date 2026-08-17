@@ -657,70 +657,75 @@ class DatabaseSeeder extends Seeder
 
             // Add Product Variants
             ProductVariant::where('product_id', $product->id)->delete();
-            foreach ($pData['options'] as $vPos => $optionVal) {
-                ProductVariant::create([
-                    'product_id' => $product->id,
-                    'type' => $pData['variant_type'],
-                    'value' => $optionVal,
-                    'price_delta' => 0,
-                    'stock' => random_int(10, 30),
-                    'position' => $vPos,
-                ]);
+            $vPos = 0;
+
+            $attributesMap = [
+                $pData['variant_type'] => $pData['options'],
+            ];
+
+            // Packaging attribute for appropriate items
+            if ($pData['variant_type'] === 'Weight') {
+                if (str_contains(strtolower($product->name), 'ghee') || str_contains(strtolower($product->name), 'honey')) {
+                    $attributesMap['Packaging'] = ['Glass Jar', 'Food Grade Pack'];
+                } elseif (str_contains(strtolower($product->name), 'rice') || str_contains(strtolower($product->name), 'chia') || str_contains(strtolower($product->name), 'dates')) {
+                    $attributesMap['Packaging'] = ['Craft Pouch', 'Box Container'];
+                }
+            } elseif ($pData['variant_type'] === 'Volume') {
+                $attributesMap['Packaging'] = ['Plastic Bottle', 'Glass Bottle'];
             }
 
-            // Add Product SKUs matrix
+            foreach ($attributesMap as $attType => $attVals) {
+                foreach ($attVals as $val) {
+                    ProductVariant::create([
+                        'product_id'  => $product->id,
+                        'type'        => $attType,
+                        'value'       => $val,
+                        'price_delta' => 0,
+                        'stock'       => random_int(10, 30),
+                        'position'    => $vPos++,
+                    ]);
+                }
+            }
+
+            // Add Product SKUs matrix with Cartesian product
             \App\Models\ProductSku::where('product_id', $product->id)->delete();
             $catPrefix = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $category->name), 0, 3)) ?: 'PRD';
             $productSkuBase = ! empty($product->sku) ? $product->sku : $catPrefix;
-
-            $samplePackaging = ['Glass Jar', 'Food Grade Pack'];
             $baseReg = (float) $product->regular_price;
             $baseSale = (float) $product->sale_price;
 
-            if ($pData['variant_type'] === 'Weight' || $pData['variant_type'] === 'Volume') {
-                foreach ($pData['options'] as $sIdx => $sOpt) {
-                    foreach ($samplePackaging as $pIdx => $pOpt) {
-                        $cleanSize = preg_replace('/[^A-Za-z0-9]/', '', $sOpt);
-                        $cleanPack = preg_replace('/[^A-Za-z0-9]/', '', explode(' ', $pOpt)[0]);
-                        $priceAdj = ($sIdx * 150) + ($pIdx * 30);
-
-                        $skuReg = $baseReg > 0 ? ($baseReg + $priceAdj) : null;
-                        $skuSale = $baseSale > 0 ? ($baseSale + $priceAdj) : null;
-
-                        \App\Models\ProductSku::create([
-                            'product_id'       => $product->id,
-                            'sku'              => "{$productSkuBase}-{$cleanSize}{$cleanPack}",
-                            'attributes'       => [
-                                $pData['variant_type'] => $sOpt,
-                                'Packaging'            => $pOpt,
-                            ],
-                            'price_adjustment' => $priceAdj,
-                            'regular_price'    => $skuReg,
-                            'sale_price'       => $skuSale,
-                            'stock_quantity'   => random_int(10, 35),
-                            'is_active'        => true,
-                        ]);
-                    }
+            $attrKeys = array_keys($attributesMap);
+            $cartesianSeeder = function ($keys, $index = 0, $current = []) use (&$cartesianSeeder, $attributesMap) {
+                if ($index === count($keys)) return [$current];
+                $key = $keys[$index];
+                $res = [];
+                foreach ($attributesMap[$key] as $val) {
+                    $res = array_merge($res, $cartesianSeeder($keys, $index + 1, array_merge($current, [$key => $val])));
                 }
-            } else {
-                foreach ($pData['options'] as $idx => $opt) {
-                    $cleanVal = preg_replace('/[^A-Za-z0-9]/', '', $opt);
-                    $priceAdj = ($idx % 2 === 1) ? 100 : 0;
+                return $res;
+            };
 
-                    $skuReg = $baseReg > 0 ? ($baseReg + $priceAdj) : null;
-                    $skuSale = $baseSale > 0 ? ($baseSale + $priceAdj) : null;
+            $combos = $cartesianSeeder($attrKeys);
 
-                    \App\Models\ProductSku::create([
-                        'product_id'       => $product->id,
-                        'sku'              => "{$productSkuBase}-{$cleanVal}",
-                        'attributes'       => [$pData['variant_type'] => $opt],
-                        'price_adjustment' => $priceAdj,
-                        'regular_price'    => $skuReg,
-                        'sale_price'       => $skuSale,
-                        'stock_quantity'   => random_int(10, 30),
-                        'is_active'        => true,
-                    ]);
+            foreach ($combos as $comboIdx => $combo) {
+                $skuSuffix = '';
+                foreach ($combo as $k => $v) {
+                    $skuSuffix .= preg_replace('/[^A-Za-z0-9]/', '', explode(' ', $v)[0]);
                 }
+                $priceAdj = $comboIdx * 150;
+                $skuReg = $baseReg > 0 ? ($baseReg + $priceAdj) : null;
+                $skuSale = $baseSale > 0 ? ($baseSale + $priceAdj) : null;
+
+                \App\Models\ProductSku::create([
+                    'product_id'       => $product->id,
+                    'sku'              => "{$productSkuBase}-{$skuSuffix}",
+                    'attributes'       => $combo,
+                    'price_adjustment' => $priceAdj,
+                    'regular_price'    => $skuReg,
+                    'sale_price'       => $skuSale,
+                    'stock_quantity'   => random_int(10, 40),
+                    'is_active'        => true,
+                ]);
             }
 
             $product->syncTotalStock();

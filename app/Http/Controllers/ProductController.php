@@ -23,14 +23,7 @@ class ProductController extends Controller
         $variantGroups = collect();
 
         $normalizeLabel = function (string $type, $options): string {
-            $optionsColl = collect($options);
-            if (strcasecmp($type, 'Color') === 0 && $optionsColl->contains(fn ($v) => preg_match('/glass|plastic|plastick|bottle|jar|can|pack|bag|box|container/i', (string) $v))) {
-                return 'Packaging';
-            }
-            if (strcasecmp($type, 'Size') === 0 && $optionsColl->contains(fn ($v) => preg_match('/\d+\s*(g|kg|l|ml|oz|lb|liter|litre|gm|gram)/i', (string) $v))) {
-                return 'Weight';
-            }
-            return $type;
+            return ucfirst(trim($type));
         };
 
         // Primary source of truth for storefront variation buttons: Product SKUs

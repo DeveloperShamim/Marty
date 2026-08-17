@@ -89,10 +89,17 @@ class MediaController extends Controller
                 $usedBy = null;
                 $categoryType = $defaultCategory;
 
+                $altText = null;
+                $colorTag = null;
+                $dbImgId = null;
+
                 if (isset($productImages[$relativePath])) {
                     $pImg = $productImages[$relativePath];
                     $usedBy = 'Product: ' . ($pImg->product?->name ?? 'Product #' . $pImg->product_id);
                     $categoryType = 'products';
+                    $altText = $pImg->alt;
+                    $colorTag = $pImg->color;
+                    $dbImgId = $pImg->id;
                 } elseif (isset($categoryImages[$relativePath])) {
                     $usedBy = 'Category: ' . $categoryImages[$relativePath];
                     $categoryType = 'categories';
@@ -121,6 +128,7 @@ class MediaController extends Controller
 
                 $item = [
                     'id' => md5($relativePath),
+                    'db_id' => $dbImgId,
                     'filename' => $filename,
                     'relative_path' => $relativePath,
                     'absolute_path' => $pathname,
@@ -132,6 +140,8 @@ class MediaController extends Controller
                     'category' => $categoryType,
                     'used_by' => $usedBy,
                     'is_used' => !empty($usedBy),
+                    'alt' => $altText,
+                    'color' => $colorTag,
                     'modified_at' => \Illuminate\Support\Carbon::createFromTimestamp($lastModified),
                 ];
 
@@ -171,6 +181,7 @@ class MediaController extends Controller
             'unusedCount' => $unusedCount,
             'currentFilter' => $filterType,
             'currentSearch' => $search,
+            'compressionQuality' => (int) setting('media_compression_quality', 80),
         ]);
     }
 
@@ -193,6 +204,41 @@ class MediaController extends Controller
         return back()->with('status', 'Image uploaded successfully to Media Library!');
     }
 
+    public function saveQuality(Request $request)
+    {
+        $request->validate([
+            'quality' => ['required', 'integer', 'min:10', 'max:100'],
+        ]);
+
+        $quality = max(10, min(100, (int) $request->input('quality')));
+        Setting::updateOrCreate(['key' => 'media_compression_quality'], ['value' => (string) $quality]);
+        Setting::forgetCache();
+
+        return back()->with('status', "⚡ Default Image Compression Quality saved to {$quality}%!");
+    }
+
+    public function updateMetadata(Request $request)
+    {
+        $request->validate([
+            'relative_path' => ['required', 'string'],
+            'alt'           => ['nullable', 'string', 'max:500'],
+            'color'         => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $relPath = $this->normalizeRelPath($request->input('relative_path'));
+        $alt = trim((string) $request->input('alt')) ?: null;
+        $color = trim((string) $request->input('color')) ?: null;
+
+        ProductImage::where('path', '/' . $relPath)
+            ->orWhere('path', $relPath)
+            ->update([
+                'alt'   => $alt,
+                'color' => $color,
+            ]);
+
+        return back()->with('status', '⚡ Image SEO metadata (Alt Text & Variation Tag) updated successfully!');
+    }
+
     public function optimizeSingle(Request $request)
     {
         $request->validate([
@@ -206,14 +252,15 @@ class MediaController extends Controller
             return back()->withErrors(['image' => "Image file not found on disk: {$relPath}"]);
         }
 
-        $result = $this->optimizeFile($absPath);
+        $quality = max(10, min(100, (int) $request->input('quality', setting('media_compression_quality', 80))));
+        $result = $this->optimizeFile($absPath, $quality);
 
         if ($result['converted_webp']) {
-            $msg = "⚡ Optimization & WebP Conversion complete! Converted image to WebP format (" . $this->formatBytes($result['initial_bytes']) . " → " . $this->formatBytes($result['final_bytes']) . ").";
+            $msg = "⚡ Optimization & WebP Conversion complete (Quality: {$quality}%)! Converted image to WebP format (" . $this->formatBytes($result['initial_bytes']) . " → " . $this->formatBytes($result['final_bytes']) . ").";
         } elseif ($result['saved_bytes'] > 0) {
-            $msg = "⚡ Optimization complete! Reduced file size by {$result['percent_saved']}% (" . $this->formatBytes($result['initial_bytes']) . " → " . $this->formatBytes($result['final_bytes']) . ").";
+            $msg = "⚡ Optimization complete (Quality: {$quality}%)! Reduced file size by {$result['percent_saved']}% (" . $this->formatBytes($result['initial_bytes']) . " → " . $this->formatBytes($result['final_bytes']) . ").";
         } else {
-            $msg = "Image is already fully optimized as WebP! No further size reduction was needed.";
+            $msg = "Image is already fully optimized as WebP at {$quality}% quality! No further size reduction was needed.";
         }
 
         return back()->with('status', $msg);
@@ -222,6 +269,7 @@ class MediaController extends Controller
     public function bulkOptimize(Request $request)
     {
         $paths = $request->input('paths', []);
+        $quality = max(10, min(100, (int) $request->input('quality', setting('media_compression_quality', 80))));
 
         // If no specific selection, optimize all images in public/uploads/products
         if (empty($paths)) {
@@ -241,7 +289,7 @@ class MediaController extends Controller
             $absPath = public_path($relPath);
 
             if (File::exists($absPath)) {
-                $res = $this->optimizeFile($absPath);
+                $res = $this->optimizeFile($absPath, $quality);
                 if ($res['saved_bytes'] > 0 || $res['converted_webp']) {
                     $totalSavedBytes += $res['saved_bytes'];
                     $optimizedCount++;
@@ -250,7 +298,7 @@ class MediaController extends Controller
         }
 
         $humanSaved = $this->formatBytes($totalSavedBytes);
-        return back()->with('status', "⚡ Bulk WebP Conversion & Optimization Complete! Converted/optimized {$optimizedCount} image(s) to WebP format and saved {$humanSaved} disk storage.");
+        return back()->with('status', "⚡ Bulk WebP Conversion & Optimization Complete at {$quality}% Quality! Converted/optimized {$optimizedCount} image(s) to WebP format and saved {$humanSaved} disk storage.");
     }
 
     public function destroy(Request $request)
@@ -308,7 +356,7 @@ class MediaController extends Controller
         return back()->with('status', "Bulk delete complete! Deleted {$deleted} images.");
     }
 
-    private function optimizeFile(string $absPath): array
+    private function optimizeFile(string $absPath, int $quality = 80): array
     {
         $ext = strtolower(pathinfo($absPath, PATHINFO_EXTENSION));
         if (!in_array($ext, ['png', 'jpg', 'jpeg', 'webp'], true)) {
@@ -330,7 +378,7 @@ class MediaController extends Controller
 
         imagealphablending($gdImage, false);
         imagesavealpha($gdImage, true);
-        imagewebp($gdImage, $tempPath, 82);
+        imagewebp($gdImage, $tempPath, $quality);
         imagedestroy($gdImage);
 
         if (file_exists($tempPath)) {

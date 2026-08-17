@@ -1,72 +1,87 @@
 @extends('layouts.admin')
-@section('title', 'Product Variations & Attributes')
+@section('title', 'Product Variations & Attribute Presets')
 
 @section('content')
 <div class="space-y-6">
-  <div class="flex items-center justify-between flex-wrap gap-3">
+
+  {{-- Page Header & New Attribute Type Bar --}}
+  <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl border border-stone-200 shadow-2xs">
     <div>
-      <h2 class="text-xl font-bold text-slate-900">Product Variations &amp; Attribute Presets</h2>
-      <p class="text-xs text-slate-500 mt-1">Manage global variation categories (Weight, Volume, Packaging, Flavor, Size, Color) and standard option presets.</p>
+      <h1 class="text-xl sm:text-2xl font-extrabold text-stone-900 tracking-tight flex items-center gap-2">
+        <span>🌿 Product Variations &amp; Attribute Presets</span>
+      </h1>
+      <p class="text-xs sm:text-sm text-stone-500 mt-1">Manage global variation categories (Weight, Volume, Packaging, Flavor, Size, Color) and option presets</p>
     </div>
 
-    {{-- Add New Attribute Type --}}
-    <form method="POST" action="{{ route('admin.variations.types.store') }}" class="flex items-center gap-2">
+    {{-- Add New Attribute Type Form --}}
+    <form method="POST" action="{{ route('admin.variations.types.store') }}" class="flex flex-col sm:flex-row items-center gap-2 w-full lg:w-auto shrink-0">
       @csrf
-      <input type="text" name="name" placeholder="New Type (e.g. Grade, Material)" required class="inp text-xs py-2 px-3 bg-white" />
-      <button type="submit" class="btn-primary text-xs py-2 px-4 whitespace-nowrap">+ Add Type</button>
+      <input type="text" name="name" placeholder="New Attribute (e.g. Grade, Material)" required class="w-full sm:w-60 text-xs font-bold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs" />
+      <button type="submit" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md transition-all whitespace-nowrap cursor-pointer">
+        + Add Attribute Type
+      </button>
     </form>
   </div>
 
   @if(session('status'))
-    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold p-3.5 rounded-xl">
-      {{ session('status') }}
+    <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-extrabold shadow-2xs flex items-center gap-2">
+      <span>✓</span>
+      <span>{{ session('status') }}</span>
     </div>
   @endif
 
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+  {{-- Attribute Categories Grid --}}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
     @forelse($attributeTypes as $type)
-      <div class="card p-5 space-y-4 border border-slate-200 bg-white rounded-2xl shadow-xs">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div class="flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
-            <h3 class="font-extrabold text-slate-900 text-base">{{ $type->name }}</h3>
-          </div>
-          <form method="POST" action="{{ route('admin.variations.types.destroy', $type) }}" onsubmit="return confirm('Delete attribute type {{ $type->name }}?')">
-            @csrf @method('DELETE')
-            <button type="submit" class="text-xs text-red-500 hover:text-red-700 font-semibold px-2 py-1 rounded hover:bg-red-50 transition">Delete</button>
-          </form>
-        </div>
-
-        {{-- Preset Value Badges --}}
-        <div>
-          <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">Preset Option Values</label>
-          <div class="flex flex-wrap gap-1.5 min-h-[42px]">
-            @forelse($type->values as $val)
-              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 group">
-                <span>{{ $val->value }}</span>
-                <form method="POST" action="{{ route('admin.variations.values.destroy', $val) }}" class="inline">
-                  @csrf @method('DELETE')
-                  <button type="submit" class="text-slate-400 hover:text-red-600 font-bold transition text-xs leading-none">✕</button>
-                </form>
+      <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-2xs space-y-4 flex flex-col justify-between">
+        <div class="space-y-4">
+          <div class="flex items-center justify-between border-b border-stone-100 pb-3">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0 animate-pulse"></span>
+              <h3 class="font-extrabold text-stone-900 text-base truncate">{{ $type->name }}</h3>
+              <span class="px-2 py-0.5 rounded-md bg-stone-100 text-stone-600 font-extrabold text-[10px] shrink-0">
+                {{ $type->values->count() }}
               </span>
-            @empty
-              <span class="text-xs text-slate-400 italic">No preset options yet.</span>
-            @endforelse
+            </div>
+            <form method="POST" action="{{ route('admin.variations.types.destroy', $type) }}" onsubmit="return confirm('Delete attribute category \'{{ addslashes($type->name) }}\'?')">
+              @csrf @method('DELETE')
+              <button type="submit" class="text-xs text-rose-500 hover:text-rose-700 font-bold px-2 py-1 rounded-lg hover:bg-rose-50 transition cursor-pointer">Delete</button>
+            </form>
+          </div>
+
+          {{-- Preset Value Badges --}}
+          <div>
+            <label class="text-[10px] font-black uppercase tracking-wider text-stone-400 block mb-2 font-mono">Preset Option Values</label>
+            <div class="flex flex-wrap gap-1.5 min-h-[42px]">
+              @forelse($type->values as $val)
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-50 text-emerald-900 border border-emerald-200/90 group shadow-2xs">
+                  <span>{{ $val->value }}</span>
+                  <form method="POST" action="{{ route('admin.variations.values.destroy', $val) }}" class="inline">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="text-emerald-500 hover:text-rose-600 font-bold transition text-xs leading-none cursor-pointer" title="Remove preset">✕</button>
+                  </form>
+                </span>
+              @empty
+                <span class="text-xs text-stone-400 italic">No preset options added yet.</span>
+              @endforelse
+            </div>
           </div>
         </div>
 
         {{-- Quick Add Preset Option Form --}}
-        <form method="POST" action="{{ route('admin.variations.values.store', $type) }}" class="pt-2 border-t border-slate-100 flex items-center gap-2">
+        <form method="POST" action="{{ route('admin.variations.values.store', $type) }}" class="pt-3 border-t border-stone-100 flex items-center gap-2">
           @csrf
-          <input type="text" name="value" placeholder="Add option (e.g. 500g)..." required class="inp text-xs py-1.5 px-3 bg-slate-50 border-slate-200" />
-          <button type="submit" class="px-3 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-lg transition whitespace-nowrap">+ Add</button>
+          <input type="text" name="value" placeholder="Add option (e.g. 500g)..." required class="flex-1 text-xs font-bold px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500" />
+          <button type="submit" class="px-4 py-2 bg-stone-900 hover:bg-stone-800 text-white text-xs font-extrabold rounded-xl transition cursor-pointer shrink-0">+ Add</button>
         </form>
       </div>
     @empty
-      <div class="col-span-full card p-10 text-center text-slate-400">
-        No variation attribute types found. Use the input above to create one.
+      <div class="col-span-full bg-white p-12 text-center rounded-2xl border border-stone-200 text-stone-400 font-bold">
+        <div class="text-3xl mb-2">🌿</div>
+        No variation attribute types found. Use the input form above to create your first attribute category!
       </div>
     @endforelse
   </div>
+
 </div>
 @endsection

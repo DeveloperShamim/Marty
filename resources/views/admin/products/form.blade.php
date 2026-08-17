@@ -7,33 +7,43 @@
 @section('content')
 @php
   if ($editing) {
-    $sizesFromVariants = $product->variants->whereIn('type', ['Size', 'Weight', 'Volume', 'Unit'])->pluck('value');
-    $colorsFromVariants = $product->variants->whereIn('type', ['Color', 'Packaging', 'Flavor', 'Type'])->pluck('value');
+    $sizes = collect();
+    $colors = collect();
 
-    if ($sizesFromVariants->isEmpty() && $product->skus->isNotEmpty()) {
-      $sizesFromVariants = $product->skus->flatMap(function($sku) {
-        $attrs = $sku->getAttributesData();
-        $res = [];
-        foreach ($attrs as $k => $v) {
-          if (in_array(strtolower($k), ['size', 'weight', 'volume', 'unit'])) $res[] = $v;
+    foreach ($product->skus as $sku) {
+      foreach ($sku->getAttributesData() as $k => $v) {
+        $kLower = strtolower(trim((string)$k));
+        $vTrim = trim((string)$v);
+        if ($vTrim === '') continue;
+        if (in_array($kLower, ['size', 'weight', 'volume', 'unit'])) {
+          $sizes->push($vTrim);
+        } elseif (in_array($kLower, ['color', 'packaging', 'flavor', 'type', 'container'])) {
+          $colors->push($vTrim);
+        } elseif (preg_match('/\d+\s*(g|kg|l|ml|oz|lb|liter|litre|gm|gram)/i', $vTrim)) {
+          $sizes->push($vTrim);
+        } else {
+          $colors->push($vTrim);
         }
-        return $res;
-      });
+      }
     }
 
-    if ($colorsFromVariants->isEmpty() && $product->skus->isNotEmpty()) {
-      $colorsFromVariants = $product->skus->flatMap(function($sku) {
-        $attrs = $sku->getAttributesData();
-        $res = [];
-        foreach ($attrs as $k => $v) {
-          if (in_array(strtolower($k), ['color', 'packaging', 'flavor', 'type'])) $res[] = $v;
-        }
-        return $res;
-      });
+    foreach ($product->variants as $v) {
+      $kLower = strtolower(trim((string)$v->type));
+      $vTrim = trim((string)$v->value);
+      if ($vTrim === '') continue;
+      if (in_array($kLower, ['size', 'weight', 'volume', 'unit'])) {
+        $sizes->push($vTrim);
+      } elseif (in_array($kLower, ['color', 'packaging', 'flavor', 'type', 'container'])) {
+        $colors->push($vTrim);
+      } elseif (preg_match('/\d+\s*(g|kg|l|ml|oz|lb|liter|litre|gm|gram)/i', $vTrim)) {
+        $sizes->push($vTrim);
+      } else {
+        $colors->push($vTrim);
+      }
     }
 
-    $sizeValues = $sizesFromVariants->unique()->filter()->implode(', ');
-    $colorValues = $colorsFromVariants->unique()->filter()->implode(', ');
+    $sizeValues = $sizes->unique()->filter()->implode(', ');
+    $colorValues = $colors->unique()->filter()->implode(', ');
   } else {
     $sizeValues = '';
     $colorValues = '';
@@ -45,14 +55,14 @@
   @if($editing) @method('PUT') @endif
 
   {{-- Sticky Action Bar Header --}}
-  <div class="sticky top-0 z-30 bg-white/90 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3.5 border-b border-stone-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+  <div class="sticky top-0 z-30 bg-white/95 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3.5 border-b border-stone-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
     <div class="flex items-center gap-3 min-w-0">
-      <a href="{{ route('admin.products.index') }}" class="h-9 w-9 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 flex items-center justify-center text-stone-500 hover:text-stone-900 transition-colors shrink-0" title="Back to Products List">
+      <a href="{{ route('admin.products.index') }}" class="h-9 w-9 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 flex items-center justify-center text-stone-500 hover:text-stone-900 transition-colors shrink-0 font-bold" title="Back to Products List">
         ‹
       </a>
       <div class="min-w-0">
-        <div class="flex items-center gap-2">
-          <h1 class="text-lg sm:text-xl font-extrabold text-stone-900 truncate tracking-tight">
+        <div class="flex flex-wrap items-center gap-2">
+          <h1 class="text-base sm:text-xl font-extrabold text-stone-900 truncate tracking-tight">
             {{ $editing ? $product->name : 'Create New Product' }}
           </h1>
           @if($editing)
@@ -66,25 +76,25 @@
             </span>
           @endif
         </div>
-        <p class="text-xs text-stone-500 truncate mt-0.5">
+        <p class="text-[11px] sm:text-xs text-stone-500 truncate mt-0.5">
           {{ $editing ? 'Manage details, prices, weights & images for this organic food item' : 'Fill out product details to list a new chemical-free organic food item' }}
         </p>
       </div>
     </div>
 
-    <div class="flex items-center gap-2.5 self-end sm:self-auto shrink-0">
+    <div class="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end">
       @if($editing && $product->is_published)
-        <a href="{{ route('product.show', $product->slug) }}" target="_blank" class="px-3 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5">
-          <span>👁️ View on Store</span>
+        <a href="{{ route('product.show', $product->slug) }}" target="_blank" class="px-3 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 font-bold text-xs shadow-2xs transition-all flex items-center justify-center gap-1.5 shrink-0">
+          <span>👁️ View</span>
         </a>
       @endif
 
-      <a href="{{ route('admin.products.index') }}" class="px-4 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 text-stone-600 font-bold text-xs transition-colors">
+      <a href="{{ route('admin.products.index') }}" class="px-3.5 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 text-stone-600 font-bold text-xs transition-colors shrink-0 text-center">
         Cancel
       </a>
 
-      <button type="submit" class="px-6 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-2">
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      <button type="submit" class="flex-1 sm:flex-none px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
         <span>{{ $editing ? 'Update Product' : 'Publish Product' }}</span>
       </button>
     </div>
@@ -220,48 +230,58 @@
           <span class="px-3 py-1 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">Variant Matrix</span>
         </div>
 
-        {{-- Preset Options Quick Bar --}}
-        <div class="space-y-4 bg-emerald-50/40 p-4 rounded-xl border border-emerald-100">
-          <div class="flex items-center justify-between">
-            <label class="text-xs font-extrabold text-emerald-900 uppercase tracking-wider">⚡ Quick Attribute Presets</label>
-            <a href="{{ route('admin.variations.index') }}" target="_blank" class="text-[11px] font-bold text-emerald-700 hover:underline">Manage All Attributes →</a>
+        {{-- Dynamic Attribute Presets Bar (Managed via /admin/variations) --}}
+        @php
+          $dbAttributeTypes = \App\Models\ProductAttributeType::with('values')->where('is_active', true)->orderBy('position')->orderBy('name')->get();
+        @endphp
+        <div class="space-y-4 bg-emerald-50/50 p-3.5 sm:p-4 rounded-2xl border border-emerald-200/80">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-100 pb-2.5">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-black text-emerald-950 uppercase tracking-wider">⚡ Attribute Quick-Add Presets</span>
+            </div>
+            <a href="{{ route('admin.variations.index') }}" target="_blank" class="text-[11px] font-bold text-emerald-700 hover:underline">Manage Attributes →</a>
           </div>
 
-          <div class="space-y-2">
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-[11px] font-extrabold text-stone-500 w-24 shrink-0">Weight / Size:</span>
-              @php $quickWeights = ['250g', '500g', '1 kg', '2 kg', '500 ml', '1 Liter']; @endphp
-              @foreach($quickWeights as $qw)
-                <button type="button" class="preset-pill-btn px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-100 text-emerald-900 font-bold border border-emerald-200 shadow-2xs transition cursor-pointer text-xs" data-target="sizesInput" data-value="{{ $qw }}">
-                  + {{ $qw }}
-                </button>
-              @endforeach
-            </div>
-
-            <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-[11px] font-extrabold text-stone-500 w-24 shrink-0">Packaging:</span>
-              @php $quickPacks = ['Glass Jar', 'Plastic Bottle', 'Food Grade Pack', 'Craft Pouch']; @endphp
-              @foreach($quickPacks as $qp)
-                <button type="button" class="preset-pill-btn px-2.5 py-1 rounded-lg bg-white hover:bg-amber-100 text-amber-900 font-bold border border-amber-200 shadow-2xs transition cursor-pointer text-xs" data-target="colorsInput" data-value="{{ $qp }}">
-                  + {{ $qp }}
-                </button>
-              @endforeach
-            </div>
+          {{-- Compact Attribute Filter & Presets List --}}
+          <div class="space-y-2.5">
+            @foreach($dbAttributeTypes as $attType)
+              @if($attType->values->isNotEmpty())
+                @php
+                  $isPrimaryGroup = in_array(strtolower($attType->name), ['weight', 'volume', 'size', 'unit']);
+                  $targetInputId = $isPrimaryGroup ? 'sizesInput' : 'colorsInput';
+                  $badgeClass = $isPrimaryGroup 
+                    ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200/90' 
+                    : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200/90';
+                @endphp
+                <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 bg-white/90 p-2.5 rounded-xl border border-emerald-100/90 shadow-2xs">
+                  <span class="text-[11px] font-extrabold text-stone-700 font-mono uppercase tracking-wider shrink-0 sm:w-20">
+                    {{ $attType->name }}:
+                  </span>
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    @foreach($attType->values as $valObj)
+                      <button type="button" class="preset-pill-btn px-2.5 py-1 rounded-lg font-extrabold border shadow-2xs transition cursor-pointer text-xs {{ $badgeClass }}" data-target="{{ $targetInputId }}" data-type="{{ $attType->name }}" data-value="{{ $valObj->value }}">
+                        + {{ $valObj->value }}
+                      </button>
+                    @endforeach
+                  </div>
+                </div>
+              @endif
+            @endforeach
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <div>
               <label class="text-xs font-bold text-stone-800 block mb-1">Primary Weight / Size Options <span class="text-stone-400 font-normal">(Comma-separated)</span></label>
-              <input id="sizesInput" name="sizes" class="w-full px-3.5 py-2 text-xs font-bold text-stone-900 rounded-xl border border-stone-200 bg-white focus:outline-none focus:border-emerald-500" value="{{ old('sizes', $sizeValues) }}" placeholder="e.g. 250g, 500g, 1kg" />
+              <input id="sizesInput" name="sizes" class="w-full px-3.5 py-2.5 text-xs font-bold text-stone-900 rounded-xl border border-stone-200 bg-white focus:outline-none focus:border-emerald-500 shadow-2xs" value="{{ old('sizes', $sizeValues) }}" placeholder="e.g. 250g, 500g, 1kg" />
             </div>
             <div>
               <label class="text-xs font-bold text-stone-800 block mb-1">Packaging / Container Variant <span class="text-stone-400 font-normal">(Optional)</span></label>
-              <input id="colorsInput" name="colors" class="w-full px-3.5 py-2 text-xs font-bold text-stone-900 rounded-xl border border-stone-200 bg-white focus:outline-none focus:border-emerald-500" value="{{ old('colors', $colorValues) }}" placeholder="e.g. Glass Jar, Craft Pouch" />
+              <input id="colorsInput" name="colors" class="w-full px-3.5 py-2.5 text-xs font-bold text-stone-900 rounded-xl border border-stone-200 bg-white focus:outline-none focus:border-emerald-500 shadow-2xs" value="{{ old('colors', $colorValues) }}" placeholder="e.g. Glass Jar, Craft Pouch" />
             </div>
           </div>
 
           <div class="flex justify-end pt-1">
-            <button type="button" id="generateMatrixBtn" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
+            <button type="button" id="generateMatrixBtn" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer">
               <span>⚡ Generate Combination Matrix</span>
             </button>
           </div>
@@ -392,18 +412,34 @@
         {{-- Existing Uploaded Product Photos --}}
         @if($editing && $product->images->isNotEmpty())
           <div>
-            <label class="text-xs font-bold text-stone-800 block mb-2">Existing Uploaded Images</label>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-bold text-stone-800">Existing Uploaded Images</label>
+              <span class="text-[10px] font-bold text-stone-400">💡 Drag cards or use ◄ ► arrows to re-arrange order</span>
+            </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3" id="productImagesGrid">
-              @foreach($product->images as $img)
-                <div class="relative group bg-stone-50 border border-stone-200 rounded-xl p-1.5 flex flex-col items-center gap-1 shadow-2xs" id="imgcard-{{ $img->id }}">
+              @foreach($product->images as $imgIndex => $img)
+                <div class="existing-image-card relative group bg-stone-50 border border-stone-200 rounded-xl p-1.5 flex flex-col items-center gap-1 shadow-2xs cursor-grab active:cursor-grabbing" id="imgcard-{{ $img->id }}" draggable="true" data-image-id="{{ $img->id }}">
+                  <input type="hidden" name="image_positions[{{ $img->id }}]" class="image-position-input" value="{{ $imgIndex }}" />
                   <div class="relative w-full aspect-square bg-white rounded-lg overflow-hidden flex items-center justify-center border border-stone-100">
-                    <img src="{{ $img->url() }}" class="max-h-full max-w-full object-contain p-1" alt="{{ $img->alt }}" />
-                    @if($img->is_primary)
-                      <span class="absolute top-1 left-1 bg-brand-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-2xs">Main</span>
-                    @endif
+                    <img src="{{ $img->url() }}" class="max-h-full max-w-full object-contain p-1 pointer-events-none" alt="{{ $img->alt }}" />
+                    <span class="main-badge absolute top-1 left-1 bg-brand-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-2xs {{ $loop->first ? '' : 'hidden' }}">Main</span>
                     <button type="button" onclick="deleteProductImage({{ $product->id }}, {{ $img->id }})" class="absolute top-1 right-1 bg-rose-600 text-white h-5 w-5 rounded-full text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center shadow-md cursor-pointer" title="Delete Image">&times;</button>
                   </div>
-                  <input type="text" name="image_colors[{{ $img->id }}]" value="{{ old("image_colors.{$img->id}", $img->color) }}" placeholder="Tag (e.g. 500g)" class="w-full text-[10px] font-medium px-1.5 py-1 bg-white border border-stone-200 rounded-md text-center focus:outline-none focus:border-brand-500" />
+
+                  {{-- Reorder Control Arrows --}}
+                  <div class="flex items-center justify-between w-full px-1 py-0.5 bg-stone-100/80 rounded-md border border-stone-200 text-[10px] font-bold text-stone-600">
+                    <button type="button" class="move-image-btn hover:text-stone-900 px-1 cursor-pointer font-black" data-dir="left" title="Move Left">◄</button>
+                    <span class="text-[9px] text-stone-400 uppercase tracking-tighter">Order</span>
+                    <button type="button" class="move-image-btn hover:text-stone-900 px-1 cursor-pointer font-black" data-dir="right" title="Move Right">►</button>
+                  </div>
+
+                  <div class="w-full mt-0.5">
+                    <label class="text-[9px] font-bold text-stone-500 block text-center mb-0.5 uppercase tracking-wider">Variation Tag</label>
+                    <input type="text" name="image_colors[{{ $img->id }}]" value="{{ old("image_colors.{$img->id}", $img->color) }}" placeholder="e.g. 500g, Glass Jar" class="w-full text-[10px] font-bold px-2 py-1 bg-white border border-stone-200 rounded-lg text-center text-stone-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-2xs" title="Tag this photo to a specific variation option (e.g. 500g, 1kg, Glass Jar)" />
+                  </div>
+                  <div class="w-full text-[8.5px] font-semibold text-stone-500 bg-stone-100/70 p-1 rounded-md border border-stone-200/60 truncate" title="SEO Alt Metadata: {{ $img->alt }}">
+                    ⚡ SEO Alt: <span class="text-stone-800 font-bold">{{ $img->alt }}</span>
+                  </div>
                 </div>
               @endforeach
             </div>
@@ -621,10 +657,16 @@
 
 // Preset Pills & Variant Matrix Script
 (function () {
+  const presetTypeMap = {};
+
   document.querySelectorAll('.preset-pill-btn').forEach(btn => {
     btn.addEventListener('click', function () {
       const targetId = btn.dataset.target;
       const val = btn.dataset.value;
+      const attType = btn.dataset.type;
+      if (attType && val) {
+        presetTypeMap[val.toLowerCase().trim()] = attType;
+      }
       const input = document.getElementById(targetId);
       if (!input) return;
       const current = input.value.split(',').map(s => s.trim()).filter(Boolean);
@@ -634,6 +676,31 @@
       }
     });
   });
+
+  function detectAttrType(val) {
+    const vLower = val.toLowerCase().trim();
+    if (presetTypeMap[vLower]) return presetTypeMap[vLower];
+
+    if (/^(black|brown|natural gold|white|red|blue|green|yellow|silver|gold|grey|gray|pink|purple|orange|navy|cream|maroon)$/i.test(vLower)) {
+      return 'Color';
+    }
+    if (/^(original|raw honey|black seed infused|spicy|honey|infused)$/i.test(vLower)) {
+      return 'Flavor';
+    }
+    if (/glass|plastic|jar|bottle|pouch|can|box|container|pack/i.test(vLower)) {
+      return 'Packaging';
+    }
+    if (/\d+\s*(l|ml|liter|litre)/i.test(vLower)) {
+      return 'Volume';
+    }
+    if (/\d+\s*(g|kg|oz|lb|gm|gram)/i.test(vLower)) {
+      return 'Weight';
+    }
+    if (/^(s|m|l|xl|xxl|eu\s*\d+|\d+)$/i.test(vLower)) {
+      return 'Size';
+    }
+    return 'Size';
+  }
 
   const genBtn = document.getElementById('generateMatrixBtn');
   const body = document.getElementById('skuMatrixBody');
@@ -651,37 +718,30 @@
       return;
     }
 
-    // Smart-sort container/packaging keywords if user mixed them into sizesInput
-    const isPackaging = (v) => /glass|plastic|jar|bottle|pouch|can|box|container|pack/i.test(v);
-
-    let sizes = [];
-    let colors = [...rawColors];
-
-    rawSizes.forEach(item => {
-      if (isPackaging(item)) {
-        if (!colors.includes(item)) colors.push(item);
-      } else {
-        if (!sizes.includes(item)) sizes.push(item);
-      }
+    const groupedAttrs = {};
+    [...rawSizes, ...rawColors].forEach(item => {
+      const type = detectAttrType(item);
+      if (!groupedAttrs[type]) groupedAttrs[type] = [];
+      if (!groupedAttrs[type].includes(item)) groupedAttrs[type].push(item);
     });
 
-    // Clean inputs with sorted values
-    if (sizesInput) sizesInput.value = sizes.join(', ');
-    if (colorsInput) colorsInput.value = colors.join(', ');
-
-    const combinations = [];
-
-    if (colors.length > 0 && sizes.length > 0) {
-      colors.forEach(c => {
-        sizes.forEach(s => {
-          combinations.push({ Weight: s, Packaging: c });
-        });
-      });
-    } else if (colors.length > 0) {
-      colors.forEach(c => combinations.push({ Packaging: c }));
-    } else if (sizes.length > 0) {
-      sizes.forEach(s => combinations.push({ Weight: s }));
+    const attrKeys = Object.keys(groupedAttrs);
+    if (attrKeys.length === 0) {
+      alert('Please select or enter variation options.');
+      return;
     }
+
+    function cartesianProduct(keys, index = 0, current = {}) {
+      if (index === keys.length) return [{ ...current }];
+      const key = keys[index];
+      const results = [];
+      groupedAttrs[key].forEach(val => {
+        results.push(...cartesianProduct(keys, index + 1, { ...current, [key]: val }));
+      });
+      return results;
+    }
+
+    const combinations = cartesianProduct(attrKeys);
 
     if (body) body.innerHTML = '';
 
@@ -694,8 +754,8 @@
         attrInputsHtml += `<input type="hidden" name="sku_matrix[${idx}][attributes][${k}]" value="${v}" />`;
       });
 
-      let sizeVal = (combo.Weight || combo.Size || '').replace(/[^A-Za-z0-9]/g, '');
-      let colorVal = (combo.Packaging || combo.Color || '').split(' ')[0].replace(/[^A-Za-z0-9]/g, '');
+      let sizeVal = (combo.Weight || combo.Volume || combo.Size || '').replace(/[^A-Za-z0-9]/g, '');
+      let colorVal = (combo.Packaging || combo.Color || combo.Flavor || '').split(' ')[0].replace(/[^A-Za-z0-9]/g, '');
       let autoSkuHint = (colorVal || sizeVal) ? (colorVal + sizeVal) : 'VAR';
 
       if (body) {
@@ -822,33 +882,166 @@ function deleteProductImage(productId, imageId) {
   });
 }
 
-// Live Drag-and-Drop Image Upload Preview
+// Existing Images Drag & Drop / Button Re-ordering Script
+(function() {
+  const grid = document.getElementById('productImagesGrid');
+  if (!grid) return;
+
+  function updatePositionsAndBadges() {
+    const cards = grid.querySelectorAll('.existing-image-card');
+    cards.forEach((card, idx) => {
+      const posInput = card.querySelector('.image-position-input');
+      if (posInput) posInput.value = idx;
+
+      const mainBadge = card.querySelector('.main-badge');
+      if (mainBadge) {
+        if (idx === 0) mainBadge.classList.remove('hidden');
+        else mainBadge.classList.add('hidden');
+      }
+    });
+  }
+
+  grid.addEventListener('click', function(e) {
+    const btn = e.target.closest('.move-image-btn');
+    if (!btn) return;
+    const card = btn.closest('.existing-image-card');
+    if (!card) return;
+    const dir = btn.dataset.dir;
+
+    if (dir === 'left' && card.previousElementSibling) {
+      grid.insertBefore(card, card.previousElementSibling);
+    } else if (dir === 'right' && card.nextElementSibling) {
+      grid.insertBefore(card.nextElementSibling, card);
+    }
+    updatePositionsAndBadges();
+  });
+
+  // HTML5 Drag and Drop Re-ordering
+  let draggedCard = null;
+
+  grid.addEventListener('dragstart', function(e) {
+    const card = e.target.closest('.existing-image-card');
+    if (!card) return;
+    draggedCard = card;
+    card.classList.add('opacity-40');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  grid.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const card = e.target.closest('.existing-image-card');
+    if (card && card !== draggedCard) {
+      const bounding = card.getBoundingClientRect();
+      const offset = e.clientX - bounding.left;
+      if (offset > bounding.width / 2) {
+        grid.insertBefore(draggedCard, card.nextElementSibling);
+      } else {
+        grid.insertBefore(draggedCard, card);
+      }
+      updatePositionsAndBadges();
+    }
+  });
+
+  grid.addEventListener('dragend', function(e) {
+    const card = e.target.closest('.existing-image-card');
+    if (card) card.classList.remove('opacity-40');
+    draggedCard = null;
+    updatePositionsAndBadges();
+  });
+})();
+
+// Live Drag-and-Drop Image Upload Preview with Auto SEO & Variation Tag Pre-population
 (function() {
   const fileInput = document.getElementById('imageFileInput');
   const previewBox = document.getElementById('newImagesPreview');
   if (!fileInput || !previewBox) return;
 
+  function getEnteredVariantOptions() {
+    const opts = [];
+    const optInput = document.getElementById('option_values_input');
+    if (optInput && optInput.value) {
+      optInput.value.split(',').forEach(v => {
+        const trimmed = v.trim();
+        if (trimmed && !opts.includes(trimmed)) opts.push(trimmed);
+      });
+    }
+    document.querySelectorAll('.preset-val-check:checked').forEach(cb => {
+      if (cb.value && !opts.includes(cb.value)) opts.push(cb.value);
+    });
+    return opts;
+  }
+
   fileInput.addEventListener('change', function(e) {
     previewBox.innerHTML = '';
     const files = Array.from(e.target.files || []);
+    const productName = document.querySelector('input[name="name"]')?.value?.trim() || 'Product';
+    const brandSelect = document.querySelector('select[name="brand_id"]');
+    const brandName = brandSelect && brandSelect.selectedIndex > 0 ? brandSelect.options[brandSelect.selectedIndex].text.trim() : '';
+    const variantOptions = getEnteredVariantOptions();
+
     files.forEach((file, idx) => {
       if (!file.type.startsWith('image/')) return;
       const reader = new FileReader();
       reader.onload = function(evt) {
+        const autoTag = variantOptions[idx] || '';
+        let seoAlt = productName;
+        if (autoTag) seoAlt += ` (${autoTag})`;
+        if (brandName) seoAlt += ` by ${brandName}`;
+        seoAlt += ' — 100% Pure & Organic ShodeshiFood BD';
+
         const div = document.createElement('div');
-        div.className = 'relative flex flex-col items-center gap-1.5 p-1 bg-stone-50 border border-stone-200 rounded-xl shadow-2xs';
+        div.className = 'new-image-card relative flex flex-col items-center gap-1.5 p-1.5 bg-stone-50 border border-stone-200 rounded-xl shadow-2xs cursor-grab';
         div.innerHTML = `
           <div class="relative w-full aspect-square bg-white rounded-lg overflow-hidden border border-stone-100 flex items-center justify-center">
-            <img src="${evt.target.result}" class="max-h-full max-w-full object-contain p-1" />
-            ${idx === 0 ? '<span class="absolute top-1 left-1 bg-brand-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-2xs">Main</span>' : ''}
+            <img src="${evt.target.result}" class="max-h-full max-w-full object-contain p-1 pointer-events-none" />
+            <span class="new-main-badge absolute top-1 left-1 bg-brand-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-2xs ${idx === 0 ? '' : 'hidden'}">Main</span>
           </div>
-          <span class="text-[10px] text-stone-500 font-mono w-full truncate text-center">${file.name}</span>
+          <div class="flex items-center justify-between w-full px-1 py-0.5 bg-stone-100/80 rounded-md border border-stone-200 text-[10px] font-bold text-stone-600">
+            <button type="button" class="move-new-img-btn hover:text-stone-900 px-1 cursor-pointer font-black" data-dir="left" title="Move Left">◄</button>
+            <span class="text-[9px] text-stone-400 uppercase tracking-tighter">Order</span>
+            <button type="button" class="move-new-img-btn hover:text-stone-900 px-1 cursor-pointer font-black" data-dir="right" title="Move Right">►</button>
+          </div>
+          <div class="w-full mt-0.5">
+            <label class="text-[9px] font-bold text-stone-500 block text-center mb-0.5 uppercase tracking-wider">Variation Tag (Auto)</label>
+            <input type="text" name="new_image_colors[${idx}]" value="${autoTag}" placeholder="e.g. 500g, Glass Jar" class="w-full text-[10px] font-bold px-2 py-1 bg-white border border-stone-200 rounded-lg text-center text-stone-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-2xs" title="Auto-populated from variation options (editable)" />
+          </div>
+          <div class="w-full text-[8.5px] font-semibold text-stone-500 bg-emerald-50/90 p-1 rounded-md border border-emerald-200/60 truncate" title="SEO Alt Metadata: ${seoAlt}">
+            ⚡ Auto SEO: <span class="text-emerald-900 font-bold">${seoAlt}</span>
+          </div>
         `;
         previewBox.appendChild(div);
+        updateNewPreviewBadges();
       };
       reader.readAsDataURL(file);
     });
   });
+
+  previewBox.addEventListener('click', function(e) {
+    const btn = e.target.closest('.move-new-img-btn');
+    if (!btn) return;
+    const card = btn.closest('.new-image-card');
+    if (!card) return;
+    const dir = btn.dataset.dir;
+
+    if (dir === 'left' && card.previousElementSibling) {
+      previewBox.insertBefore(card, card.previousElementSibling);
+    } else if (dir === 'right' && card.nextElementSibling) {
+      previewBox.insertBefore(card.nextElementSibling, card);
+    }
+    updateNewPreviewBadges();
+  });
+
+  function updateNewPreviewBadges() {
+    const cards = previewBox.querySelectorAll('.new-image-card');
+    cards.forEach((card, idx) => {
+      const badge = card.querySelector('.new-main-badge');
+      if (badge) {
+        if (idx === 0) badge.classList.remove('hidden');
+        else badge.classList.add('hidden');
+      }
+    });
+  }
 })();
 </script>
 @endpush

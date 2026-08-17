@@ -210,6 +210,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('media/upload', [\App\Http\Controllers\Admin\MediaController::class, 'upload'])->name('media.upload');
             Route::post('media/optimize', [\App\Http\Controllers\Admin\MediaController::class, 'optimizeSingle'])->name('media.optimize');
             Route::post('media/bulk-optimize', [\App\Http\Controllers\Admin\MediaController::class, 'bulkOptimize'])->name('media.bulk-optimize');
+            Route::post('media/quality', [\App\Http\Controllers\Admin\MediaController::class, 'saveQuality'])->name('media.quality');
+            Route::post('media/metadata', [\App\Http\Controllers\Admin\MediaController::class, 'updateMetadata'])->name('media.metadata');
             Route::delete('media/destroy', [\App\Http\Controllers\Admin\MediaController::class, 'destroy'])->name('media.destroy');
             Route::post('media/bulk-delete', [\App\Http\Controllers\Admin\MediaController::class, 'bulkDelete'])->name('media.bulk-delete');
 

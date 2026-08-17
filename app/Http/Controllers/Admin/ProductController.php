@@ -748,18 +748,41 @@ class ProductController extends Controller
         $hasPrimary = $product->images()->where('is_primary', true)->exists();
         $position = (int) $product->images()->max('position');
 
-        foreach ($request->file('images') as $file) {
+        $newColors = $request->input('new_image_colors', []);
+        $variantOptions = $product->variants()->pluck('value')->toArray();
+
+        foreach ($request->file('images') as $i => $file) {
             $path = $this->saveUploadedProductImage($file, $dir);
+            $colorVal = ! empty($newColors[$i]) ? trim((string) $newColors[$i]) : ($variantOptions[$i] ?? null);
+
+            $seoAlt = $this->generateSeoAltText($product, $colorVal, $position + 1);
 
             ProductImage::create([
                 'product_id' => $product->id,
                 'path'       => $path,
-                'alt'        => $product->name,
+                'alt'        => $seoAlt,
+                'color'      => $colorVal,
                 'is_primary' => ! $hasPrimary,
                 'position'   => ++$position,
             ]);
             $hasPrimary = true;
         }
+    }
+
+    private function generateSeoAltText(Product $product, ?string $colorTag, int $pos): string
+    {
+        $parts = [];
+        $parts[] = $product->name;
+        if ($colorTag) {
+            $parts[] = "({$colorTag})";
+        }
+        if ($product->brand) {
+            $parts[] = "by {$product->brand}";
+        }
+        $parts[] = "100% Pure & Organic";
+        $parts[] = "ShodeshiFood BD";
+
+        return implode(" — ", $parts);
     }
 
     private function saveUploadedProductImage($file, string $dir): string
@@ -798,8 +821,27 @@ class ProductController extends Controller
     {
         if ($request->has('image_colors') && is_array($request->input('image_colors'))) {
             foreach ($request->input('image_colors') as $imgId => $colorVal) {
+                $colorTag = trim((string) $colorVal) ?: null;
+                $img = ProductImage::where('id', $imgId)->where('product_id', $product->id)->first();
+                if ($img) {
+                    $seoAlt = $this->generateSeoAltText($product, $colorTag, $img->position);
+                    $img->update([
+                        'color' => $colorTag,
+                        'alt'   => $seoAlt,
+                    ]);
+                }
+            }
+        }
+
+        if ($request->has('image_positions') && is_array($request->input('image_positions'))) {
+            $positions = $request->input('image_positions');
+            asort($positions);
+            $firstImgId = array_key_first($positions);
+
+            foreach ($positions as $imgId => $pos) {
                 ProductImage::where('id', $imgId)->where('product_id', $product->id)->update([
-                    'color' => trim((string) $colorVal) ?: null,
+                    'position'   => (int) $pos,
+                    'is_primary' => ((int) $imgId === (int) $firstImgId),
                 ]);
             }
         }
