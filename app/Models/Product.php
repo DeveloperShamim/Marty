@@ -45,13 +45,18 @@ class Product extends Model
 
     public function skus(): HasMany
     {
-        return $this->hasMany(ProductSku::class)->where('is_active', true);
+        return $this->hasMany(ProductSku::class)->orderBy('id');
+    }
+
+    public function activeSkus(): HasMany
+    {
+        return $this->hasMany(ProductSku::class)->where('is_active', true)->orderBy('id');
     }
 
     public function syncTotalStock(): void
     {
         if ($this->skus()->exists()) {
-            $totalStock = (int) $this->skus()->sum('stock_quantity');
+            $totalStock = (int) $this->activeSkus()->sum('stock_quantity');
             $this->update(['stock_quantity' => $totalStock]);
         }
     }
