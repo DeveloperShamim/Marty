@@ -321,42 +321,50 @@ if (! function_exists('site_name')) {
     /** Canonical storefront / admin site name (Settings → site_name). */
     function site_name(): string
     {
-        $name = trim((string) setting('site_name', config('app.name', 'FreshKart')));
+        $name = trim((string) setting('site_name', config('app.name', 'ShodeshiFood')));
 
-        return $name !== '' ? $name : 'FreshKart';
+        return $name !== '' ? $name : 'ShodeshiFood';
     }
 }
 
 if (! function_exists('favicon_url')) {
-    /** The site favicon — a custom upload if set, otherwise the bundled FreshKart icon. */
+    /** The site favicon — a custom upload if set, otherwise fallback icon. */
     function favicon_url(): string
     {
         $f = setting('favicon');
         if ($f) {
-            return (str_starts_with($f, 'http://') || str_starts_with($f, 'https://'))
-                ? $f
-                : asset('storage/' . ltrim($f, '/'));
+            if (str_starts_with($f, 'http://') || str_starts_with($f, 'https://')) {
+                return $f;
+            }
+            if (str_starts_with($f, '/uploads/') || str_starts_with($f, 'uploads/')) {
+                return asset(ltrim($f, '/'));
+            }
+            return asset('storage/' . ltrim($f, '/'));
         }
 
-        return asset('theme/favicon.svg');
+        return asset('uploads/favicon.png');
     }
 }
 
 if (! function_exists('logo_url')) {
     /**
      * The site logo URL.
-     * Custom admin upload wins; otherwise the bundled FreshKart mark.
+     * Custom logo setting wins; otherwise the uploaded logo.
      */
     function logo_url(string $variant = 'default'): string
     {
         $l = setting('logo');
         if ($l) {
-            return (str_starts_with($l, 'http://') || str_starts_with($l, 'https://'))
-                ? $l
-                : asset('storage/' . ltrim($l, '/'));
+            if (str_starts_with($l, 'http://') || str_starts_with($l, 'https://')) {
+                return $l;
+            }
+            if (str_starts_with($l, '/uploads/') || str_starts_with($l, 'uploads/')) {
+                return asset(ltrim($l, '/'));
+            }
+            return asset('storage/' . ltrim($l, '/'));
         }
 
-        return asset('theme/logo.svg');
+        return asset('uploads/logo.png');
     }
 }
 

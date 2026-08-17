@@ -750,7 +750,7 @@ class ProductController extends Controller
         $position = (int) $product->images()->max('position');
 
         foreach ($request->file('images') as $file) {
-            $path = $this->saveImageAsWebp($file, $dir);
+            $path = $this->saveUploadedProductImage($file, $dir);
 
             ProductImage::create([
                 'product_id' => $product->id,
@@ -763,36 +763,13 @@ class ProductController extends Controller
         }
     }
 
-    private function saveImageAsWebp($file, string $dir): string
+    private function saveUploadedProductImage($file, string $dir): string
     {
         $uuid = Str::uuid()->toString();
-        $webpFilename = $uuid . '.webp';
-        $fullWebpPath = $dir . '/' . $webpFilename;
-
-        if (function_exists('imagecreatefromstring') && function_exists('imagewebp')) {
-            try {
-                $imageData = @file_get_contents($file->getRealPath());
-                if ($imageData !== false) {
-                    $srcImage = @imagecreatefromstring($imageData);
-                    if ($srcImage !== false) {
-                        imagealphablending($srcImage, true);
-                        imagesavealpha($srcImage, true);
-
-                        if (@imagewebp($srcImage, $fullWebpPath, 82)) {
-                            imagedestroy($srcImage);
-                            return 'uploads/products/' . $webpFilename;
-                        }
-                        imagedestroy($srcImage);
-                    }
-                }
-            } catch (\Throwable $e) {
-                // Fallback to original file
-            }
-        }
-
-        $originalExt = strtolower($file->getClientOriginalExtension() ?: 'jpg');
-        $filename = $uuid . '.' . $originalExt;
+        $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+        $filename = $uuid . '.' . $ext;
         $file->move($dir, $filename);
+
         return 'uploads/products/' . $filename;
     }
 

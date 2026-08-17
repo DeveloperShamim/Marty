@@ -205,6 +205,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::resource('features', AdminFeatureController::class)->except('show');
             Route::resource('coupons', AdminCouponController::class)->except('show');
 
+            // Media Library
+            Route::get('media', [\App\Http\Controllers\Admin\MediaController::class, 'index'])->name('media.index');
+            Route::post('media/upload', [\App\Http\Controllers\Admin\MediaController::class, 'upload'])->name('media.upload');
+            Route::post('media/optimize', [\App\Http\Controllers\Admin\MediaController::class, 'optimizeSingle'])->name('media.optimize');
+            Route::post('media/bulk-optimize', [\App\Http\Controllers\Admin\MediaController::class, 'bulkOptimize'])->name('media.bulk-optimize');
+            Route::delete('media/destroy', [\App\Http\Controllers\Admin\MediaController::class, 'destroy'])->name('media.destroy');
+            Route::post('media/bulk-delete', [\App\Http\Controllers\Admin\MediaController::class, 'bulkDelete'])->name('media.bulk-delete');
+
             // Flash sale
             Route::get('flash-sale', [AdminFlashSaleController::class, 'index'])->name('flash-sale.index');
             Route::put('flash-sale/ends-at', [AdminFlashSaleController::class, 'updateEndsAt'])->name('flash-sale.ends-at');

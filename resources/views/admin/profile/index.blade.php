@@ -65,7 +65,7 @@
           <label for="email" class="block text-xs font-bold text-stone-700 mb-1">Admin Email Address (Login Email)</label>
           <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}" required
                  class="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-stone-900 text-xs font-medium focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500" />
-          <p class="text-[10px] text-stone-400 mt-1">Default Super Admin Email: <code class="bg-stone-100 px-1 py-0.5 rounded text-brand-600 font-mono">admin@solebd.com</code></p>
+          <p class="text-[10px] text-stone-400 mt-1">Default Super Admin Email: <code class="bg-stone-100 px-1 py-0.5 rounded text-brand-600 font-mono">admin@shodeshifood.com</code></p>
         </div>
 
         <div>

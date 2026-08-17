@@ -1,4 +1,13 @@
 @if(request()->routeIs('home') || request()->is('/'))
+<script>
+  // Hide preloader immediately if already shown in this session
+  try {
+    if (sessionStorage.getItem('shodeshi_preloader_shown')) {
+      document.write('<style>#sitePreloader{display:none !important;}</style>');
+    }
+  } catch(e) {}
+</script>
+
 <div id="sitePreloader" class="fixed inset-0 z-[99999] bg-white flex flex-col items-center justify-center transition-all duration-500 ease-out select-none">
   {{-- Center Brand Pulse --}}
   <div class="flex flex-col items-center justify-center gap-4 text-center px-4 animate-pulse">
@@ -30,13 +39,12 @@
     const preloader = document.getElementById('sitePreloader');
     if (!preloader) return;
 
-    // Only show on first homepage load per browser session
     try {
-      if (sessionStorage.getItem('home_loader_shown')) {
-        preloader.remove();
+      if (sessionStorage.getItem('shodeshi_preloader_shown')) {
+        if (preloader.parentNode) preloader.parentNode.removeChild(preloader);
         return;
       }
-      sessionStorage.setItem('home_loader_shown', 'true');
+      sessionStorage.setItem('shodeshi_preloader_shown', 'true');
     } catch(e) {}
 
     function hidePreloader() {
@@ -55,7 +63,6 @@
       window.addEventListener('load', function() {
         setTimeout(hidePreloader, 150);
       });
-      // Safety fallback cap at max 800ms
       setTimeout(hidePreloader, 800);
     }
   })();

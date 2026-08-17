@@ -28,7 +28,7 @@ class BannerSeeder extends Seeder
                 'title' => "Special Offer on\nOrganic Health Bundles",
                 'subtitle' => 'Get 10% OFF on your organic pantry order with coupon code PURE10.',
                 'badge' => 'USE COUPON: PURE10',
-                'image' => 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=1920&q=80',
+                'image' => 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=1920&q=80',
                 'link_url' => '/shop?flash=1',
                 'button_text' => 'Shop Organic Deals',
                 'placement' => 'hero',

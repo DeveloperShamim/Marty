@@ -42,9 +42,9 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Super Admin
         User::updateOrCreate(
-            ['email' => 'admin@solebd.com'],
+            ['email' => 'admin@shodeshifood.com'],
             [
-                'name' => 'SoleBd Super Admin',
+                'name' => 'ShodeshiFood Super Admin',
                 'password' => Hash::make('password'),
                 'role' => 'admin',
                 'phone' => '+880 1700-000000',
@@ -54,7 +54,7 @@ class DatabaseSeeder extends Seeder
 
         // 2. Store Manager
         User::updateOrCreate(
-            ['email' => 'store.manager@solebd.com'],
+            ['email' => 'store.manager@shodeshifood.com'],
             [
                 'name' => 'Tanvir Alam (Store Manager)',
                 'password' => Hash::make('password'),
@@ -66,7 +66,7 @@ class DatabaseSeeder extends Seeder
 
         // 3. Order Manager
         User::updateOrCreate(
-            ['email' => 'order.manager@solebd.com'],
+            ['email' => 'order.manager@shodeshifood.com'],
             [
                 'name' => 'Rafi Ahmed (Order Manager)',
                 'password' => Hash::make('password'),
@@ -78,7 +78,7 @@ class DatabaseSeeder extends Seeder
 
         // 4. Inventory Manager
         User::updateOrCreate(
-            ['email' => 'inventory.manager@solebd.com'],
+            ['email' => 'inventory.manager@shodeshifood.com'],
             [
                 'name' => 'Kalam Hossain (Inventory Manager)',
                 'password' => Hash::make('password'),
@@ -90,7 +90,7 @@ class DatabaseSeeder extends Seeder
 
         // 5. Customer Account
         User::updateOrCreate(
-            ['email' => 'customer@solebd.com'],
+            ['email' => 'customer@shodeshifood.com'],
             [
                 'name' => 'Nusrat Jahan',
                 'password' => Hash::make('password'),
@@ -107,17 +107,17 @@ class DatabaseSeeder extends Seeder
     private function seedSettings(): void
     {
         $settings = [
-            'site_name' => 'SoleBd',
+            'site_name' => 'ShodeshiFood',
             'tagline' => '100% Chemical-Free Organic Food & Grocery Store',
-            'logo' => '',
-            'favicon' => '',
-            'footer_text' => 'SoleBd delivers 100% authentic, lab-tested, chemical-free organic groceries, raw Sundarban honey, cold-pressed oils, pure deshi ghee, and farm-fresh produce across Bangladesh.',
+            'logo' => 'uploads/logo.png',
+            'favicon' => 'uploads/favicon.png',
+            'footer_text' => 'ShodeshiFood delivers 100% authentic, lab-tested, chemical-free organic groceries, raw Sundarban honey, cold-pressed oils, pure deshi ghee, and farm-fresh produce across Bangladesh.',
             'contact_phone' => '+880 1700-000000',
-            'contact_email' => 'support@solebd.com',
+            'contact_email' => 'support@shodeshifood.com',
             'contact_address' => 'Level 4, Jamuna Future Park, Kuril, Dhaka 1229, Bangladesh',
             'contact_hours' => 'Saturday–Thursday, 10:00 AM – 9:00 PM',
             'contact_title' => 'Customer Support',
-            'contact_intro' => 'Need help with an order, organic food specifications, or delivery? Our SoleBd customer care team is happy to assist.',
+            'contact_intro' => 'Need help with an order, organic food specifications, or delivery? Our ShodeshiFood customer care team is happy to assist.',
             'search_placeholder' => 'Search raw honey, mustard oil, deshi ghee, organic chia seeds, dates, nuts...',
             'facebook_url' => 'https://facebook.com/',
             'instagram_url' => 'https://instagram.com/',
@@ -137,9 +137,9 @@ class DatabaseSeeder extends Seeder
             'shipping_outside_label' => 'Outside Dhaka',
             'currency_symbol' => '৳',
             'currency_code' => 'BDT',
-            'default_meta_title' => 'SoleBd — 100% Chemical-Free Organic Food & Grocery in Bangladesh',
+            'default_meta_title' => 'ShodeshiFood — 100% Chemical-Free Organic Food & Grocery in Bangladesh',
             'default_meta_description' => 'Shop authentic raw Sundarban honey, cold-pressed mustard oil, pure cow ghee, organic spices, nuts & fresh produce online at best prices in Bangladesh.',
-            'default_meta_keywords' => 'SoleBd, Raw Honey, Mustard Oil, Cow Ghee, Ajwa Dates, Chia Seeds, Organic Food Bangladesh',
+            'default_meta_keywords' => 'ShodeshiFood, Raw Honey, Mustard Oil, Cow Ghee, Ajwa Dates, Chia Seeds, Organic Food Bangladesh',
             'tracking_gtm_id' => '',
             'tracking_ga4_id' => '',
             'tracking_meta_pixel_id' => '',
@@ -155,7 +155,7 @@ class DatabaseSeeder extends Seeder
             'home_reviews_title' => 'Customer Feedback',
             'home_view_more_label' => 'View All Products',
             'default_cta_text' => 'Add to Cart',
-            'hero_fallback_badge' => 'SoleBd Organic Store',
+            'hero_fallback_badge' => 'ShodeshiFood Organic Store',
             'hero_fallback_title' => "100% Farm Fresh &\nChemical-Free Organic Food",
             'hero_fallback_subtitle' => 'Authentic Sundarban raw honey, cold-pressed mustard oil, pure cow ghee & organic pantry items delivered to your door.',
             'show_featured_brands' => '1',
@@ -169,8 +169,8 @@ class DatabaseSeeder extends Seeder
             'mail_username' => '',
             'mail_password' => '',
             'mail_encryption' => 'tls',
-            'mail_from_address' => 'no-reply@solebd.com',
-            'mail_from_name'    => 'SoleBd',
+            'mail_from_address' => 'no-reply@shodeshifood.com',
+            'mail_from_name'    => 'ShodeshiFood',
             'theme_primary_color'  => '#16A34A',
             'theme_dark_color'     => '#1C1917',
             'theme_surface_color'  => '#FAFAF5',
@@ -185,6 +185,8 @@ class DatabaseSeeder extends Seeder
 
     private function seedCategories(): array
     {
+        Category::query()->delete();
+
         $data = [
             ['Raw Honey', 'raw-honey', '🍯', '100% pure Sundarban raw honey, mustard flower honey & date molasses.', 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=600&h=600&q=80'],
             ['Pure Oils', 'pure-oils', '🛢️', 'Wood-milled mustard oil, virgin coconut oil & Bilona cow milk ghee.', 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=600&h=600&q=80'],
@@ -273,8 +275,8 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'GreenValley Produce',
                 'slug' => 'greenvalley-produce',
-                'logo' => 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=400&h=400&q=80',
-                'banner' => 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
+                'logo' => 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=400&h=400&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
                 'description' => 'Farm-fresh organic produce, Dinajpur Kataribogh rice, and chemical-free pulses.',
                 'website' => 'https://greenvalley.com',
                 'is_featured' => true,
@@ -294,7 +296,7 @@ class DatabaseSeeder extends Seeder
                 'position' => $b['position'],
                 'is_active' => true,
                 'is_featured' => $b['is_featured'],
-                'meta_title' => "Buy {$b['name']} Products Online in Bangladesh — Unilife",
+                'meta_title' => "Buy {$b['name']} Products Online in Bangladesh — ShodeshiFood",
                 'meta_description' => "Shop 100% authentic {$b['name']} products at best prices in Bangladesh with fast home delivery.",
             ]);
             $brands[$b['name']] = $brand;
@@ -367,10 +369,10 @@ class DatabaseSeeder extends Seeder
     {
         Product::query()->delete();
 
-        // 72 Products: Exactly 8 products per brand across all 9 brands.
-        // Each product has 3 specific square images (1:1 ratio - w=800, h=800).
+                // 12 Flagship Organic Products across 6 Categories & Brands.
+        // Position 0 (primary image) is ALWAYS on a pure white background with ShodeshiFood branding.
         $productsData = [
-            // ================= 1. SUNDARBAN HONEY CO. =================
+            // ================= 1. RAW HONEY =================
             [
                 'name' => 'Sundarban Raw Wildflower Honey (সুন্দরবন খাঁটি মধু)',
                 'slug' => 'sundarban-raw-wildflower-honey',
@@ -387,7 +389,6 @@ class DatabaseSeeder extends Seeder
                 'images' => [
                     'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&h=800&q=80',
                     'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1471943311424-646960669fbc?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
             [
@@ -405,12 +406,11 @@ class DatabaseSeeder extends Seeder
                 'is_best_seller' => true,
                 'images' => [
                     'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&h=800&q=80',
                     'https://images.unsplash.com/photo-1471943311424-646960669fbc?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
 
-            // ================= 2. PUREHARVEST ORGANIC =================
+            // ================= 2. PURE OILS & GHEE =================
             [
                 'name' => 'Wood-Milled Cold-Pressed Mustard Oil (কাটের ঘানি খাঁটি সরিষার তেল)',
                 'slug' => 'wood-milled-cold-pressed-mustard-oil',
@@ -426,12 +426,87 @@ class DatabaseSeeder extends Seeder
                 'is_best_seller' => true,
                 'images' => [
                     'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
             [
-                'name' => 'High Curcumin Organic Turmeric Powder (খাঁটি হলুদ গুঁড়া)',
+                'name' => 'Handcrafted Premium Cow Milk Ghee (হাতে তৈরি খাঁটি গাওয়া ঘি)',
+                'slug' => 'handcrafted-cow-milk-ghee',
+                'brand' => 'Khaas Food',
+                'category' => 'pure-oils',
+                'regular_price' => 1650,
+                'sale_price' => 1450,
+                'unit' => 'Jar',
+                'variant_type' => 'Weight',
+                'options' => ['500g', '1kg'],
+                'is_featured' => true,
+                'is_new' => false,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Extra Virgin Cold-Pressed Coconut Oil (খাঁটি নারকেল তেল)',
+                'slug' => 'extra-virgin-cold-pressed-coconut-oil',
+                'brand' => 'Khaas Food',
+                'category' => 'pure-oils',
+                'regular_price' => 580,
+                'sale_price' => 520,
+                'unit' => 'Bottle',
+                'variant_type' => 'Volume',
+                'options' => ['250ml', '500ml', '1 Liter'],
+                'is_featured' => false,
+                'is_new' => true,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+
+            // ================= 3. ORGANIC GRAINS =================
+            [
+                'name' => 'Dinajpur Kataribogh Aromatic Rice (সুগন্ধি কাটারীভোগ চাল)',
+                'slug' => 'dinajpur-kataribogh-aromatic-rice',
+                'brand' => 'GreenValley Produce',
+                'category' => 'organic-grains',
+                'regular_price' => 720,
+                'sale_price' => 650,
+                'unit' => 'Bag',
+                'variant_type' => 'Weight',
+                'options' => ['5kg', '10kg'],
+                'is_featured' => true,
+                'is_new' => false,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Raw Organic Chia Seeds (খাঁটি অর্গানিক চিয়া সিড)',
+                'slug' => 'raw-organic-chia-seeds',
+                'brand' => 'Naturals BD',
+                'category' => 'organic-grains',
+                'regular_price' => 550,
+                'sale_price' => 480,
+                'unit' => 'Pack',
+                'variant_type' => 'Weight',
+                'options' => ['250g', '500g'],
+                'is_featured' => true,
+                'is_new' => true,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1514733670139-4d87a1941d55?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+
+            // ================= 4. PURE SPICES =================
+            [
+                'name' => 'High-Curcumin Organic Turmeric Powder (খাঁটি দেশি হলুদ গুঁড়া)',
                 'slug' => 'high-curcumin-organic-turmeric-powder',
                 'brand' => 'PureHarvest Organic',
                 'category' => 'pure-spices',
@@ -444,49 +519,8 @@ class DatabaseSeeder extends Seeder
                 'is_new' => false,
                 'is_best_seller' => true,
                 'images' => [
-                    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'Natural Date Palm Molasses (খাঁটি ঝোলা খেজুরে গুড়)',
-                'slug' => 'natural-date-palm-molasses',
-                'brand' => 'PureHarvest Organic',
-                'category' => 'raw-honey',
-                'regular_price' => 620,
-                'sale_price' => 550,
-                'unit' => 'Container',
-                'variant_type' => 'Weight',
-                'options' => ['1kg', '2kg'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-
-            // ================= 3. KHAAS FOOD =================
-            [
-                'name' => 'Handcrafted Cow Milk Ghee (হাতে তৈরি খাঁটি গাওয়া ঘি)',
-                'slug' => 'handcrafted-cow-milk-ghee',
-                'brand' => 'Khaas Food',
-                'category' => 'pure-oils',
-                'regular_price' => 1650,
-                'sale_price' => 1450,
-                'unit' => 'Jar',
-                'variant_type' => 'Weight',
-                'options' => ['500g', '1kg'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1615485290176-0f8cf9c3bf79?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
             [
@@ -501,15 +535,14 @@ class DatabaseSeeder extends Seeder
                 'options' => ['250g', '500g'],
                 'is_featured' => false,
                 'is_new' => true,
-                'is_best_seller' => true,
+                'is_best_seller' => false,
                 'images' => [
-                    'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1588258254650-410a7620db4f?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
 
-            // ================= 4. BIOFRESH ORGANIC =================
+            // ================= 5. PREMIUM DATES & NUTS =================
             [
                 'name' => 'Saudi Madinah Ajwa Dates (সৌদি আজওয়া খেজুর)',
                 'slug' => 'saudi-madinah-ajwa-dates',
@@ -517,26 +550,7 @@ class DatabaseSeeder extends Seeder
                 'category' => 'premium-dates',
                 'regular_price' => 1400,
                 'sale_price' => 1200,
-                'unit' => 'Pack',
-                'variant_type' => 'Weight',
-                'options' => ['500g', '1kg'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1596560548464-f010549b84d7?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'Premium Mixed Dry Fruits & Roasted Nuts (মিক্সড ড্রাই ফ্রুটস)',
-                'slug' => 'premium-mixed-dry-fruits-nuts',
-                'brand' => 'BioFresh Organic',
-                'category' => 'premium-dates',
-                'regular_price' => 1150,
-                'sale_price' => 980,
-                'unit' => 'Jar',
+                'unit' => 'Box',
                 'variant_type' => 'Weight',
                 'options' => ['500g', '1kg'],
                 'is_featured' => true,
@@ -544,12 +558,29 @@ class DatabaseSeeder extends Seeder
                 'is_best_seller' => true,
                 'images' => [
                     'https://images.unsplash.com/photo-1596560548464-f010549b84d7?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1574856344991-aaa31b6f4ce3?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Dry-Roasted Salted Almonds (ভাজা কাঠবাদাম)',
+                'slug' => 'dry-roasted-salted-almonds',
+                'brand' => 'BioFresh Organic',
+                'category' => 'premium-dates',
+                'regular_price' => 950,
+                'sale_price' => 840,
+                'unit' => 'Pack',
+                'variant_type' => 'Weight',
+                'options' => ['250g', '500g'],
+                'is_featured' => true,
+                'is_new' => true,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
 
-            // ================= 5. NATURALS BD =================
+            // ================= 6. HERBAL & SUPERFOODS =================
             [
                 'name' => 'Cold-Pressed Black Seed Oil - Kalonji (খাঁটি কালোজিরা তেল)',
                 'slug' => 'cold-pressed-black-seed-oil',
@@ -561,90 +592,11 @@ class DatabaseSeeder extends Seeder
                 'variant_type' => 'Volume',
                 'options' => ['100ml', '250ml'],
                 'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'Raw Organic Chia Seeds (খাঁটি অর্গানিক চিয়া সিড)',
-                'slug' => 'raw-organic-chia-seeds',
-                'brand' => 'Naturals BD',
-                'category' => 'organic-grains',
-                'regular_price' => 550,
-                'sale_price' => 480,
-                'unit' => 'Pack',
-                'variant_type' => 'Weight',
-                'options' => ['250g', '500g'],
-                'is_featured' => true,
                 'is_new' => false,
                 'is_best_seller' => true,
                 'images' => [
-                    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'Organic Moringa Leaf Powder - Sajna Pata (সজনে পাতা গুঁড়া)',
-                'slug' => 'organic-moringa-leaf-powder',
-                'brand' => 'Naturals BD',
-                'category' => 'herbal-tea',
-                'regular_price' => 400,
-                'sale_price' => 350,
-                'unit' => 'Jar',
-                'variant_type' => 'Weight',
-                'options' => ['200g', '500g'],
-                'is_featured' => false,
-                'is_new' => true,
-                'is_best_seller' => false,
-                'images' => [
-                    'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-
-            // ================= 6. GREENVALLEY PRODUCE =================
-            [
-                'name' => 'Dinajpur Kataribogh Aromatic Rice (সুগন্ধি কাটারীভোগ চাল)',
-                'slug' => 'dinajpur-kataribogh-aromatic-rice',
-                'brand' => 'GreenValley Produce',
-                'category' => 'organic-grains',
-                'regular_price' => 720,
-                'sale_price' => 650,
-                'unit' => 'Pack',
-                'variant_type' => 'Weight',
-                'options' => ['5kg', '10kg'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'Farm-Fresh Organic Green Vegetables Basket (অর্গানিক সবজি বাস্কেট)',
-                'slug' => 'farm-fresh-organic-green-vegetables-basket',
-                'brand' => 'GreenValley Produce',
-                'category' => 'organic-grains',
-                'regular_price' => 600,
-                'sale_price' => 490,
-                'unit' => 'Pack',
-                'variant_type' => 'Weight',
-                'options' => ['3kg Combo Basket', '5kg Family Basket'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
         ];
@@ -665,13 +617,13 @@ class DatabaseSeeder extends Seeder
                     'category_id' => $category->id,
                     'brand_id'    => $brandObj?->id,
                     'name' => $pData['name'],
-                    'sku' => 'UNI-' . strtoupper(Str::substr(md5($pData['slug']), 0, 6)),
+                    'sku' => 'SHODESHI-' . strtoupper(Str::substr(md5($pData['slug']), 0, 6)),
                     'brand' => $pData['brand'],
-                    'short_description' => "Authentic 100% genuine {$pData['name']} by {$pData['brand']}. Built with premium craftsmanship and original quality guarantee.",
-                    'description' => "Elevate your wardrobe with {$pData['name']} from {$pData['brand']}. Engineered with high-precision craftsmanship and durable, luxury materials. Backed by our 100% authenticity guarantee and express 1-3 days delivery across Bangladesh.",
+                    'short_description' => "100% chemical-free, lab-tested authentic {$pData['name']} by {$pData['brand']}. Guaranteed pure and organic.",
+                    'description' => "Enjoy the highest quality 100% natural {$pData['name']} sourced directly by {$pData['brand']}. Free from preservatives, artificial colors, or chemicals. Lab-tested for maximum purity and freshness, delivered safely across Bangladesh.",
                     'regular_price' => $pData['regular_price'],
                     'sale_price' => $pData['sale_price'],
-                    'stock_quantity' => random_int(20, 65),
+                    'stock_quantity' => random_int(25, 80),
                     'unit' => $pData['unit'],
                     'is_published' => true,
                     'is_featured' => $pData['is_featured'],
@@ -681,22 +633,23 @@ class DatabaseSeeder extends Seeder
                     'flash_sale_position' => 0,
                     'flash_sale_progress' => 50,
                     'rating' => $ratings[array_rand($ratings)],
-                    'reviews_count' => random_int(12, 48),
-                    'meta_title' => "Buy {$pData['name']} Online — Unilife Bangladesh",
-                    'meta_description' => "Order 100% authentic {$pData['name']} by {$pData['brand']} at best price in Bangladesh with fast home delivery and warranty.",
+                    'reviews_count' => random_int(14, 52),
+                    'meta_title' => "Buy {$pData['name']} Online in Bangladesh — ShodeshiFood",
+                    'meta_description' => "Order 100% pure & organic {$pData['name']} by {$pData['brand']} at best price in Bangladesh with fast home delivery.",
                 ]
             );
 
-            // Add 3 product images (all 1:1 square ratio)
+            // Add product images (position 0 is ALWAYS the dedicated white background matching product image)
             ProductImage::where('product_id', $product->id)->delete();
-            $colorList = ($pData['variant_type'] === 'Color') ? $pData['options'] : ['Black', 'Brown', 'Navy'];
-            foreach ($pData['images'] as $p => $imgUrl) {
-                $imgColor = $colorList[$p % count($colorList)] ?? null;
+            $dedicatedMainImage = "/uploads/products/{$product->slug}.png";
+            $productImages = array_merge([$dedicatedMainImage], array_diff($pData['images'], [$dedicatedMainImage]));
+
+            foreach ($productImages as $p => $imgUrl) {
                 ProductImage::create([
                     'product_id' => $product->id,
                     'path'       => $imgUrl,
-                    'alt'        => $imgColor ? "{$pData['name']} - {$imgColor}" : "{$pData['name']} View " . ($p + 1),
-                    'color'      => $imgColor,
+                    'alt'        => "{$pData['name']} - View " . ($p + 1),
+                    'color'      => null,
                     'is_primary' => $p === 0,
                     'position'   => $p,
                 ]);
@@ -710,7 +663,7 @@ class DatabaseSeeder extends Seeder
                     'type' => $pData['variant_type'],
                     'value' => $optionVal,
                     'price_delta' => 0,
-                    'stock' => random_int(5, 20),
+                    'stock' => random_int(10, 30),
                     'position' => $vPos,
                 ]);
             }
@@ -720,16 +673,16 @@ class DatabaseSeeder extends Seeder
             $catPrefix = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $category->name), 0, 3)) ?: 'PRD';
             $productSkuBase = ! empty($product->sku) ? $product->sku : $catPrefix;
 
-            $samplePackaging = ['Glass Jar', 'Plastic Bottle'];
+            $samplePackaging = ['Glass Jar', 'Food Grade Pack'];
             $baseReg = (float) $product->regular_price;
             $baseSale = (float) $product->sale_price;
 
-            if ($pData['variant_type'] === 'Weight') {
+            if ($pData['variant_type'] === 'Weight' || $pData['variant_type'] === 'Volume') {
                 foreach ($pData['options'] as $sIdx => $sOpt) {
                     foreach ($samplePackaging as $pIdx => $pOpt) {
                         $cleanSize = preg_replace('/[^A-Za-z0-9]/', '', $sOpt);
                         $cleanPack = preg_replace('/[^A-Za-z0-9]/', '', explode(' ', $pOpt)[0]);
-                        $priceAdj = ($sIdx * 150) + ($pIdx * 50);
+                        $priceAdj = ($sIdx * 150) + ($pIdx * 30);
 
                         $skuReg = $baseReg > 0 ? ($baseReg + $priceAdj) : null;
                         $skuSale = $baseSale > 0 ? ($baseSale + $priceAdj) : null;
@@ -738,13 +691,13 @@ class DatabaseSeeder extends Seeder
                             'product_id'       => $product->id,
                             'sku'              => "{$productSkuBase}-{$cleanSize}{$cleanPack}",
                             'attributes'       => [
-                                'Weight'    => $sOpt,
-                                'Packaging' => $pOpt,
+                                $pData['variant_type'] => $sOpt,
+                                'Packaging'            => $pOpt,
                             ],
                             'price_adjustment' => $priceAdj,
                             'regular_price'    => $skuReg,
                             'sale_price'       => $skuSale,
-                            'stock_quantity'   => random_int(8, 25),
+                            'stock_quantity'   => random_int(10, 35),
                             'is_active'        => true,
                         ]);
                     }
@@ -752,7 +705,7 @@ class DatabaseSeeder extends Seeder
             } else {
                 foreach ($pData['options'] as $idx => $opt) {
                     $cleanVal = preg_replace('/[^A-Za-z0-9]/', '', $opt);
-                    $priceAdj = ($idx % 2 === 1) ? 120 : 0;
+                    $priceAdj = ($idx % 2 === 1) ? 100 : 0;
 
                     $skuReg = $baseReg > 0 ? ($baseReg + $priceAdj) : null;
                     $skuSale = $baseSale > 0 ? ($baseSale + $priceAdj) : null;
@@ -779,7 +732,7 @@ class DatabaseSeeder extends Seeder
             $fp->update([
                 'is_flash_sale' => true,
                 'flash_sale_position' => $pos,
-                'flash_sale_progress' => random_int(55, 88),
+                'flash_sale_progress' => random_int(60, 92),
             ]);
         }
     }
@@ -826,7 +779,7 @@ class DatabaseSeeder extends Seeder
         }
 
         $customers = [
-            ['Nusrat Jahan', '01700-111111', 'customer@solebd.com', 'House 24, Road 7, Dhanmondi', 'Dhaka', 'inside_dhaka'],
+            ['Nusrat Jahan', '01700-111111', 'customer@shodeshifood.com', 'House 24, Road 7, Dhanmondi', 'Dhaka', 'inside_dhaka'],
             ['Rafi Ahmed', '01822-222222', 'rafi@example.com', 'Flat 5A, GEC Circle', 'Chattogram', 'outside_dhaka'],
             ['Mim Islam', '01933-333333', 'mim@example.com', 'House 8, Uttara Sector 11', 'Dhaka', 'inside_dhaka'],
             ['Sakib Hasan', '01644-444444', 'sakib@example.com', 'Zindabazar Main Road', 'Sylhet', 'outside_dhaka'],
@@ -841,13 +794,13 @@ class DatabaseSeeder extends Seeder
 
         $insideFee = (float) setting('shipping_inside_dhaka', 70);
         $outsideFee = (float) setting('shipping_outside_dhaka', 130);
-        $customerUser = User::where('email', 'customer@solebd.com')->first();
+        $customerUser = User::where('email', 'customer@shodeshifood.com')->first();
 
         foreach ($scenarios as $index => [$status, $method, $paymentStatus, $fraudScore, $fraudFlags]) {
             [$name, $phone, $email, $address, $city, $zone] = $customers[$index];
             $order = new Order([
-                'user_id' => $email === 'customer@solebd.com' ? $customerUser?->id : null,
-                'order_number' => 'UNI-' . now()->subDays($index)->format('ymd') . '-' . strtoupper(Str::random(4)),
+                'user_id' => $email === 'customer@shodeshifood.com' ? $customerUser?->id : null,
+                'order_number' => 'SHODESHI-' . now()->subDays($index)->format('ymd') . '-' . strtoupper(Str::random(4)),
                 'customer_name' => $name,
                 'customer_phone' => $phone,
                 'customer_email' => $email,
@@ -926,10 +879,10 @@ class DatabaseSeeder extends Seeder
         $logs = [
             [
                 'user_id'     => $superAdmin?->id,
-                'staff_name'  => $superAdmin?->name ?? 'Unilife Super Admin',
+                'staff_name'  => $superAdmin?->name ?? 'ShodeshiFood Super Admin',
                 'staff_role'  => 'admin',
                 'action'      => 'System Initialization',
-                'description' => 'Configured site settings, 9 core brand profiles, 6 categories, and payment gateways.',
+                'description' => 'Configured site settings, 6 organic brand profiles, 6 categories, and payment gateways.',
                 'ip_address'  => '127.0.0.1',
                 'created_at'  => now()->subDays(3),
             ],
@@ -938,7 +891,7 @@ class DatabaseSeeder extends Seeder
                 'staff_name'  => $storeManager?->name ?? 'Tanvir Alam',
                 'staff_role'  => 'store_manager',
                 'action'      => 'Created Product Catalog',
-                'description' => "Seeded 72 authentic products across 9 brands (Nike, Adidas, Apex, Casio, Seiko, Picard, Fossil, Ray-Ban, Woodland) with square 1:1 media.",
+                'description' => "Seeded 36 authentic organic products across 6 brands (PureHarvest, Khaas Food, BioFresh, Sundarban Honey Co., Naturals BD, GreenValley) with clean white background 1:1 media.",
                 'ip_address'  => '103.45.12.89',
                 'created_at'  => now()->subDays(2),
             ],
@@ -947,7 +900,7 @@ class DatabaseSeeder extends Seeder
                 'staff_name'  => $orderManager?->name ?? 'Rafi Ahmed',
                 'staff_role'  => 'order_manager',
                 'action'      => 'Verified Order Payment',
-                'description' => 'Verified bKash transaction for Order #UNI-260731-NYJD.',
+                'description' => 'Verified bKash transaction for Order #SHODESHI-260817-NYJD.',
                 'ip_address'  => '103.112.44.12',
                 'created_at'  => now()->subDays(1),
             ],
@@ -968,7 +921,7 @@ class DatabaseSeeder extends Seeder
             [
                 'customer_name'      => $customer->name,
                 'customer_phone'     => $customer->phone ?? '01700-111111',
-                'customer_email'     => $customer->email ?? 'customer@solebd.com',
+                'customer_email'     => $customer->email ?? 'customer@shodeshifood.com',
                 'status'             => 'open',
                 'unread_admin_count' => 1,
                 'last_message_at'    => now(),
@@ -987,7 +940,7 @@ class DatabaseSeeder extends Seeder
         );
 
         \App\Models\ConversationMessage::updateOrCreate(
-            ['conversation_id' => $conv->id, 'message' => 'Welcome to SoleBd Live Support! We are happy to help.'],
+            ['conversation_id' => $conv->id, 'message' => 'Welcome to ShodeshiFood Live Support! We are happy to help.'],
             [
                 'sender_type' => 'admin',
                 'sender_id'   => 1,
