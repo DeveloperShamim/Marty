@@ -1,57 +1,298 @@
 @extends('layouts.admin')
+
 @php $editing = $product->exists; @endphp
-@section('title', $editing ? 'Edit Product' : 'New Product')
+
+@section('title', $editing ? 'Edit: ' . $product->name : 'Create New Organic Product — ShodeshiFood Admin')
 
 @section('content')
 @php
   $sizeValues = $editing ? $product->variants->where('type', 'Size')->pluck('value')->implode(', ') : '';
   $colorValues = $editing ? $product->variants->where('type', 'Color')->pluck('value')->implode(', ') : '';
 @endphp
-<form method="POST" action="{{ $editing ? route('admin.products.update', $product) : route('admin.products.store') }}" enctype="multipart/form-data">
+
+<form method="POST" action="{{ $editing ? route('admin.products.update', $product) : route('admin.products.store') }}" enctype="multipart/form-data" class="space-y-6">
   @csrf
   @if($editing) @method('PUT') @endif
 
-  <!-- Top Action Header -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
-    <div>
-      <a href="{{ route('admin.products.index') }}" class="text-xs sm:text-sm text-gray-500 hover:text-primary">&larr; Back to products</a>
-      <h2 class="text-lg sm:text-xl font-bold mt-1 text-slate-900">{{ $editing ? 'Edit Product' : 'New Product' }}</h2>
+  {{-- Sticky Action Bar Header --}}
+  <div class="sticky top-0 z-30 bg-white/90 backdrop-blur-md -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3.5 border-b border-stone-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="flex items-center gap-3 min-w-0">
+      <a href="{{ route('admin.products.index') }}" class="h-9 w-9 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 flex items-center justify-center text-stone-500 hover:text-stone-900 transition-colors shrink-0" title="Back to Products List">
+        ‹
+      </a>
+      <div class="min-w-0">
+        <div class="flex items-center gap-2">
+          <h1 class="text-lg sm:text-xl font-extrabold text-stone-900 truncate tracking-tight">
+            {{ $editing ? $product->name : 'Create New Product' }}
+          </h1>
+          @if($editing)
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider {{ $product->is_published ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
+              <span class="w-1.5 h-1.5 rounded-full {{ $product->is_published ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
+              <span>{{ $product->is_published ? 'Live on Store' : 'Draft' }}</span>
+            </span>
+          @else
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-50 text-brand-700 border border-brand-200">
+              New Draft
+            </span>
+          @endif
+        </div>
+        <p class="text-xs text-stone-500 truncate mt-0.5">
+          {{ $editing ? 'Manage details, prices, weights & images for this organic food item' : 'Fill out product details to list a new chemical-free organic food item' }}
+        </p>
+      </div>
     </div>
-    <div class="flex items-center gap-2 self-start sm:self-auto">
-      <a href="{{ route('admin.products.index') }}" class="px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl border border-gray-300 bg-white">Cancel</a>
-      <button class="btn-primary py-2 px-5 text-xs sm:text-sm font-bold">Save Product</button>
+
+    <div class="flex items-center gap-2.5 self-end sm:self-auto shrink-0">
+      @if($editing && $product->is_published)
+        <a href="{{ route('products.show', $product->slug) }}" target="_blank" class="px-3 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5">
+          <span>👁️ View on Store</span>
+        </a>
+      @endif
+
+      <a href="{{ route('admin.products.index') }}" class="px-4 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 text-stone-600 font-bold text-xs transition-colors">
+        Cancel
+      </a>
+
+      <button type="submit" class="px-6 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-2">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        <span>{{ $editing ? 'Update Product' : 'Publish Product' }}</span>
+      </button>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-    <div class="lg:col-span-2 space-y-4 sm:space-y-6">
-      <!-- Basic Information -->
-      <div class="card p-4 sm:p-5 space-y-4">
-        <h3 class="font-bold text-slate-900 text-sm sm:text-base">Basic information</h3>
-        <div><label class="lbl">Name</label><input name="name" class="inp" value="{{ old('name', $product->name) }}" required /></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-          <div><label class="lbl">Slug (blank = auto)</label><input name="slug" class="inp" value="{{ old('slug', $product->slug) }}" /></div>
-          <div><label class="lbl">SKU</label><input name="sku" class="inp" value="{{ old('sku', $product->sku) }}" /></div>
+  {{-- Main Two-Column Grid --}}
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    {{-- Left Column (Main Form Content) --}}
+    <div class="lg:col-span-2 space-y-6">
+
+      {{-- Card 1: Basic Product Information --}}
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 shadow-2xs space-y-5">
+        <div class="flex items-center justify-between border-b border-stone-100 pb-3">
+          <h2 class="text-base font-extrabold text-stone-900 flex items-center gap-2">
+            <span>📝 Basic Information</span>
+          </h2>
+          <span class="text-[11px] font-bold text-stone-400">Step 1 of 5</span>
         </div>
-        <div>
-          <div class="flex items-center justify-between">
-            <label class="lbl">Brand</label>
-            <a href="{{ route('admin.brands.create') }}" target="_blank" class="text-xs text-indigo-600 hover:underline">+ Manage Brands</a>
+
+        <div class="space-y-4">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-bold text-stone-800">Product Name <span class="text-rose-500">*</span></label>
+              <span id="nameCharCount" class="text-[10px] font-mono text-stone-400">0 chars</span>
+            </div>
+            <input type="text" id="productNameInput" name="name" class="w-full px-3.5 py-2.5 text-sm font-bold text-stone-900 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500" value="{{ old('name', $product->name) }}" placeholder="e.g. Sundarban Raw Wildflower Honey (সুন্দরবন খাঁটি মধু)" required />
           </div>
-          <select name="brand_id" class="inp">
-            <option value="">-- Select Brand --</option>
-            @foreach($brands as $b)
-              <option value="{{ $b->id }}" @selected((int) old('brand_id', $product->brand_id) === (int) $b->id)>
-                {{ $b->name }}
-              </option>
-            @endforeach
-          </select>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-xs font-bold text-stone-800">URL Slug</label>
+                <button type="button" id="autoSlugBtn" class="text-[10px] font-bold text-brand-600 hover:underline">Auto Generate</button>
+              </div>
+              <input type="text" id="productSlugInput" name="slug" class="w-full px-3.5 py-2 text-xs font-mono text-stone-700 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500" value="{{ old('slug', $product->slug) }}" placeholder="e.g. sundarban-raw-wildflower-honey" />
+            </div>
+
+            <div>
+              <label class="text-xs font-bold text-stone-800 block mb-1">Base Product SKU Code</label>
+              <input type="text" name="sku" class="w-full px-3.5 py-2 text-xs font-mono font-bold text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500" value="{{ old('sku', $product->sku) }}" placeholder="e.g. SHODESHI-HONEY-01" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-xs font-bold text-stone-800">Brand / Producer</label>
+                <a href="{{ route('admin.brands.create') }}" target="_blank" class="text-[10px] font-bold text-brand-600 hover:underline">+ New Brand</a>
+              </div>
+              <select name="brand_id" class="w-full px-3.5 py-2.5 text-xs font-bold text-stone-800 rounded-xl border border-stone-200 bg-white focus:outline-none focus:border-brand-500">
+                <option value="">-- No Brand / Direct ShodeshiFood --</option>
+                @foreach($brands as $b)
+                  <option value="{{ $b->id }}" @selected((int) old('brand_id', $product->brand_id) === (int) $b->id)>
+                    {{ $b->name }}
+                  </option>
+                @endforeach
+              </select>
+            </div>
+
+            <div>
+              <label class="text-xs font-bold text-stone-800 block mb-1">Product Category <span class="text-rose-500">*</span></label>
+              <select name="category_id" class="w-full px-3.5 py-2.5 text-xs font-bold text-stone-800 rounded-xl border border-stone-200 bg-white focus:outline-none focus:border-brand-500" required>
+                <option value="">-- Select Category --</option>
+                @foreach($categories as $cat)
+                  <option value="{{ $cat->id }}" @selected((int) old('category_id', $product->category_id) === (int) $cat->id)>
+                    {{ $cat->icon }} {{ $cat->name }}
+                  </option>
+                @endforeach
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-stone-800 block mb-1">Short Tagline Summary <span class="text-stone-400 font-normal">(Shown on catalog cards)</span></label>
+            <textarea name="short_description" rows="2" class="w-full px-3.5 py-2 text-xs font-medium text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500" placeholder="e.g. 100% Unfiltered Sundarban forest honey collected directly from honeycomb. No added sugar or chemicals.">{{ old('short_description', $product->short_description) }}</textarea>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-stone-800 block mb-1">Full Detailed Description & Health Benefits</label>
+            <textarea name="description" rows="5" class="w-full px-3.5 py-2 text-xs font-medium text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500" placeholder="Provide full details, nutritional benefits, harvest origin, and usage instructions...">{{ old('description', $product->description) }}</textarea>
+          </div>
         </div>
-        <div><label class="lbl">Short description</label><textarea name="short_description" class="inp" rows="2">{{ old('short_description', $product->short_description) }}</textarea></div>
-        <div><label class="lbl">Full description</label><textarea name="description" class="inp" rows="5">{{ old('description', $product->description) }}</textarea></div>
       </div>
 
-      <!-- Specifications -->
+      {{-- Card 2: Pricing & General Inventory --}}
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 shadow-2xs space-y-5">
+        <div class="flex items-center justify-between border-b border-stone-100 pb-3">
+          <h2 class="text-base font-extrabold text-stone-900 flex items-center gap-2">
+            <span>💰 Pricing &amp; Inventory</span>
+          </h2>
+          <span id="autoStockNotice" class="hidden px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300"></span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <label class="text-xs font-bold text-stone-800 block mb-1">Regular Price (৳) <span class="text-rose-500">*</span></label>
+            <input type="number" step="0.01" id="regPriceInput" name="regular_price" class="w-full px-3.5 py-2.5 text-sm font-black text-stone-900 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500" value="{{ old('regular_price', $product->regular_price) }}" placeholder="e.g. 850" required />
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-emerald-800 block mb-1">Sale Discount Price (৳)</label>
+            <input type="number" step="0.01" id="salePriceInput" name="sale_price" class="w-full px-3.5 py-2.5 text-sm font-black text-emerald-700 bg-emerald-50/40 rounded-xl border border-emerald-200 focus:outline-none focus:border-emerald-500" value="{{ old('sale_price', $product->sale_price) }}" placeholder="e.g. 750 (optional)" />
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-stone-800 block mb-1">Total Stock (Units) <span class="text-rose-500">*</span></label>
+            <input type="number" name="stock_quantity" class="w-full px-3.5 py-2.5 text-sm font-black text-stone-900 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500" value="{{ old('stock_quantity', $product->stock_quantity ?? 0) }}" required />
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-stone-800 block mb-1">Unit / Pack Size</label>
+            <input type="text" name="unit" class="w-full px-3.5 py-2.5 text-xs font-bold text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500" value="{{ old('unit', $product->unit) }}" placeholder="e.g. 500g Jar, 1 Kg" />
+          </div>
+        </div>
+
+        <div id="discountBadgePreview" class="hidden p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between text-xs font-bold text-amber-900">
+          <span>Discount Applied: <span id="discountPercentText" class="text-brand-700 font-extrabold"></span></span>
+          <span class="text-[10px] font-mono text-amber-700 uppercase tracking-wider">Storefront Badge Live</span>
+        </div>
+      </div>
+
+      {{-- Card 3: Variants & Weight Pack Options --}}
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-emerald-200/80 shadow-2xs space-y-5">
+        <input type="hidden" name="sku_matrix_submitted" value="1" />
+        <div class="flex items-center justify-between border-b border-emerald-100 pb-3">
+          <div>
+            <h2 class="text-base font-extrabold text-stone-900 flex items-center gap-2">
+              <span>🌿 Weight, Size &amp; Pack Options (Variants)</span>
+            </h2>
+            <p class="text-xs text-stone-500 mt-0.5">Generate option variations (e.g. 250g, 500g, 1kg) with custom price &amp; stock per size.</p>
+          </div>
+          <span class="px-3 py-1 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">Variant Matrix</span>
+        </div>
+
+        {{-- Preset Options Quick Bar --}}
+        <div class="space-y-3 bg-emerald-50/40 p-4 rounded-xl border border-emerald-100">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-extrabold text-emerald-900 uppercase tracking-wider">⚡ Quick Weight Presets</label>
+            <a href="{{ route('admin.variations.index') }}" target="_blank" class="text-[11px] font-bold text-emerald-700 hover:underline">Manage All Attributes →</a>
+          </div>
+
+          <div class="flex flex-wrap gap-1.5">
+            @php
+              $quickWeights = ['250g', '500g', '1 kg', '2 kg', '500 ml', '1 Liter', 'Glass Jar', 'Plastic Bottle'];
+            @endphp
+            @foreach($quickWeights as $qw)
+              <button type="button" class="preset-pill-btn px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-100 text-emerald-900 font-bold border border-emerald-200 shadow-2xs transition cursor-pointer text-xs" data-target="sizesInput" data-value="{{ $qw }}">
+                + {{ $qw }}
+              </button>
+            @endforeach
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <div>
+              <label class="text-xs font-bold text-stone-800 block mb-1">Primary Weight / Size Options <span class="text-stone-400 font-normal">(Comma-separated)</span></label>
+              <input id="sizesInput" name="sizes" class="w-full px-3.5 py-2 text-xs font-bold text-stone-900 rounded-xl border border-stone-200 bg-white" value="{{ old('sizes', $sizeValues) }}" placeholder="e.g. 250g, 500g, 1kg" />
+            </div>
+            <div>
+              <label class="text-xs font-bold text-stone-800 block mb-1">Packaging / Container Variant <span class="text-stone-400 font-normal">(Optional)</span></label>
+              <input id="colorsInput" name="colors" class="w-full px-3.5 py-2 text-xs font-bold text-stone-900 rounded-xl border border-stone-200 bg-white" value="{{ old('colors', $colorValues) }}" placeholder="e.g. Glass Jar, Craft Pouch" />
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-1">
+            <button type="button" id="generateMatrixBtn" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
+              <span>⚡ Generate Combination Matrix</span>
+            </button>
+          </div>
+        </div>
+
+        @php
+          $skus = $editing ? $product->skus : collect();
+        @endphp
+
+        {{-- Desktop Combination Table --}}
+        <div class="hidden sm:block overflow-x-auto">
+          <table class="w-full text-left text-xs border border-stone-200 rounded-xl overflow-hidden">
+            <thead class="bg-stone-100 text-stone-700 font-extrabold border-b border-stone-200">
+              <tr>
+                <th class="py-3 px-3.5">Option / Weight</th>
+                <th class="py-3 px-3.5">SKU Code</th>
+                <th class="py-3 px-3.5 w-36 text-center bg-stone-200/60">Regular Price (৳)</th>
+                <th class="py-3 px-3.5 w-36 text-center bg-emerald-100/60 text-emerald-900">Sale Price (৳)</th>
+                <th class="py-3 px-3.5 w-28 text-center">Stock Qty</th>
+                <th class="py-3 px-3.5 w-16 text-center">Active</th>
+                <th class="py-3 px-3.5 w-10"></th>
+              </tr>
+            </thead>
+            <tbody id="skuMatrixBody" class="divide-y divide-stone-100 bg-white">
+              @forelse($skus as $index => $sku)
+                @php
+                  $isCustomReg = $sku->regular_price !== null && abs((float) $sku->regular_price - (float) $product->regular_price) > 0.01;
+                  $isCustomSale = $sku->sale_price !== null && abs((float) $sku->sale_price - (float) ($product->sale_price ?? $product->regular_price)) > 0.01;
+                @endphp
+                <tr class="sku-row hover:bg-stone-50/80">
+                  <td class="py-3 px-3.5">
+                    <input type="hidden" name="sku_matrix[{{ $index }}][id]" value="{{ $sku->id }}" />
+                    <div class="flex items-center gap-1 flex-wrap">
+                      @foreach($sku->getAttributesData() as $k => $v)
+                        <input type="hidden" name="sku_matrix[{{ $index }}][attributes][{{ $k }}]" value="{{ $v }}" />
+                        <span class="bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded-md text-[11px] font-extrabold border border-emerald-200/80">{{ $k }}: {{ $v }}</span>
+                      @endforeach
+                    </div>
+                  </td>
+                  <td class="py-3 px-3.5">
+                    <input name="sku_matrix[{{ $index }}][sku]" value="{{ $sku->sku }}" placeholder="SKU" class="w-full px-2.5 py-1 text-xs font-mono rounded-lg border border-stone-200" />
+                  </td>
+                  <td class="py-3 px-3.5">
+                    <input name="sku_matrix[{{ $index }}][regular_price]" type="number" step="0.01" value="{{ $isCustomReg ? $sku->regular_price : '' }}" class="w-full px-2.5 py-1 text-xs text-center font-bold rounded-lg border border-stone-200 sku-regular-price-input" placeholder="Auto Base" />
+                  </td>
+                  <td class="py-3 px-3.5">
+                    <input name="sku_matrix[{{ $index }}][sale_price]" type="number" step="0.01" value="{{ $isCustomSale ? $sku->sale_price : '' }}" class="w-full px-2.5 py-1 text-xs text-center font-black text-emerald-700 bg-emerald-50/40 rounded-lg border border-emerald-200 sku-sale-price-input" placeholder="Auto Base" />
+                  </td>
+                  <td class="py-3 px-3.5">
+                    <input name="sku_matrix[{{ $index }}][stock]" type="number" min="0" value="{{ $sku->stock_quantity }}" class="w-full px-2.5 py-1 text-xs text-center font-bold rounded-lg border border-stone-200 sku-stock-input" required />
+                  </td>
+                  <td class="py-3 px-3.5 text-center">
+                    <input type="checkbox" name="sku_matrix[{{ $index }}][is_active]" value="1" @checked($sku->is_active) class="accent-emerald-600 h-4 w-4 cursor-pointer sku-active-check" />
+                  </td>
+                  <td class="py-3 px-3.5 text-center">
+                    <button type="button" onclick="this.closest('tr').remove(); updateMatrixCalculations();" class="text-rose-400 hover:text-rose-600 font-bold text-base cursor-pointer">×</button>
+                  </td>
+                </tr>
+              @empty
+                <tr id="emptyMatrixRow">
+                  <td colspan="7" class="py-6 text-center text-stone-400 italic bg-stone-50/50">
+                    🌿 No weight or size options generated yet.<br/>
+                    Enter weights above (e.g. <strong class="text-stone-800">250g, 500g, 1kg</strong>) and click <strong class="text-emerald-700">"⚡ Generate Combination Matrix"</strong>.
+                  </td>
+                </tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {{-- Card 4: Product Specifications Builder --}}
       @php
         $oldLabels = old('spec_labels');
         $oldValues = old('spec_values');
@@ -61,300 +302,152 @@
             $specRows[] = ['label' => $label, 'value' => $oldValues[$i] ?? ''];
           }
         } else {
-          $specRows = $product->specificationRows();
+          $specRows = $editing ? $product->specificationRows() : [];
         }
         if (empty($specRows)) {
-          $specRows = [['label' => '', 'value' => '']];
+          $specRows = [
+            ['label' => 'Purity Standard', 'value' => '100% Organic & Chemical-Free'],
+            ['label' => 'Source / Origin', 'value' => 'Direct Organic Farm Collect'],
+            ['label' => 'Shelf Life', 'value' => '12 Months'],
+          ];
         }
       @endphp
-      <div class="card p-4 sm:p-5 space-y-4">
-        <div class="flex items-center justify-between gap-3">
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 shadow-2xs space-y-4">
+        <div class="flex items-center justify-between border-b border-stone-100 pb-3">
           <div>
-            <h3 class="font-bold text-slate-900 text-sm sm:text-base">Specifications</h3>
-            <p class="text-xs text-stone-400 mt-0.5">Shown as bullets on product cards and in the product page table.</p>
+            <h2 class="text-base font-extrabold text-stone-900">📋 Organic Specifications &amp; Highlights</h2>
+            <p class="text-xs text-stone-500 mt-0.5">Key selling features shown as bullet points and specification table on storefront.</p>
           </div>
-          <button type="button" id="addSpecRow" class="px-3 py-1.5 text-xs font-bold rounded-xl border border-gray-300 bg-white hover:bg-gray-50">+ Add row</button>
+          <button type="button" id="addSpecRow" class="px-3.5 py-1.5 text-xs font-bold rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-800 shadow-2xs">+ Add Feature</button>
         </div>
+
         <div id="specRows" class="space-y-3">
           @foreach($specRows as $row)
-            <div class="spec-row grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-start p-2.5 sm:p-0 bg-slate-50 sm:bg-transparent rounded-xl border sm:border-0 border-slate-200">
+            <div class="spec-row grid grid-cols-1 sm:grid-cols-[1fr_1.5fr_auto] gap-3 items-center p-3 sm:p-2 bg-stone-50 rounded-xl border border-stone-200/80">
               <div>
-                <label class="lbl">Label</label>
-                <input name="spec_labels[]" class="inp" value="{{ $row['label'] ?? '' }}" placeholder="e.g. Model" />
+                <label class="text-[10px] font-bold text-stone-500 block uppercase">Feature Name</label>
+                <input name="spec_labels[]" class="w-full px-3 py-1.5 text-xs font-bold text-stone-800 rounded-lg border border-stone-200 bg-white" value="{{ $row['label'] ?? '' }}" placeholder="e.g. Origin" />
               </div>
               <div>
-                <label class="lbl">Value</label>
-                <input name="spec_values[]" class="inp" value="{{ $row['value'] ?? '' }}" placeholder="e.g. A0023" />
+                <label class="text-[10px] font-bold text-stone-500 block uppercase">Value / Detail</label>
+                <input name="spec_values[]" class="w-full px-3 py-1.5 text-xs font-bold text-stone-800 rounded-lg border border-stone-200 bg-white" value="{{ $row['value'] ?? '' }}" placeholder="e.g. Sundarbans Wild Forest" />
               </div>
-              <button type="button" class="remove-spec-row sm:mt-6 h-9 w-full sm:w-9 rounded-lg border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-200 flex items-center justify-center font-bold text-base" title="Remove" aria-label="Remove row">×</button>
+              <button type="button" class="remove-spec-row sm:mt-4 h-8 w-8 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center font-bold text-base transition-colors" title="Remove Feature">×</button>
             </div>
           @endforeach
         </div>
       </div>
 
-      <!-- Pricing -->
-      <div class="card p-4 sm:p-5 space-y-4">
-        <div class="flex items-center justify-between gap-3 flex-wrap">
-          <h3 class="font-bold text-slate-900 text-sm sm:text-base">Base Starting Pricing &amp; General Stock</h3>
-          <span id="autoStockNotice" class="hidden px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300"></span>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-          <div><label class="lbl">Base Regular price (৳)</label><input name="regular_price" type="number" step="0.01" class="inp font-bold" value="{{ old('regular_price', $product->regular_price) }}" required /></div>
-          <div><label class="lbl">Base Sale price (৳)</label><input name="sale_price" type="number" step="0.01" class="inp font-bold text-emerald-700" value="{{ old('sale_price', $product->sale_price) }}" placeholder="optional" /></div>
-          <div><label class="lbl">Total stock quantity</label><input name="stock_quantity" type="number" class="inp font-bold text-slate-900" value="{{ old('stock_quantity', $product->stock_quantity ?? 0) }}" required /></div>
-          <div><label class="lbl">Unit / default size</label><input name="unit" class="inp" value="{{ old('unit', $product->unit) }}" placeholder="e.g. Pack, Jar, 500g" /></div>
-          <div><label class="lbl">Rating (from reviews)</label><input type="text" class="inp bg-gray-50 text-slate-600 font-semibold" value="{{ number_format((float) ($product->rating ?? 0), 2) }} ★ · {{ (int) ($product->reviews_count ?? 0) }} reviews" readonly /></div>
-        </div>
-      </div>
-
-      <!-- Variants & Combination Inventory -->
-      <div class="card p-4 sm:p-5 space-y-4 sm:space-y-5 border border-emerald-100/80 shadow-xs">
-        <input type="hidden" name="sku_matrix_submitted" value="1" />
-        <div class="flex items-start justify-between gap-3">
+      {{-- Card 5: Media Gallery & Drag-and-Drop Image Uploader --}}
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 shadow-2xs space-y-4">
+        <div class="flex items-center justify-between border-b border-stone-100 pb-3">
           <div>
-            <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
-              <span>🌿 Product Options, Weights &amp; Variant Matrix</span>
-            </h3>
-            <p class="text-xs text-slate-500 mt-1">Set product weights or pack options (e.g. <code class="bg-slate-100 px-1 py-0.5 rounded text-emerald-800">250g, 500g, 1kg</code>), then generate stock &amp; price per option.</p>
+            <h2 class="text-base font-extrabold text-stone-900">🖼️ Product Media Gallery</h2>
+            <p class="text-xs text-stone-500 mt-0.5">Upload high-resolution photos on white background (Ghorer Bazar visual style).</p>
           </div>
-          <span class="px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">Variants</span>
+          <span class="text-xs font-bold text-stone-400">Max 5MB per image</span>
         </div>
 
-        <div class="space-y-3.5 bg-emerald-50/40 p-3.5 sm:p-4 rounded-xl border border-emerald-100">
-          {{-- Presets Quick Bar --}}
-          @if(isset($attributeTypes) && $attributeTypes->isNotEmpty())
-            <div class="space-y-2 border-b border-emerald-100/80 pb-3">
-              <div class="flex items-center justify-between">
-                <label class="text-xs font-bold text-emerald-900 uppercase tracking-wider block">⚡ Quick Presets</label>
-                <a href="{{ route('admin.variations.index') }}" target="_blank" class="text-[11px] font-bold text-emerald-700 hover:underline">Variations →</a>
-              </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                @foreach($attributeTypes as $attType)
-                  <div class="bg-white p-2 rounded-xl border border-emerald-200/60 text-xs shadow-2xs">
-                    <span class="font-extrabold text-slate-800 block mb-1 text-[11px]">{{ $attType->name }}</span>
-                    <div class="flex flex-wrap gap-1">
-                      @foreach($attType->values as $presetVal)
-                        <button type="button" class="preset-pill-btn px-2 py-0.5 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200 transition cursor-pointer text-[10px]" data-target="{{ in_array($attType->name, ['Weight', 'Volume', 'Size', 'Flavor']) ? 'sizesInput' : 'colorsInput' }}" data-value="{{ $presetVal->value }}">
-                          + {{ $presetVal->value }}
-                        </button>
-                      @endforeach
-                    </div>
-                  </div>
-                @endforeach
-              </div>
-            </div>
-          @endif
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label class="lbl font-bold text-slate-800">Primary Options (Weight / Size) <span class="text-slate-400 font-normal text-[11px]">(Comma-separated)</span></label>
-              <input id="sizesInput" name="sizes" class="inp bg-white text-xs" value="{{ old('sizes', $sizeValues) }}" placeholder="e.g. 250g, 500g, 1kg" />
-            </div>
-            <div>
-              <label class="lbl font-bold text-slate-800">Secondary Options (Color / Packaging) <span class="text-slate-400 font-normal text-[11px]">(Optional)</span></label>
-              <input id="colorsInput" name="colors" class="inp bg-white text-xs" value="{{ old('colors', $colorValues) }}" placeholder="e.g. Glass Jar, Bottle" />
-            </div>
-          </div>
-        </div>
-
-        @php
-          $skus = $editing ? $product->skus : collect();
-          $basePriceVal = (float) ($product->sale_price ?? $product->regular_price ?? 0);
-        @endphp
-
-        <div class="pt-3 border-t border-slate-100 space-y-3">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-            <div>
-              <h4 class="font-bold text-sm text-slate-800">Stock &amp; Price Adjustment Per Option</h4>
-              <p class="text-xs text-slate-400">Set custom price delta and stock quantity for each weight option.</p>
-            </div>
-            <button type="button" id="generateMatrixBtn" class="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition cursor-pointer px-3.5 py-2 rounded-xl shadow-xs flex items-center justify-center gap-1.5 shrink-0">
-              <span>⚡ Generate Combination Matrix</span>
-            </button>
-          </div>
-
-          {{-- Desktop Matrix Table --}}
-          <div class="hidden sm:block overflow-x-auto">
-            <table class="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
-              <thead class="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                <tr>
-                  <th class="py-2.5 px-3">Option / Weight</th>
-                  <th class="py-2.5 px-3">SKU Code</th>
-                  <th class="py-2.5 px-3 w-36 text-center bg-stone-100 text-slate-800">Regular Price (৳)</th>
-                  <th class="py-2.5 px-3 w-36 text-center bg-emerald-100/60 text-emerald-900">Sale Price (৳)</th>
-                  <th class="py-2.5 px-3 w-28 text-center">Stock Qty</th>
-                  <th class="py-2.5 px-3 w-16 text-center">Active</th>
-                  <th class="py-2.5 px-3 w-10"></th>
-                </tr>
-              </thead>
-              <tbody id="skuMatrixBody" class="divide-y divide-slate-100">
-                @forelse($skus as $index => $sku)
-                  @php
-                    $isCustomReg = $sku->regular_price !== null && abs((float) $sku->regular_price - (float) $product->regular_price) > 0.01;
-                    $isCustomSale = $sku->sale_price !== null && abs((float) $sku->sale_price - (float) ($product->sale_price ?? $product->regular_price)) > 0.01;
-                  @endphp
-                  <tr class="sku-row hover:bg-slate-50/80">
-                    <td class="py-2.5 px-3">
-                      <input type="hidden" name="sku_matrix[{{ $index }}][id]" value="{{ $sku->id }}" />
-                      <div class="flex items-center gap-1 flex-wrap">
-                        @foreach($sku->getAttributesData() as $k => $v)
-                          <input type="hidden" name="sku_matrix[{{ $index }}][attributes][{{ $k }}]" value="{{ $v }}" />
-                          <span class="bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded-md text-[11px] font-bold border border-emerald-200/80">{{ $k }}: {{ $v }}</span>
-                        @endforeach
-                      </div>
-                    </td>
-                    <td class="py-2.5 px-3">
-                      <input name="sku_matrix[{{ $index }}][sku]" value="{{ $sku->sku }}" placeholder="e.g. HONEY-500G" class="inp text-xs py-1 px-2 font-mono" />
-                    </td>
-                    <td class="py-2.5 px-3">
-                      <input name="sku_matrix[{{ $index }}][regular_price]" type="number" step="0.01" value="{{ $isCustomReg ? $sku->regular_price : '' }}" class="inp text-xs py-1 px-2 text-center font-bold sku-regular-price-input" placeholder="Auto Base" />
-                    </td>
-                    <td class="py-2.5 px-3">
-                      <input name="sku_matrix[{{ $index }}][sale_price]" type="number" step="0.01" value="{{ $isCustomSale ? $sku->sale_price : '' }}" class="inp text-xs py-1 px-2 text-center font-extrabold text-emerald-700 bg-emerald-50/20 sku-sale-price-input" placeholder="Auto Base" />
-                    </td>
-                    <td class="py-2.5 px-3">
-                      <input name="sku_matrix[{{ $index }}][stock]" type="number" min="0" value="{{ $sku->stock_quantity }}" class="inp text-xs py-1 px-2 text-center font-bold sku-stock-input" required />
-                    </td>
-                    <td class="py-2.5 px-3 text-center">
-                      <input type="checkbox" name="sku_matrix[{{ $index }}][is_active]" value="1" @checked($sku->is_active) class="accent-emerald-600 h-4 w-4 cursor-pointer sku-active-check" />
-                    </td>
-                    <td class="py-2.5 px-3 text-center">
-                      <button type="button" onclick="this.closest('tr').remove(); updateMatrixCalculations();" class="text-red-400 hover:text-red-600 font-bold text-base cursor-pointer">×</button>
-                    </td>
-                  </tr>
-                @empty
-                  <tr id="emptyMatrixRow">
-                    <td colspan="7" class="py-5 text-center text-slate-500 italic bg-stone-50/50">
-                      🌿 No weight or size options generated yet.<br/>
-                      Enter weights above (e.g. <strong class="text-slate-800">250g, 500g, 1kg</strong>) and click <strong class="text-emerald-700">"⚡ Generate Combination Matrix"</strong>.
-                    </td>
-                  </tr>
-                @endforelse
-              </tbody>
-            </table>
-          </div>
-
-          {{-- Mobile Matrix Card List --}}
-          <div id="skuMatrixMobileContainer" class="block sm:hidden space-y-3">
-            @forelse($skus as $index => $sku)
-              @php
-                $isCustomReg = $sku->regular_price !== null && abs((float) $sku->regular_price - (float) $product->regular_price) > 0.01;
-                $isCustomSale = $sku->sale_price !== null && abs((float) $sku->sale_price - (float) ($product->sale_price ?? $product->regular_price)) > 0.01;
-              @endphp
-              <div class="sku-row p-3 rounded-xl border border-stone-200 bg-white space-y-2.5 shadow-2xs">
-                <input type="hidden" name="sku_matrix[{{ $index }}][id]" value="{{ $sku->id }}" />
-                <div class="flex items-center justify-between gap-2 border-b border-stone-100 pb-2">
-                  <div class="flex items-center gap-1 flex-wrap">
-                    @foreach($sku->getAttributesData() as $k => $v)
-                      <input type="hidden" name="sku_matrix[{{ $index }}][attributes][{{ $k }}]" value="{{ $v }}" />
-                      <span class="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded text-[11px] font-bold border border-emerald-200">{{ $k }}: {{ $v }}</span>
-                    @endforeach
-                  </div>
-                  <button type="button" onclick="this.closest('.sku-row').remove(); updateMatrixCalculations();" class="text-rose-500 hover:text-rose-700 font-bold text-xs px-2 py-0.5 bg-rose-50 rounded border border-rose-200">Remove ×</button>
-                </div>
-
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <label class="text-[10px] font-bold text-stone-500 block">SKU Code</label>
-                    <input name="sku_matrix[{{ $index }}][sku]" value="{{ $sku->sku }}" placeholder="SKU" class="inp text-xs py-1 px-2 font-mono" />
-                  </div>
-                  <div>
-                    <label class="text-[10px] font-bold text-stone-500 block">Stock Qty</label>
-                    <input name="sku_matrix[{{ $index }}][stock]" type="number" min="0" value="{{ $sku->stock_quantity }}" class="inp text-xs py-1 px-2 text-center font-bold sku-stock-input" required />
-                  </div>
-                  <div>
-                    <label class="text-[10px] font-bold text-stone-500 block">Reg Price (৳)</label>
-                    <input name="sku_matrix[{{ $index }}][regular_price]" type="number" step="0.01" value="{{ $isCustomReg ? $sku->regular_price : '' }}" class="inp text-xs py-1 px-2 text-center font-bold sku-regular-price-input" placeholder="Auto Base" />
-                  </div>
-                  <div>
-                    <label class="text-[10px] font-bold text-stone-500 block">Sale Price (৳)</label>
-                    <input name="sku_matrix[{{ $index }}][sale_price]" type="number" step="0.01" value="{{ $isCustomSale ? $sku->sale_price : '' }}" class="inp text-xs py-1 px-2 text-center font-bold text-emerald-700 sku-sale-price-input" placeholder="Auto Base" />
-                  </div>
-                </div>
-
-                <div class="flex items-center justify-between pt-1 border-t border-stone-100">
-                  <span class="text-xs font-bold text-stone-600">Active Option</span>
-                  <label class="flex items-center gap-1.5 text-xs font-bold text-stone-800 cursor-pointer">
-                    <input type="checkbox" name="sku_matrix[{{ $index }}][is_active]" value="1" @checked($sku->is_active) class="accent-emerald-600 h-4 w-4 cursor-pointer sku-active-check" />
-                    <span>Enabled</span>
-                  </label>
-                </div>
-              </div>
-            @empty
-              <div id="mobileEmptyMatrix" class="p-4 text-center text-xs text-stone-400 italic bg-stone-50 rounded-xl border border-stone-200">
-                🌿 No weight or size options generated yet.<br/>
-                Enter weights above and click "⚡ Generate Combination Matrix".
-              </div>
-            @endforelse
-          </div>
-        </div>
-      </div>
-
-      <!-- Images -->
-      <div class="card p-4 sm:p-5 space-y-4">
-        <h3 class="font-bold text-slate-900 text-sm sm:text-base">Images</h3>
+        {{-- Existing Uploaded Product Photos --}}
         @if($editing && $product->images->isNotEmpty())
-          <div class="grid grid-cols-3 sm:flex gap-3 sm:gap-4 flex-wrap pt-1" id="productImagesGrid">
-            @foreach($product->images as $img)
-              <div class="relative group flex flex-col items-center gap-1.5" id="imgcard-{{ $img->id }}">
-                <div class="relative">
-                  <img src="{{ $img->url() }}" class="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded-xl bg-gray-100 border border-gray-200 {{ $img->is_primary ? 'ring-2 ring-primary' : '' }}" alt="">
-                  @if($img->is_primary)<span class="absolute top-1 left-1 bg-primary text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">Main</span>@endif
-                  <button type="button" onclick="deleteProductImage({{ $product->id }}, {{ $img->id }})" class="absolute -top-2 -right-2 bg-rose-600 hover:bg-rose-700 text-white h-6 w-6 rounded-full text-xs font-bold shadow-md flex items-center justify-center cursor-pointer transition z-10" title="Delete Image">&times;</button>
+          <div>
+            <label class="text-xs font-bold text-stone-800 block mb-2">Existing Uploaded Images</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3" id="productImagesGrid">
+              @foreach($product->images as $img)
+                <div class="relative group bg-stone-50 border border-stone-200 rounded-xl p-1.5 flex flex-col items-center gap-1 shadow-2xs" id="imgcard-{{ $img->id }}">
+                  <div class="relative w-full aspect-square bg-white rounded-lg overflow-hidden flex items-center justify-center border border-stone-100">
+                    <img src="{{ $img->url() }}" class="max-h-full max-w-full object-contain p-1" alt="{{ $img->alt }}" />
+                    @if($img->is_primary)
+                      <span class="absolute top-1 left-1 bg-brand-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-2xs">Main</span>
+                    @endif
+                    <button type="button" onclick="deleteProductImage({{ $product->id }}, {{ $img->id }})" class="absolute top-1 right-1 bg-rose-600 text-white h-5 w-5 rounded-full text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center shadow-md cursor-pointer" title="Delete Image">&times;</button>
+                  </div>
+                  <input type="text" name="image_colors[{{ $img->id }}]" value="{{ old("image_colors.{$img->id}", $img->color) }}" placeholder="Tag (e.g. 500g)" class="w-full text-[10px] font-medium px-1.5 py-1 bg-white border border-stone-200 rounded-md text-center focus:outline-none focus:border-brand-500" />
                 </div>
-                <input type="text" name="image_colors[{{ $img->id }}]" value="{{ old("image_colors.{$img->id}", $img->color) }}" placeholder="Variation (1kg)" class="w-20 sm:w-24 text-[10px] sm:text-[11px] font-medium px-1.5 py-1 bg-gray-50 border border-gray-300 rounded-lg text-center focus:outline-none focus:border-brand-500 focus:bg-white" title="Tag image to variation option" />
-              </div>
-            @endforeach
+              @endforeach
+            </div>
           </div>
         @endif
-        <div>
-          <label class="lbl">Add images (first upload becomes main image if none set)</label>
-          <input id="imageFileInput" name="images[]" type="file" accept="image/*" multiple class="text-xs border border-slate-200 rounded-xl p-2 w-full bg-white cursor-pointer" />
-          <div id="newImagesPreview" class="flex gap-2.5 flex-wrap mt-3"></div>
+
+        {{-- Upload Drag-and-Drop Area --}}
+        <div class="border-2 border-dashed border-stone-300 hover:border-brand-500 rounded-2xl p-6 text-center bg-stone-50/60 hover:bg-brand-50/20 transition-all cursor-pointer relative">
+          <input id="imageFileInput" name="images[]" type="file" accept="image/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+          <div class="flex flex-col items-center gap-2">
+            <div class="h-10 w-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-xl">📸</div>
+            <p class="text-xs font-extrabold text-stone-800">Click or Drag &amp; Drop Product Photos Here</p>
+            <p class="text-[11px] text-stone-400">Upload clean PNG, JPG, or WEBP images with white background</p>
+          </div>
         </div>
+
+        {{-- Live New Uploads Preview Grid --}}
+        <div id="newImagesPreview" class="grid grid-cols-3 sm:grid-cols-6 gap-3"></div>
       </div>
     </div>
 
-    <!-- Sidebar -->
-    <div class="space-y-4 sm:space-y-6">
-      <div class="card p-4 sm:p-5 space-y-3">
-        <h3 class="font-bold text-slate-900 text-sm sm:text-base">Organization</h3>
-        <div>
-          <label class="lbl font-semibold text-slate-800">Category <span class="text-red-500">*</span></label>
-          <select name="category_id" class="inp bg-white text-xs sm:text-sm" required>
-            <option value="">-- Select Category --</option>
-            @foreach($categories as $cat)
-              <option value="{{ $cat->id }}" @selected((int) old('category_id', $product->category_id) === $cat->id)>{{ $cat->name }}</option>
-            @endforeach
-          </select>
+    {{-- Right Sidebar Column (Organization, Badges & SEO) --}}
+    <div class="space-y-6">
+
+      {{-- Card: Storefront Badges & Visibility --}}
+      <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-2xs space-y-4">
+        <h3 class="text-sm font-extrabold text-stone-900 border-b border-stone-100 pb-2.5">Storefront Visibility &amp; Badges</h3>
+        @php
+          $toggles = [
+            'is_published'   => ['Published on Storefront', 'Visible to shoppers for direct purchase'],
+            'is_featured'    => ['⭐ Featured Product', 'Highlighted on home page flagship section'],
+            'is_flash_sale'  => ['⚡ Flash Sale Deal', 'Promoted inside limited-time deal section'],
+            'is_best_seller' => ['🏆 Best Seller', 'Show badge on catalog card'],
+            'is_new_arrival' => ['🆕 New Arrival', 'Show new badge'],
+          ];
+        @endphp
+        <div class="space-y-2.5">
+          @foreach($toggles as $field => [$label, $hint])
+            <label class="flex items-start justify-between gap-3 text-xs font-bold text-stone-800 cursor-pointer p-2.5 rounded-xl hover:bg-stone-50 transition-colors border border-transparent hover:border-stone-200">
+              <div>
+                <span class="block">{{ $label }}</span>
+                <span class="text-[10px] font-normal text-stone-400 block mt-0.5">{{ $hint }}</span>
+              </div>
+              <input type="checkbox" name="{{ $field }}" value="1" class="accent-brand-600 h-4 w-4 rounded cursor-pointer mt-0.5" @checked(old($field, $product->$field)) />
+            </label>
+          @endforeach
         </div>
       </div>
 
-      <div class="card p-4 sm:p-5 space-y-3">
-        <h3 class="font-bold text-slate-900 text-sm sm:text-base">Visibility &amp; Badges</h3>
-        @php
-          $toggles = [
-            'is_published'   => 'Published (Visible on storefront)',
-            'is_featured'    => 'Featured Item',
-            'is_new_arrival' => 'New Arrival',
-            'is_best_seller' => 'Best Seller',
-            'is_flash_sale'  => '⚡ Flash Sale Deal',
-          ];
-        @endphp
-        @foreach($toggles as $field => $label)
-          <label class="flex items-center justify-between text-xs sm:text-sm font-medium text-slate-700 cursor-pointer py-1.5 border-b border-slate-50 last:border-0 hover:text-emerald-700">
-            <span>{{ $label }}</span>
-            <input type="checkbox" name="{{ $field }}" value="1" class="h-4 w-4 sm:h-5 sm:w-5 accent-emerald-600 rounded cursor-pointer" @checked(old($field, $product->$field)) />
-          </label>
-        @endforeach
+      {{-- Card: Search Engine Optimization (SEO) --}}
+      <div class="bg-white p-5 rounded-2xl border border-stone-200 shadow-2xs space-y-4">
+        <h3 class="text-sm font-extrabold text-stone-900 border-b border-stone-100 pb-2.5">🔍 Search Engine Optimization (SEO)</h3>
+
+        {{-- Live Google Search Preview --}}
+        <div class="p-3.5 rounded-xl bg-stone-50 border border-stone-200 text-xs space-y-1">
+          <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">Google Search Preview</span>
+          <p id="seoPreviewTitle" class="text-sm font-bold text-blue-700 truncate hover:underline cursor-pointer">
+            {{ old('meta_title', $product->meta_title) ?: ($editing ? $product->name . ' — ShodeshiFood' : 'Product Name — ShodeshiFood') }}
+          </p>
+          <p class="text-[11px] text-emerald-700 truncate font-mono">
+            {{ url('/products') }}/<span id="seoPreviewSlug">{{ old('slug', $product->slug) ?: 'product-slug' }}</span>
+          </p>
+          <p id="seoPreviewDesc" class="text-[11px] text-stone-600 line-clamp-2">
+            {{ old('meta_description', $product->meta_description) ?: 'Buy 100% pure chemical-free organic food online in Bangladesh at best prices.' }}
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs font-bold text-stone-800 block mb-1">Meta Title</label>
+            <input type="text" id="metaTitleInput" name="meta_title" class="w-full px-3 py-2 text-xs font-medium text-stone-800 rounded-xl border border-stone-200" value="{{ old('meta_title', $product->meta_title) }}" placeholder="e.g. Buy Pure Sundarban Honey Online — ShodeshiFood" />
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-stone-800 block mb-1">Meta Description</label>
+            <textarea id="metaDescInput" name="meta_description" rows="2" class="w-full px-3 py-2 text-xs font-medium text-stone-800 rounded-xl border border-stone-200" placeholder="Short description for Google search results...">{{ old('meta_description', $product->meta_description) }}</textarea>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-stone-800 block mb-1">Meta Keywords</label>
+            <input type="text" name="meta_keywords" class="w-full px-3 py-2 text-xs font-medium text-stone-800 rounded-xl border border-stone-200" value="{{ old('meta_keywords', $product->meta_keywords) }}" placeholder="e.g. sundarban honey, organic honey bd" />
+          </div>
+        </div>
       </div>
 
-      <div class="card p-4 sm:p-5 space-y-3">
-        <h3 class="font-bold text-slate-900 text-sm sm:text-base">SEO</h3>
-        <div><label class="lbl">Meta title</label><input name="meta_title" class="inp" value="{{ old('meta_title', $product->meta_title) }}" /></div>
-        <div><label class="lbl">Meta description</label><textarea name="meta_description" class="inp" rows="2">{{ old('meta_description', $product->meta_description) }}</textarea></div>
-        <div><label class="lbl">Meta keywords</label><textarea name="meta_keywords" class="inp" rows="2" placeholder="organic honey, mustard oil">{{ old('meta_keywords', $product->meta_keywords) }}</textarea></div>
-      </div>
     </div>
   </div>
 </form>
@@ -367,6 +460,87 @@
 
 @push('scripts')
 <script>
+(function () {
+  // Live Name & Slug & SEO Binding
+  const nameInput = document.getElementById('productNameInput');
+  const slugInput = document.getElementById('productSlugInput');
+  const nameCount = document.getElementById('nameCharCount');
+  const autoSlugBtn = document.getElementById('autoSlugBtn');
+
+  const seoTitle = document.getElementById('seoPreviewTitle');
+  const seoSlug = document.getElementById('seoPreviewSlug');
+  const seoDesc = document.getElementById('seoPreviewDesc');
+  const metaTitle = document.getElementById('metaTitleInput');
+  const metaDesc = document.getElementById('metaDescInput');
+
+  function slugify(text) {
+    return text.toString().toLowerCase().trim()
+      .replace(/[\s\W-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  if (nameInput) {
+    nameInput.addEventListener('input', () => {
+      const len = nameInput.value.length;
+      if (nameCount) nameCount.innerText = `${len} chars`;
+
+      if (seoTitle && (!metaTitle || !metaTitle.value)) {
+        seoTitle.innerText = nameInput.value ? `${nameInput.value} — ShodeshiFood` : 'Product Name — ShodeshiFood';
+      }
+    });
+  }
+
+  if (autoSlugBtn && nameInput && slugInput) {
+    autoSlugBtn.addEventListener('click', () => {
+      slugInput.value = slugify(nameInput.value);
+      if (seoSlug) seoSlug.innerText = slugInput.value;
+    });
+  }
+
+  if (slugInput && seoSlug) {
+    slugInput.addEventListener('input', () => {
+      seoSlug.innerText = slugInput.value || 'product-slug';
+    });
+  }
+
+  if (metaTitle && seoTitle) {
+    metaTitle.addEventListener('input', () => {
+      seoTitle.innerText = metaTitle.value || (nameInput.value ? `${nameInput.value} — ShodeshiFood` : 'Product Name — ShodeshiFood');
+    });
+  }
+
+  if (metaDesc && seoDesc) {
+    metaDesc.addEventListener('input', () => {
+      seoDesc.innerText = metaDesc.value || 'Buy 100% pure chemical-free organic food online in Bangladesh at best prices.';
+    });
+  }
+
+  // Live Price & Discount Calculator
+  const regInput = document.getElementById('regPriceInput');
+  const saleInput = document.getElementById('salePriceInput');
+  const discountBox = document.getElementById('discountBadgePreview');
+  const discountText = document.getElementById('discountPercentText');
+
+  function updateDiscountBadge() {
+    const reg = parseFloat(regInput ? regInput.value : 0) || 0;
+    const sale = parseFloat(saleInput ? saleInput.value : 0) || 0;
+
+    if (reg > 0 && sale > 0 && sale < reg) {
+      const diff = reg - sale;
+      const pct = Math.round((diff / reg) * 100);
+      if (discountText) discountText.innerText = `${pct}% OFF (Save ৳${diff.toFixed(0)})`;
+      if (discountBox) discountBox.classList.remove('hidden');
+    } else if (discountBox) {
+      discountBox.classList.add('hidden');
+    }
+  }
+
+  if (regInput) regInput.addEventListener('input', updateDiscountBadge);
+  if (saleInput) saleInput.addEventListener('input', updateDiscountBadge);
+  updateDiscountBadge();
+})();
+
+// Specification Builder Script
 (function () {
   const list = document.getElementById('specRows');
   const addBtn = document.getElementById('addSpecRow');
@@ -387,23 +561,24 @@
 
   addBtn.addEventListener('click', () => {
     const row = document.createElement('div');
-    row.className = 'spec-row grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-start p-2.5 sm:p-0 bg-slate-50 sm:bg-transparent rounded-xl border sm:border-0 border-slate-200';
+    row.className = 'spec-row grid grid-cols-1 sm:grid-cols-[1fr_1.5fr_auto] gap-3 items-center p-3 sm:p-2 bg-stone-50 rounded-xl border border-stone-200/80';
     row.innerHTML = `
       <div>
-        <label class="lbl">Label</label>
-        <input name="spec_labels[]" class="inp" value="" placeholder="e.g. Model" />
+        <label class="text-[10px] font-bold text-stone-500 block uppercase">Feature Name</label>
+        <input name="spec_labels[]" class="w-full px-3 py-1.5 text-xs font-bold text-stone-800 rounded-lg border border-stone-200 bg-white" placeholder="e.g. Shelf Life" />
       </div>
       <div>
-        <label class="lbl">Value</label>
-        <input name="spec_values[]" class="inp" value="" placeholder="e.g. A0023" />
+        <label class="text-[10px] font-bold text-stone-500 block uppercase">Value / Detail</label>
+        <input name="spec_values[]" class="w-full px-3 py-1.5 text-xs font-bold text-stone-800 rounded-lg border border-stone-200 bg-white" placeholder="e.g. 12 Months" />
       </div>
-      <button type="button" class="remove-spec-row sm:mt-6 h-9 w-full sm:w-9 rounded-lg border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-200 flex items-center justify-center font-bold text-base" title="Remove" aria-label="Remove row">×</button>
+      <button type="button" class="remove-spec-row sm:mt-4 h-8 w-8 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center font-bold text-base transition-colors" title="Remove Feature">×</button>
     `;
     list.appendChild(row);
     bindRemove(row.querySelector('.remove-spec-row'));
   });
 })();
 
+// Preset Pills & Variant Matrix Script
 (function () {
   document.querySelectorAll('.preset-pill-btn').forEach(btn => {
     btn.addEventListener('click', function () {
@@ -421,7 +596,6 @@
 
   const genBtn = document.getElementById('generateMatrixBtn');
   const body = document.getElementById('skuMatrixBody');
-  const mobileContainer = document.getElementById('skuMatrixMobileContainer');
   const sizesInput = document.getElementById('sizesInput');
   const colorsInput = document.getElementById('colorsInput');
 
@@ -432,7 +606,7 @@
     const colors = (colorsInput ? colorsInput.value : '').split(',').map(c => c.trim()).filter(Boolean);
 
     if (sizes.length === 0 && colors.length === 0) {
-      alert('Please enter at least one Size or Option first.');
+      alert('Please enter at least one Weight or Size option first.');
       return;
     }
 
@@ -441,99 +615,58 @@
     if (colors.length > 0 && sizes.length > 0) {
       colors.forEach(c => {
         sizes.forEach(s => {
-          combinations.push({ Color: c, Size: s });
+          combinations.push({ Packaging: c, Weight: s });
         });
       });
     } else if (colors.length > 0) {
-      colors.forEach(c => combinations.push({ Color: c }));
+      colors.forEach(c => combinations.push({ Packaging: c }));
     } else if (sizes.length > 0) {
-      sizes.forEach(s => combinations.push({ Size: s }));
+      sizes.forEach(s => combinations.push({ Weight: s }));
     }
 
     if (body) body.innerHTML = '';
-    if (mobileContainer) mobileContainer.innerHTML = '';
 
     combinations.forEach((combo, idx) => {
       let attrBadgesHtml = '';
       let attrInputsHtml = '';
       Object.keys(combo).forEach(k => {
         const v = combo[k];
-        attrBadgesHtml += `<span class="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded text-[11px] font-bold border border-emerald-200">${k}: ${v}</span> `;
+        attrBadgesHtml += `<span class="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded text-[11px] font-extrabold border border-emerald-200">${k}: ${v}</span> `;
         attrInputsHtml += `<input type="hidden" name="sku_matrix[${idx}][attributes][${k}]" value="${v}" />`;
       });
 
-      let sizeVal = (combo.Size || '').replace(/[^A-Za-z0-9]/g, '');
-      let colorVal = (combo.Color || '').split(' ')[0].replace(/[^A-Za-z0-9]/g, '');
+      let sizeVal = (combo.Weight || combo.Size || '').replace(/[^A-Za-z0-9]/g, '');
+      let colorVal = (combo.Packaging || combo.Color || '').split(' ')[0].replace(/[^A-Za-z0-9]/g, '');
       let autoSkuHint = (colorVal || sizeVal) ? (colorVal + sizeVal) : 'VAR';
 
       if (body) {
         const row = document.createElement('tr');
-        row.className = 'sku-row';
+        row.className = 'sku-row hover:bg-stone-50/80';
         row.innerHTML = `
-          <td class="py-2.5 px-3">
+          <td class="py-3 px-3.5">
             ${attrInputsHtml}
             <div class="flex items-center gap-1 flex-wrap">${attrBadgesHtml}</div>
           </td>
-          <td class="py-2.5 px-3">
-            <input name="sku_matrix[${idx}][sku]" value="" placeholder="Auto: [SKU]-${autoSkuHint}" class="inp text-xs py-1 px-2 font-mono" />
+          <td class="py-3 px-3.5">
+            <input name="sku_matrix[${idx}][sku]" value="" placeholder="Auto: [SKU]-${autoSkuHint}" class="w-full px-2.5 py-1 text-xs font-mono rounded-lg border border-stone-200" />
           </td>
-          <td class="py-2.5 px-3">
-            <input name="sku_matrix[${idx}][regular_price]" type="number" step="0.01" value="" class="inp text-xs py-1 px-2 text-center font-bold sku-regular-price-input" placeholder="Auto Base" />
+          <td class="py-3 px-3.5">
+            <input name="sku_matrix[${idx}][regular_price]" type="number" step="0.01" value="" class="w-full px-2.5 py-1 text-xs text-center font-bold rounded-lg border border-stone-200 sku-regular-price-input" placeholder="Auto Base" />
           </td>
-          <td class="py-2.5 px-3">
-            <input name="sku_matrix[${idx}][sale_price]" type="number" step="0.01" value="" class="inp text-xs py-1 px-2 text-center font-extrabold text-emerald-700 bg-emerald-50/20 sku-sale-price-input" placeholder="Auto Base" />
+          <td class="py-3 px-3.5">
+            <input name="sku_matrix[${idx}][sale_price]" type="number" step="0.01" value="" class="w-full px-2.5 py-1 text-xs text-center font-black text-emerald-700 bg-emerald-50/40 rounded-lg border border-emerald-200 sku-sale-price-input" placeholder="Auto Base" />
           </td>
-          <td class="py-2.5 px-3">
-            <input name="sku_matrix[${idx}][stock]" type="number" min="0" value="10" class="inp text-xs py-1 px-2 text-center font-bold sku-stock-input" required />
+          <td class="py-3 px-3.5">
+            <input name="sku_matrix[${idx}][stock]" type="number" min="0" value="10" class="w-full px-2.5 py-1 text-xs text-center font-bold rounded-lg border border-stone-200 sku-stock-input" required />
           </td>
-          <td class="py-2.5 px-3 text-center">
+          <td class="py-3 px-3.5 text-center">
             <input type="checkbox" name="sku_matrix[${idx}][is_active]" value="1" checked class="accent-emerald-600 h-4 w-4 cursor-pointer sku-active-check" />
           </td>
-          <td class="py-2.5 px-3 text-center">
-            <button type="button" onclick="this.closest('tr').remove(); updateMatrixCalculations();" class="text-red-400 hover:text-red-600 font-bold text-base cursor-pointer">×</button>
+          <td class="py-3 px-3.5 text-center">
+            <button type="button" onclick="this.closest('tr').remove(); updateMatrixCalculations();" class="text-rose-400 hover:text-rose-600 font-bold text-base cursor-pointer">×</button>
           </td>
         `;
         body.appendChild(row);
-      }
-
-      if (mobileContainer) {
-        const mcard = document.createElement('div');
-        mcard.className = 'sku-row p-3 rounded-xl border border-stone-200 bg-white space-y-2.5 shadow-2xs';
-        mcard.innerHTML = `
-          <div class="flex items-center justify-between gap-2 border-b border-stone-100 pb-2">
-            <div class="flex items-center gap-1 flex-wrap">
-              ${attrInputsHtml}
-              ${attrBadgesHtml}
-            </div>
-            <button type="button" onclick="this.closest('.sku-row').remove(); updateMatrixCalculations();" class="text-rose-500 hover:text-rose-700 font-bold text-xs px-2 py-0.5 bg-rose-50 rounded border border-rose-200">Remove ×</button>
-          </div>
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <div>
-              <label class="text-[10px] font-bold text-stone-500 block">SKU Code</label>
-              <input name="sku_matrix[${idx}][sku]" value="" placeholder="Auto SKU" class="inp text-xs py-1 px-2 font-mono" />
-            </div>
-            <div>
-              <label class="text-[10px] font-bold text-stone-500 block">Stock Qty</label>
-              <input name="sku_matrix[${idx}][stock]" type="number" min="0" value="10" class="inp text-xs py-1 px-2 text-center font-bold sku-stock-input" required />
-            </div>
-            <div>
-              <label class="text-[10px] font-bold text-stone-500 block">Reg Price (৳)</label>
-              <input name="sku_matrix[${idx}][regular_price]" type="number" step="0.01" value="" class="inp text-xs py-1 px-2 text-center font-bold sku-regular-price-input" placeholder="Auto Base" />
-            </div>
-            <div>
-              <label class="text-[10px] font-bold text-stone-500 block">Sale Price (৳)</label>
-              <input name="sku_matrix[${idx}][sale_price]" type="number" step="0.01" value="" class="inp text-xs py-1 px-2 text-center font-bold text-emerald-700 sku-sale-price-input" placeholder="Auto Base" />
-            </div>
-          </div>
-          <div class="flex items-center justify-between pt-1 border-t border-stone-100">
-            <span class="text-xs font-bold text-stone-600">Active Option</span>
-            <label class="flex items-center gap-1.5 text-xs font-bold text-stone-800 cursor-pointer">
-              <input type="checkbox" name="sku_matrix[${idx}][is_active]" value="1" checked class="accent-emerald-600 h-4 w-4 cursor-pointer sku-active-check" />
-              <span>Enabled</span>
-            </label>
-          </div>
-        `;
-        mobileContainer.appendChild(mcard);
       }
     });
 
@@ -541,8 +674,8 @@
   });
 
   function updateMatrixCalculations() {
-    const regInput = document.querySelector('input[name="regular_price"]');
-    const saleInput = document.querySelector('input[name="sale_price"]');
+    const regInput = document.getElementById('regPriceInput');
+    const saleInput = document.getElementById('salePriceInput');
     const stockInput = document.querySelector('input[name="stock_quantity"]');
     const autoStockBadge = document.getElementById('autoStockNotice');
 
@@ -586,23 +719,6 @@
   }
 
   window.updateMatrixCalculations = updateMatrixCalculations;
-
-  const regInput = document.querySelector('input[name="regular_price"]');
-  const saleInput = document.querySelector('input[name="sale_price"]');
-  if (regInput) regInput.addEventListener('input', updateMatrixCalculations);
-  if (saleInput) saleInput.addEventListener('input', updateMatrixCalculations);
-
-  document.addEventListener('input', function(e) {
-    if (e.target.classList.contains('sku-stock-input') || e.target.classList.contains('sku-regular-price-input') || e.target.classList.contains('sku-sale-price-input') || e.target.classList.contains('sku-active-check')) {
-      updateMatrixCalculations();
-    }
-  });
-  document.addEventListener('change', function(e) {
-    if (e.target.classList.contains('sku-active-check')) {
-      updateMatrixCalculations();
-    }
-  });
-
   setTimeout(updateMatrixCalculations, 100);
 })();
 
@@ -643,7 +759,7 @@ function deleteProductImage(productId, imageId) {
   });
 }
 
-// Live Image Upload Preview
+// Live Drag-and-Drop Image Upload Preview
 (function() {
   const fileInput = document.getElementById('imageFileInput');
   const previewBox = document.getElementById('newImagesPreview');
@@ -657,13 +773,13 @@ function deleteProductImage(productId, imageId) {
       const reader = new FileReader();
       reader.onload = function(evt) {
         const div = document.createElement('div');
-        div.className = 'relative flex flex-col items-center gap-1';
+        div.className = 'relative flex flex-col items-center gap-1.5 p-1 bg-stone-50 border border-stone-200 rounded-xl shadow-2xs';
         div.innerHTML = `
-          <div class="relative">
-            <img src="${evt.target.result}" class="h-20 w-20 object-cover rounded-xl border border-slate-200 shadow-2xs bg-white" />
-            ${idx === 0 ? '<span class="absolute top-1 left-1 bg-emerald-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow">Main</span>' : ''}
+          <div class="relative w-full aspect-square bg-white rounded-lg overflow-hidden border border-stone-100 flex items-center justify-center">
+            <img src="${evt.target.result}" class="max-h-full max-w-full object-contain p-1" />
+            ${idx === 0 ? '<span class="absolute top-1 left-1 bg-brand-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-2xs">Main</span>' : ''}
           </div>
-          <span class="text-[10px] text-slate-500 font-mono max-w-[80px] truncate">${file.name}</span>
+          <span class="text-[10px] text-stone-500 font-mono w-full truncate text-center">${file.name}</span>
         `;
         previewBox.appendChild(div);
       };
