@@ -221,36 +221,47 @@
         </div>
 
         {{-- Preset Options Quick Bar --}}
-        <div class="space-y-3 bg-emerald-50/40 p-4 rounded-xl border border-emerald-100">
+        <div class="space-y-4 bg-emerald-50/40 p-4 rounded-xl border border-emerald-100">
           <div class="flex items-center justify-between">
-            <label class="text-xs font-extrabold text-emerald-900 uppercase tracking-wider">⚡ Quick Weight Presets</label>
+            <label class="text-xs font-extrabold text-emerald-900 uppercase tracking-wider">⚡ Quick Attribute Presets</label>
             <a href="{{ route('admin.variations.index') }}" target="_blank" class="text-[11px] font-bold text-emerald-700 hover:underline">Manage All Attributes →</a>
           </div>
 
-          <div class="flex flex-wrap gap-1.5">
-            @php
-              $quickWeights = ['250g', '500g', '1 kg', '2 kg', '500 ml', '1 Liter', 'Glass Jar', 'Plastic Bottle'];
-            @endphp
-            @foreach($quickWeights as $qw)
-              <button type="button" class="preset-pill-btn px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-100 text-emerald-900 font-bold border border-emerald-200 shadow-2xs transition cursor-pointer text-xs" data-target="sizesInput" data-value="{{ $qw }}">
-                + {{ $qw }}
-              </button>
-            @endforeach
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-[11px] font-extrabold text-stone-500 w-24 shrink-0">Weight / Size:</span>
+              @php $quickWeights = ['250g', '500g', '1 kg', '2 kg', '500 ml', '1 Liter']; @endphp
+              @foreach($quickWeights as $qw)
+                <button type="button" class="preset-pill-btn px-2.5 py-1 rounded-lg bg-white hover:bg-emerald-100 text-emerald-900 font-bold border border-emerald-200 shadow-2xs transition cursor-pointer text-xs" data-target="sizesInput" data-value="{{ $qw }}">
+                  + {{ $qw }}
+                </button>
+              @endforeach
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-[11px] font-extrabold text-stone-500 w-24 shrink-0">Packaging:</span>
+              @php $quickPacks = ['Glass Jar', 'Plastic Bottle', 'Food Grade Pack', 'Craft Pouch']; @endphp
+              @foreach($quickPacks as $qp)
+                <button type="button" class="preset-pill-btn px-2.5 py-1 rounded-lg bg-white hover:bg-amber-100 text-amber-900 font-bold border border-amber-200 shadow-2xs transition cursor-pointer text-xs" data-target="colorsInput" data-value="{{ $qp }}">
+                  + {{ $qp }}
+                </button>
+              @endforeach
+            </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <div>
               <label class="text-xs font-bold text-stone-800 block mb-1">Primary Weight / Size Options <span class="text-stone-400 font-normal">(Comma-separated)</span></label>
-              <input id="sizesInput" name="sizes" class="w-full px-3.5 py-2 text-xs font-bold text-stone-900 rounded-xl border border-stone-200 bg-white" value="{{ old('sizes', $sizeValues) }}" placeholder="e.g. 250g, 500g, 1kg" />
+              <input id="sizesInput" name="sizes" class="w-full px-3.5 py-2 text-xs font-bold text-stone-900 rounded-xl border border-stone-200 bg-white focus:outline-none focus:border-emerald-500" value="{{ old('sizes', $sizeValues) }}" placeholder="e.g. 250g, 500g, 1kg" />
             </div>
             <div>
               <label class="text-xs font-bold text-stone-800 block mb-1">Packaging / Container Variant <span class="text-stone-400 font-normal">(Optional)</span></label>
-              <input id="colorsInput" name="colors" class="w-full px-3.5 py-2 text-xs font-bold text-stone-900 rounded-xl border border-stone-200 bg-white" value="{{ old('colors', $colorValues) }}" placeholder="e.g. Glass Jar, Craft Pouch" />
+              <input id="colorsInput" name="colors" class="w-full px-3.5 py-2 text-xs font-bold text-stone-900 rounded-xl border border-stone-200 bg-white focus:outline-none focus:border-emerald-500" value="{{ old('colors', $colorValues) }}" placeholder="e.g. Glass Jar, Craft Pouch" />
             </div>
           </div>
 
           <div class="flex justify-end pt-1">
-            <button type="button" id="generateMatrixBtn" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
+            <button type="button" id="generateMatrixBtn" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
               <span>⚡ Generate Combination Matrix</span>
             </button>
           </div>
@@ -632,20 +643,38 @@
   if (!genBtn) return;
 
   genBtn.addEventListener('click', () => {
-    const sizes = (sizesInput ? sizesInput.value : '').split(',').map(s => s.trim()).filter(Boolean);
-    const colors = (colorsInput ? colorsInput.value : '').split(',').map(c => c.trim()).filter(Boolean);
+    let rawSizes = (sizesInput ? sizesInput.value : '').split(',').map(s => s.trim()).filter(Boolean);
+    let rawColors = (colorsInput ? colorsInput.value : '').split(',').map(c => c.trim()).filter(Boolean);
 
-    if (sizes.length === 0 && colors.length === 0) {
+    if (rawSizes.length === 0 && rawColors.length === 0) {
       alert('Please enter at least one Weight or Size option first.');
       return;
     }
+
+    // Smart-sort container/packaging keywords if user mixed them into sizesInput
+    const isPackaging = (v) => /glass|plastic|jar|bottle|pouch|can|box|container|pack/i.test(v);
+
+    let sizes = [];
+    let colors = [...rawColors];
+
+    rawSizes.forEach(item => {
+      if (isPackaging(item)) {
+        if (!colors.includes(item)) colors.push(item);
+      } else {
+        if (!sizes.includes(item)) sizes.push(item);
+      }
+    });
+
+    // Clean inputs with sorted values
+    if (sizesInput) sizesInput.value = sizes.join(', ');
+    if (colorsInput) colorsInput.value = colors.join(', ');
 
     const combinations = [];
 
     if (colors.length > 0 && sizes.length > 0) {
       colors.forEach(c => {
         sizes.forEach(s => {
-          combinations.push({ Packaging: c, Weight: s });
+          combinations.push({ Weight: s, Packaging: c });
         });
       });
     } else if (colors.length > 0) {
@@ -701,6 +730,10 @@
     });
 
     updateMatrixCalculations();
+
+    if (body) {
+      body.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   });
 
   function updateMatrixCalculations() {
