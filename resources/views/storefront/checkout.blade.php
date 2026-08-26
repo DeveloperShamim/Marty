@@ -40,12 +40,29 @@
       <form method="POST" action="{{ route('checkout.store') }}" id="checkoutForm" class="space-y-6">
         @csrf
 
-        <div class="rounded-2xl bg-white p-6 border border-slate-100">
-          <h2 class="font-display text-lg font-extrabold">Contact</h2>
+        <div class="rounded-2xl bg-white p-6 border border-slate-100 shadow-2xs">
+          <h2 class="font-display text-lg font-extrabold text-stone-900">Contact Information</h2>
           <div class="mt-4 grid sm:grid-cols-2 gap-4">
-            <div class="sm:col-span-2"><label class="block text-sm font-medium mb-1.5">Full name <span class="text-red-500">*</span></label><input name="customer_name" value="{{ old('customer_name', $user?->name) }}" required class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" /></div>
-            <div class="sm:col-span-2"><label class="block text-sm font-medium mb-1.5">Phone <span class="text-red-500">*</span></label><input name="customer_phone" value="{{ old('customer_phone', $user?->phone) }}" required placeholder="01XXX-XXXXXX" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" /></div>
-            <div class="sm:col-span-2"><label class="block text-sm font-medium mb-1.5">Email (optional)</label><input type="email" name="customer_email" value="{{ old('customer_email', $user?->email) }}" placeholder="you@example.com" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" /></div>
+            <div class="sm:col-span-2">
+              <label class="block text-sm font-semibold text-stone-800 mb-1.5">Full Name <span class="text-red-500">*</span></label>
+              <input type="text" name="customer_name" id="customer_name" value="{{ old('customer_name', $user?->name) }}" required placeholder="e.g. Rahim Ahmed" class="w-full rounded-xl border @error('customer_name') border-red-400 bg-red-50/20 @else border-slate-200 @enderror px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition" />
+              @error('customer_name')<p class="text-xs text-red-600 mt-1 font-medium">{{ $message }}</p>@enderror
+            </div>
+            
+            <div class="sm:col-span-2">
+              <label class="block text-sm font-semibold text-stone-800 mb-1.5">Mobile Phone <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <input type="tel" name="customer_phone" id="customer_phone" value="{{ old('customer_phone', $user?->phone) }}" required placeholder="01XXXXXXXXX" inputmode="numeric" maxlength="14" pattern="^(?:\+?88)?01[3-9]\d{8}$" class="w-full rounded-xl border @error('customer_phone') border-red-400 bg-red-50/20 @else border-slate-200 @enderror px-4 py-3 text-sm font-mono tracking-wide focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition" />
+              </div>
+              <p class="text-[11px] text-stone-500 mt-1">Must be an 11-digit mobile number (e.g. 017XXXXXXXX)</p>
+              @error('customer_phone')<p class="text-xs text-red-600 mt-1 font-semibold">{{ $message }}</p>@enderror
+            </div>
+            
+            <div class="sm:col-span-2">
+              <label class="block text-sm font-semibold text-stone-800 mb-1.5">Email Address <span class="text-stone-400 font-normal text-xs">(optional)</span></label>
+              <input type="email" name="customer_email" id="customer_email" value="{{ old('customer_email', $user?->email) }}" placeholder="you@example.com" class="w-full rounded-xl border @error('customer_email') border-red-400 bg-red-50/20 @else border-slate-200 @enderror px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition" />
+              @error('customer_email')<p class="text-xs text-red-600 mt-1 font-semibold">{{ $message }}</p>@enderror
+            </div>
           </div>
         </div>
 
@@ -318,6 +335,48 @@
       inp.addEventListener('change', syncContact);
       inp.addEventListener('blur', syncContact);
     });
+
+    // Real-time phone sanitizer: only allows numbers and leading +
+    if (phoneInput) {
+      phoneInput.addEventListener('input', function() {
+        var val = this.value;
+        var hasPlus = val.startsWith('+');
+        var digits = val.replace(/\D/g, '');
+        if (hasPlus) {
+          this.value = '+' + digits.slice(0, 13);
+        } else {
+          this.value = digits.slice(0, 11);
+        }
+      });
+    }
+
+    // Client-side checkout form validation before submit
+    var form = document.getElementById('checkoutForm');
+    if (form && phoneInput) {
+      form.addEventListener('submit', function(e) {
+        var phoneVal = phoneInput.value.replace(/\D/g, '');
+        var bdPhoneRegex = /^(?:88)?01[3-9]\d{8}$/;
+        
+        if (!bdPhoneRegex.test(phoneVal)) {
+          e.preventDefault();
+          alert('Please enter a valid 11-digit mobile number starting with 01 (e.g. 017XXXXXXXX).');
+          phoneInput.focus();
+          phoneInput.classList.add('border-red-500', 'bg-red-50/20');
+          return false;
+        }
+
+        if (emailInput && emailInput.value.trim() !== '') {
+          var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(emailInput.value.trim())) {
+            e.preventDefault();
+            alert('Please enter a valid email address.');
+            emailInput.focus();
+            emailInput.classList.add('border-red-500', 'bg-red-50/20');
+            return false;
+          }
+        }
+      });
+    }
   })();
 })();
 </script>

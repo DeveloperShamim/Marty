@@ -276,15 +276,12 @@
     @endif
 
     @if(($bestSellers ?? collect())->isNotEmpty())
-      <section class="mt-14" data-reveal>
-        <div class="flex items-end justify-between border-b border-stone-200 pb-3 mb-6 gap-3">
+      <section class="mt-8 sm:mt-10" data-reveal>
+        <div class="border-b border-stone-200 pb-2.5 mb-5">
           <div>
             <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">{{ setting('home_best_sellers_title', 'Best Selling Products') }}</h2>
             <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
           </div>
-          <a href="{{ route('shop', ['best_seller' => 1]) }}" class="text-xs sm:text-sm font-extrabold text-brand-500 hover:text-brand-600 tracking-wider uppercase inline-flex items-center gap-1 transition-colors shrink-0">
-            VIEW ALL ITEMS <span class="text-base font-normal">→</span>
-          </a>
         </div>
 
         <div class="relative group/carousel px-0.5 sm:px-4">
@@ -303,22 +300,26 @@
                 </div>
               @endforeach
             </div>
-            <div class="swiper-pagination bestSellersPagination !relative !bottom-0 mt-4 flex justify-center"></div>
+            <div class="swiper-pagination bestSellersPagination !relative !bottom-0 mt-3 flex justify-center"></div>
           </div>
+        </div>
+
+        <div class="mt-4 sm:mt-5 text-center">
+          <a href="{{ route('shop', ['best_seller' => 1]) }}" class="group inline-flex items-center justify-center gap-1.5 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white font-bold px-5 py-2 rounded-full text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95">
+            <span>VIEW ALL ITEMS</span>
+            <span class="text-sm font-normal transition-transform duration-200 group-hover:translate-x-1">→</span>
+          </a>
         </div>
       </section>
     @endif
 
     @if(($newArrivals ?? collect())->isNotEmpty())
-      <section class="mt-14" data-reveal>
-        <div class="flex items-end justify-between border-b border-stone-200 pb-3 mb-6 gap-3">
+      <section class="mt-8 sm:mt-10" data-reveal>
+        <div class="border-b border-stone-200 pb-2.5 mb-5">
           <div>
             <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">{{ setting('home_new_arrivals_title', 'New Arrivals') }}</h2>
             <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
           </div>
-          <a href="{{ route('shop', ['new' => 1]) }}" class="text-xs sm:text-sm font-extrabold text-brand-500 hover:text-brand-600 tracking-wider uppercase inline-flex items-center gap-1 transition-colors shrink-0">
-            VIEW ALL ITEMS <span class="text-base font-normal">→</span>
-          </a>
         </div>
 
         <div class="relative group/carousel px-0.5 sm:px-4">
@@ -337,8 +338,15 @@
                 </div>
               @endforeach
             </div>
-            <div class="swiper-pagination newArrivalsPagination !relative !bottom-0 mt-4 flex justify-center"></div>
+            <div class="swiper-pagination newArrivalsPagination !relative !bottom-0 mt-3 flex justify-center"></div>
           </div>
+        </div>
+
+        <div class="mt-4 sm:mt-5 text-center">
+          <a href="{{ route('shop', ['new' => 1]) }}" class="group inline-flex items-center justify-center gap-1.5 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white font-bold px-5 py-2 rounded-full text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95">
+            <span>VIEW ALL ITEMS</span>
+            <span class="text-sm font-normal transition-transform duration-200 group-hover:translate-x-1">→</span>
+          </a>
         </div>
       </section>
     @endif
@@ -346,8 +354,8 @@
     @if(($featuredHomeCategories ?? collect())->isNotEmpty())
       @foreach($featuredHomeCategories as $featuredCat)
         @if($featuredCat->products->isNotEmpty())
-          <section class="mt-14" data-reveal>
-            <div class="flex items-end justify-between border-b border-stone-200 pb-3 mb-6 gap-3">
+          <section class="mt-8 sm:mt-10" data-reveal>
+            <div class="border-b border-stone-200 pb-2.5 mb-5">
               <div>
                 <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">
                   @if($featuredCat->icon)<span class="mr-1.5">{{ $featuredCat->icon }}</span>@endif
@@ -355,15 +363,19 @@
                 </h2>
                 <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
               </div>
-              <a href="{{ route('shop.category', $featuredCat) }}" class="text-xs sm:text-sm font-extrabold text-brand-500 hover:text-brand-600 tracking-wider uppercase inline-flex items-center gap-1 transition-colors shrink-0">
-                VIEW ALL ITEMS <span class="text-base font-normal">→</span>
-              </a>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               @foreach($featuredCat->products as $product)
                 @include('storefront.partials.product-card', ['product' => $product])
               @endforeach
+            </div>
+
+            <div class="mt-4 sm:mt-5 text-center">
+              <a href="{{ route('shop.category', $featuredCat) }}" class="group inline-flex items-center justify-center gap-1.5 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white font-bold px-5 py-2 rounded-full text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95">
+                <span>VIEW ALL ITEMS</span>
+                <span class="text-sm font-normal transition-transform duration-200 group-hover:translate-x-1">→</span>
+              </a>
             </div>
           </section>
         @endif
@@ -373,8 +385,8 @@
     @if(($featuredHomeBrands ?? collect())->isNotEmpty())
       @foreach($featuredHomeBrands as $featuredBrand)
         @if($featuredBrand->products->isNotEmpty())
-          <section class="mt-14" data-reveal>
-            <div class="flex items-center justify-between border-b border-stone-200 pb-3 mb-6 gap-3">
+          <section class="mt-8 sm:mt-10" data-reveal>
+            <div class="border-b border-stone-200 pb-2.5 mb-5">
               <div class="flex items-center gap-3">
                 <img src="{{ $featuredBrand->logoUrl() }}" class="h-10 w-10 object-contain rounded-xl border border-stone-200 bg-white p-1 shadow-xs" alt="{{ $featuredBrand->name }}">
                 <div>
@@ -384,9 +396,6 @@
                   <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
                 </div>
               </div>
-              <a href="{{ route('shop.brand', $featuredBrand) }}" class="text-xs sm:text-sm font-extrabold text-brand-500 hover:text-brand-600 tracking-wider uppercase inline-flex items-center gap-1 transition-colors shrink-0">
-                EXPLORE BRAND PAGE <span class="text-base font-normal">&rarr;</span>
-              </a>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -394,40 +403,49 @@
                 @include('storefront.partials.product-card', ['product' => $product])
               @endforeach
             </div>
+
+            <div class="mt-4 sm:mt-5 text-center">
+              <a href="{{ route('shop.brand', $featuredBrand) }}" class="group inline-flex items-center justify-center gap-1.5 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white font-bold px-5 py-2 rounded-full text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95">
+                <span>EXPLORE BRAND PAGE</span>
+                <span class="text-sm font-normal transition-transform duration-200 group-hover:translate-x-1">→</span>
+              </a>
+            </div>
           </section>
         @endif
       @endforeach
     @endif
 
     @if($flashProducts->isNotEmpty())
-      <section class="mt-14" data-reveal>
-        <div class="flex items-end justify-between border-b border-stone-200 pb-3 mb-6 gap-3 flex-wrap">
-          <div>
-            <div class="flex items-center gap-2 mb-1.5">
-              <span class="inline-flex items-center gap-1 bg-brand-50 text-brand-700 font-extrabold text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-brand-200/80">
-                ⚡ SPECIAL DISCOUNTS
-              </span>
-              @if($flashEndsIso)
-                <div data-countdown-end="{{ $flashEndsIso }}" class="flex items-center gap-1 font-mono font-bold text-stone-600 text-xs">
-                  <span class="text-stone-400 font-sans">Ends in:</span>
-                  <span class="bg-stone-100 text-stone-800 px-1.5 py-0.5 rounded font-mono font-black" data-h>00</span>:
-                  <span class="bg-stone-100 text-stone-800 px-1.5 py-0.5 rounded font-mono font-black" data-m>00</span>:
-                  <span class="bg-stone-100 text-stone-800 px-1.5 py-0.5 rounded font-mono font-black" data-s>00</span>
-                </div>
-              @endif
-            </div>
-            <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">{{ setting('home_hot_deal_title', 'Products With Discounts') }}</h2>
-            <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
+      <section class="mt-8 sm:mt-10" data-reveal>
+        <div class="border-b border-stone-200 pb-2.5 mb-5">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="inline-flex items-center gap-1 bg-brand-50 text-brand-700 font-extrabold text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-brand-200/80">
+              ⚡ SPECIAL DISCOUNTS
+            </span>
+            @if($flashEndsIso)
+              <div data-countdown-end="{{ $flashEndsIso }}" class="flex items-center gap-1 font-mono font-bold text-stone-600 text-xs">
+                <span class="text-stone-400 font-sans">Ends in:</span>
+                <span class="bg-stone-100 text-stone-800 px-1.5 py-0.5 rounded font-mono font-black" data-h>00</span>:
+                <span class="bg-stone-100 text-stone-800 px-1.5 py-0.5 rounded font-mono font-black" data-m>00</span>:
+                <span class="bg-stone-100 text-stone-800 px-1.5 py-0.5 rounded font-mono font-black" data-s>00</span>
+              </div>
+            @endif
           </div>
-          <a href="{{ route('shop', ['flash' => 1]) }}" class="text-xs sm:text-sm font-extrabold text-brand-600 hover:text-brand-700 tracking-wider uppercase inline-flex items-center gap-1 transition-colors shrink-0">
-            VIEW ALL DISCOUNTS <span class="text-base font-normal">&rarr;</span>
-          </a>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">{{ setting('home_hot_deal_title', 'Products With Discounts') }}</h2>
+          <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           @foreach($flashProducts->take(8) as $product)
             @include('storefront.partials.product-card', ['product' => $product, 'flashCard' => true])
           @endforeach
+        </div>
+
+        <div class="mt-4 sm:mt-5 text-center">
+          <a href="{{ route('shop', ['flash' => 1]) }}" class="group inline-flex items-center justify-center gap-1.5 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white font-bold px-5 py-2 rounded-full text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95">
+            <span>VIEW ALL DISCOUNTS</span>
+            <span class="text-sm font-normal transition-transform duration-200 group-hover:translate-x-1">→</span>
+          </a>
         </div>
       </section>
     @endif

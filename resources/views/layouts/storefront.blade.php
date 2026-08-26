@@ -73,15 +73,26 @@
     .site-header nav button:hover,
     .site-header a:hover,
     #catDropdownMenu a:hover,
-    #catDropdownMenu a:hover span,
     #brandDropdownMenu a:hover,
-    #brandDropdownMenu a:hover span,
     .group\/item:hover .group-hover\/item\:text-brand-600,
-    .mobile-menu nav a:hover,
-    .mobile-menu nav a:hover span,
-    [data-mobile-menu] nav a:hover,
-    [data-mobile-menu] nav a:hover span {
+    .mobile-menu nav a:not(.btn-track-order):not([class*="bg-brand"]):hover,
+    [data-mobile-menu] nav a:not(.btn-track-order):not([class*="bg-brand"]):hover {
       color: var(--brand-primary) !important;
+    }
+
+    .mobile-menu a.btn-track-order,
+    .mobile-menu a.btn-track-order:hover,
+    .mobile-menu a.btn-track-order:hover *,
+    .mobile-menu a.btn-account-outline:hover,
+    .mobile-menu a.btn-account-outline:hover *,
+    .mobile-menu a[class*="bg-brand"]:hover,
+    .mobile-menu button[class*="bg-brand"]:hover {
+      color: #ffffff !important;
+    }
+
+    .mobile-menu a.btn-account-outline:hover {
+      background-color: var(--brand-primary) !important;
+      border-color: var(--brand-primary) !important;
     }
 
     .fk-badge,
@@ -109,8 +120,7 @@
     .add-to-cart-btn:hover,
     .add-to-cart:hover,
     #pdAddToCart:hover,
-    #qmAddToCartBtn:hover,
-    [data-open-cart]:hover {
+    #qmAddToCartBtn:hover {
       background-color: var(--brand-primary) !important;
       border-color: var(--brand-primary) !important;
       color: #ffffff !important;

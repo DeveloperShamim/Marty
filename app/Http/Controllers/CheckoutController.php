@@ -56,7 +56,7 @@ class CheckoutController extends Controller
         $validated = $request->validate([
             'customer_name'  => ['nullable', 'string', 'max:120'],
             'customer_phone' => ['nullable', 'string', 'max:40'],
-            'customer_email' => ['nullable', 'email', 'max:120'],
+            'customer_email' => ['nullable', 'email:rfc,filter', 'max:120'],
         ]);
 
         $items = $this->cart->items();
@@ -104,8 +104,12 @@ class CheckoutController extends Controller
 
         $validated = $request->validate([
             'customer_name'   => ['required', 'string', 'max:120'],
-            'customer_phone'  => ['required', 'string', 'max:40'],
-            'customer_email'  => ['nullable', 'email', 'max:120'],
+            'customer_phone'  => [
+                'required',
+                'string',
+                'regex:/^(?:\+?88)?01[3-9]\d{8}$/',
+            ],
+            'customer_email'  => ['nullable', 'email:rfc,filter', 'max:120'],
             'shipping_address'=> ['required', 'string', 'max:255'],
             'city'            => ['required', 'string', 'max:80'],
             'postal_code'     => ['nullable', 'string', 'max:20'],
@@ -113,6 +117,15 @@ class CheckoutController extends Controller
             'payment_method'  => ['required', Rule::in($this->availablePaymentMethods())],
             'payment_sender_number' => ['nullable', 'string', 'max:40', Rule::requiredIf(fn () => $request->payment_method !== 'cod')],
             'payment_txn_id'  => ['nullable', 'string', 'max:60', Rule::requiredIf(fn () => $request->payment_method !== 'cod')],
+        ], [
+            'customer_name.required'    => 'Please enter your full name.',
+            'customer_phone.required'   => 'Please enter your mobile phone number.',
+            'customer_phone.regex'      => 'Please enter a valid 11-digit mobile number (e.g. 017XXXXXXXX).',
+            'customer_email.email'      => 'Please enter a valid email address (e.g. name@example.com).',
+            'shipping_address.required' => 'Please enter your complete delivery address.',
+            'city.required'             => 'Please enter your city/district.',
+            'payment_sender_number.required' => 'Please enter the number you sent money from.',
+            'payment_txn_id.required'   => 'Please enter the transaction ID.',
         ]);
 
         $subtotal = (float) $items->sum('line_total');
