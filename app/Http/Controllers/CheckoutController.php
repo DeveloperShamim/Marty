@@ -34,20 +34,22 @@ class CheckoutController extends Controller
         $subtotal = $this->cart->subtotal();
         $coupon   = $this->coupons->summary($subtotal);
         $zone     = old('shipping_zone', 'inside_dhaka');
-        $totals   = $this->orderTotals($subtotal, $coupon['discount'], $zone);
+        $method   = old('payment_method', 'cod');
+        $totals   = $this->orderTotals($subtotal, $coupon['discount'], $zone, $method);
 
         $this->syncDraftAbandonedCart($items, $subtotal, $totals['total']);
 
         return view('storefront.checkout', [
-            'items'       => $items,
-            'subtotal'    => $subtotal,
-            'shipInside'  => (float) setting('shipping_inside_dhaka', 60),
-            'shipOutside' => (float) setting('shipping_outside_dhaka', 120),
-            'taxPercent'  => (float) setting('tax_percent', 0),
-            'user'        => Auth::user(),
-            'couponCode'  => $coupon['code'],
-            'discount'    => $coupon['discount'],
-            'totals'      => $totals,
+            'items'                => $items,
+            'subtotal'             => $subtotal,
+            'shipInside'           => (float) setting('shipping_inside_dhaka', 60),
+            'shipOutside'          => (float) setting('shipping_outside_dhaka', 120),
+            'taxPercent'           => (float) setting('tax_percent', 0),
+            'freeShippingOnOnline' => (string) setting('free_shipping_on_online_payment', '0') === '1',
+            'user'                 => Auth::user(),
+            'couponCode'           => $coupon['code'],
+            'discount'             => $coupon['discount'],
+            'totals'               => $totals,
         ]);
     }
 
@@ -64,7 +66,8 @@ class CheckoutController extends Controller
             $subtotal = $this->cart->subtotal();
             $coupon   = $this->coupons->summary($subtotal);
             $zone     = $request->input('shipping_zone', 'inside_dhaka');
-            $totals   = $this->orderTotals($subtotal, $coupon['discount'], $zone);
+            $method   = $request->input('payment_method', 'cod');
+            $totals   = $this->orderTotals($subtotal, $coupon['discount'], $zone, $method);
 
             $this->syncDraftAbandonedCart($items, $subtotal, $totals['total'], $validated);
         }
@@ -142,7 +145,7 @@ class CheckoutController extends Controller
             $discount = $coupon->calculateDiscount($subtotal);
         }
 
-        $totals = $this->orderTotals($subtotal, $discount, $validated['shipping_zone']);
+        $totals = $this->orderTotals($subtotal, $discount, $validated['shipping_zone'], $validated['payment_method']);
         $shipping = $totals['shipping'];
         $tax      = $totals['tax'];
         $total    = $totals['total'];
@@ -276,12 +279,21 @@ class CheckoutController extends Controller
         return view('storefront.order-confirmation', compact('order'));
     }
 
-    private function orderTotals(float $subtotal, float $discount, string $shippingZone): array
+    private function orderTotals(float $subtotal, float $discount, string $shippingZone, string $paymentMethod = 'cod'): array
     {
         $taxable  = max(0, $subtotal - $discount);
-        $shipping = $shippingZone === 'inside_dhaka'
-            ? (float) setting('shipping_inside_dhaka', 60)
-            : (float) setting('shipping_outside_dhaka', 120);
+        
+        $isOnlinePayment = in_array($paymentMethod, ['bkash', 'nagad', 'rocket']);
+        $freeShippingOnOnline = (string) setting('free_shipping_on_online_payment', '0') === '1';
+
+        if ($freeShippingOnOnline && $isOnlinePayment) {
+            $shipping = 0.0;
+        } else {
+            $shipping = $shippingZone === 'inside_dhaka'
+                ? (float) setting('shipping_inside_dhaka', 60)
+                : (float) setting('shipping_outside_dhaka', 120);
+        }
+
         $tax      = round($taxable * (float) setting('tax_percent', 0) / 100, 2);
         $total    = $taxable + $shipping + $tax;
 

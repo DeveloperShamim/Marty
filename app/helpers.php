@@ -451,3 +451,19 @@ SVG;
         return 'data:image/svg+xml;charset=utf-8,' . rawurlencode($svg);
     }
 }
+
+if (! function_exists('payment_icon_url')) {
+    /** Get custom uploaded logo/icon URL for a payment method. */
+    function payment_icon_url(string $method): ?string
+    {
+        $path = setting('pay_' . $method . '_icon');
+        if ($path && trim($path) !== '') {
+            if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+                return $path;
+            }
+            return asset('storage/' . ltrim($path, '/'));
+        }
+        return null;
+    }
+}
+

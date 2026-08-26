@@ -82,13 +82,23 @@
           </div>
         </div>
 
-        <div class="rounded-2xl bg-white p-6 border border-slate-100">
-          <h2 class="font-display text-lg font-extrabold">Payment method</h2>
+        <div class="rounded-2xl bg-white p-6 border border-slate-100 shadow-2xs">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-6 bg-brand-500 rounded-full inline-block"></span>
+              <h2 class="font-display text-lg font-bold text-stone-900">Payment method</h2>
+            </div>
+            <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-full uppercase tracking-wider">🔒 Secure</span>
+          </div>
+
           @php
             $method = old('payment_method', 'cod');
             $bkash = setting('bkash_number');
+            $bkashType = setting('bkash_type', 'personal');
             $nagad = setting('nagad_number');
+            $nagadType = setting('nagad_type', 'personal');
             $rocket = setting('rocket_number');
+            $rocketType = setting('rocket_type', 'personal');
             $showCod = (string) setting('pay_cod_enabled', '1') === '1';
             $showBkash = (string) setting('pay_bkash_enabled', '1') === '1' && (bool) $bkash;
             $showNagad = (string) setting('pay_nagad_enabled', '1') === '1' && (bool) $nagad;
@@ -98,47 +108,209 @@
               'nagad' => $nagad,
               'rocket' => $rocket,
             ];
+            $payTypes = [
+              'bkash' => $bkashType,
+              'nagad' => $nagadType,
+              'rocket' => $rocketType,
+            ];
+            $payNames = [
+              'bkash' => 'bKash',
+              'nagad' => 'Nagad',
+              'rocket' => 'Rocket',
+            ];
           @endphp
-          <div class="mt-4 space-y-3">
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {{-- 1. Cash on Delivery (COD) --}}
             @if($showCod)
-            <label class="pay-opt flex items-center gap-3 rounded-xl border-2 px-4 py-3.5 cursor-pointer {{ $method==='cod' ? 'border-brand-500 bg-brand-50/60' : 'border-slate-200 hover:border-brand-300' }}">
-              <input type="radio" name="payment_method" value="cod" @checked($method==='cod') class="pay-radio text-brand-600 focus:ring-brand-500" data-manual="0" data-pay-number="" />
-              <span class="font-medium">Cash on Delivery</span>
-              <svg class="ml-auto h-5 w-5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
+            <label class="pay-opt group relative flex items-center justify-between gap-3 rounded-xl border-2 p-3 sm:p-3.5 cursor-pointer transition-all duration-200 {{ $method==='cod' ? 'border-brand-500 bg-brand-50/50 shadow-xs' : 'border-stone-300 hover:border-stone-400 bg-white hover:bg-stone-50/50' }}">
+              <input type="radio" name="payment_method" value="cod" @checked($method==='cod') class="pay-radio sr-only" data-manual="0" data-pay-number="" data-pay-type="cod" data-pay-name="Cash On Delivery" />
+              
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="h-10 w-10 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center p-1 overflow-hidden shrink-0 shadow-2xs">
+                  @if(payment_icon_url('cod'))
+                    <img src="{{ payment_icon_url('cod') }}" class="h-full w-full object-contain" alt="COD">
+                  @else
+                    <svg class="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path stroke-linecap="round" d="M6 12h.01M18 12h.01"/></svg>
+                  @endif
+                </div>
+
+                <div class="min-w-0">
+                  <span class="block text-sm font-semibold text-stone-900 group-hover:text-brand-600 transition-colors">Cash On Delivery</span>
+                </div>
+              </div>
+
+              {{-- Checkmark indicator --}}
+              <div class="pay-check shrink-0 {{ $method==='cod' ? 'flex' : 'hidden' }} h-5 w-5 rounded-full bg-brand-500 text-white items-center justify-center shadow-xs">
+                <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
             </label>
             @endif
+
+            {{-- 2. bKash --}}
             @if($showBkash)
-            <label class="pay-opt flex items-center gap-3 rounded-xl border px-4 py-3.5 cursor-pointer hover:border-brand-300 {{ $method==='bkash' ? 'border-2 border-brand-500 bg-brand-50/60' : 'border-slate-200' }}">
-              <input type="radio" name="payment_method" value="bkash" @checked($method==='bkash') class="pay-radio text-brand-600 focus:ring-brand-500" data-manual="1" data-pay-number="{{ $bkash }}" />
-              <span class="font-medium">bKash</span>
-              <span class="ml-auto rounded-md bg-pink-100 text-pink-600 text-xs font-bold px-2 py-1">{{ $bkash }}</span>
+            <label class="pay-opt group relative flex items-center justify-between gap-3 rounded-xl border-2 p-3 sm:p-3.5 cursor-pointer transition-all duration-200 {{ $method==='bkash' ? 'border-brand-500 bg-brand-50/50 shadow-xs' : 'border-stone-300 hover:border-stone-400 bg-white hover:bg-stone-50/50' }}">
+              <input type="radio" name="payment_method" value="bkash" @checked($method==='bkash') class="pay-radio sr-only" data-manual="1" data-pay-number="{{ $bkash }}" data-pay-type="{{ $bkashType }}" data-pay-name="bKash" />
+
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="h-10 w-10 rounded-lg bg-[#E2136E] text-white flex items-center justify-center p-1.5 overflow-hidden shrink-0 shadow-2xs font-extrabold text-xs">
+                  @if(payment_icon_url('bkash'))
+                    <img src="{{ payment_icon_url('bkash') }}" class="h-full w-full object-contain" alt="bKash">
+                  @else
+                    <svg class="h-6 w-6 text-white" viewBox="0 0 32 32" fill="currentColor">
+                      <path d="M19.9 3.5l-9.8 11.2 9.1 2.3-4.8 11.5 12.1-13.4-9.3-2.1z"/>
+                    </svg>
+                  @endif
+                </div>
+
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="block text-sm font-semibold text-stone-900 group-hover:text-brand-600 transition-colors">Bkash</span>
+                    <span class="rounded-full bg-pink-50 text-pink-700 text-[10px] font-bold px-1.5 py-0.2">{{ $bkashType === 'merchant' ? 'Payment' : 'Send Money' }}</span>
+                    @if($freeShippingOnOnline ?? false)
+                      <span class="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-1.5 py-0.5">Free Delivery</span>
+                    @endif
+                  </div>
+                </div>
+              </div>
+
+              {{-- Checkmark indicator --}}
+              <div class="pay-check shrink-0 {{ $method==='bkash' ? 'flex' : 'hidden' }} h-5 w-5 rounded-full bg-brand-500 text-white items-center justify-center shadow-xs">
+                <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
             </label>
             @endif
+
+            {{-- 3. Nagad --}}
             @if($showNagad)
-            <label class="pay-opt flex items-center gap-3 rounded-xl border px-4 py-3.5 cursor-pointer hover:border-brand-300 {{ $method==='nagad' ? 'border-2 border-brand-500 bg-brand-50/60' : 'border-slate-200' }}">
-              <input type="radio" name="payment_method" value="nagad" @checked($method==='nagad') class="pay-radio text-brand-600 focus:ring-brand-500" data-manual="1" data-pay-number="{{ $nagad }}" />
-              <span class="font-medium">Nagad</span>
-              <span class="ml-auto rounded-md bg-orange-100 text-orange-600 text-xs font-bold px-2 py-1">{{ $nagad }}</span>
+            <label class="pay-opt group relative flex items-center justify-between gap-3 rounded-xl border-2 p-3 sm:p-3.5 cursor-pointer transition-all duration-200 {{ $method==='nagad' ? 'border-brand-500 bg-brand-50/50 shadow-xs' : 'border-stone-300 hover:border-stone-400 bg-white hover:bg-stone-50/50' }}">
+              <input type="radio" name="payment_method" value="nagad" @checked($method==='nagad') class="pay-radio sr-only" data-manual="1" data-pay-number="{{ $nagad }}" data-pay-type="{{ $nagadType }}" data-pay-name="Nagad" />
+
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="h-10 w-10 rounded-lg bg-[#F7941D] text-white flex items-center justify-center p-1.5 overflow-hidden shrink-0 shadow-2xs font-extrabold text-xs">
+                  @if(payment_icon_url('nagad'))
+                    <img src="{{ payment_icon_url('nagad') }}" class="h-full w-full object-contain" alt="Nagad">
+                  @else
+                    <span class="font-bold text-[10px] tracking-tighter">NAGAD</span>
+                  @endif
+                </div>
+
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="block text-sm font-semibold text-stone-900 group-hover:text-brand-600 transition-colors">Nagad</span>
+                    <span class="rounded-full bg-orange-50 text-orange-700 text-[10px] font-bold px-1.5 py-0.2">{{ $nagadType === 'merchant' ? 'Payment' : 'Send Money' }}</span>
+                    @if($freeShippingOnOnline ?? false)
+                      <span class="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-1.5 py-0.5">Free Delivery</span>
+                    @endif
+                  </div>
+                </div>
+              </div>
+
+              {{-- Checkmark indicator --}}
+              <div class="pay-check shrink-0 {{ $method==='nagad' ? 'flex' : 'hidden' }} h-5 w-5 rounded-full bg-brand-500 text-white items-center justify-center shadow-xs">
+                <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
             </label>
             @endif
+
+            {{-- 4. Rocket --}}
             @if($showRocket)
-            <label class="pay-opt flex items-center gap-3 rounded-xl border px-4 py-3.5 cursor-pointer hover:border-brand-300 {{ $method==='rocket' ? 'border-2 border-brand-500 bg-brand-50/60' : 'border-slate-200' }}">
-              <input type="radio" name="payment_method" value="rocket" @checked($method==='rocket') class="pay-radio text-brand-600 focus:ring-brand-500" data-manual="1" data-pay-number="{{ $rocket }}" />
-              <span class="font-medium">Rocket</span>
-              <span class="ml-auto rounded-md bg-purple-100 text-purple-600 text-xs font-bold px-2 py-1">{{ $rocket }}</span>
+            <label class="pay-opt group relative flex items-center justify-between gap-3 rounded-xl border-2 p-3 sm:p-3.5 cursor-pointer transition-all duration-200 {{ $method==='rocket' ? 'border-brand-500 bg-brand-50/50 shadow-xs' : 'border-stone-300 hover:border-stone-400 bg-white hover:bg-stone-50/50' }}">
+              <input type="radio" name="payment_method" value="rocket" @checked($method==='rocket') class="pay-radio sr-only" data-manual="1" data-pay-number="{{ $rocket }}" data-pay-type="{{ $rocketType }}" data-pay-name="Rocket" />
+
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="h-10 w-10 rounded-lg bg-[#8C3494] text-white flex items-center justify-center p-1.5 overflow-hidden shrink-0 shadow-2xs font-extrabold text-xs">
+                  @if(payment_icon_url('rocket'))
+                    <img src="{{ payment_icon_url('rocket') }}" class="h-full w-full object-contain" alt="Rocket">
+                  @else
+                    <span class="font-bold text-[10px] tracking-tighter">ROCKET</span>
+                  @endif
+                </div>
+
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="block text-sm font-semibold text-stone-900 group-hover:text-brand-600 transition-colors">Rocket</span>
+                    <span class="rounded-full bg-purple-50 text-purple-700 text-[10px] font-bold px-1.5 py-0.2">{{ $rocketType === 'merchant' ? 'Payment' : 'Send Money' }}</span>
+                    @if($freeShippingOnOnline ?? false)
+                      <span class="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-1.5 py-0.5">Free Delivery</span>
+                    @endif
+                  </div>
+                </div>
+              </div>
+
+              {{-- Checkmark indicator --}}
+              <div class="pay-check shrink-0 {{ $method==='rocket' ? 'flex' : 'hidden' }} h-5 w-5 rounded-full bg-brand-500 text-white items-center justify-center shadow-xs">
+                <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              </div>
             </label>
             @endif
           </div>
 
-          <div id="manualFields" class="mt-4 grid sm:grid-cols-2 gap-4 {{ $method==='cod' ? 'hidden' : '' }}">
-            <div class="sm:col-span-2 text-xs text-slate-500">Send <b id="manualPayAmount">{{ money($totals['total']) }}</b> to <b id="manualPayNumber">{{ $payNumbers[$method] ?? "\u{2014}" }}</b>, then enter your payment details below.</div>
-            <div><label class="block text-sm font-medium mb-1.5">Your sender number</label><input name="payment_sender_number" value="{{ old('payment_sender_number') }}" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" /></div>
-            <div><label class="block text-sm font-medium mb-1.5">Transaction ID</label><input name="payment_txn_id" value="{{ old('payment_txn_id') }}" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" /></div>
+          {{-- Manual Payment Instruction & Input Box --}}
+          @php
+            $currentType = $payTypes[$method] ?? 'personal';
+            $currentName = $payNames[$method] ?? 'Mobile Banking';
+            $currentNumber = $payNumbers[$method] ?? '';
+          @endphp
+          <div id="manualFields" class="mt-5 rounded-2xl bg-stone-50/80 p-4 sm:p-5 border border-stone-200/90 space-y-4 {{ $method==='cod' ? 'hidden' : '' }}">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-stone-200 shadow-2xs">
+              <div class="flex items-center gap-2.5 flex-wrap">
+                <span id="manualTypeBadge" class="rounded-lg {{ $currentType === 'merchant' ? 'bg-purple-100 text-purple-800' : 'bg-brand-100 text-brand-800' }} text-[11px] font-bold px-2.5 py-1 uppercase tracking-wide">
+                  {{ $currentType === 'merchant' ? 'Merchant Payment' : 'Personal Send Money' }}
+                </span>
+                <span class="text-xs text-stone-500 font-medium"><span id="manualMethodName">{{ $currentName }}</span> Number:</span>
+                <span id="manualPayNumber" class="text-sm font-bold font-mono text-stone-900">{{ $currentNumber ?: '—' }}</span>
+              </div>
+              <button type="button" id="copyNumberBtn" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 transition cursor-pointer shrink-0">
+                <svg class="h-3.5 w-3.5 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span id="copyBtnText">Copy Number</span>
+              </button>
+            </div>
+
+            <!-- Step by Step instructions -->
+            <div class="text-xs text-stone-600 space-y-2 bg-brand-50/40 p-3.5 rounded-xl border border-brand-100/80">
+              <p class="font-bold text-stone-800 flex items-center gap-1.5">
+                <span>📋</span> How to pay:
+              </p>
+              <div id="personalSteps" class="{{ $currentType === 'merchant' ? 'hidden' : 'space-y-1' }}">
+                <p>1. Open your <b class="text-stone-900 method-label">{{ $currentName }}</b> app and tap <b>"Send Money"</b>.</p>
+                <p>2. Enter Number: <b class="number-label font-mono text-stone-900">{{ $currentNumber }}</b> &amp; Amount: <b class="amount-label text-stone-900">{{ money($totals['total']) }}</b>.</p>
+                <p>3. Enter your PIN to complete the transaction.</p>
+                <p>4. Enter your Sender Number &amp; Transaction ID (TrxID) below to place order.</p>
+              </div>
+              <div id="merchantSteps" class="{{ $currentType === 'merchant' ? 'space-y-1' : 'hidden' }}">
+                <p>1. Open your <b class="text-stone-900 method-label">{{ $currentName }}</b> app and tap <b>"Make Payment"</b> (or Payment).</p>
+                <p>2. Enter Merchant Number: <b class="number-label font-mono text-stone-900">{{ $currentNumber }}</b> &amp; Amount: <b class="amount-label text-stone-900">{{ money($totals['total']) }}</b>.</p>
+                <p>3. Enter Reference: (Your Phone Number) and PIN to complete payment.</p>
+                <p>4. Enter your Sender Number &amp; Transaction ID (TrxID) below to place order.</p>
+              </div>
+            </div>
+            
+            <div class="grid sm:grid-cols-2 gap-3 pt-1">
+              <div>
+                <label class="block text-xs font-bold text-stone-700 mb-1">Your Sender Mobile Number <span class="text-red-500">*</span></label>
+                <input name="payment_sender_number" value="{{ old('payment_sender_number') }}" placeholder="01XXXXXXXXX" class="w-full rounded-xl border @error('payment_sender_number') border-red-400 bg-red-50/20 @else border-slate-200 @enderror bg-white px-3.5 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                @error('payment_sender_number')<p class="text-xs text-red-600 mt-1 font-medium">{{ $message }}</p>@enderror
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-stone-700 mb-1">Transaction ID (TrxID) <span class="text-red-500">*</span></label>
+                <input name="payment_txn_id" value="{{ old('payment_txn_id') }}" placeholder="e.g. 9J4K2L8X" class="w-full rounded-xl border @error('payment_txn_id') border-red-400 bg-red-50/20 @else border-slate-200 @enderror bg-white px-3.5 py-2.5 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-brand-500" />
+                @error('payment_txn_id')<p class="text-xs text-red-600 mt-1 font-medium">{{ $message }}</p>@enderror
+              </div>
+            </div>
           </div>
         </div>
 
-        <button type="submit" class="btn-shine w-full rounded-full bg-brand-600 text-white font-bold py-4 hover:bg-brand-700 transition">Place Order · <span id="placeTotal">{{ money($totals['total']) }}</span></button>
-        <p class="text-center text-xs text-slate-400">By placing your order you agree to our <a href="{{ route('terms') }}" class="underline hover:text-brand-600">Terms</a> &amp; <a href="{{ route('privacy') }}" class="underline hover:text-brand-600">Privacy Policy</a>.</p>
+        <div class="space-y-2.5 pt-2">
+          <button type="submit" id="submitOrderBtn" class="w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 px-6 transition-colors shadow-xs text-base flex items-center justify-center gap-2 cursor-pointer">
+            <span>Place Order</span>
+            <span>·</span>
+            <span id="placeTotal">{{ money($totals['total']) }}</span>
+          </button>
+
+          <p class="text-center text-xs text-slate-400">By placing your order you agree to our <a href="{{ route('terms') }}" class="underline hover:text-brand-600">Terms</a> &amp; <a href="{{ route('privacy') }}" class="underline hover:text-brand-600">Privacy Policy</a>.</p>
+        </div>
       </form>
 
       <aside class="mt-8 lg:mt-0 space-y-4">
@@ -226,6 +398,7 @@
   var subtotal = {{ $subtotal }};
   var discount = {{ $discount }};
   var taxPct = {{ $taxPercent }};
+  var freeShippingOnOnline = @json($freeShippingOnOnline ?? false);
   var zone = document.getElementById('shippingZone');
   var currencySymbol = @json(currency_symbol());
   var money = function (n) {
@@ -233,12 +406,25 @@
   };
 
   function recalc() {
-    var fee = parseFloat(zone.options[zone.selectedIndex].dataset.fee) || 0;
+    var zoneFee = parseFloat(zone.options[zone.selectedIndex].dataset.fee) || 0;
+    var selectedRadio = document.querySelector('.pay-radio:checked');
+    var isOnline = selectedRadio && selectedRadio.value !== 'cod';
+    var isFreeShipping = freeShippingOnOnline && isOnline;
+    var fee = isFreeShipping ? 0 : zoneFee;
+
     var taxable = Math.max(0, subtotal - discount);
     var tax = Math.round(taxable * taxPct / 100);
     var total = taxable + fee + tax;
 
-    document.getElementById('sumShipping').textContent = money(fee);
+    var sumShippingEl = document.getElementById('sumShipping');
+    if (sumShippingEl) {
+      if (isFreeShipping) {
+        sumShippingEl.innerHTML = '<span class="text-emerald-600 font-bold">FREE (৳0)</span> <span class="text-xs text-stone-400 line-through">' + money(zoneFee) + '</span>';
+      } else {
+        sumShippingEl.textContent = money(fee);
+      }
+    }
+
     document.getElementById('sumTax').textContent = money(tax);
     document.getElementById('sumTotal').textContent = money(total);
     document.getElementById('placeTotal').textContent = money(total);
@@ -252,17 +438,101 @@
   document.querySelectorAll('.pay-radio').forEach(function (r) {
     r.addEventListener('change', function () {
       document.querySelectorAll('.pay-opt').forEach(function (o) {
-        o.classList.remove('border-2', 'border-brand-500', 'bg-brand-50/60');
-        o.classList.add('border-slate-200');
+        o.classList.remove('border-brand-500', 'bg-brand-50/50', 'shadow-xs');
+        o.classList.add('border-stone-300');
+        var chk = o.querySelector('.pay-check');
+        if (chk) {
+          chk.classList.remove('flex');
+          chk.classList.add('hidden');
+        }
       });
       var label = r.closest('.pay-opt');
-      label.classList.add('border-2', 'border-brand-500', 'bg-brand-50/60');
-      label.classList.remove('border-slate-200');
-      document.getElementById('manualFields').classList.toggle('hidden', r.dataset.manual === '0');
-      var numEl = document.getElementById('manualPayNumber');
-      if (numEl) numEl.textContent = r.dataset.payNumber || "\u{2014}";
+      label.classList.add('border-brand-500', 'bg-brand-50/50', 'shadow-xs');
+      label.classList.remove('border-stone-300');
+      var myChk = label.querySelector('.pay-check');
+      if (myChk) {
+        myChk.classList.remove('hidden');
+        myChk.classList.add('flex');
+      }
+
+      var isManual = r.dataset.manual === '1';
+      document.getElementById('manualFields').classList.toggle('hidden', !isManual);
+
+      if (isManual) {
+        var num = r.dataset.payNumber || '';
+        var pType = r.dataset.payType || 'personal';
+        var pName = r.dataset.payName || 'Payment';
+
+        var numEl = document.getElementById('manualPayNumber');
+        if (numEl) numEl.textContent = num || "—";
+
+        var nameEl = document.getElementById('manualMethodName');
+        if (nameEl) nameEl.textContent = pName;
+
+        document.querySelectorAll('.method-label').forEach(function (el) {
+          el.textContent = pName;
+        });
+        document.querySelectorAll('.number-label').forEach(function (el) {
+          el.textContent = num;
+        });
+
+        var badgeEl = document.getElementById('manualTypeBadge');
+        var personalSteps = document.getElementById('personalSteps');
+        var merchantSteps = document.getElementById('merchantSteps');
+
+        if (pType === 'merchant') {
+          if (badgeEl) {
+            badgeEl.textContent = 'Merchant Payment';
+            badgeEl.className = 'rounded-lg bg-purple-100 text-purple-800 text-[11px] font-bold px-2.5 py-1 uppercase tracking-wide';
+          }
+          if (personalSteps) personalSteps.classList.add('hidden');
+          if (merchantSteps) merchantSteps.classList.remove('hidden');
+        } else {
+          if (badgeEl) {
+            badgeEl.textContent = 'Personal Send Money';
+            badgeEl.className = 'rounded-lg bg-brand-100 text-brand-800 text-[11px] font-bold px-2.5 py-1 uppercase tracking-wide';
+          }
+          if (personalSteps) personalSteps.classList.remove('hidden');
+          if (merchantSteps) merchantSteps.classList.add('hidden');
+        }
+      }
+
+      recalc();
     });
   });
+
+  // Copy number button handler
+  var copyBtn = document.getElementById('copyNumberBtn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function () {
+      var selectedRadio = document.querySelector('.pay-radio:checked');
+      var num = selectedRadio ? selectedRadio.dataset.payNumber : '';
+      if (!num) return;
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(num);
+      } else {
+        var tempInput = document.createElement('input');
+        tempInput.value = num;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+      }
+
+      var btnText = document.getElementById('copyBtnText');
+      if (btnText) {
+        var orig = btnText.textContent;
+        btnText.textContent = 'Copied!';
+        setTimeout(function () {
+          btnText.textContent = orig;
+        }, 2000);
+      }
+      if (window.showToast) {
+        window.showToast('Number ' + num + ' copied to clipboard!', 'success');
+      }
+    });
+  }
 
   recalc();
 

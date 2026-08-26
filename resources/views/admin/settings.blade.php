@@ -385,7 +385,7 @@
   </form>
 
   <!-- TAB 3: PAYMENTS & SHIPPING -->
-  <form method="POST" action="{{ route('admin.settings.update-section', 'payments') }}" class="settings-section-form space-y-6" data-section="payments">
+  <form method="POST" action="{{ route('admin.settings.update-section', 'payments') }}" enctype="multipart/form-data" class="settings-section-form space-y-6" data-section="payments">
     @csrf @method('PUT')
 
     <div class="flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-gray-200/80">
@@ -394,62 +394,230 @@
     </div>
     <div class="section-feedback hidden text-sm rounded-xl px-4 py-2"></div>
 
-    <div class="card p-5 sm:p-6 space-y-5 bg-white rounded-2xl border border-gray-200/80 shadow-xs">
+    <div class="card p-5 sm:p-6 space-y-6 bg-white rounded-2xl border border-gray-200/80 shadow-xs">
       <div class="border-b border-gray-100 pb-3">
         <h3 class="font-bold text-base text-ink flex items-center gap-2">
-          <span>💳</span> Manual Payment Methods (bKash, Nagad, Rocket, COD)
+          <span>💳</span> Payment Methods &amp; Custom Icons
         </h3>
-        <p class="text-xs text-gray-500 mt-0.5">Enable or disable checkout payment gateways and provide merchant account numbers</p>
+        <p class="text-xs text-gray-500 mt-0.5">Enable/disable payment methods, set merchant numbers, and upload custom icons or logos for checkout</p>
       </div>
 
-      <div class="space-y-3">
-        @php
-          $payCodOn = ($settings['pay_cod_enabled'] ?? '1') === '1';
-          $payBkashOn = ($settings['pay_bkash_enabled'] ?? '1') === '1';
-          $payNagadOn = ($settings['pay_nagad_enabled'] ?? '1') === '1';
-          $payRocketOn = ($settings['pay_rocket_enabled'] ?? '1') === '1';
-        @endphp
-        <label class="flex items-center justify-between gap-4 rounded-xl border border-gray-200 p-4 cursor-pointer hover:bg-gray-50/50 transition">
-          <span class="text-sm font-bold text-ink flex items-center gap-2">💵 Cash on Delivery (COD)</span>
-          <span class="relative inline-flex items-center shrink-0">
-            <input type="checkbox" name="pay_cod_enabled" value="1" class="peer sr-only" @checked($payCodOn)>
-            <span class="h-6 w-11 rounded-full bg-gray-300 transition peer-checked:bg-brand-600"></span>
-            <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
-          </span>
-        </label>
+      @php
+        $payCodOn = ($settings['pay_cod_enabled'] ?? '1') === '1';
+        $payBkashOn = ($settings['pay_bkash_enabled'] ?? '1') === '1';
+        $payNagadOn = ($settings['pay_nagad_enabled'] ?? '1') === '1';
+        $payRocketOn = ($settings['pay_rocket_enabled'] ?? '1') === '1';
+        $freeShippingOnOnline = ($settings['free_shipping_on_online_payment'] ?? '0') === '1';
+      @endphp
 
-        <label class="flex items-center justify-between gap-4 rounded-xl border border-gray-200 p-4 cursor-pointer hover:bg-gray-50/50 transition">
-          <span class="text-sm font-bold text-pink-600 flex items-center gap-2">📱 bKash Merchant Payment</span>
-          <span class="relative inline-flex items-center shrink-0">
-            <input type="checkbox" name="pay_bkash_enabled" value="1" class="peer sr-only" @checked($payBkashOn)>
-            <span class="h-6 w-11 rounded-full bg-gray-300 transition peer-checked:bg-brand-600"></span>
-            <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
-          </span>
-        </label>
-
-        <label class="flex items-center justify-between gap-4 rounded-xl border border-gray-200 p-4 cursor-pointer hover:bg-gray-50/50 transition">
-          <span class="text-sm font-bold text-orange-600 flex items-center gap-2">📱 Nagad Merchant Payment</span>
-          <span class="relative inline-flex items-center shrink-0">
-            <input type="checkbox" name="pay_nagad_enabled" value="1" class="peer sr-only" @checked($payNagadOn)>
-            <span class="h-6 w-11 rounded-full bg-gray-300 transition peer-checked:bg-brand-600"></span>
-            <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
-          </span>
-        </label>
-
-        <label class="flex items-center justify-between gap-4 rounded-xl border border-gray-200 p-4 cursor-pointer hover:bg-gray-50/50 transition">
-          <span class="text-sm font-bold text-purple-600 flex items-center gap-2">📱 Rocket Merchant Payment</span>
-          <span class="relative inline-flex items-center shrink-0">
-            <input type="checkbox" name="pay_rocket_enabled" value="1" class="peer sr-only" @checked($payRocketOn)>
-            <span class="h-6 w-11 rounded-full bg-gray-300 transition peer-checked:bg-brand-600"></span>
-            <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
-          </span>
+      <!-- Free Delivery on Online Payment Feature Toggle -->
+      <div class="p-4 sm:p-5 rounded-2xl border-2 border-emerald-200 bg-emerald-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-start gap-3">
+          <div class="h-10 w-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg shrink-0 shadow-xs">
+            🎁
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-extrabold text-emerald-950">Free Delivery on Online / Mobile Payments</span>
+              <span class="text-[10px] font-extrabold bg-emerald-200/80 text-emerald-800 px-2 py-0.5 rounded-full uppercase tracking-wider">Promotion</span>
+            </div>
+            <p class="text-xs text-emerald-800/80 mt-0.5">Automatically waive the delivery charge (৳0 Shipping) when customers pay online using <b>bKash</b>, <b>Nagad</b>, or <b>Rocket</b>.</p>
+          </div>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer shrink-0">
+          <input type="checkbox" name="free_shipping_on_online_payment" value="1" class="peer sr-only" @checked($freeShippingOnOnline)>
+          <span class="h-6 w-11 rounded-full bg-gray-300 transition peer-checked:bg-emerald-600"></span>
+          <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
+          <span class="ml-2.5 text-xs font-bold text-emerald-900 hidden sm:inline">Enable Free Delivery</span>
         </label>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-gray-100">
-        <div><label class="lbl font-bold text-xs text-gray-700">bKash Personal/Merchant No.</label><input name="bkash_number" class="inp" value="{{ $settings['bkash_number'] ?? '' }}" placeholder="01700000000" /></div>
-        <div><label class="lbl font-bold text-xs text-gray-700">Nagad Personal/Merchant No.</label><input name="nagad_number" class="inp" value="{{ $settings['nagad_number'] ?? '' }}" placeholder="01700000000" /></div>
-        <div><label class="lbl font-bold text-xs text-gray-700">Rocket Personal/Merchant No.</label><input name="rocket_number" class="inp" value="{{ $settings['rocket_number'] ?? '' }}" placeholder="01700000000" /></div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- 1. Cash on Delivery (COD) -->
+        <div class="p-4 rounded-2xl border border-gray-200 bg-gray-50/30 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-ink flex items-center gap-2">
+              <span class="text-emerald-600">💵</span> Cash on Delivery (COD)
+            </span>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" name="pay_cod_enabled" value="1" class="peer sr-only" @checked($payCodOn)>
+              <span class="h-6 w-11 rounded-full bg-gray-300 transition peer-checked:bg-brand-600"></span>
+              <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
+            </label>
+          </div>
+          
+          <div class="pt-2 border-t border-gray-200/60">
+            <label class="lbl font-bold text-xs text-gray-700">Custom COD Icon/Logo</label>
+            <div class="flex items-center gap-3 mt-1.5">
+              <div class="h-12 w-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center p-1 overflow-hidden shadow-2xs shrink-0">
+                @if(payment_icon_url('cod'))
+                  <img src="{{ payment_icon_url('cod') }}" class="h-full w-full object-contain" alt="COD">
+                @else
+                  <svg class="h-7 w-7 text-emerald-600" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>
+                @endif
+              </div>
+              <div class="min-w-0 flex-1">
+                <input name="pay_cod_icon_file" type="file" accept="image/*" class="text-xs w-full" />
+                @if(payment_icon_url('cod'))
+                  <label class="inline-flex items-center gap-1 mt-1 text-[11px] text-red-600 cursor-pointer hover:underline">
+                    <input type="checkbox" name="remove_pay_cod_icon" value="1" class="rounded text-red-600 text-xs">
+                    <span>Remove custom icon</span>
+                  </label>
+                @endif
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. bKash -->
+        <div class="p-4 rounded-2xl border border-gray-200 bg-gray-50/30 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-pink-600 flex items-center gap-2">
+              <span>📱</span> bKash Payment
+            </span>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" name="pay_bkash_enabled" value="1" class="peer sr-only" @checked($payBkashOn)>
+              <span class="h-6 w-11 rounded-full bg-gray-300 transition peer-checked:bg-brand-600"></span>
+              <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="lbl font-bold text-xs text-gray-700">bKash Number</label>
+              <input name="bkash_number" class="inp" value="{{ $settings['bkash_number'] ?? '' }}" placeholder="017XXXXXXXX" />
+            </div>
+            <div>
+              <label class="lbl font-bold text-xs text-gray-700">Payment Type</label>
+              <select name="bkash_type" class="inp">
+                <option value="personal" @selected(($settings['bkash_type'] ?? 'personal') === 'personal')>Personal (Send Money)</option>
+                <option value="merchant" @selected(($settings['bkash_type'] ?? '') === 'merchant')>Merchant (Make Payment)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-gray-200/60">
+            <label class="lbl font-bold text-xs text-gray-700">Custom bKash Logo/Icon</label>
+            <div class="flex items-center gap-3 mt-1.5">
+              <div class="h-12 w-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center p-1 overflow-hidden shadow-2xs shrink-0">
+                @if(payment_icon_url('bkash'))
+                  <img src="{{ payment_icon_url('bkash') }}" class="h-full w-full object-contain" alt="bKash">
+                @else
+                  <span class="font-extrabold text-pink-600 text-xs tracking-tight">bKash</span>
+                @endif
+              </div>
+              <div class="min-w-0 flex-1">
+                <input name="pay_bkash_icon_file" type="file" accept="image/*" class="text-xs w-full" />
+                @if(payment_icon_url('bkash'))
+                  <label class="inline-flex items-center gap-1 mt-1 text-[11px] text-red-600 cursor-pointer hover:underline">
+                    <input type="checkbox" name="remove_pay_bkash_icon" value="1" class="rounded text-red-600 text-xs">
+                    <span>Remove custom icon</span>
+                  </label>
+                @endif
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Nagad -->
+        <div class="p-4 rounded-2xl border border-gray-200 bg-gray-50/30 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-orange-600 flex items-center gap-2">
+              <span>📱</span> Nagad Payment
+            </span>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" name="pay_nagad_enabled" value="1" class="peer sr-only" @checked($payNagadOn)>
+              <span class="h-6 w-11 rounded-full bg-gray-300 transition peer-checked:bg-brand-600"></span>
+              <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="lbl font-bold text-xs text-gray-700">Nagad Number</label>
+              <input name="nagad_number" class="inp" value="{{ $settings['nagad_number'] ?? '' }}" placeholder="017XXXXXXXX" />
+            </div>
+            <div>
+              <label class="lbl font-bold text-xs text-gray-700">Payment Type</label>
+              <select name="nagad_type" class="inp">
+                <option value="personal" @selected(($settings['nagad_type'] ?? 'personal') === 'personal')>Personal (Send Money)</option>
+                <option value="merchant" @selected(($settings['nagad_type'] ?? '') === 'merchant')>Merchant (Make Payment)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-gray-200/60">
+            <label class="lbl font-bold text-xs text-gray-700">Custom Nagad Logo/Icon</label>
+            <div class="flex items-center gap-3 mt-1.5">
+              <div class="h-12 w-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center p-1 overflow-hidden shadow-2xs shrink-0">
+                @if(payment_icon_url('nagad'))
+                  <img src="{{ payment_icon_url('nagad') }}" class="h-full w-full object-contain" alt="Nagad">
+                @else
+                  <span class="font-extrabold text-orange-600 text-xs tracking-tight">Nagad</span>
+                @endif
+              </div>
+              <div class="min-w-0 flex-1">
+                <input name="pay_nagad_icon_file" type="file" accept="image/*" class="text-xs w-full" />
+                @if(payment_icon_url('nagad'))
+                  <label class="inline-flex items-center gap-1 mt-1 text-[11px] text-red-600 cursor-pointer hover:underline">
+                    <input type="checkbox" name="remove_pay_nagad_icon" value="1" class="rounded text-red-600 text-xs">
+                    <span>Remove custom icon</span>
+                  </label>
+                @endif
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Rocket -->
+        <div class="p-4 rounded-2xl border border-gray-200 bg-gray-50/30 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-purple-600 flex items-center gap-2">
+              <span>📱</span> Rocket Payment
+            </span>
+            <label class="relative inline-flex items-center cursor-pointer shrink-0">
+              <input type="checkbox" name="pay_rocket_enabled" value="1" class="peer sr-only" @checked($payRocketOn)>
+              <span class="h-6 w-11 rounded-full bg-gray-300 transition peer-checked:bg-brand-600"></span>
+              <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="lbl font-bold text-xs text-gray-700">Rocket Number</label>
+              <input name="rocket_number" class="inp" value="{{ $settings['rocket_number'] ?? '' }}" placeholder="017XXXXXXXX" />
+            </div>
+            <div>
+              <label class="lbl font-bold text-xs text-gray-700">Payment Type</label>
+              <select name="rocket_type" class="inp">
+                <option value="personal" @selected(($settings['rocket_type'] ?? 'personal') === 'personal')>Personal (Send Money)</option>
+                <option value="merchant" @selected(($settings['rocket_type'] ?? '') === 'merchant')>Merchant (Make Payment)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-gray-200/60">
+            <label class="lbl font-bold text-xs text-gray-700">Custom Rocket Logo/Icon</label>
+            <div class="flex items-center gap-3 mt-1.5">
+              <div class="h-12 w-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center p-1 overflow-hidden shadow-2xs shrink-0">
+                @if(payment_icon_url('rocket'))
+                  <img src="{{ payment_icon_url('rocket') }}" class="h-full w-full object-contain" alt="Rocket">
+                @else
+                  <span class="font-extrabold text-purple-600 text-xs tracking-tight">Rocket</span>
+                @endif
+              </div>
+              <div class="min-w-0 flex-1">
+                <input name="pay_rocket_icon_file" type="file" accept="image/*" class="text-xs w-full" />
+                @if(payment_icon_url('rocket'))
+                  <label class="inline-flex items-center gap-1 mt-1 text-[11px] text-red-600 cursor-pointer hover:underline">
+                    <input type="checkbox" name="remove_pay_rocket_icon" value="1" class="rounded text-red-600 text-xs">
+                    <span>Remove custom icon</span>
+                  </label>
+                @endif
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </form>

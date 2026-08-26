@@ -142,13 +142,25 @@ class SettingController extends Controller
             ],
             'payments' => [
                 'bkash_number'  => ['nullable', 'string', 'max:40'],
+                'bkash_type'    => ['nullable', 'in:personal,merchant'],
                 'nagad_number'  => ['nullable', 'string', 'max:40'],
+                'nagad_type'    => ['nullable', 'in:personal,merchant'],
                 'rocket_number' => ['nullable', 'string', 'max:40'],
+                'rocket_type'   => ['nullable', 'in:personal,merchant'],
                 'pay_cod_enabled' => ['nullable', 'boolean'],
                 'pay_bkash_enabled' => ['nullable', 'boolean'],
                 'pay_nagad_enabled' => ['nullable', 'boolean'],
                 'pay_rocket_enabled' => ['nullable', 'boolean'],
                 'show_cards_in_footer' => ['nullable', 'boolean'],
+                'free_shipping_on_online_payment' => ['nullable', 'boolean'],
+                'pay_cod_icon_file' => ['nullable', 'image', 'max:2048'],
+                'pay_bkash_icon_file' => ['nullable', 'image', 'max:2048'],
+                'pay_nagad_icon_file' => ['nullable', 'image', 'max:2048'],
+                'pay_rocket_icon_file' => ['nullable', 'image', 'max:2048'],
+                'remove_pay_cod_icon' => ['nullable', 'boolean'],
+                'remove_pay_bkash_icon' => ['nullable', 'boolean'],
+                'remove_pay_nagad_icon' => ['nullable', 'boolean'],
+                'remove_pay_rocket_icon' => ['nullable', 'boolean'],
             ],
             'shipping' => [
                 'shipping_inside_dhaka'  => ['required', 'numeric', 'min:0'],
@@ -231,7 +243,7 @@ class SettingController extends Controller
                 'home_view_more_label', 'default_cta_text',
                 'hero_fallback_badge', 'hero_fallback_title', 'hero_fallback_subtitle',
             ],
-            'payments' => ['bkash_number', 'nagad_number', 'rocket_number'],
+            'payments' => ['bkash_number', 'nagad_number', 'rocket_number', 'bkash_type', 'nagad_type', 'rocket_type'],
             'shipping' => [
                 'shipping_inside_dhaka', 'shipping_outside_dhaka', 'tax_percent',
                 'shipping_inside_label', 'shipping_outside_label',
@@ -290,6 +302,12 @@ class SettingController extends Controller
             Setting::put('pay_nagad_enabled', $request->boolean('pay_nagad_enabled') ? '1' : '0');
             Setting::put('pay_rocket_enabled', $request->boolean('pay_rocket_enabled') ? '1' : '0');
             Setting::put('show_cards_in_footer', $request->boolean('show_cards_in_footer') ? '1' : '0');
+            Setting::put('free_shipping_on_online_payment', $request->boolean('free_shipping_on_online_payment') ? '1' : '0');
+
+            $this->handleImage($request, 'pay_cod_icon_file', 'pay_cod_icon', 'remove_pay_cod_icon');
+            $this->handleImage($request, 'pay_bkash_icon_file', 'pay_bkash_icon', 'remove_pay_bkash_icon');
+            $this->handleImage($request, 'pay_nagad_icon_file', 'pay_nagad_icon', 'remove_pay_nagad_icon');
+            $this->handleImage($request, 'pay_rocket_icon_file', 'pay_rocket_icon', 'remove_pay_rocket_icon');
         }
 
         if ($section === 'brand') {
