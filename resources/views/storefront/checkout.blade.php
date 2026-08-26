@@ -43,8 +43,8 @@
         <div class="rounded-2xl bg-white p-6 border border-slate-100">
           <h2 class="font-display text-lg font-extrabold">Contact</h2>
           <div class="mt-4 grid sm:grid-cols-2 gap-4">
-            <div class="sm:col-span-2"><label class="block text-sm font-medium mb-1.5">Full name</label><input name="customer_name" value="{{ old('customer_name', $user?->name) }}" required class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" /></div>
-            <div class="sm:col-span-2"><label class="block text-sm font-medium mb-1.5">Phone</label><input name="customer_phone" value="{{ old('customer_phone', $user?->phone) }}" required placeholder="01XXX-XXXXXX" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" /></div>
+            <div class="sm:col-span-2"><label class="block text-sm font-medium mb-1.5">Full name <span class="text-red-500">*</span></label><input name="customer_name" value="{{ old('customer_name', $user?->name) }}" required class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" /></div>
+            <div class="sm:col-span-2"><label class="block text-sm font-medium mb-1.5">Phone <span class="text-red-500">*</span></label><input name="customer_phone" value="{{ old('customer_phone', $user?->phone) }}" required placeholder="01XXX-XXXXXX" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" /></div>
             <div class="sm:col-span-2"><label class="block text-sm font-medium mb-1.5">Email (optional)</label><input type="email" name="customer_email" value="{{ old('customer_email', $user?->email) }}" placeholder="you@example.com" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" /></div>
           </div>
         </div>

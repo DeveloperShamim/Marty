@@ -180,6 +180,12 @@
         </div>
       </div>
 
+      {{-- Validation Error Alert Box --}}
+      <div id="pdpErrorAlert" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs font-semibold p-3 rounded-xl flex items-center gap-2 my-1">
+        <svg class="w-4 h-4 text-red-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span id="pdpErrorMessage">Please select a variation option before adding to cart.</span>
+      </div>
+
       {{-- Action Buttons --}}
       <div class="space-y-3 pt-1">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -429,17 +435,6 @@ function syncPdpVariantStockAndPrice() {
   const basePrice = parseFloat(priceEl.getAttribute('data-base-price') || '0');
   const baseReg = regEl ? parseFloat(regEl.getAttribute('data-base-regular') || '0') : basePrice;
 
-  // Auto select 1st option in any group that doesn't have a selection yet
-  document.querySelectorAll('[data-variant-group]').forEach(group => {
-    if (!group.querySelector('.variant-btn.is-selected')) {
-      const firstBtn = group.querySelector('.variant-btn:not([disabled])') || group.querySelector('.variant-btn');
-      if (firstBtn) {
-        firstBtn.classList.add('is-selected', 'border-2', 'border-brand-500', 'text-brand-600', 'bg-brand-50/40');
-        firstBtn.classList.remove('border-stone-200', 'text-stone-700');
-      }
-    }
-  });
-
   // Selected attributes
   const selectedAttrs = {};
   document.querySelectorAll('[data-variant-group]').forEach(group => {
@@ -545,12 +540,18 @@ document.querySelectorAll('[data-variant-group] .variant-btn').forEach((b) => b.
     return;
   }
   const group = b.closest('[data-variant-group]');
+  const wasSelected = b.classList.contains('is-selected');
   group.querySelectorAll('.variant-btn').forEach((x) => {
     x.classList.remove('is-selected', 'border-2', 'border-brand-500', 'text-brand-600', 'bg-brand-50/40');
     x.classList.add('border', 'border-stone-200', 'text-stone-700');
   });
-  b.classList.add('is-selected', 'border-2', 'border-brand-500', 'text-brand-600', 'bg-brand-50/40');
-  b.classList.remove('border-stone-200', 'text-stone-700');
+  if (!wasSelected) {
+    b.classList.add('is-selected', 'border-2', 'border-brand-500', 'text-brand-600', 'bg-brand-50/40');
+    b.classList.remove('border-stone-200', 'text-stone-700');
+  }
+
+  const pdpAlert = document.getElementById('pdpErrorAlert');
+  if (pdpAlert) pdpAlert.classList.add('hidden');
 
   syncPdpVariantStockAndPrice();
 }));

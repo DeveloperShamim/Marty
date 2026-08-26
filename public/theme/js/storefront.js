@@ -393,26 +393,8 @@
       }
     }
 
-    variantGroups.forEach((group) => {
-      const buttons = group.querySelectorAll(".variant-btn");
-      buttons.forEach((btn, idx) => {
-        if (idx === 0 && !group.querySelector(".variant-btn.is-selected")) {
-          btn.classList.add("is-selected", "border-2", "border-brand-500", "text-brand-600", "bg-brand-50/40");
-          btn.classList.remove("border-stone-200", "text-stone-700");
-        }
-
-        btn.addEventListener("click", (e) => {
-          e.preventDefault();
-          buttons.forEach((b) => {
-            b.classList.remove("is-selected", "border-2", "border-brand-500", "text-brand-600", "bg-brand-50/40");
-            b.classList.add("border-stone-200", "text-stone-700");
-          });
-          btn.classList.add("is-selected", "border-2", "border-brand-500", "text-brand-600", "bg-brand-50/40");
-          btn.classList.remove("border-stone-200", "text-stone-700");
-          syncPdpPrice();
-        });
-      });
-    });
+    // PDP variant button clicks are handled directly by product.blade.php inline script
+    // to update stock, SKU ID, gallery images and pricing synchronously.
 
     syncPdpPrice();
   }
@@ -664,26 +646,24 @@
         const flex = document.createElement("div");
         flex.className = "flex flex-wrap gap-2";
 
-        options.forEach((optVal, optIdx) => {
+        options.forEach((optVal) => {
           const btn = document.createElement("button");
           btn.type = "button";
           btn.className = "qm-variant-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-stone-200 text-stone-700 hover:border-stone-400 transition-all cursor-pointer";
           btn.setAttribute("data-value", optVal);
           btn.textContent = optVal;
 
-          if (optIdx === 0) {
-            btn.classList.add("is-selected", "border-2", "border-brand-500", "text-brand-600", "bg-brand-50/40");
-            btn.classList.remove("border-stone-200", "text-stone-700");
-          }
-
           btn.addEventListener("click", () => {
             if (btn.disabled) return;
+            const wasSelected = btn.classList.contains("is-selected");
             flex.querySelectorAll(".qm-variant-btn").forEach((b) => {
               b.classList.remove("is-selected", "border-2", "border-brand-500", "text-brand-600", "bg-brand-50/40");
               if (!b.disabled) b.classList.add("border", "border-stone-200", "text-stone-700");
             });
-            btn.classList.add("is-selected", "border-2", "border-brand-500", "text-brand-600", "bg-brand-50/40");
-            btn.classList.remove("border-stone-200", "text-stone-700");
+            if (!wasSelected) {
+              btn.classList.add("is-selected", "border-2", "border-brand-500", "text-brand-600", "bg-brand-50/40");
+              btn.classList.remove("border-stone-200", "text-stone-700");
+            }
             if (qmErrorAlert) qmErrorAlert.classList.add("hidden");
 
             updateQuickModalVariantAvailability();
@@ -855,10 +835,18 @@
     pdBtn.addEventListener("click", (e) => {
       e.preventDefault();
       const { variant, missing } = getPdpSelectedVariant();
+      const pdpAlert = $("#pdpErrorAlert");
+      const pdpMsg = $("#pdpErrorMessage");
       if (missing.length > 0) {
-        toast("Please select a " + missing.join(" and ") + " before adding to cart.");
+        const msgText = "Please select a " + missing.join(" and ") + " before adding to cart.";
+        if (pdpAlert && pdpMsg) {
+          pdpMsg.textContent = msgText;
+          pdpAlert.classList.remove("hidden");
+        }
+        toast(msgText);
         return;
       }
+      if (pdpAlert) pdpAlert.classList.add("hidden");
       const qty = Math.max(1, +($("#pdQty") ? $("#pdQty").value : 1) || 1);
       const skuId = pdBtn.dataset.skuId || null;
       addToCart(pdBtn.dataset.productId, qty, variant, pdBtn.dataset.title, false, null, skuId);
@@ -872,10 +860,18 @@
       if (pdBuyNow.disabled) return;
       const source = pdBtn || pdBuyNow;
       const { variant, missing } = getPdpSelectedVariant();
+      const pdpAlert = $("#pdpErrorAlert");
+      const pdpMsg = $("#pdpErrorMessage");
       if (missing.length > 0) {
-        toast("Please select a " + missing.join(" and ") + " before proceeding to checkout.");
+        const msgText = "Please select a " + missing.join(" and ") + " before proceeding to checkout.";
+        if (pdpAlert && pdpMsg) {
+          pdpMsg.textContent = msgText;
+          pdpAlert.classList.remove("hidden");
+        }
+        toast(msgText);
         return;
       }
+      if (pdpAlert) pdpAlert.classList.add("hidden");
       const qty = Math.max(1, +($("#pdQty") ? $("#pdQty").value : 1) || 1);
       const checkoutUrl = pdBuyNow.dataset.checkoutUrl || "/checkout";
       const skuId = source.dataset.skuId || null;
