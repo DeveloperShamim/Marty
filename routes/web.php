@@ -154,6 +154,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('blacklist', [\App\Http\Controllers\Admin\BlacklistController::class, 'store'])->name('blacklist.store');
             Route::delete('blacklist/{blacklist}', [\App\Http\Controllers\Admin\BlacklistController::class, 'destroy'])->name('blacklist.destroy');
             Route::get('visitors', [\App\Http\Controllers\Admin\VisitorController::class, 'index'])->name('visitors.index');
+            Route::post('visitors/prune', [\App\Http\Controllers\Admin\VisitorController::class, 'prune'])->name('visitors.prune');
             Route::get('customers', [AdminCustomerController::class, 'index'])->name('customers.index');
             Route::get('customers/{phone}', [AdminCustomerController::class, 'show'])->name('customers.show');
 

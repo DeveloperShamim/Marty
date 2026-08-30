@@ -3,19 +3,21 @@
   $lightHeader = $lightHeader ?? false;
 @endphp
 <div class="relative" data-account-menu>
-  <button type="button" data-account-toggle class="h-10 sm:h-11 flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-extrabold rounded-2xl border transition-all shadow-2xs cursor-pointer {{ $lightHeader ? 'border-white/20 bg-white/10 hover:bg-white/20 text-white' : 'border-stone-200/80 bg-stone-50 hover:bg-stone-100 hover:border-stone-300 text-stone-800' }}" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
+  <button type="button" data-account-toggle class="flex flex-col items-center justify-center text-center group cursor-pointer focus:outline-none py-0.5 px-1 min-w-[44px]" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
     @auth
-      <span class="grid h-6 w-6 place-items-center rounded-full {{ $lightHeader ? 'bg-amber-400 text-stone-950' : 'bg-brand-600 text-white' }} text-[11px] font-extrabold shrink-0">
-        {{ strtoupper(substr($accountUser->name, 0, 1)) }}
-      </span>
-      <span class="hidden sm:inline truncate max-w-[90px]">{{ Str::before($accountUser->name, ' ') }}</span>
+      <div class="relative inline-flex items-center justify-center">
+        <svg class="w-6 h-6 text-stone-800 group-hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.5 8.5 0 0 1 13 0"/>
+        </svg>
+        <span class="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+      </div>
+      <span class="text-[11px] sm:text-xs font-medium text-stone-700 group-hover:text-brand-600 mt-0.5 tracking-tight whitespace-nowrap">Account</span>
     @else
-      <svg class="w-4 h-4 {{ $lightHeader ? 'text-amber-300' : 'text-brand-600' }} shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-        <circle cx="12" cy="8" r="4"/><path stroke-linecap="round" d="M4 20c0-4 4-6 8-6s8 2 8 6"/>
+      <svg class="w-6 h-6 text-stone-800 group-hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.5 8.5 0 0 1 13 0"/>
       </svg>
-      <span class="hidden sm:inline">Account</span>
+      <span class="text-[11px] sm:text-xs font-medium text-stone-700 group-hover:text-brand-600 mt-0.5 tracking-tight whitespace-nowrap">Sign In</span>
     @endauth
-    <svg class="w-3 h-3 {{ $lightHeader ? 'text-white/60' : 'text-stone-400' }}" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
   </button>
 
   <div data-account-dropdown class="hidden absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-100 bg-white shadow-soft z-50 overflow-hidden" role="menu">

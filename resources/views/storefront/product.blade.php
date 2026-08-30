@@ -41,7 +41,7 @@
       @if($product->images->count() > 0)
         <div class="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto w-full sm:w-20 shrink-0 pb-1 sm:pb-0 max-h-[460px] no-scrollbar">
           @foreach($product->images as $img)
-            <button type="button" data-thumb="{{ $img->url() }}" data-color="{{ strtolower(trim($img->color ?? '')) }}" data-alt="{{ strtolower(trim($img->alt ?? '')) }}" class="gallery-thumb-btn w-16 h-16 sm:w-20 sm:h-20 rounded-xl border {{ $loop->first ? 'border-brand-500' : 'border-stone-200 opacity-80 hover:opacity-100' }} shrink-0 bg-white overflow-hidden relative transition-colors focus:outline-none">
+            <button type="button" data-thumb="{{ $img->url() }}" data-color="{{ strtolower(trim($img->color ?? '')) }}" data-variation-tag="{{ strtolower(trim($img->color ?? '')) }}" data-alt="{{ strtolower(trim($img->alt ?? '')) }}" class="gallery-thumb-btn w-16 h-16 sm:w-20 sm:h-20 rounded-xl border {{ $loop->first ? 'border-brand-500' : 'border-stone-200 opacity-80 hover:opacity-100' }} shrink-0 bg-white overflow-hidden relative transition-colors focus:outline-none">
               <img src="{{ $img->url() }}" loading="lazy" decoding="async" class="w-full h-full object-cover" alt="{{ $img->alt }}">
               @if($loop->first)
                 <span data-active-check class="absolute inset-0 flex items-center justify-center pointer-events-none"><span class="w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-xs">✓</span></span>
@@ -60,7 +60,9 @@
               <span class="bg-gradient-to-r from-red-600 to-amber-500 text-white font-black text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg shadow-md flex items-center gap-1 animate-pulse">⚡ FLASH SALE</span>
             @endif
             @if($product->on_sale)
-              <span class="bg-red-500 text-white font-extrabold text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg shadow-sm">{{ $product->discount_percent }}% OFF</span>
+              <span id="pdImageDiscountBadge" class="bg-red-500 text-white font-extrabold text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg shadow-sm {{ $product->on_sale ? '' : 'hidden' }}">{{ $product->discount_percent }}% OFF</span>
+            @else
+              <span id="pdImageDiscountBadge" class="hidden bg-red-500 text-white font-extrabold text-xs tracking-wider uppercase px-3 py-1.5 rounded-lg shadow-sm">0% OFF</span>
             @endif
           </div>
         @endif
@@ -388,17 +390,54 @@
     });
   }
 
-  window.selectProductImageByColor = function(colorVal) {
-    if (!colorVal || !thumbBtns.length) return;
-    const target = String(colorVal).trim().toLowerCase();
-    const foundIndex = thumbBtns.findIndex(btn => {
-      const c = (btn.getAttribute('data-color') || '').trim().toLowerCase();
-      const alt = (btn.getAttribute('data-alt') || '').trim().toLowerCase();
-      return c === target || alt.includes(target) || target.includes(c && c !== '' ? c : '___none___');
-    });
-    if (foundIndex !== -1) {
-      setActiveImage(foundIndex);
+  window.selectProductImageByVariation = function(selectedAttrs, lastClickedVal) {
+    if (!thumbBtns.length) return;
+
+    // Collect all candidate values to test (last clicked value first, then remaining selected attributes)
+    const candidates = [];
+    if (lastClickedVal) {
+      candidates.push(String(lastClickedVal).trim().toLowerCase());
     }
+    if (selectedAttrs && typeof selectedAttrs === 'object') {
+      Object.values(selectedAttrs).forEach(v => {
+        if (v) {
+          const s = String(v).trim().toLowerCase();
+          if (!candidates.includes(s)) candidates.push(s);
+        }
+      });
+    }
+
+    if (!candidates.length) return;
+
+    for (const target of candidates) {
+      if (!target) continue;
+
+      const foundIndex = thumbBtns.findIndex(btn => {
+        const vTag = (btn.getAttribute('data-variation-tag') || btn.getAttribute('data-color') || '').trim().toLowerCase();
+        const alt = (btn.getAttribute('data-alt') || '').trim().toLowerCase();
+
+        // Exact variation tag match (e.g. 'xxl', 'xl', 'l', 'm', '500g', 'red')
+        if (vTag && (vTag === target || vTag.split(/[\s,/-]+/).includes(target))) {
+          return true;
+        }
+
+        // Alt text tag match (e.g. "Shoes — (XXL) — 1" or "Shoes XXL")
+        if (alt && (alt.includes(`(${target})`) || alt.includes(`[${target}]`) || alt.includes(` ${target} `) || alt.endsWith(` ${target}`) || alt.startsWith(`${target} `) || alt === target)) {
+          return true;
+        }
+
+        return false;
+      });
+
+      if (foundIndex !== -1) {
+        setActiveImage(foundIndex);
+        return;
+      }
+    }
+  };
+
+  window.selectProductImageByColor = function(colorVal) {
+    window.selectProductImageByVariation({ color: colorVal }, colorVal);
   };
 })();
 
@@ -421,11 +460,11 @@ function findPdpMatchingSku(skus, selectedAttrs) {
   }) || null;
 }
 
-function syncPdpVariantStockAndPrice() {
+function syncPdpVariantStockAndPrice(lastClickedVal) {
   const priceEl = document.getElementById('pdPrice');
   const regEl = document.getElementById('pdRegularPrice');
   const badgeEl = document.getElementById('pdDiscountBadge');
-  const percentEl = document.getElementById('pdDiscountPercent');
+  const imgBadgeEl = document.getElementById('pdImageDiscountBadge');
   const addBtn = document.getElementById('pdAddToCart');
   const buyBtn = document.getElementById('pdBuyNow');
   const btnText = document.getElementById('pdAddToCartText');
@@ -433,7 +472,7 @@ function syncPdpVariantStockAndPrice() {
   if (!priceEl) return;
 
   const basePrice = parseFloat(priceEl.getAttribute('data-base-price') || '0');
-  const baseReg = regEl ? parseFloat(regEl.getAttribute('data-base-regular') || '0') : basePrice;
+  const baseReg = regEl ? parseFloat(regEl.getAttribute('data-base-regular') || '0') : 0;
 
   // Selected attributes
   const selectedAttrs = {};
@@ -448,10 +487,9 @@ function syncPdpVariantStockAndPrice() {
     }
   });
 
-  const selectedColor = selectedAttrs['Color'] || selectedAttrs['color'] || null;
-
-  if (selectedColor && typeof window.selectProductImageByColor === 'function') {
-    window.selectProductImageByColor(selectedColor);
+  // Switch image to match clicked / selected variation
+  if (typeof window.selectProductImageByVariation === 'function') {
+    window.selectProductImageByVariation(selectedAttrs, lastClickedVal);
   }
 
   // Update option availability dynamically across groups
@@ -486,9 +524,23 @@ function syncPdpVariantStockAndPrice() {
   let isAvailable = true;
 
   if (matchedSku) {
+    const skuSalePrice = parseFloat(matchedSku.sale_price);
+    const skuRegPrice = parseFloat(matchedSku.regular_price);
     const adj = parseFloat(matchedSku.price_adjustment) || 0;
-    finalPrice = Math.max(0, basePrice + adj);
-    finalReg = baseReg > 0 ? Math.max(0, baseReg + adj) : finalPrice;
+
+    if (!isNaN(skuSalePrice) && skuSalePrice > 0) {
+      finalPrice = skuSalePrice;
+    } else {
+      finalPrice = Math.max(0, basePrice + adj);
+    }
+
+    if (!isNaN(skuRegPrice) && skuRegPrice > 0) {
+      finalReg = skuRegPrice;
+    } else if (baseReg > 0) {
+      finalReg = Math.max(0, baseReg + adj);
+    } else {
+      finalReg = 0;
+    }
 
     isAvailable = matchedSku.stock > 0;
     if (addBtn) addBtn.dataset.skuId = matchedSku.id;
@@ -501,27 +553,43 @@ function syncPdpVariantStockAndPrice() {
     qtyInput.value = Math.max(1, maxAllowed);
   }
 
-  // Update Offer / Sale Price element
-  priceEl.textContent = '৳' + finalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // Currency Formatter Helper
+  const formatMoney = (num) => '৳' + Number(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  // Update Regular / MRP Price element & Discount Badge
+  // Update Offer / Sale Price element
+  priceEl.textContent = formatMoney(finalPrice);
+
+  // Calculate discount percent accurately
+  const hasDiscount = finalReg > finalPrice && finalReg > 0;
+  const discPercent = hasDiscount ? Math.round(((finalReg - finalPrice) / finalReg) * 100) : 0;
+
+  // Update Regular / MRP Price element
   if (regEl) {
-    if (finalReg > finalPrice) {
-      regEl.textContent = '৳' + finalReg.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (hasDiscount) {
+      regEl.textContent = formatMoney(finalReg);
       regEl.classList.remove('hidden');
-      
-      if (badgeEl && percentEl) {
-        const discPercent = Math.round(((finalReg - finalPrice) / finalReg) * 100);
-        if (discPercent > 0) {
-          percentEl.textContent = discPercent;
-          badgeEl.classList.remove('hidden');
-        } else {
-          badgeEl.classList.add('hidden');
-        }
-      }
     } else {
       regEl.classList.add('hidden');
-      if (badgeEl) badgeEl.classList.add('hidden');
+    }
+  }
+
+  // Update "Save X%" Badge next to price
+  if (badgeEl) {
+    if (hasDiscount && discPercent > 0) {
+      badgeEl.textContent = `Save ${discPercent}%`;
+      badgeEl.classList.remove('hidden');
+    } else {
+      badgeEl.classList.add('hidden');
+    }
+  }
+
+  // Update Image Overlay "X% OFF" Badge
+  if (imgBadgeEl) {
+    if (hasDiscount && discPercent > 0) {
+      imgBadgeEl.textContent = `${discPercent}% OFF`;
+      imgBadgeEl.classList.remove('hidden');
+    } else {
+      imgBadgeEl.classList.add('hidden');
     }
   }
 
@@ -553,7 +621,8 @@ document.querySelectorAll('[data-variant-group] .variant-btn').forEach((b) => b.
   const pdpAlert = document.getElementById('pdpErrorAlert');
   if (pdpAlert) pdpAlert.classList.add('hidden');
 
-  syncPdpVariantStockAndPrice();
+  const clickedVal = b.getAttribute('data-value');
+  syncPdpVariantStockAndPrice(wasSelected ? null : clickedVal);
 }));
 
 // Run initial sync on load
