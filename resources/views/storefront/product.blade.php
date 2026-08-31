@@ -291,6 +291,175 @@
     @endif
   </div>
 
+  {{-- Customer Reviews & Feedback Section --}}
+  <section id="reviews" class="mt-10 rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-8 shadow-2xs space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+      <div>
+        <div class="flex items-center gap-2.5">
+          <span class="w-1.5 h-5 bg-brand-600 rounded-full"></span>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">Customer Reviews &amp; Feedback</h2>
+        </div>
+        <p class="text-xs sm:text-sm text-slate-500 mt-1">Authentic ratings from verified buyers who purchased this product</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        @if(auth()->check() && $alreadyReviewed)
+          <span class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold shadow-2xs">
+            ✓ Feedback Submitted
+          </span>
+        @elseif(auth()->check() && ! $hasPurchased)
+          <span class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-50 text-slate-500 border border-slate-200 text-xs font-medium" title="Only customers who purchased this item can leave a review">
+            🔒 Verified Buyers Only
+          </span>
+        @else
+          <button type="button" id="toggleReviewFormBtn" class="btn-shine inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm px-4 py-2.5 shadow-2xs transition-all cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            <span>Write a Review</span>
+          </button>
+        @endif
+      </div>
+    </div>
+
+    @if(session('status'))
+      <div class="rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm p-3.5 font-semibold">
+        ✓ {{ session('status') }}
+      </div>
+    @endif
+
+    {{-- Review Submission Form (Classic Card) --}}
+    <div id="reviewFormDrawer" class="{{ $errors->has('review_body') ? '' : 'hidden' }} rounded-2xl bg-white border border-slate-200/90 p-5 sm:p-7 shadow-xs space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div>
+          <h3 class="font-extrabold text-base sm:text-lg text-slate-900 flex items-center gap-2">
+            <span class="w-1.5 h-4 bg-brand-600 rounded-full"></span>
+            <span>Write a Customer Review</span>
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5">Please share your honest feedback about this product</p>
+        </div>
+        <button type="button" id="closeReviewFormBtn" class="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
+          <span>Cancel</span> ✕
+        </button>
+      </div>
+
+      <form method="POST" action="{{ route('product.reviews.store', $product) }}" class="space-y-4">
+        @csrf
+
+        {{-- Classic Interactive Star Rating --}}
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            Rating <span class="text-red-500">*</span>
+          </label>
+          <input type="hidden" name="rating" id="reviewRatingInput" value="{{ old('rating', 5) }}">
+          
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-center gap-1" id="starRatingContainer">
+              @for($i = 1; $i <= 5; $i++)
+                <button type="button" data-star-value="{{ $i }}" class="star-rating-btn p-1 text-slate-200 hover:scale-110 transition-transform focus:outline-none cursor-pointer" aria-label="{{ $i }} Stars">
+                  <svg class="w-7 h-7 star-svg {{ $i <= old('rating', 5) ? 'text-amber-400 fill-amber-400' : 'text-slate-200 fill-slate-200' }}" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                </button>
+              @endfor
+            </div>
+            <span id="starRatingLabel" class="text-xs font-extrabold text-amber-800 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-md">
+              {{ old('rating', 5) }}.0 / 5.0 (Excellent)
+            </span>
+          </div>
+        </div>
+
+        {{-- Author Name & Email (No Headline Field) --}}
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              Your Name <span class="text-red-500">*</span>
+            </label>
+            <input name="author_name" value="{{ old('author_name', auth()->user()?->name) }}" required placeholder="e.g. Asif Chowdhury" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 focus:border-brand-500 focus:ring-2 focus:ring-brand-200/50 focus:outline-none transition-all" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              Checkout Email <span class="text-red-500">*</span>
+            </label>
+            <input type="email" name="author_email" value="{{ old('author_email', auth()->user()?->email) }}" required placeholder="Enter email used when ordering" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 focus:border-brand-500 focus:ring-2 focus:ring-brand-200/50 focus:outline-none transition-all" />
+          </div>
+        </div>
+
+        {{-- Feedback Body --}}
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+            Your Review <span class="text-red-500">*</span>
+          </label>
+          <textarea name="body" rows="4" required placeholder="Write your review here. What did you think about the product quality, fit, and delivery?" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 focus:border-brand-500 focus:ring-2 focus:ring-brand-200/50 focus:outline-none transition-all">{{ old('body') }}</textarea>
+          @error('review_body')
+            <p class="text-xs text-red-600 mt-1.5 font-semibold flex items-center gap-1.5 bg-red-50 border border-red-200 p-2.5 rounded-xl">
+              <span>⚠️</span> <span>{{ $message }}</span>
+            </p>
+          @enderror
+        </div>
+
+        {{-- Submit Button --}}
+        <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+          <span class="text-[11px] text-slate-400 flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            Verified purchase check enabled
+          </span>
+          <button type="submit" class="btn-shine rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm px-6 py-2.5 shadow-2xs transition-all cursor-pointer">
+            Submit Review
+          </button>
+        </div>
+      </form>
+    </div>
+
+    {{-- Reviews List Feed --}}
+    @if($reviews->isNotEmpty())
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        @foreach($reviews as $rev)
+          <div class="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-2xs space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1 text-amber-400 text-sm">
+                @php $rScore = (int) ($rev->rating ?: 5); @endphp
+                @for($s = 1; $s <= 5; $s++)
+                  <span>{{ $s <= $rScore ? '★' : '☆' }}</span>
+                @endfor
+                <span class="text-xs font-bold text-slate-700 ml-1">{{ $rScore }}.0</span>
+              </div>
+              <span class="text-[11px] text-slate-400">{{ $rev->created_at?->diffForHumans() ?? 'Recent' }}</span>
+            </div>
+
+            @if($rev->title)
+              <h4 class="font-extrabold text-sm text-slate-900 leading-snug">{{ $rev->title }}</h4>
+            @endif
+
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+              “{{ $rev->body }}”
+            </p>
+
+            <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+              <div class="h-7 w-7 rounded-full bg-brand-50 text-brand-700 font-extrabold text-[11px] grid place-items-center shrink-0 border border-brand-200">
+                {{ mb_strtoupper(mb_substr($rev->author_name, 0, 1)) }}
+              </div>
+              <span class="font-bold text-xs text-slate-800">{{ $rev->author_name }}</span>
+              <span class="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/70">
+                ✓ Verified
+              </span>
+            </div>
+          </div>
+        @endforeach
+      </div>
+
+      @if($reviews->hasPages())
+        <div class="pt-4 flex justify-center">
+          {{ $reviews->links() }}
+        </div>
+      @endif
+    @else
+      <div class="rounded-2xl border border-dashed border-slate-200 p-8 text-center space-y-2">
+        <div class="text-2xl">💬</div>
+        <h4 class="font-bold text-sm text-slate-800">No customer reviews yet</h4>
+        <p class="text-xs text-slate-500">Have you purchased this product? Be the first to share your feedback!</p>
+      </div>
+    @endif
+  </section>
+
   {{-- Related Products --}}
   @if($related->isNotEmpty())
     <section class="mt-10">
@@ -656,6 +825,75 @@ if (pdpTimerEl) {
     updatePdpTimer();
     setInterval(updatePdpTimer, 1000);
   }
+}
+
+// Customer Review Form Toggle & Interactive Star Rating Picker
+const toggleReviewBtn = document.getElementById('toggleReviewFormBtn');
+const closeReviewBtn = document.getElementById('closeReviewFormBtn');
+const reviewDrawer = document.getElementById('reviewFormDrawer');
+
+if (toggleReviewBtn && reviewDrawer) {
+  toggleReviewBtn.addEventListener('click', () => {
+    reviewDrawer.classList.toggle('hidden');
+    if (!reviewDrawer.classList.contains('hidden')) {
+      reviewDrawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  });
+}
+if (closeReviewBtn && reviewDrawer) {
+  closeReviewBtn.addEventListener('click', () => {
+    reviewDrawer.classList.add('hidden');
+  });
+}
+
+// Star Rating Interactive Picker
+const starRatingContainer = document.getElementById('starRatingContainer');
+const starRatingInput = document.getElementById('reviewRatingInput');
+const starRatingLabel = document.getElementById('starRatingLabel');
+
+if (starRatingContainer && starRatingInput) {
+  const starBtns = Array.from(starRatingContainer.querySelectorAll('.star-rating-btn'));
+  const labels = {
+    1: '1.0 / 5.0 (Poor)',
+    2: '2.0 / 5.0 (Fair)',
+    3: '3.0 / 5.0 (Average)',
+    4: '4.0 / 5.0 (Good)',
+    5: '5.0 / 5.0 (Excellent)'
+  };
+
+  function renderStars(val) {
+    starBtns.forEach((btn, idx) => {
+      const starSvg = btn.querySelector('.star-svg');
+      if (idx < val) {
+        starSvg.classList.add('text-amber-400', 'fill-amber-400');
+        starSvg.classList.remove('text-slate-200', 'fill-slate-200');
+      } else {
+        starSvg.classList.remove('text-amber-400', 'fill-amber-400');
+        starSvg.classList.add('text-slate-200', 'fill-slate-200');
+      }
+    });
+    if (starRatingLabel && labels[val]) {
+      starRatingLabel.textContent = labels[val];
+    }
+  }
+
+  starBtns.forEach(btn => {
+    const val = parseInt(btn.dataset.starValue, 10);
+
+    btn.addEventListener('mouseenter', () => {
+      renderStars(val);
+    });
+
+    btn.addEventListener('click', () => {
+      starRatingInput.value = val;
+      renderStars(val);
+    });
+  });
+
+  starRatingContainer.addEventListener('mouseleave', () => {
+    const currentVal = parseInt(starRatingInput.value, 10) || 5;
+    renderStars(currentVal);
+  });
 }
 
 // Meta (Facebook) Pixel ViewContent Event

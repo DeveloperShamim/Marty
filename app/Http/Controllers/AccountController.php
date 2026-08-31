@@ -24,7 +24,21 @@ class AccountController extends Controller
             ->latest()
             ->get();
 
-        return view('storefront.account.index', compact('user', 'orders'));
+        $userReviews = \App\Models\ProductReview::query()
+            ->where('user_id', $user->id)
+            ->with('product')
+            ->latest()
+            ->get();
+
+        $reviewedProductIds = $userReviews->pluck('product_id')->toArray();
+
+        $wishlistProducts = \App\Models\Product::published()
+            ->with('images')
+            ->inRandomOrder()
+            ->take(4)
+            ->get();
+
+        return view('storefront.account.index', compact('user', 'orders', 'userReviews', 'reviewedProductIds', 'wishlistProducts'));
     }
 
     public function showOrder(Order $order)
@@ -32,7 +46,13 @@ class AccountController extends Controller
         $this->authorizeOrder($order);
         $order->load(['items.product']);
 
-        return view('storefront.account.order', compact('order'));
+        $user = Auth::user();
+        $reviewedProductIds = \App\Models\ProductReview::query()
+            ->where('user_id', $user->id)
+            ->pluck('product_id')
+            ->toArray();
+
+        return view('storefront.account.order', compact('order', 'reviewedProductIds'));
     }
 
     private function authorizeOrder(Order $order): void

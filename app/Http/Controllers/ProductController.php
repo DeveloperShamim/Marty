@@ -72,14 +72,38 @@ class ProductController extends Controller
             ->paginate(8, ['*'], 'reviews_page')
             ->withQueryString();
 
-        $canReview = true;
+        $hasPurchased = false;
+        $alreadyReviewed = false;
+
         if ($user = auth()->user()) {
-            $canReview = ! ProductReview::query()
+            $hasPurchased = \App\Models\OrderItem::query()
                 ->where('product_id', $product->id)
-                ->where('user_id', $user->id)
+                ->whereHas('order', function ($q) use ($user) {
+                    $q->where(function ($w) use ($user) {
+                        $w->where('user_id', $user->id);
+                        if ($user->email) {
+                            $w->orWhere('customer_email', $user->email);
+                        }
+                        if ($user->phone) {
+                            $w->orWhere('customer_phone', $user->phone);
+                        }
+                    })->whereNotIn('status', ['cancelled']);
+                })
+                ->exists();
+
+            $alreadyReviewed = ProductReview::query()
+                ->where('product_id', $product->id)
+                ->where(function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                    if ($user->email) {
+                        $q->orWhere('author_email', $user->email);
+                    }
+                })
                 ->whereIn('status', [ProductReview::STATUS_PENDING, ProductReview::STATUS_APPROVED])
                 ->exists();
         }
+
+        $canReview = $hasPurchased && ! $alreadyReviewed;
 
         return view('storefront.product', compact(
             'product',
@@ -89,6 +113,8 @@ class ProductController extends Controller
             'colors',
             'weights',
             'reviews',
+            'hasPurchased',
+            'alreadyReviewed',
             'canReview'
         ));
     }

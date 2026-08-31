@@ -1,117 +1,166 @@
 @extends('layouts.admin')
 @php $editing = $brand->exists; @endphp
-@section('title', $editing ? 'Edit Brand: ' . $brand->name : 'Create New Brand')
+@section('title', $editing ? 'Edit Brand: ' . $brand->name : 'Create Brand')
 
 @section('content')
-<form method="POST" action="{{ $editing ? route('admin.brands.update', $brand) : route('admin.brands.store') }}" enctype="multipart/form-data" class="space-y-6">
+<form method="POST" action="{{ $editing ? route('admin.brands.update', $brand) : route('admin.brands.store') }}" enctype="multipart/form-data" class="space-y-6 max-w-5xl">
   @csrf
   @if($editing) @method('PUT') @endif
 
-  {{-- Page Header --}}
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl border border-stone-200 shadow-2xs">
+  {{-- Header with Breadcrumbs & Action Buttons --}}
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs">
     <div>
-      <a href="{{ route('admin.brands.index') }}" class="text-xs font-bold text-stone-500 hover:text-brand-600 inline-flex items-center gap-1 mb-1">
-        &larr; Back to Brands List
+      <a href="{{ route('admin.brands.index') }}" class="text-xs font-bold text-stone-500 hover:text-brand-600 inline-flex items-center gap-1 transition-colors">
+        <span>&larr;</span> Back to brands
       </a>
-      <h1 class="text-xl sm:text-2xl font-extrabold text-stone-900 tracking-tight">
-        {{ $editing ? 'Edit Brand: ' . $brand->name : '➕ Add New Brand' }}
+      <h1 class="text-lg sm:text-xl font-extrabold mt-1 text-stone-900 tracking-tight">
+        {{ $editing ? 'Edit Brand: ' . $brand->name : 'Create New Brand' }}
       </h1>
     </div>
-    <button type="submit" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer">
-      {{ $editing ? '💾 Update Brand Details' : '✨ Create Brand' }}
-    </button>
+
+    <div class="flex items-center gap-2 self-start sm:self-auto w-full sm:w-auto">
+      <a href="{{ route('admin.brands.index') }}" class="flex-1 sm:flex-none text-center px-4 py-2.5 text-xs font-bold rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 transition shadow-2xs">
+        Cancel
+      </a>
+      <button type="submit" class="flex-1 sm:flex-none px-5 py-2.5 text-xs font-extrabold rounded-xl bg-brand-600 hover:bg-brand-700 text-white transition shadow-sm cursor-pointer">
+        {{ $editing ? 'Save Changes' : 'Publish Brand' }}
+      </button>
+    </div>
   </div>
 
-  <div class="max-w-4xl space-y-6">
+  {{-- 2-Column Responsive Layout (Mobile: 1-col, Desktop: 12-col) --}}
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
+    
+    {{-- Main Left Column (8 cols on desktop) --}}
+    <div class="lg:col-span-8 space-y-5">
+      
+      {{-- General Details Card --}}
+      <div class="bg-white rounded-2xl sm:rounded-3xl border border-stone-200 p-5 sm:p-6 shadow-2xs space-y-4">
+        <h3 class="font-black text-stone-900 text-sm sm:text-base border-b border-stone-100 pb-3">
+          Brand Information
+        </h3>
 
-    {{-- Main Brand Identity Card --}}
-    <div class="bg-white p-4 sm:p-6 rounded-2xl border border-stone-200 shadow-2xs space-y-5">
-      <h2 class="text-base font-extrabold text-stone-900 border-b border-stone-100 pb-3 flex items-center gap-2">
-        <span>🏷️ Brand Identity &amp; Details</span>
-      </h2>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-        <div>
-          <label class="text-xs font-extrabold text-stone-800 block mb-1.5">Brand Name <span class="text-rose-500">*</span></label>
-          <input name="name" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs" value="{{ old('name', $brand->name) }}" placeholder="e.g. Khaas Food, Naturals BD" required />
-        </div>
-        <div>
-          <label class="text-xs font-bold text-stone-700 block mb-1.5">Slug (URL Keyword)</label>
-          <input name="slug" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs font-mono text-stone-600" value="{{ old('slug', $brand->slug) }}" placeholder="e.g. khaas-food (auto-generated if empty)" />
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-        <div>
-          <label class="text-xs font-bold text-stone-700 block mb-1.5">Official Website URL</label>
-          <input name="website" type="url" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs" value="{{ old('website', $brand->website) }}" placeholder="https://www.brand.com" />
-        </div>
-        <div>
-          <label class="text-xs font-bold text-stone-700 block mb-1.5">Display Order Position</label>
-          <input name="position" type="number" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs" value="{{ old('position', $brand->position ?? 0) }}" placeholder="0" />
-        </div>
-      </div>
-
-      <div>
-        <label class="text-xs font-bold text-stone-700 block mb-1.5">Brand Description / Story</label>
-        <textarea name="description" rows="3" class="w-full text-xs font-medium px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs" placeholder="Brief manufacturer background or brand philosophy...">{{ old('description', $brand->description) }}</textarea>
-      </div>
-
-      {{-- Images Upload Section --}}
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-stone-100">
-        {{-- Brand Logo --}}
-        <div class="bg-stone-50 p-4 rounded-xl border border-stone-200/80 space-y-2">
-          <label class="text-xs font-extrabold text-stone-800 block">Brand Logo Image</label>
-          <div class="flex flex-col sm:flex-row items-center gap-3">
-            @if($brand->logo)
-              <img src="{{ $brand->logoUrl() }}" class="h-14 w-14 object-contain rounded-xl border border-stone-200 bg-white p-1 shrink-0 shadow-2xs" alt="{{ $brand->name }}">
-            @endif
-            <input name="logo_file" type="file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-extrabold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 cursor-pointer" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-stone-700">Brand Name <span class="text-rose-500">*</span></label>
+            <input type="text" name="name" class="w-full px-3.5 py-2.5 text-sm bg-stone-50 border border-stone-200 rounded-xl font-bold text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition" value="{{ old('name', $brand->name) }}" placeholder="e.g. Khaas Food, Naturals BD" required />
           </div>
-          <p class="text-[10px] text-stone-400">PNG or WebP with transparent background recommended.</p>
-        </div>
 
-        {{-- Brand Banner --}}
-        <div class="bg-stone-50 p-4 rounded-xl border border-stone-200/80 space-y-2">
-          <label class="text-xs font-extrabold text-stone-800 block">Hero Banner Image (Storefront Page)</label>
-          <div class="flex flex-col sm:flex-row items-center gap-3">
-            @if($brand->banner)
-              <img src="{{ $brand->bannerUrl() }}" class="h-14 w-28 object-cover rounded-xl border border-stone-200 shrink-0 shadow-2xs" alt="{{ $brand->name }}">
-            @endif
-            <input name="banner_file" type="file" accept="image/*" class="w-full text-xs text-stone-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-extrabold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 cursor-pointer" />
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-stone-700">URL Slug (leave blank to auto-generate)</label>
+            <input type="text" name="slug" class="w-full px-3.5 py-2.5 text-xs bg-stone-50 border border-stone-200 rounded-xl font-mono text-stone-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition" value="{{ old('slug', $brand->slug) }}" placeholder="khaas-food" />
           </div>
-          <p class="text-[10px] text-stone-400">Wide banner header displayed at the top of `/brand/{slug}` page.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-stone-700">Official Website URL</label>
+            <input type="url" name="website" class="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition" value="{{ old('website', $brand->website) }}" placeholder="https://www.brandwebsite.com" />
+          </div>
+
+          <div class="space-y-1">
+            <label class="block text-xs font-bold text-stone-700">Display Position / Sort Order</label>
+            <input type="number" name="position" class="w-full px-3.5 py-2.5 text-sm bg-stone-50 border border-stone-200 rounded-xl font-mono text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition" value="{{ old('position', $brand->position ?? 0) }}" />
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-xs font-bold text-stone-700">Brand Story &amp; Description</label>
+          <textarea name="description" rows="3" class="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl text-stone-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition" placeholder="Brief summary of the brand manufacturer and origins...">{{ old('description', $brand->description) }}</textarea>
         </div>
       </div>
 
-      {{-- Visibility Switches --}}
-      <div class="space-y-2.5 pt-4 border-t border-stone-100 bg-stone-50/70 p-4 rounded-xl border border-stone-200">
-        <label class="flex items-center gap-2.5 text-xs font-bold text-stone-800 cursor-pointer">
-          <input type="checkbox" name="is_active" value="1" class="h-4 w-4 accent-brand-600 rounded cursor-pointer" @checked(old('is_active', $brand->is_active ?? true)) /> 
-          <span>Active (Visible on storefront brand filter &amp; catalog)</span>
-        </label>
-        <label class="flex items-center gap-2.5 text-xs font-extrabold text-amber-900 cursor-pointer">
-          <input type="checkbox" name="is_featured" value="1" class="h-4 w-4 accent-amber-600 rounded cursor-pointer" @checked(old('is_featured', $brand->is_featured ?? false)) /> 
-          <span>★ Featured Brand (Display prominently on Homepage featured brand bar)</span>
-        </label>
+      {{-- SEO Metadata Card --}}
+      <div class="bg-white rounded-2xl sm:rounded-3xl border border-stone-200 p-5 sm:p-6 shadow-2xs space-y-4">
+        <div class="border-b border-stone-100 pb-3">
+          <h3 class="font-black text-stone-900 text-sm sm:text-base">Search Engine Optimization (SEO)</h3>
+          <p class="text-xs text-stone-400">Optimize meta tags for Google indexing on `/brand/{slug}` page.</p>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-xs font-bold text-stone-700">Meta Title</label>
+          <input type="text" name="meta_title" class="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl text-stone-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition" value="{{ old('meta_title', $brand->meta_title) }}" placeholder="Brand Products Online | Store Name" />
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-xs font-bold text-stone-700">Meta Description</label>
+          <textarea name="meta_description" rows="2" class="w-full px-3.5 py-2.5 text-xs bg-stone-50 border border-stone-200 rounded-xl text-stone-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition" placeholder="Discover authentic items from this manufacturer with fast home delivery...">{{ old('meta_description', $brand->meta_description) }}</textarea>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-xs font-bold text-stone-700">Meta Keywords (Comma separated)</label>
+          <input type="text" name="meta_keywords" class="w-full px-3.5 py-2.5 text-xs bg-stone-50 border border-stone-200 rounded-xl text-stone-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 transition" value="{{ old('meta_keywords', $brand->meta_keywords) }}" placeholder="brand name, authentic goods, bangladesh" />
+        </div>
       </div>
+
     </div>
 
-    {{-- SEO Settings Card --}}
-    <div class="bg-white p-4 sm:p-6 rounded-2xl border border-stone-200 shadow-2xs space-y-4">
-      <h2 class="text-base font-extrabold text-stone-900 border-b border-stone-100 pb-3">🔍 Search Engine Optimization (SEO)</h2>
-      <div>
-        <label class="text-xs font-bold text-stone-700 block mb-1">Meta Title Tag</label>
-        <input name="meta_title" class="w-full text-xs font-medium px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs" value="{{ old('meta_title', $brand->meta_title) }}" placeholder="e.g. Buy Authentic Khaas Food Products Online in Bangladesh" />
+    {{-- Sidebar Column (4 cols on desktop) --}}
+    <div class="lg:col-span-4 space-y-5">
+      
+      {{-- Visibility & Storefront Settings Card --}}
+      <div class="bg-white rounded-2xl sm:rounded-3xl border border-stone-200 p-5 shadow-2xs space-y-4">
+        <h3 class="font-black text-stone-900 text-sm sm:text-base border-b border-stone-100 pb-3">
+          Display & Visibility
+        </h3>
+
+        <div class="space-y-3">
+          <label class="flex items-start gap-3 p-3 rounded-xl bg-stone-50 border border-stone-200 cursor-pointer hover:bg-stone-100 transition-colors">
+            <input type="checkbox" name="is_active" value="1" class="h-4 w-4 mt-0.5 accent-brand-600 rounded cursor-pointer" @checked(old('is_active', $brand->is_active ?? true)) />
+            <div>
+              <span class="block text-xs font-black text-stone-900">Active Status</span>
+              <span class="block text-[11px] text-stone-500">Visible in storefront brand filters and catalog lists.</span>
+            </div>
+          </label>
+
+          <label class="flex items-start gap-3 p-3 rounded-xl bg-amber-50/70 border border-amber-200 cursor-pointer hover:bg-amber-50 transition-colors">
+            <input type="checkbox" name="is_featured" value="1" class="h-4 w-4 mt-0.5 accent-brand-600 rounded cursor-pointer" @checked(old('is_featured', $brand->is_featured ?? false)) />
+            <div>
+              <span class="block text-xs font-black text-amber-950">★ Featured Brand</span>
+              <span class="block text-[11px] text-amber-800/90">Displays prominently in the homepage Featured Brands bar.</span>
+            </div>
+          </label>
+        </div>
       </div>
-      <div>
-        <label class="text-xs font-bold text-stone-700 block mb-1">Meta Description</label>
-        <textarea name="meta_description" rows="2" class="w-full text-xs font-medium px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs" placeholder="Explore 100% pure organic food items from Khaas Food with home delivery...">{{ old('meta_description', $brand->meta_description) }}</textarea>
+
+      {{-- Brand Logo Card --}}
+      <div class="bg-white rounded-2xl sm:rounded-3xl border border-stone-200 p-5 shadow-2xs space-y-3">
+        <h3 class="font-black text-stone-900 text-sm sm:text-base border-b border-stone-100 pb-2.5">
+          Brand Logo
+        </h3>
+
+        @if($brand->logo)
+          <div class="h-20 rounded-xl border border-stone-200 bg-stone-50 p-2 flex items-center justify-center">
+            <img src="{{ $brand->logoUrl() }}" class="max-h-full max-w-full object-contain" alt="{{ $brand->name }}" />
+          </div>
+        @endif
+
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-stone-700">Upload Logo</label>
+          <input type="file" name="logo_file" accept="image/*" class="w-full text-xs text-stone-600 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-stone-100 file:text-stone-800 hover:file:bg-stone-200 cursor-pointer" />
+          <p class="text-[10px] text-stone-400">Square or transparent PNG/WebP recommended.</p>
+        </div>
       </div>
-      <div>
-        <label class="text-xs font-bold text-stone-700 block mb-1">Meta Keywords</label>
-        <textarea name="meta_keywords" rows="2" class="w-full text-xs font-medium px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs" placeholder="khaas food, pure ghee, organic honey, shodeshifood">{{ old('meta_keywords', $brand->meta_keywords) }}</textarea>
+
+      {{-- Brand Hero Banner Card --}}
+      <div class="bg-white rounded-2xl sm:rounded-3xl border border-stone-200 p-5 shadow-2xs space-y-3">
+        <h3 class="font-black text-stone-900 text-sm sm:text-base border-b border-stone-100 pb-2.5">
+          Storefront Hero Banner
+        </h3>
+
+        @if($brand->banner)
+          <div class="rounded-xl border border-stone-200 bg-stone-50 aspect-[21/9] overflow-hidden flex items-center justify-center">
+            <img src="{{ $brand->bannerUrl() }}" class="w-full h-full object-cover" alt="{{ $brand->name }}" />
+          </div>
+        @endif
+
+        <div class="space-y-1.5">
+          <label class="block text-xs font-bold text-stone-700">Upload Banner Image</label>
+          <input type="file" name="banner_file" accept="image/*" class="w-full text-xs text-stone-600 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-stone-100 file:text-stone-800 hover:file:bg-stone-200 cursor-pointer" />
+          <p class="text-[10px] text-stone-400">Wide header graphic displayed at `/brand/{slug}` page.</p>
+        </div>
       </div>
+
     </div>
 
   </div>

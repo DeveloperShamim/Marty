@@ -2,16 +2,16 @@
 @section('title', 'Visitor Traffic Analytics')
 
 @section('content')
-<div class="space-y-4 sm:space-y-6 max-w-full">
+<div class="space-y-5 sm:space-y-6 max-w-full">
 
-  <!-- Header Title & Realtime Bar -->
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-gray-200 pb-4">
-    <div class="space-y-1">
+  {{-- Header & Live Realtime Bar --}}
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs">
+    <div>
       <div class="flex items-center gap-2 flex-wrap">
-        <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+        <h1 class="text-base sm:text-xl font-extrabold text-stone-900 tracking-tight flex items-center gap-2">
           <span>👥</span> Visitor Traffic Analytics
-        </h2>
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200 shrink-0">
+        </h1>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-black uppercase tracking-wider border border-emerald-200 shrink-0">
           <span class="relative flex h-2 w-2">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -19,193 +19,197 @@
           Live Monitor
         </span>
       </div>
-      <p class="text-xs text-slate-500">Track unique storefront visitors, landing page traffic, and real-time activity.</p>
+      <p class="text-xs text-stone-500 mt-1">
+        Track unique storefront visitors, traffic sources, landing pages, and real-time live users.
+      </p>
     </div>
 
-    <!-- Actions & Active Right Now Badge -->
-    <div class="flex items-center gap-2.5 flex-wrap">
-      <!-- Auto-Refresh Toggle -->
-      <button type="button" id="autoRefreshBtn" onclick="toggleAutoRefresh()" class="btn-secondary text-xs px-3 py-2 flex items-center gap-1.5 shrink-0 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-2xs">
+    {{-- Actions & Real-Time Pulse Widget --}}
+    <div class="flex items-center gap-2 flex-wrap self-start sm:self-auto shrink-0">
+      
+      {{-- Auto-Refresh Toggle --}}
+      <button type="button" id="autoRefreshBtn" onclick="toggleAutoRefresh()" class="px-3.5 py-2 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-stone-700 font-extrabold text-xs shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
         <span id="refreshIcon" class="text-xs">🔄</span>
         <span id="refreshLabel">Auto-Refresh: Off</span>
       </button>
 
-      <!-- Prune Old Logs Dropdown/Button -->
-      <form method="POST" action="{{ route('admin.visitors.prune') }}" onsubmit="return confirm('Prune logs older than 60 days to save database storage?');" class="inline">
+      {{-- Prune Old Logs Action --}}
+      <form method="POST" action="{{ route('admin.visitors.prune') }}" onsubmit="return confirm('Prune visitor logs older than 60 days to save database storage?');" class="inline">
         @csrf
         <input type="hidden" name="days" value="60" />
-        <button type="submit" class="btn-secondary text-xs px-3 py-2 flex items-center gap-1 shrink-0 bg-white border border-slate-200 text-slate-600 hover:text-amber-700 hover:bg-amber-50 shadow-2xs" title="Delete visitor logs older than 60 days">
+        <button type="submit" class="px-3.5 py-2 rounded-xl bg-stone-50 hover:bg-amber-50 text-stone-600 hover:text-amber-800 border border-stone-200 font-extrabold text-xs shadow-2xs transition flex items-center gap-1 cursor-pointer" title="Delete visitor logs older than 60 days">
           <span>🧹</span>
-          <span>Prune (>60d)</span>
+          <span>Prune (&gt;60d)</span>
         </button>
       </form>
 
-      <!-- Active Right Now Badge -->
-      <div class="bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-2xs flex items-center gap-3 shrink-0">
-        <div class="h-8 w-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold border border-emerald-100 shrink-0">
+      {{-- Active Right Now Badge --}}
+      <div class="bg-gradient-to-r from-emerald-50 to-white border border-emerald-200/80 px-3.5 py-2 rounded-xl shadow-2xs flex items-center gap-2.5 shrink-0">
+        <div class="h-7 w-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-black shadow-xs shrink-0">
           ⚡
         </div>
         <div>
-          <span class="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 block leading-tight">Active Now</span>
+          <span class="text-[9px] font-black uppercase tracking-wider text-emerald-800 block leading-tight">Active Now</span>
           <div class="flex items-baseline gap-1">
-            <strong class="text-base font-black font-mono text-slate-900 leading-none">{{ number_format($activeRealtimeCount) }}</strong>
-            <span class="text-[10px] text-slate-500 font-medium">online</span>
+            <strong class="text-sm sm:text-base font-black font-mono text-stone-900 leading-none">{{ number_format($activeRealtimeCount) }}</strong>
+            <span class="text-[10px] text-stone-400 font-medium">online</span>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
   @if(session('status'))
-    <div class="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold rounded-xl flex items-center gap-2">
+    <div class="rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-extrabold px-4 py-3 shadow-2xs flex items-center gap-2">
       <span>✓</span>
       <span>{{ session('status') }}</span>
     </div>
   @endif
 
-  <!-- Minimal KPI Stat Cards Grid (2 cols on phone, 5 cols on desktop) -->
-  <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+  {{-- 5 KPI Metric Cards Ribbon --}}
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
     
-    <!-- Visitors Today -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-2xs hover:border-slate-300 transition">
+    {{-- Visitors Today --}}
+    <div class="p-4 rounded-2xl sm:rounded-3xl bg-white border border-stone-200 shadow-2xs space-y-1">
       <div class="flex items-center justify-between">
-        <span class="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Visitors Today</span>
-        <span class="text-slate-400 text-xs sm:text-sm">⚡</span>
+        <span class="text-[11px] font-black text-stone-400 uppercase tracking-wider">Visitors Today</span>
+        <span class="text-xs">⚡</span>
       </div>
-      <p class="mt-1.5 sm:mt-2 text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight">{{ number_format($todayCount) }}</p>
-      <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1">Yesterday: <strong class="text-slate-700 font-mono">{{ number_format($yesterdayCount) }}</strong></p>
+      <p class="text-xl sm:text-2xl font-black text-stone-900 font-mono tracking-tight">{{ number_format($todayCount) }}</p>
+      <span class="text-[10px] text-stone-400 font-semibold block">Yesterday: <strong class="text-stone-700 font-mono">{{ number_format($yesterdayCount) }}</strong></span>
     </div>
 
-    <!-- This Week -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-2xs hover:border-slate-300 transition">
+    {{-- This Week --}}
+    <div class="p-4 rounded-2xl sm:rounded-3xl bg-white border border-stone-200 shadow-2xs space-y-1">
       <div class="flex items-center justify-between">
-        <span class="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">This Week</span>
-        <span class="text-slate-400 text-xs sm:text-sm">📅</span>
+        <span class="text-[11px] font-black text-stone-400 uppercase tracking-wider">This Week</span>
+        <span class="text-xs">📅</span>
       </div>
-      <p class="mt-1.5 sm:mt-2 text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight">{{ number_format($thisWeekCount) }}</p>
-      <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1">7-day unique IPs</p>
+      <p class="text-xl sm:text-2xl font-black text-stone-900 font-mono tracking-tight">{{ number_format($thisWeekCount) }}</p>
+      <span class="text-[10px] text-stone-400 font-semibold block">7-day unique visitors</span>
     </div>
 
-    <!-- This Month -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-2xs hover:border-slate-300 transition">
+    {{-- This Month --}}
+    <div class="p-4 rounded-2xl sm:rounded-3xl bg-white border border-stone-200 shadow-2xs space-y-1">
       <div class="flex items-center justify-between">
-        <span class="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">This Month</span>
-        <span class="text-slate-400 text-xs sm:text-sm">📈</span>
+        <span class="text-[11px] font-black text-stone-400 uppercase tracking-wider">This Month</span>
+        <span class="text-xs">📈</span>
       </div>
-      <p class="mt-1.5 sm:mt-2 text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight">{{ number_format($thisMonthCount) }}</p>
-      <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1">{{ date('M Y') }} total</p>
+      <p class="text-xl sm:text-2xl font-black text-stone-900 font-mono tracking-tight">{{ number_format($thisMonthCount) }}</p>
+      <span class="text-[10px] text-stone-400 font-semibold block">{{ date('M Y') }} total traffic</span>
     </div>
 
-    <!-- Mobile vs Desktop -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-2xs hover:border-slate-300 transition">
+    {{-- Device Split --}}
+    <div class="p-4 rounded-2xl sm:rounded-3xl bg-white border border-stone-200 shadow-2xs space-y-1">
       <div class="flex items-center justify-between">
-        <span class="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Device Split</span>
-        <span class="text-slate-400 text-xs sm:text-sm">📱</span>
+        <span class="text-[11px] font-black text-stone-400 uppercase tracking-wider">Device Split</span>
+        <span class="text-xs">📱</span>
       </div>
-      <div class="mt-1.5 sm:mt-2 flex items-baseline justify-between font-mono">
-        <p class="text-base sm:text-lg font-extrabold text-slate-900">{{ number_format($mobileCount) }} <span class="text-[10px] text-slate-400 font-normal">Mob</span></p>
-        <p class="text-xs sm:text-sm font-bold text-slate-500">{{ number_format($desktopCount) }} <span class="text-[10px] text-slate-400 font-normal">Desk</span></p>
+      <div class="flex items-baseline justify-between font-mono">
+        <p class="text-sm sm:text-base font-extrabold text-stone-900">{{ number_format($mobileCount) }} <span class="text-[10px] text-stone-400 font-normal">Mob</span></p>
+        <p class="text-xs sm:text-sm font-bold text-stone-500">{{ number_format($desktopCount) }} <span class="text-[10px] text-stone-400 font-normal">Desk</span></p>
       </div>
       @php
         $totalDevices = max(1, $mobileCount + $desktopCount);
         $mobilePct = round(($mobileCount / $totalDevices) * 100);
       @endphp
-      <div class="w-full bg-slate-100 h-1.5 rounded-full mt-2 overflow-hidden flex">
+      <div class="w-full bg-stone-100 h-1.5 rounded-full overflow-hidden flex border border-stone-200/60 mt-1">
         <div class="bg-brand-600 h-full" style="width: {{ $mobilePct }}%"></div>
-        <div class="bg-slate-300 h-full flex-1"></div>
+        <div class="bg-stone-300 h-full flex-1"></div>
       </div>
     </div>
 
-    <!-- All-Time -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-3.5 sm:p-4 shadow-2xs hover:border-slate-300 transition col-span-2 sm:col-span-1">
+    {{-- All-Time Visitors --}}
+    <div class="p-4 rounded-2xl sm:rounded-3xl bg-white border border-stone-200 shadow-2xs space-y-1 col-span-2 sm:col-span-1">
       <div class="flex items-center justify-between">
-        <span class="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">All-Time</span>
-        <span class="text-slate-400 text-xs sm:text-sm">🌐</span>
+        <span class="text-[11px] font-black text-stone-400 uppercase tracking-wider">All-Time</span>
+        <span class="text-xs">🌐</span>
       </div>
-      <p class="mt-1.5 sm:mt-2 text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight">{{ number_format($totalCount) }}</p>
-      <p class="text-[10px] sm:text-[11px] text-slate-400 mt-1">Total unique logs</p>
+      <p class="text-xl sm:text-2xl font-black text-stone-900 font-mono tracking-tight">{{ number_format($totalCount) }}</p>
+      <span class="text-[10px] text-stone-400 font-semibold block">Total recorded logs</span>
     </div>
 
   </div>
 
-  <!-- Chart & Top Pages/Referrers Grid -->
+  {{-- Chart & Analytics Grid --}}
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
     
-    <!-- 14-Day Traffic Chart (Takes 2 cols on desktop) -->
-    <div class="card p-4 sm:p-6 space-y-4 lg:col-span-2 flex flex-col justify-between">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 pb-3.5">
+    {{-- 14-Day Traffic Trend Chart (2 cols) --}}
+    <div class="bg-white p-5 sm:p-6 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-4 lg:col-span-2 flex flex-col justify-between">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-stone-100 pb-3.5">
         <div>
           <div class="flex items-center gap-2 flex-wrap">
-            <h3 class="font-extrabold text-sm sm:text-base text-slate-900 flex items-center gap-2">
+            <h2 class="font-extrabold text-sm sm:text-base text-stone-900 flex items-center gap-2">
               <span>📈</span> 14-Day Traffic Trend
-            </h3>
-            <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-brand-50 text-brand-700 border border-brand-200">
+            </h2>
+            <span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider rounded-full bg-brand-50 text-brand-800 border border-brand-200">
               Daily Trend
             </span>
           </div>
-          <p class="text-xs text-slate-500 mt-0.5">Daily unique visitor count</p>
+          <p class="text-xs text-stone-500 mt-0.5">Daily unique storefront visitors</p>
         </div>
 
         <div class="flex items-center gap-3 text-xs font-bold shrink-0">
-          <span class="text-slate-700 font-extrabold bg-slate-100 px-2.5 py-1 rounded-xl border border-slate-200 text-xs">
+          <span class="text-stone-800 font-extrabold bg-stone-100 px-3 py-1 rounded-xl border border-stone-200 text-xs">
             🏆 Peak: {{ number_format($maxTrendCount) }}
           </span>
         </div>
       </div>
 
-      <!-- Chart Canvas Container -->
+      {{-- Chart Canvas Container --}}
       <div class="relative w-full h-48 sm:h-56 md:h-64">
         <canvas id="visitorLineChart"></canvas>
       </div>
     </div>
 
-    <!-- Top Pages & Traffic Sources (1 col on desktop) -->
+    {{-- Top Pages & Traffic Sources (1 col) --}}
     <div class="space-y-4">
       
-      <!-- Top Visited Landing Pages -->
-      <div class="card p-4 space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-          <h4 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+      {{-- Top Visited Landing Pages --}}
+      <div class="bg-white p-5 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-3">
+        <div class="flex items-center justify-between border-b border-stone-100 pb-2.5">
+          <h3 class="text-xs font-black text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
             <span>🔥</span> Top Visited Pages (7d)
-          </h4>
-          <span class="text-[10px] text-slate-400 font-mono font-bold">Visits</span>
+          </h3>
+          <span class="text-[10px] text-stone-400 font-mono font-bold uppercase">Visits</span>
         </div>
         <div class="space-y-1.5 text-xs">
           @forelse($topPages as $tp)
-            <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg hover:bg-slate-50 transition">
-              <a href="{{ $tp->page_url }}" target="_blank" class="font-mono text-slate-700 hover:text-brand-600 truncate max-w-[200px]" title="{{ $tp->page_url }}">
+            <div class="flex items-center justify-between gap-2 p-2 rounded-xl bg-stone-50 hover:bg-stone-100 transition border border-stone-200/60">
+              <a href="{{ $tp->page_url }}" target="_blank" class="font-mono text-stone-800 hover:text-brand-600 truncate max-w-[200px]" title="{{ $tp->page_url }}">
                 {{ $tp->page_url === '/' ? '/ (Home)' : $tp->page_url }}
               </a>
-              <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-800 font-mono font-extrabold text-[11px] shrink-0">
+              <span class="px-2.5 py-0.5 rounded-full bg-stone-200 text-stone-800 font-mono font-black text-[11px] shrink-0">
                 {{ number_format($tp->visits) }}
               </span>
             </div>
           @empty
-            <p class="text-[11px] text-slate-400 text-center py-2">No page data recorded yet.</p>
+            <p class="text-[11px] text-stone-400 text-center py-2 italic">No page data recorded yet.</p>
           @endforelse
         </div>
       </div>
 
-      <!-- Top Traffic Referrers -->
-      <div class="card p-4 space-y-3">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-          <h4 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+      {{-- Top Traffic Sources --}}
+      <div class="bg-white p-5 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-3">
+        <div class="flex items-center justify-between border-b border-stone-100 pb-2.5">
+          <h3 class="text-xs font-black text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
             <span>🌐</span> Traffic Sources (7d)
-          </h4>
-          <span class="text-[10px] text-slate-400 font-mono font-bold">Visits</span>
+          </h3>
+          <span class="text-[10px] text-stone-400 font-mono font-bold uppercase">Visits</span>
         </div>
         <div class="space-y-1.5 text-xs">
           @forelse($topReferrers as $tr)
-            <div class="flex items-center justify-between gap-2 p-1.5 rounded-lg hover:bg-slate-50 transition">
-              <span class="font-semibold text-slate-700 truncate max-w-[200px]" title="{{ $tr->referer }}">
+            <div class="flex items-center justify-between gap-2 p-2 rounded-xl bg-stone-50 hover:bg-stone-100 transition border border-stone-200/60">
+              <span class="font-semibold text-stone-800 truncate max-w-[200px]" title="{{ $tr->referer }}">
                 {{ $tr->referer }}
               </span>
-              <span class="px-2 py-0.5 rounded-full bg-brand-50 text-brand-800 font-mono font-extrabold text-[11px] shrink-0">
+              <span class="px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-900 font-mono font-black text-[11px] border border-brand-200 shrink-0">
                 {{ number_format($tr->visits) }}
               </span>
             </div>
           @empty
-            <p class="text-[11px] text-slate-400 text-center py-2">Direct storefront traffic (No external referrers).</p>
+            <p class="text-[11px] text-stone-400 text-center py-2 italic">Direct storefront traffic (No external referrers).</p>
           @endforelse
         </div>
       </div>
@@ -214,7 +218,7 @@
 
   </div>
 
-  <!-- Include Chart.js via CDN -->
+  {{-- Chart.js Script --}}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -252,12 +256,12 @@
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: '#0f172a',
+              backgroundColor: '#1c1917',
               titleColor: '#ffffff',
               bodyColor: '#fb923c',
               bodyFont: { weight: 'bold', family: 'monospace' },
-              padding: 9,
-              cornerRadius: 8,
+              padding: 10,
+              cornerRadius: 10,
               displayColors: false,
               callbacks: {
                 label: function(context) {
@@ -274,16 +278,16 @@
             x: {
               grid: { display: false },
               ticks: {
-                color: '#64748b',
-                font: { size: 10, weight: 'bold', family: 'Plus Jakarta Sans' }
+                color: '#78716c',
+                font: { size: 10, weight: 'bold' }
               }
             },
             y: {
               beginAtZero: true,
-              grid: { color: '#f1f5f9' },
+              grid: { color: '#f5f5f4' },
               ticks: {
-                color: '#64748b',
-                font: { size: 10, family: 'Plus Jakarta Sans' },
+                color: '#78716c',
+                font: { size: 10 },
                 precision: 0
               }
             }
@@ -321,20 +325,20 @@
     }
   </script>
 
-  <!-- Visitor Logs Activity Card -->
-  <div class="card overflow-hidden">
-    <div class="p-3.5 sm:p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+  {{-- Recent Visitor Activity Table Container --}}
+  <div class="bg-white rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs overflow-hidden">
+    <div class="p-4 sm:p-5 border-b border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-stone-50/50">
       <div>
-        <h3 class="font-extrabold text-xs sm:text-sm text-slate-900 flex items-center gap-2">
+        <h2 class="font-extrabold text-stone-900 text-sm sm:text-base flex items-center gap-2">
           <span>📋</span> Recent Visitor Activity Logs
-        </h3>
-        <p class="text-[11px] sm:text-xs text-slate-500">Fast background tracking with zero storefront delay</p>
+        </h2>
+        <p class="text-xs text-stone-500 mt-0.5">High-speed background tracking with zero storefront delay.</p>
       </div>
 
-      <!-- Filters & Search Form -->
+      {{-- Filters & Search Form --}}
       <form method="GET" action="{{ route('admin.visitors.index') }}" class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
-        <!-- Device Filter -->
-        <select name="device" onchange="this.form.submit()" class="inp text-xs py-2 pr-6">
+        {{-- Device Filter --}}
+        <select name="device" onchange="this.form.submit()" class="text-xs font-bold bg-white border border-stone-200 rounded-xl px-3 py-2 text-stone-800 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer shadow-2xs">
           <option value="">All Devices</option>
           <option value="mobile" {{ request('device') === 'mobile' ? 'selected' : '' }}>📱 Mobile</option>
           <option value="desktop" {{ request('device') === 'desktop' ? 'selected' : '' }}>💻 Desktop</option>
@@ -342,34 +346,34 @@
         </select>
 
         <div class="relative flex-1 sm:w-56">
-          <input type="text" name="q" value="{{ $search }}" placeholder="Search IP, URL, referrer..." class="inp text-xs pr-7 py-2 w-full" />
-          @if($search !== '')
-            <a href="{{ route('admin.visitors.index') }}" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">✕</a>
-          @endif
+          <input type="text" name="q" value="{{ $search }}" placeholder="Search IP, URL, referrer..." class="w-full pl-8 pr-3 py-2 text-xs font-semibold bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500" />
+          <svg class="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         </div>
-        <button type="submit" class="btn-primary text-xs px-3.5 py-2 shrink-0">Filter</button>
+
+        <button type="submit" class="px-4 py-2 rounded-xl bg-stone-900 text-white font-extrabold text-xs hover:bg-stone-800 transition cursor-pointer shadow-2xs">
+          Filter
+        </button>
       </form>
     </div>
 
-    {{-- Desktop Table View --}}
-    <div class="hidden sm:block overflow-x-auto w-full">
-      <table class="w-full text-left text-xs border-collapse min-w-[750px]">
+    {{-- Desktop Table View (`hidden md:block`) --}}
+    <div class="hidden md:block overflow-x-auto">
+      <table class="w-full text-left text-xs border-collapse">
         <thead>
-          <tr class="bg-slate-900 text-white uppercase text-[10.5px] font-extrabold tracking-wider whitespace-nowrap">
+          <tr class="bg-stone-100/90 text-stone-700 font-black border-b border-stone-200 uppercase text-[11px] tracking-wider whitespace-nowrap">
             <th class="py-3 px-4">IP Address</th>
             <th class="py-3 px-4">Visited Page</th>
             <th class="py-3 px-4">Referrer / Source</th>
-            <th class="py-3 px-4">Device & Browser</th>
+            <th class="py-3 px-4">Device &amp; Browser</th>
             <th class="py-3 px-4">Visit Date</th>
             <th class="py-3 px-4 text-right">Time Ago</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 bg-white">
+        <tbody class="divide-y divide-stone-100 bg-white">
           @forelse($logs as $log)
-            <tr class="hover:bg-slate-50/80 transition-colors">
-              <!-- IP Address -->
-              <td class="py-3 px-4 font-mono font-bold text-slate-900 whitespace-nowrap">
-                <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200 text-[11px]">
+            <tr class="hover:bg-stone-50/80 transition-colors">
+              <td class="py-3.5 px-4 font-mono font-bold text-stone-900 whitespace-nowrap">
+                <span class="px-2.5 py-0.5 rounded-md bg-stone-100 text-stone-800 border border-stone-200 text-[11px]">
                   {{ $log->ip_address }}
                 </span>
                 @if($log->hits > 1)
@@ -377,48 +381,43 @@
                 @endif
               </td>
 
-              <!-- Visited Page -->
-              <td class="py-3 px-4 font-mono text-slate-700 max-w-[180px] truncate" title="{{ $log->page_url }}">
+              <td class="py-3.5 px-4 font-mono text-stone-700 max-w-[200px] truncate" title="{{ $log->page_url }}">
                 {{ $log->page_url ?: '/' }}
               </td>
 
-              <!-- Referrer / Source -->
-              <td class="py-3 px-4 text-slate-600 max-w-[150px] truncate">
+              <td class="py-3.5 px-4 text-stone-600 max-w-[160px] truncate">
                 @if($log->referer)
                   <span class="text-brand-700 font-semibold truncate block" title="{{ $log->referer }}">{{ $log->referer }}</span>
                 @elseif($log->utm_source)
-                  <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-mono font-bold">utm: {{ $log->utm_source }}</span>
+                  <span class="px-1.5 py-0.5 rounded bg-sky-50 text-sky-800 text-[10px] font-mono font-bold">utm: {{ $log->utm_source }}</span>
                 @else
-                  <span class="text-slate-400 text-[11px]">Direct</span>
+                  <span class="text-stone-400 text-[11px]">Direct</span>
                 @endif
               </td>
 
-              <!-- Device & Browser -->
-              <td class="py-3 px-4 text-slate-600 whitespace-nowrap">
+              <td class="py-3.5 px-4 text-stone-600 whitespace-nowrap">
                 @if($log->device_type === 'mobile' || str_contains(strtolower($log->user_agent ?? ''), 'mobile') || str_contains(strtolower($log->user_agent ?? ''), 'android') || str_contains(strtolower($log->user_agent ?? ''), 'iphone'))
-                  <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-amber-50 text-amber-800 border border-amber-200 mr-1">Mobile</span>
+                  <span class="px-2 py-0.5 text-[10px] font-black rounded-lg bg-amber-50 text-amber-800 border border-amber-200 mr-1">Mobile</span>
                 @elseif($log->device_type === 'tablet')
-                  <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-purple-50 text-purple-800 border border-purple-200 mr-1">Tablet</span>
+                  <span class="px-2 py-0.5 text-[10px] font-black rounded-lg bg-purple-50 text-purple-800 border border-purple-200 mr-1">Tablet</span>
                 @else
-                  <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-slate-100 text-slate-700 border border-slate-200 mr-1">Desktop</span>
+                  <span class="px-2 py-0.5 text-[10px] font-black rounded-lg bg-stone-100 text-stone-700 border border-stone-200 mr-1">Desktop</span>
                 @endif
-                <span class="text-slate-500 font-medium text-[11px]">{{ $log->browser ?: 'Browser' }}</span>
+                <span class="text-stone-500 font-medium text-[11px]">{{ $log->browser ?: 'Browser' }}</span>
               </td>
 
-              <!-- Visit Date -->
-              <td class="py-3 px-4 font-semibold text-slate-700 whitespace-nowrap text-[11px]">
-                {{ \Illuminate\Support\Carbon::parse($log->visit_date)->format('d M Y') }}
+              <td class="py-3.5 px-4 font-semibold text-stone-700 whitespace-nowrap text-[11px]">
+                {{ \Illuminate\Support\Carbon::parse($log->visit_date)->format('d M, Y') }}
               </td>
 
-              <!-- Time Ago -->
-              <td class="py-3 px-4 text-right text-slate-400 text-[11px] font-medium whitespace-nowrap">
+              <td class="py-3.5 px-4 text-right text-stone-400 text-[11px] font-medium whitespace-nowrap">
                 {{ $log->updated_at ? $log->updated_at->diffForHumans() : ($log->created_at ? $log->created_at->diffForHumans() : 'N/A') }}
               </td>
             </tr>
           @empty
             <tr>
-              <td colspan="6" class="text-center py-10 text-slate-400 text-xs">
-                No visitor activity matching your query.
+              <td colspan="6" class="px-5 py-12 text-center text-stone-400 text-xs italic bg-stone-50/50">
+                👥 No visitor activity matching your query.
               </td>
             </tr>
           @endforelse
@@ -426,18 +425,18 @@
       </table>
     </div>
 
-    {{-- Mobile Card List View --}}
-    <div class="block sm:hidden divide-y divide-slate-100 bg-white">
+    {{-- Mobile Cards View (`block md:hidden`) --}}
+    <div class="block md:hidden divide-y divide-stone-100 bg-white">
       @forelse($logs as $log)
         @php
           $isMobile = $log->device_type === 'mobile' || str_contains(strtolower($log->user_agent ?? ''), 'mobile') || str_contains(strtolower($log->user_agent ?? ''), 'android') || str_contains(strtolower($log->user_agent ?? ''), 'iphone');
         @endphp
-        <div class="p-3.5 space-y-2">
+        <div class="p-4 space-y-2.5">
           <div class="flex items-center justify-between gap-2">
-            <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-900 border border-slate-200 font-mono font-bold text-xs">
+            <span class="px-2.5 py-0.5 rounded-md bg-stone-100 text-stone-900 border border-stone-200 font-mono font-bold text-xs">
               {{ $log->ip_address }}
             </span>
-            <span class="text-[11px] font-medium text-slate-400">
+            <span class="text-[11px] font-medium text-stone-400">
               {{ $log->updated_at ? $log->updated_at->diffForHumans() : '' }}
             </span>
           </div>
@@ -445,28 +444,26 @@
           <div class="flex items-center justify-between gap-2 text-xs">
             <div class="flex items-center gap-1.5">
               @if($isMobile)
-                <span class="px-1.5 py-0.5 text-[10px] font-extrabold rounded bg-amber-50 text-amber-800 border border-amber-200">Mobile</span>
+                <span class="px-2 py-0.5 text-[10px] font-black rounded-lg bg-amber-50 text-amber-800 border border-amber-200">Mobile</span>
               @else
-                <span class="px-1.5 py-0.5 text-[10px] font-extrabold rounded bg-slate-100 text-slate-700 border border-slate-200">Desktop</span>
+                <span class="px-2 py-0.5 text-[10px] font-black rounded-lg bg-stone-100 text-stone-700 border border-stone-200">Desktop</span>
               @endif
-              <span class="text-slate-600 font-semibold">{{ \Illuminate\Support\Carbon::parse($log->visit_date)->format('d M Y') }}</span>
+              <span class="text-stone-600 font-semibold">{{ \Illuminate\Support\Carbon::parse($log->visit_date)->format('d M, Y') }}</span>
             </div>
             @if($log->page_url)
-              <span class="font-mono text-[11px] text-slate-500 truncate max-w-[140px]">{{ $log->page_url }}</span>
+              <span class="font-mono text-[11px] text-stone-500 truncate max-w-[140px]">{{ $log->page_url }}</span>
             @endif
           </div>
         </div>
       @empty
-        <div class="p-6 text-center text-xs text-slate-400">
+        <div class="p-8 text-center text-xs text-stone-400 bg-stone-50">
           No visitor activity matching your query.
         </div>
       @endforelse
     </div>
 
     @if($logs->hasPages())
-      <div class="p-3.5 sm:p-4 border-t border-slate-100">
-        {{ $logs->links() }}
-      </div>
+      <div class="p-4 border-t border-stone-100 bg-stone-50/40">{{ $logs->links() }}</div>
     @endif
   </div>
 

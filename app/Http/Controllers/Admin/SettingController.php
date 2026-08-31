@@ -130,7 +130,9 @@ class SettingController extends Controller
                 'home_categories_title' => ['nullable', 'string', 'max:80'],
                 'home_hot_deal_title'   => ['nullable', 'string', 'max:80'],
                 'home_featured_title'   => ['nullable', 'string', 'max:80'],
+                'show_home_reviews'     => ['nullable', 'boolean'],
                 'home_reviews_title'    => ['nullable', 'string', 'max:80'],
+                'home_reviews_subtitle' => ['nullable', 'string', 'max:200'],
                 'show_featured_brands'         => ['nullable', 'boolean'],
                 'home_featured_brands_title'   => ['nullable', 'string', 'max:80'],
                 'home_featured_brands_subtitle'=> ['nullable', 'string', 'max:200'],
@@ -226,7 +228,7 @@ class SettingController extends Controller
                 'header_promo_text', 'header_promo_link',
                 'shop_subtitle', 'delivery_eta_text',
                 'home_categories_title', 'home_hot_deal_title', 'home_featured_title',
-                'home_reviews_title',
+                'home_reviews_title', 'home_reviews_subtitle',
                 'home_featured_brands_title', 'home_featured_brands_subtitle',
                 'home_view_more_label', 'default_cta_text',
                 'hero_fallback_badge', 'hero_fallback_title', 'hero_fallback_subtitle',
@@ -269,6 +271,7 @@ class SettingController extends Controller
 
         if ($section === 'homepage') {
             Setting::put('show_featured_brands', $request->boolean('show_featured_brands') ? '1' : '0');
+            Setting::put('show_home_reviews', $request->boolean('show_home_reviews') ? '1' : '0');
         }
 
         if ($section === 'couriers') {

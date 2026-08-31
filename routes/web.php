@@ -145,6 +145,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
             // Abandoned Carts Recovery
             Route::get('abandoned-carts', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'index'])->name('abandoned-carts.index');
+            Route::post('abandoned-carts/prune-recovered', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'pruneRecovered'])->name('abandoned-carts.prune-recovered');
+            Route::post('abandoned-carts/prune-old', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'pruneOld'])->name('abandoned-carts.prune-old');
             Route::post('abandoned-carts/{cart}/send-reminder', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'sendReminder'])->name('abandoned-carts.send-reminder');
             Route::post('abandoned-carts/{cart}/mark-recovered', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'markRecovered'])->name('abandoned-carts.mark-recovered');
             Route::delete('abandoned-carts/{cart}', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'destroy'])->name('abandoned-carts.destroy');
@@ -155,8 +157,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('blacklist/{blacklist}', [\App\Http\Controllers\Admin\BlacklistController::class, 'destroy'])->name('blacklist.destroy');
             Route::get('visitors', [\App\Http\Controllers\Admin\VisitorController::class, 'index'])->name('visitors.index');
             Route::post('visitors/prune', [\App\Http\Controllers\Admin\VisitorController::class, 'prune'])->name('visitors.prune');
+            Route::get('customers/export', [AdminCustomerController::class, 'export'])->name('customers.export');
             Route::get('customers', [AdminCustomerController::class, 'index'])->name('customers.index');
             Route::get('customers/{phone}', [AdminCustomerController::class, 'show'])->name('customers.show');
+            Route::post('customers/{phone}/toggle-blacklist', [AdminCustomerController::class, 'toggleBlacklist'])->name('customers.toggle-blacklist');
+            Route::post('customers/{phone}/segment-tag', [AdminCustomerController::class, 'updateSegmentTag'])->name('customers.update-segment-tag');
 
             // Reviews
             Route::get('reviews', [AdminReviewController::class, 'index'])->name('reviews.index');

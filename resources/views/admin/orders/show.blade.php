@@ -5,21 +5,21 @@
 <div class="space-y-6">
   <!-- Top Navigation & Action Header -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
-    <div class="space-y-1">
+    <div class="space-y-1.5">
       <a href="{{ route('admin.orders.index') }}" class="text-xs font-bold text-slate-500 hover:text-brand-600 inline-flex items-center gap-1">
         <span>&larr;</span> Back to Orders List
       </a>
-      <div class="flex items-center gap-3">
-        <h2 class="text-2xl font-black text-slate-900 font-mono tracking-tight">
+      <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+        <h2 class="text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight">
           Order #{{ $order->order_number }}
         </h2>
-        <span class="px-3 py-1 text-xs font-extrabold rounded-full {{ $order->statusBadge() }}">
+        <span class="px-2.5 sm:px-3 py-1 text-xs font-extrabold rounded-full {{ $order->statusBadge() }}">
           {{ ucfirst($order->status) }}
         </span>
-        <span class="px-3 py-1 text-xs font-extrabold rounded-full {{ $order->paymentBadge() }}">
+        <span class="px-2.5 sm:px-3 py-1 text-xs font-extrabold rounded-full {{ $order->paymentBadge() }}">
           Payment: {{ ucfirst($order->payment_status) }}
         </span>
-        <span class="px-3 py-1 text-xs font-extrabold rounded-full bg-slate-100 text-slate-700 border border-slate-200" title="Source: {{ $order->utm_source ?? 'Direct' }}">
+        <span class="px-2.5 sm:px-3 py-1 text-xs font-extrabold rounded-full bg-slate-100 text-slate-700 border border-slate-200" title="Source: {{ $order->utm_source ?? 'Direct' }}">
           Source: {{ $order->utmSourceIcon() }}
         </span>
       </div>
@@ -28,7 +28,7 @@
 
     <!-- Action Buttons -->
     <div class="flex items-center gap-2 flex-wrap shrink-0">
-      <a href="{{ route('admin.orders.invoice', $order) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-extrabold bg-amber-500 hover:bg-amber-600 text-white rounded-2xl shadow-sm transition">
+      <a href="{{ route('admin.orders.invoice', $order) }}" target="_blank" class="w-full sm:w-auto justify-center inline-flex items-center gap-2 px-4 py-2.5 text-xs font-extrabold bg-amber-500 hover:bg-amber-600 text-white rounded-2xl shadow-sm transition">
         <span>🖨️</span> Print Invoice / PDF
       </a>
     </div>

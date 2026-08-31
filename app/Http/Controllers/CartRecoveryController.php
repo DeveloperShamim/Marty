@@ -23,13 +23,10 @@ class CartRecoveryController extends Controller
         // Restore items to current session cart
         session(['cart' => $cartData]);
 
-        // Update recovery timestamp & status if not already recovered
-        if ($abandonedCart->status !== 'recovered') {
-            $abandonedCart->update([
-                'status'       => 'recovered',
-                'recovered_at' => now(),
-            ]);
-        }
+        // Link the abandoned cart to current session so when order is placed, it gets marked as recovered
+        $abandonedCart->update([
+            'session_id' => session()->getId(),
+        ]);
 
         return redirect()->route('checkout.show')->with('status', '🎉 Welcome back! Your cart has been restored. Complete your order below.');
     }

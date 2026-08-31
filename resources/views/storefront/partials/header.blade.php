@@ -29,7 +29,7 @@
 @endphp
 
 @if($promoText !== '')
-  <div class="bg-ink text-white text-xs sm:text-sm text-center py-2 px-4 font-medium">
+  <div class="bg-slate-900 text-slate-100 text-xs sm:text-sm text-center py-2 px-4 font-medium border-b border-slate-800">
     @if($promoLink !== '')
       <a href="{{ $promoLink }}" class="hover:text-brand-300 transition">{!! strip_tags($promoText, '<b><strong><span>') !!}</a>
     @else

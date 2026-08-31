@@ -452,16 +452,16 @@
 
     @if($coupons->isNotEmpty())
       <section class="mt-12" data-reveal>
-        <div class="flex items-center justify-between mb-4 border-b border-stone-200 pb-3">
-          <div>
-            <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">{{ setting('home_coupons_title', 'Special Offers & Coupons') }}</h2>
-            <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
+        <div class="flex items-center justify-between mb-4 border-b border-stone-200/80 pb-3">
+          <div class="flex items-center gap-2.5">
+            <span class="w-1.5 h-5 bg-brand-600 rounded-full"></span>
+            <h2 class="text-lg sm:text-2xl font-extrabold text-slate-900 leading-none">{{ setting('home_coupons_title', 'Special Offers & Coupons') }}</h2>
           </div>
           <div class="flex items-center gap-2">
-            <button type="button" id="couponPrev" class="h-8 w-8 rounded-full bg-brand-500 hover:bg-brand-600 text-white transition-all shadow-md flex items-center justify-center focus:outline-none" aria-label="Previous Coupon">
+            <button type="button" id="couponPrev" class="h-8 w-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Previous Coupon">
               <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
             </button>
-            <button type="button" id="couponNext" class="h-8 w-8 rounded-full bg-brand-500 hover:bg-brand-600 text-white transition-all shadow-md flex items-center justify-center focus:outline-none" aria-label="Next Coupon">
+            <button type="button" id="couponNext" class="h-8 w-8 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Next Coupon">
               <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </button>
           </div>
@@ -471,24 +471,33 @@
           <div class="swiper-wrapper">
             @foreach($coupons as $coupon)
               <div class="swiper-slide">
-                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-brand-500 to-brand-700 p-3.5 sm:p-4 text-white shadow-md hover:shadow-lg transition-all duration-300 flex flex-col justify-between h-full group border border-white/10">
-                  <div class="absolute -right-4 -top-4 w-16 h-16 bg-white/15 rounded-full blur-xl group-hover:scale-125 transition-transform"></div>
+                <div class="relative overflow-hidden rounded-2xl bg-white border border-slate-200/90 p-4 sm:p-5 shadow-2xs hover:shadow-md hover:border-brand-300 transition-all duration-200 flex flex-col justify-between h-full group">
+                  
+                  {{-- Classic Ticket Cutout Notches --}}
+                  <div class="absolute -left-2.5 bottom-11 w-5 h-5 bg-slate-50 border-r border-slate-200/90 rounded-full"></div>
+                  <div class="absolute -right-2.5 bottom-11 w-5 h-5 bg-slate-50 border-l border-slate-200/90 rounded-full"></div>
 
                   <div>
-                    <div class="flex items-center justify-between gap-1 mb-1.5">
-                      <span class="inline-flex items-center gap-1 bg-white/20 backdrop-blur-md text-white border border-white/30 font-mono font-extrabold text-[10px] sm:text-xs px-2 py-0.5 rounded-md tracking-wider uppercase shadow-xs">
-                        <svg class="w-3 h-3 text-white/90 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A1 1 0 013 12V7a4 4 0 014-4z"/></svg>
+                    {{-- Header: Code Pill & Status Badge --}}
+                    <div class="flex items-center justify-between gap-2 mb-2.5">
+                      <span class="inline-flex items-center gap-1.5 bg-brand-50 border border-dashed border-brand-300 text-brand-700 font-mono font-black text-xs px-2.5 py-1 rounded-lg tracking-wider uppercase shadow-2xs">
+                        <svg class="w-3 h-3 text-brand-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A1 1 0 013 12V7a4 4 0 014-4z"/></svg>
                         {{ $coupon->code }}
                       </span>
-                      <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-emerald-950 bg-emerald-300 px-1.5 py-0.5 rounded-full shadow-xs">Active</span>
+                      <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full shadow-2xs">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Active
+                      </span>
                     </div>
 
-                    <div class="flex items-baseline gap-1 mt-1">
-                      <span class="text-lg sm:text-2xl font-black tracking-tight text-white leading-none">{{ $coupon->valueLabel() }}</span>
-                      <span class="text-[9px] sm:text-[10px] font-black uppercase bg-white text-stone-900 px-1.5 py-0.5 rounded leading-none shadow-xs">OFF</span>
+                    {{-- Discount Value --}}
+                    <div class="flex items-baseline gap-1.5 mt-2">
+                      <span class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-none">{{ $coupon->valueLabel() }}</span>
+                      <span class="text-[10px] sm:text-xs font-black uppercase text-brand-700 bg-brand-50 border border-brand-200/80 px-2 py-0.5 rounded-md leading-none">OFF</span>
                     </div>
 
-                    <p class="text-[10px] sm:text-xs text-white/90 mt-1.5 line-clamp-1 font-medium leading-tight">
+                    {{-- Description --}}
+                    <p class="text-xs text-slate-600 mt-2 line-clamp-1 font-medium leading-tight">
                       @if($coupon->description)
                         {{ $coupon->description }}
                       @elseif($coupon->min_order_amount)
@@ -499,10 +508,12 @@
                     </p>
                   </div>
 
-                  <div class="mt-3 pt-2 border-t border-dashed border-white/25 flex items-center justify-between gap-1">
-                    <span class="text-[9px] sm:text-[11px] font-medium text-white/80">At checkout</span>
-                    <button type="button" onclick="applyAndCopyCoupon('{{ $coupon->code }}')" class="inline-flex items-center gap-1 rounded-full bg-white text-stone-900 hover:bg-stone-900 hover:text-white font-extrabold text-[10px] sm:text-xs px-3 py-1 shadow-sm transition-all cursor-pointer">
-                      Use Code <span class="text-xs">→</span>
+                  {{-- Dashed Ticket Divider & Action CTA --}}
+                  <div class="mt-4 pt-3 border-t border-dashed border-slate-200 flex items-center justify-between gap-2">
+                    <span class="text-[11px] font-medium text-slate-400">At checkout</span>
+                    <button type="button" onclick="applyAndCopyCoupon('{{ $coupon->code }}')" class="btn-shine inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-brand-600 text-white font-bold text-xs px-3.5 py-1.5 shadow-2xs transition-colors cursor-pointer">
+                      <span>Use Code</span>
+                      <span class="text-xs font-mono">→</span>
                     </button>
                   </div>
                 </div>
@@ -514,22 +525,72 @@
       </section>
     @endif
 
-    @if($homeReviews->isNotEmpty())
-      <section class="mt-12 mb-8" data-reveal>
-        <h2 class="text-2xl sm:text-3xl font-extrabold text-center mb-6">{{ setting('home_reviews_title', 'Customer Reviews') }}</h2>
-        <div class="grid md:grid-cols-2 gap-4">
+    @if((string) setting('show_home_reviews', '1') === '1' && $homeReviews->isNotEmpty())
+      <section class="mt-14 mb-8" data-reveal>
+        <div class="text-center max-w-xl mx-auto mb-8 sm:mb-10">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-50 border border-brand-200/80 text-brand-700 text-xs font-bold mb-2.5 shadow-2xs">
+            <span class="text-amber-400">★★★★★</span>
+            <span>Real Verified Shoppers</span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{{ setting('home_reviews_title', 'Customer Feedback') }}</h2>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1.5">{{ setting('home_reviews_subtitle', 'What our happy customers say about our authentic products and service') }}</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           @foreach($homeReviews as $review)
-            <blockquote class="rounded-xl border border-stone-100 bg-white p-6">
-              <p class="text-stone-600 text-sm leading-relaxed">{{ $review->body }}</p>
-              <footer class="mt-4 flex items-center gap-3">
-                @php $initials = collect(preg_split('/\s+/', trim((string) $review->author_name)))->filter()->take(2)->map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)))->implode(''); @endphp
-                <span class="h-10 w-10 rounded-full bg-brand-600 text-white text-sm font-bold grid place-items-center" aria-hidden="true">{{ $initials ?: '?' }}</span>
-                <div>
-                  <p class="font-bold text-sm">{{ $review->author_name }}</p>
-                  @if($review->title)<p class="text-xs text-stone-400">{{ $review->title }}</p>@endif
+            <div class="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-2xs hover:shadow-md hover:border-brand-300 transition-all duration-300 flex flex-col justify-between group">
+              
+              {{-- Subtle decorative watermark --}}
+              <div class="absolute -right-2 -bottom-2 text-slate-100 text-7xl font-serif font-black select-none pointer-events-none group-hover:text-brand-50/70 transition-colors">”</div>
+
+              <div>
+                {{-- Top: Rating Stars + Date --}}
+                <div class="flex items-center justify-between gap-2 mb-3">
+                  <div class="flex items-center gap-1 text-amber-400 text-sm">
+                    @php $rating = (int) ($review->rating ?: 5); @endphp
+                    @for($i = 1; $i <= 5; $i++)
+                      <svg class="w-4 h-4 {{ $i <= $rating ? 'text-amber-400 fill-amber-400' : 'text-slate-200 fill-slate-200' }}" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                      </svg>
+                    @endfor
+                    <span class="text-xs font-extrabold text-slate-700 ml-1">{{ $rating }}.0</span>
+                  </div>
+                  <span class="text-[11px] font-medium text-slate-400">{{ $review->created_at?->diffForHumans() ?? 'Verified' }}</span>
                 </div>
-              </footer>
-            </blockquote>
+
+                {{-- Review Body --}}
+                <p class="text-slate-700 text-xs sm:text-sm leading-relaxed font-normal relative z-10">
+                  “{{ $review->body }}”
+                </p>
+              </div>
+
+              {{-- Footer / Author Information --}}
+              <div class="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between gap-3 relative z-10">
+                <div class="flex items-center gap-3 min-w-0">
+                  @php
+                    $initials = collect(preg_split('/\s+/', trim((string) $review->author_name)))->filter()->take(2)->map(fn ($p) => mb_strtoupper(mb_substr($p, 0, 1)))->implode('');
+                  @endphp
+                  <div class="h-10 w-10 rounded-full bg-brand-50 border border-brand-200 text-brand-700 font-extrabold text-xs grid place-items-center shrink-0 shadow-2xs">
+                    {{ $initials ?: 'U' }}
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="font-extrabold text-xs sm:text-sm text-slate-900 truncate leading-tight">{{ $review->author_name }}</p>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                      <span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700">
+                        <svg class="w-3 h-3 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                        Verified Buyer
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                @if($review->product)
+                  <span class="hidden sm:inline-block text-[11px] font-medium text-slate-400 truncate max-w-[130px] bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">
+                    {{ $review->product->name }}
+                  </span>
+                @endif
+              </div>
+            </div>
           @endforeach
         </div>
       </section>

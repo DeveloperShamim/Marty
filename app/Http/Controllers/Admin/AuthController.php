@@ -11,7 +11,8 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::check() && Auth::user()->isStaff()) {
-            return redirect()->route('admin.dashboard');
+            $route = Auth::user()->role === 'order_manager' ? route('admin.orders.index') : route('admin.dashboard');
+            return redirect()->to($route);
         }
 
         return view('admin.auth.login');
@@ -40,7 +41,8 @@ class AuthController extends Controller
             $request->session()->regenerate();
             \App\Services\ActivityLogger::log('Staff Login', "Logged into Admin Panel");
 
-            return redirect()->intended(route('admin.dashboard'));
+            $targetRoute = $user->role === 'order_manager' ? route('admin.orders.index') : route('admin.dashboard');
+            return redirect()->intended($targetRoute);
         }
 
         return back()->withErrors(['email' => 'These credentials do not match our records.'])->onlyInput('email');

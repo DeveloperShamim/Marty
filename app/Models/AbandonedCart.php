@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class AbandonedCart extends Model
 {
-    use HasFactory;
+    use HasFactory, Prunable;
 
     protected $guarded = [];
 
@@ -20,6 +21,21 @@ class AbandonedCart extends Model
         'reminder_sent_at' => 'datetime',
         'recovered_at'     => 'datetime',
     ];
+
+    /**
+     * Get the prunable model query to automatically prune:
+     * 1. Recovered carts older than 7 days (already converted to real orders).
+     * 2. Unrecovered draft carts older than 60 days.
+     */
+    public function prunable()
+    {
+        return static::where(function ($query) {
+            $query->where('status', 'recovered')
+                  ->where('recovered_at', '<=', now()->subDays(7));
+        })->orWhere(function ($query) {
+            $query->where('created_at', '<=', now()->subDays(60));
+        });
+    }
 
     public function user(): BelongsTo
     {
@@ -67,12 +83,20 @@ class AbandonedCart extends Model
 
     public function isBlacklisted(): bool
     {
+        if ($this->relationLoaded('is_blacklisted_cached')) {
+            return (bool) $this->getRelation('is_blacklisted_cached');
+        }
+
         return Blacklist::isBlacklisted('phone', $this->customer_phone) ||
                Blacklist::isBlacklisted('email', $this->customer_email);
     }
 
     public function cancelledOrdersCount(): int
     {
+        if ($this->relationLoaded('cancelled_orders_count_cached')) {
+            return (int) $this->getRelation('cancelled_orders_count_cached');
+        }
+
         if (empty($this->customer_phone)) {
             return 0;
         }

@@ -13,13 +13,9 @@ class AbandonedCartTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_checkout_creates_draft_abandoned_cart(): void
+    public function test_guest_without_phone_does_not_create_abandoned_cart(): void
     {
-        $category = Category::create([
-            'name' => 'Electronics',
-            'slug' => 'electronics',
-        ]);
-
+        $category = Category::create(['name' => 'Electronics', 'slug' => 'electronics']);
         $product = Product::create([
             'category_id' => $category->id,
             'name' => 'Sample Wireless Earbuds',
@@ -29,16 +25,12 @@ class AbandonedCartTest extends TestCase
             'is_published' => true,
         ]);
 
-        $this->post(route('cart.add'), [
-            'product_id' => $product->id,
-            'qty'        => 2,
-        ]);
-
+        $this->post(route('cart.add'), ['product_id' => $product->id, 'qty' => 2]);
         $response = $this->get(route('checkout.show'));
         $response->assertStatus(200);
 
-        $this->assertDatabaseHas('abandoned_carts', [
-            'status' => 'abandoned',
+        // Should NOT create abandoned cart when no phone number was entered
+        $this->assertDatabaseMissing('abandoned_carts', [
             'subtotal' => 2000,
         ]);
     }
@@ -96,9 +88,6 @@ class AbandonedCartTest extends TestCase
         $response = $this->get(route('cart.recover', 'test-recovery-token-xyz'));
         $response->assertRedirect(route('checkout.show'));
 
-        $cart->refresh();
-        $this->assertEquals('recovered', $cart->status);
-        $this->assertNotNull($cart->recovered_at);
         $this->assertEquals(2, session('cart')['10||']['qty'] ?? null);
     }
 

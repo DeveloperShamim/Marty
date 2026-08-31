@@ -14,6 +14,11 @@ class DashboardController extends Controller
 {
     public function index(?Request $request = null)
     {
+        $user = auth()->user();
+        if ($user && $user->role === 'order_manager') {
+            return redirect()->route('admin.orders.index');
+        }
+
         $request = $request ?? request();
 
         // Scope to ignore cancelled orders across all financial & order analytics

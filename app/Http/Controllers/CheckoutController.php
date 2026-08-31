@@ -51,6 +51,27 @@ class CheckoutController extends Controller
         ]);
     }
 
+    public static function normalizeBdPhone(?string $phone): ?string
+    {
+        if (empty($phone)) {
+            return null;
+        }
+        $clean = preg_replace('/[^\d+]/', '', trim($phone));
+        if (str_starts_with($clean, '+880')) {
+            $clean = '0' . substr($clean, 4);
+        } elseif (str_starts_with($clean, '880')) {
+            $clean = '0' . substr($clean, 3);
+        } elseif (str_starts_with($clean, '00880')) {
+            $clean = '0' . substr($clean, 5);
+        }
+
+        if (preg_match('/^01[3-9]\d{8}$/', $clean)) {
+            return $clean;
+        }
+
+        return null;
+    }
+
     public function syncContact(Request $request)
     {
         $validated = $request->validate([
@@ -58,6 +79,13 @@ class CheckoutController extends Controller
             'customer_phone' => ['nullable', 'string', 'max:40'],
             'customer_email' => ['nullable', 'email', 'max:120'],
         ]);
+
+        if (!empty($validated['customer_phone'])) {
+            $normalized = self::normalizeBdPhone($validated['customer_phone']);
+            if ($normalized) {
+                $validated['customer_phone'] = $normalized;
+            }
+        }
 
         $items = $this->cart->items();
         if ($items->isNotEmpty()) {
@@ -102,18 +130,46 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('status', 'Your cart is empty.');
         }
 
+        if ($request->filled('customer_phone')) {
+            $cleaned = preg_replace('/[\s\-\(\)]/', '', (string) $request->input('customer_phone'));
+            $request->merge(['customer_phone' => $cleaned]);
+        }
+        if ($request->filled('payment_sender_number')) {
+            $cleanedSender = preg_replace('/[\s\-\(\)]/', '', (string) $request->input('payment_sender_number'));
+            $request->merge(['payment_sender_number' => $cleanedSender]);
+        }
+
         $validated = $request->validate([
             'customer_name'   => ['required', 'string', 'max:120'],
-            'customer_phone'  => ['required', 'string', 'max:40'],
+            'customer_phone'  => [
+                'required',
+                'string',
+                'regex:/^(?:\+?88|0088)?01[3-9]\d{8}$/',
+            ],
             'customer_email'  => ['nullable', 'email', 'max:120'],
             'shipping_address'=> ['required', 'string', 'max:255'],
             'city'            => ['required', 'string', 'max:80'],
             'postal_code'     => ['nullable', 'string', 'max:20'],
             'shipping_zone'   => ['required', Rule::in(['inside_dhaka', 'outside_dhaka'])],
             'payment_method'  => ['required', Rule::in($this->availablePaymentMethods())],
-            'payment_sender_number' => ['nullable', 'string', 'max:40', Rule::requiredIf(fn () => $request->payment_method !== 'cod')],
+            'payment_sender_number' => [
+                'nullable',
+                'string',
+                Rule::requiredIf(fn () => $request->payment_method !== 'cod'),
+                'regex:/^(?:\+?88|0088)?01[3-9]\d{8}$/',
+            ],
             'payment_txn_id'  => ['nullable', 'string', 'max:60', Rule::requiredIf(fn () => $request->payment_method !== 'cod')],
+        ], [
+            'customer_phone.required' => 'Please enter your mobile phone number.',
+            'customer_phone.regex'    => 'Please enter a valid 11-digit Bangladeshi mobile number (e.g. 01712345678 or 018XXXXXXXX).',
+            'payment_sender_number.required' => 'Please provide the mobile banking sender number.',
+            'payment_sender_number.regex'    => 'Please enter a valid 11-digit mobile banking phone number (e.g. 017XXXXXXXX).',
         ]);
+
+        $validated['customer_phone'] = self::normalizeBdPhone($validated['customer_phone']) ?? $validated['customer_phone'];
+        if (!empty($validated['payment_sender_number'])) {
+            $validated['payment_sender_number'] = self::normalizeBdPhone($validated['payment_sender_number']) ?? $validated['payment_sender_number'];
+        }
 
         $subtotal = (float) $items->sum('line_total');
         $coupon   = $this->coupons->coupon();
@@ -315,6 +371,12 @@ class CheckoutController extends Controller
         $sessionId = session()->getId();
         $user = Auth::user();
 
+        // Feature: Abandoned cart is ONLY recorded and counted if the customer gives a mobile phone number
+        $phone = trim((string) ($customerData['customer_phone'] ?? $user?->phone ?? ''));
+        if (empty($phone)) {
+            return;
+        }
+
         $cartData = $items->mapWithKeys(function ($item) {
             $key = $item->key ?? ($item->product_id . '|' . ($item->variant ?? '') . '|' . ($item->sku_id ?? ''));
             return [
@@ -341,7 +403,7 @@ class CheckoutController extends Controller
             'session_id'     => $sessionId,
             'user_id'        => $user?->id,
             'customer_name'  => $customerData['customer_name'] ?? $user?->name ?? $cart?->customer_name,
-            'customer_phone' => $customerData['customer_phone'] ?? $user?->phone ?? $cart?->customer_phone,
+            'customer_phone' => $phone,
             'customer_email' => $customerData['customer_email'] ?? $user?->email ?? $cart?->customer_email,
             'cart_data'      => $cartData,
             'subtotal'       => $subtotal,

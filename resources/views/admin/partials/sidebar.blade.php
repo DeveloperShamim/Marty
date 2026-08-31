@@ -11,7 +11,7 @@
             ['key' => 'dashboard', 'label' => 'Dashboard', 'route' => 'admin.dashboard', 'pattern' => 'admin.dashboard', 'icon' => '<path d="M4 13h6v8H4zM14 3h6v18h-6zM4 3h6v6H4z"/>'],
             ['key' => 'conversations', 'label' => 'Live Support Chat', 'route' => 'admin.conversations.index', 'pattern' => 'admin.conversations.*', 'icon' => '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>', 'badge' => $unreadChatBadge, 'badge_color' => 'bg-indigo-100 text-indigo-800 border border-indigo-200'],
             ['key' => 'orders', 'label' => 'Orders', 'route' => 'admin.orders.index', 'pattern' => 'admin.orders.*', 'icon' => '<circle cx="6" cy="19" r="2"/><circle cx="17" cy="19" r="2"/><path d="M17 17h-11v-14h-2M6 5l14 1l-1 7h-13"/>', 'badge' => $pendingBadge, 'badge_color' => 'bg-emerald-100 text-emerald-800 border border-emerald-200'],
-            ['key' => 'abandoned-carts', 'label' => 'Abandoned Carts', 'route' => 'admin.abandoned-carts.index', 'pattern' => 'admin.abandoned-carts.*', 'icon' => '<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>', 'badge' => $abandonedBadge, 'badge_color' => 'bg-amber-100 text-amber-800 border border-amber-200'],
+            ['key' => 'abandoned-carts', 'label' => 'Abandoned Carts', 'route' => 'admin.abandoned-carts.index', 'pattern' => 'admin.abandoned-carts.*', 'icon' => '<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>', 'badge' => $abandonedBadge, 'badge_color' => 'bg-amber-100 text-amber-900 border border-amber-300'],
             ['key' => 'reviews', 'label' => 'Customer Reviews', 'route' => 'admin.reviews.index', 'pattern' => 'admin.reviews.*', 'icon' => '<path d="M12 3l2.5 5.5L20 9l-4 4l1 6l-5-3l-5 3l1-6l-4-4l5.5-.5z"/>', 'badge' => $pendingReviews, 'badge_color' => 'bg-sky-100 text-sky-800 border border-sky-200'],
         ],
         'Products & Inventory' => [
@@ -51,6 +51,7 @@
             $nav['People & Security'] = array_filter($nav['People & Security'], fn($i) => in_array($i['key'], ['customers', 'visitors', 'blacklist'], true));
         } elseif ($user->role === 'order_manager') {
             unset($nav['Products & Inventory'], $nav['Marketing'], $nav['System Settings']);
+            $nav['Operations'] = array_filter($nav['Operations'], fn($i) => in_array($i['key'], ['orders', 'conversations', 'abandoned-carts', 'reviews'], true));
             $nav['People & Security'] = array_filter($nav['People & Security'], fn($i) => in_array($i['key'], ['customers', 'visitors', 'blacklist'], true));
         } elseif ($user->role === 'inventory_manager') {
             unset($nav['Marketing'], $nav['System Settings'], $nav['People & Security']);
@@ -70,19 +71,21 @@
     };
 @endphp
 
-<aside id="sidebar" class="fixed lg:sticky lg:top-0 lg:self-start inset-y-0 left-0 z-50 w-64 max-w-[85vw] h-dvh bg-white border-r border-stone-200/80 flex flex-col -translate-x-full lg:translate-x-0 transition-transform duration-200 select-none">
-  {{-- Header: Brand & Live Status --}}
+<aside id="sidebar" class="fixed lg:sticky lg:top-0 lg:self-start inset-y-0 left-0 z-50 w-64 max-w-[85vw] h-dvh bg-white border-r border-stone-200/90 flex flex-col -translate-x-full lg:translate-x-0 transition-transform duration-200 select-none shadow-xl lg:shadow-none">
+  {{-- Header: Brand Logo & Live Badge --}}
   <div class="h-16 flex items-center justify-between px-4 border-b border-stone-100 shrink-0 bg-white">
     <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 min-w-0 group" aria-label="{{ $site }}">
       @if(has_custom_logo())
-        <img src="{{ logo_url() }}" alt="{{ $site }}" class="max-h-9 max-w-[140px] w-auto object-contain shrink-0 group-hover:scale-105 transition-transform" />
+        <div class="p-1 rounded-xl bg-stone-50 border border-stone-100 flex items-center justify-center">
+          <img src="{{ logo_url() }}" alt="{{ $site }}" class="max-h-8 max-w-[130px] w-auto object-contain shrink-0 group-hover:scale-105 transition-transform" />
+        </div>
       @else
-        <div class="h-9 w-9 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center border border-brand-200/50 shadow-xs shrink-0 group-hover:scale-105 transition-transform overflow-hidden p-1">
+        <div class="h-9 w-9 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center border border-emerald-200/70 shadow-2xs shrink-0 group-hover:scale-105 transition-transform overflow-hidden p-1">
           <img src="{{ logo_url() }}" alt="{{ $site }}" class="h-full w-full object-contain" />
         </div>
         <div class="flex flex-col min-w-0">
           <span class="font-extrabold text-sm text-stone-900 truncate tracking-tight leading-none">{{ $site }}</span>
-          <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 mt-1">
+          <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 mt-1">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>Online Store</span>
           </span>
@@ -90,29 +93,34 @@
       @endif
     </a>
 
-    <button type="button" id="sidebarClose" class="lg:hidden h-8 w-8 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 flex items-center justify-center transition-colors" aria-label="Close menu">
-      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    <button type="button" id="sidebarClose" class="lg:hidden h-8 w-8 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-stone-100 flex items-center justify-center transition-colors cursor-pointer" aria-label="Close menu">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
     </button>
   </div>
 
-  {{-- Navigation Menu (Light Mode Modern E-Commerce) --}}
-  <nav class="sidebar-nav flex-1 overflow-y-auto py-4 px-3 space-y-5 text-[13px] font-medium no-scrollbar">
+  {{-- Navigation Menu (Classic High-End E-Commerce Style) --}}
+  <nav class="sidebar-nav flex-1 overflow-y-auto py-3.5 px-3 space-y-4 text-[13px] font-medium no-scrollbar">
     @foreach($nav as $group => $items)
       <div class="space-y-1">
-        <p class="px-3 text-[10px] font-extrabold tracking-widest text-stone-400 uppercase mb-1.5">{{ $group }}</p>
+        <div class="px-3 pt-2 pb-1 flex items-center justify-between">
+          <span class="text-[10.5px] font-black tracking-widest text-stone-500 uppercase">{{ $group }}</span>
+        </div>
+
         @foreach($items as $item)
           @php 
             $on = request()->routeIs($item['pattern']);
             $badgeColor = $item['badge_color'] ?? 'bg-stone-100 text-stone-700 border border-stone-200';
           @endphp
-          <a href="{{ route($item['route']) }}" class="group relative flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all duration-150 {{ $on ? 'bg-brand-50 text-brand-700 font-bold border-l-3 border-brand-600' : 'text-stone-700 hover:bg-stone-100/80 hover:text-stone-900' }}">
-            <div class="flex items-center gap-3 min-w-0">
-              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 transition-colors {{ $on ? 'text-brand-600' : 'text-stone-400 group-hover:text-stone-700' }}">{!! $item['icon'] !!}</svg>
-              <span class="truncate tracking-tight">{{ $item['label'] }}</span>
+          <a href="{{ route($item['route']) }}" class="group relative flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-150 {{ $on ? 'bg-emerald-50 text-emerald-950 font-extrabold border border-emerald-200/80 shadow-2xs' : 'text-stone-600 hover:bg-stone-100/90 hover:text-stone-900 font-bold' }}">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors {{ $on ? 'bg-emerald-600 text-white shadow-xs' : 'text-stone-400 group-hover:text-stone-700 bg-stone-100/60 group-hover:bg-stone-200/60' }}">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">{!! $item['icon'] !!}</svg>
+              </div>
+              <span class="truncate tracking-tight text-[12.5px]">{{ $item['label'] }}</span>
             </div>
 
             @if(!empty($item['badge']) && $item['badge'] > 0)
-              <span class="{{ $badgeColor }} text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0 leading-none shadow-xs">
+              <span class="{{ $badgeColor }} text-[10px] font-black px-2 py-0.5 rounded-full shrink-0 leading-none shadow-2xs">
                 {{ $item['badge'] }}
               </span>
             @endif
@@ -123,27 +131,33 @@
   </nav>
 
   {{-- Footer: Quick Storefront & Profile Card --}}
-  <div class="p-3 border-t border-stone-100 bg-stone-50/60 shrink-0 space-y-2">
-    <a href="{{ route('shop') }}" target="_blank" class="w-full py-2 px-3 bg-white hover:bg-stone-100/90 border border-stone-200 rounded-xl text-stone-700 text-xs font-bold transition-all shadow-xs flex items-center justify-between group">
+  <div class="p-3 border-t border-stone-200/80 bg-stone-50/80 shrink-0 space-y-2">
+    <a href="{{ route('shop') }}" target="_blank" class="w-full py-2 px-3 bg-white hover:bg-stone-100/90 border border-stone-200 rounded-xl text-stone-800 text-xs font-extrabold transition-all shadow-2xs flex items-center justify-between group">
       <span class="flex items-center gap-2">
-        <svg class="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
         <span>View Public Website</span>
       </span>
-      <span class="text-xs font-bold text-stone-400 group-hover:text-brand-600 transition-colors">↗</span>
+      <span class="text-xs font-black text-stone-400 group-hover:text-emerald-700 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform">↗</span>
     </a>
 
-    <div class="flex items-center gap-2.5 p-2 bg-white rounded-xl border border-stone-200/80 shadow-xs">
+    <div class="flex items-center gap-2.5 p-2 bg-white rounded-xl border border-stone-200 shadow-2xs">
       <a href="{{ route('admin.profile.edit') }}" class="flex items-center gap-2.5 flex-1 min-w-0 group/prof" title="Edit Profile & Password">
-        <img src="https://ui-avatars.com/api/?name={{ urlencode($adminName) }}&background=0f766e&color=fff" class="h-8 w-8 rounded-lg shrink-0 object-cover group-hover/prof:scale-105 transition-transform" alt="" />
+        @if(auth()->user()?->avatarUrl())
+          <img src="{{ auth()->user()->avatarUrl() }}" class="w-8 h-8 rounded-lg object-cover border border-stone-200 shrink-0 shadow-2xs" alt="{{ $adminName }}">
+        @else
+          <div class="w-8 h-8 rounded-lg bg-emerald-800 text-white font-extrabold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+            {{ strtoupper(substr($adminName, 0, 2)) }}
+          </div>
+        @endif
         <div class="min-w-0 flex-1">
-          <p class="text-xs font-bold text-stone-900 truncate leading-tight group-hover/prof:text-brand-600 transition-colors">{{ $adminName }}</p>
-          <p class="text-[10px] font-medium text-stone-400 truncate">{{ $userRoleTitle }}</p>
+          <p class="text-xs font-extrabold text-stone-900 truncate leading-tight group-hover/prof:text-emerald-700 transition-colors">{{ $adminName }}</p>
+          <p class="text-[10px] font-bold text-stone-400 truncate">{{ $userRoleTitle }}</p>
         </div>
       </a>
 
       <form method="POST" action="{{ route('admin.logout') }}" class="shrink-0">
         @csrf
-        <button type="submit" class="h-7 w-7 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors" title="Log out" aria-label="Log out">
+        <button type="submit" class="h-7 w-7 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors cursor-pointer" title="Log out" aria-label="Log out">
           <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
         </button>
       </form>

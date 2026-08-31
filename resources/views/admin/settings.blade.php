@@ -315,6 +315,39 @@
         </div>
       </div>
     </div>
+
+    <!-- Customer Feedback & Reviews Control Card -->
+    <div class="bg-white p-4 sm:p-6 rounded-2xl border border-stone-200 shadow-2xs space-y-4">
+      <div class="border-b border-stone-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 class="font-extrabold text-base text-stone-900 flex items-center gap-2">
+            <span>💬</span> Customer Feedback Homepage Section
+          </h3>
+          <p class="text-xs text-stone-500 mt-0.5">Toggle visibility and customize heading/subtitle for verified customer reviews on the homepage</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <a href="{{ route('admin.reviews.index') }}" class="text-xs font-bold text-brand-600 hover:text-brand-700 underline flex items-center gap-1">
+            <span>Manage Reviews</span> <span>↗</span>
+          </a>
+          <label class="relative inline-flex items-center cursor-pointer shrink-0">
+            <input type="checkbox" name="show_home_reviews" value="1" @checked(($settings['show_home_reviews'] ?? '1') === '1') class="sr-only peer">
+            <div class="w-11 h-6 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+            <span class="ml-2.5 text-xs font-extrabold text-stone-800">Section Active</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs font-bold text-stone-700 block mb-1">Section Title</label>
+          <input name="home_reviews_title" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl" value="{{ $settings['home_reviews_title'] ?? 'Customer Feedback' }}" placeholder="Customer Feedback" />
+        </div>
+        <div>
+          <label class="text-xs font-bold text-stone-700 block mb-1">Section Subtitle</label>
+          <input name="home_reviews_subtitle" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl" value="{{ $settings['home_reviews_subtitle'] ?? 'What our happy customers say about our authentic products and service' }}" placeholder="What our happy customers say about our authentic products and service" />
+        </div>
+      </div>
+    </div>
   </form>
 
   <!-- TAB 3: PAYMENTS & SHIPPING -->
@@ -419,3 +452,133 @@
 
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const saveAllBtn = document.getElementById('saveAllSettings');
+  const saveAllFeedback = document.getElementById('saveAllFeedback');
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+  function showAllFeedback(ok, message) {
+    if (!saveAllFeedback) return;
+    saveAllFeedback.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'text-emerald-900', 'bg-rose-50', 'border-rose-200', 'text-rose-900', 'border');
+    if (ok) {
+      saveAllFeedback.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-900', 'border');
+    } else {
+      saveAllFeedback.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-900', 'border');
+    }
+    saveAllFeedback.innerHTML = (ok ? '✓ ' : '⚠️ ') + message;
+    saveAllFeedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // Handle individual section form submission with AJAX
+  document.querySelectorAll('.settings-section-form').forEach(form => {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const saveBtn = form.querySelector('.section-save-btn');
+      const origText = saveBtn ? saveBtn.innerText : 'Save';
+      const feedback = form.querySelector('.section-feedback');
+
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerText = 'Saving...';
+      }
+
+      const formData = new FormData(form);
+      fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        body: formData,
+        credentials: 'same-origin',
+      })
+      .then(res => res.json().then(data => ({ status: res.status, ok: res.ok, data })))
+      .then(({ ok, data }) => {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.innerText = origText;
+        }
+        if (!ok) {
+          const errs = data.errors ? Object.values(data.errors).flat().join('<br>') : (data.message || 'Save failed.');
+          if (feedback) {
+            feedback.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'text-emerald-900');
+            feedback.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-900', 'border');
+            feedback.innerHTML = '⚠️ ' + errs;
+          }
+        } else {
+          if (feedback) {
+            feedback.classList.remove('hidden', 'bg-rose-50', 'border-rose-200', 'text-rose-900');
+            feedback.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-900', 'border');
+            feedback.innerHTML = '✓ ' + (data.message || 'Section saved successfully.');
+          }
+          showAllFeedback(true, data.message || 'Section saved successfully.');
+        }
+      })
+      .catch(err => {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.innerText = origText;
+        }
+        if (feedback) {
+          feedback.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'text-emerald-900');
+          feedback.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-900', 'border');
+          feedback.innerHTML = '⚠️ Network error while saving section.';
+        }
+      });
+    });
+  });
+
+  // Handle Save All Settings Button
+  if (saveAllBtn) {
+    saveAllBtn.addEventListener('click', async function () {
+      const origText = saveAllBtn.innerText;
+      saveAllBtn.disabled = true;
+      saveAllBtn.innerText = 'Saving All Sections...';
+      showAllFeedback(true, 'Saving all store settings sections...');
+
+      const forms = Array.from(document.querySelectorAll('.settings-section-form'));
+      let hasError = false;
+      let errorMessages = [];
+
+      for (const form of forms) {
+        const formData = new FormData(form);
+        try {
+          const res = await fetch(form.action, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRF-TOKEN': csrfToken,
+            },
+            body: formData,
+            credentials: 'same-origin',
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            hasError = true;
+            const errs = data.errors ? Object.values(data.errors).flat().join(', ') : (data.message || 'Error');
+            errorMessages.push(`[${form.getAttribute('data-section') || 'Section'}]: ${errs}`);
+          }
+        } catch (err) {
+          hasError = true;
+          errorMessages.push(`[${form.getAttribute('data-section') || 'Section'}]: Network error`);
+        }
+      }
+
+      saveAllBtn.disabled = false;
+      saveAllBtn.innerText = origText;
+
+      if (hasError) {
+        showAllFeedback(false, 'Some sections could not be saved:<br>' + errorMessages.join('<br>'));
+      } else {
+        showAllFeedback(true, 'All store settings sections saved successfully!');
+      }
+    });
+  }
+});
+</script>
+@endpush

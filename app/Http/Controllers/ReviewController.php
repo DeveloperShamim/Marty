@@ -14,56 +14,85 @@ class ReviewController extends Controller
         abort_unless($product->is_published, 404);
 
         $user = $request->user();
-        if (! $user) {
-            return redirect()
-                ->guest(route('login', ['redirect' => route('product.show', $product) . '#reviews']))
-                ->with('status', 'Please sign in to write a review.');
-        }
 
         $data = $request->validate([
-            'author_name'  => ['nullable', 'string', 'max:120'],
-            'author_email' => ['nullable', 'email', 'max:120'],
+            'author_name'  => [$user ? 'nullable' : 'required', 'string', 'max:120'],
+            'author_email' => [$user ? 'nullable' : 'required', 'email', 'max:120'],
             'rating'       => ['required', 'integer', 'min:1', 'max:5'],
             'title'        => ['nullable', 'string', 'max:180'],
             'body'         => ['required', 'string', 'max:2000'],
         ]);
 
+        $authorEmail = $user ? ($data['author_email'] ?? $user->email) : $data['author_email'];
+        $authorName  = $user ? ($data['author_name'] ?: $user->name) : $data['author_name'];
+
         $already = ProductReview::query()
             ->where('product_id', $product->id)
-            ->where('user_id', $user->id)
+            ->where(function ($q) use ($user, $authorEmail) {
+                if ($user) {
+                    $q->where('user_id', $user->id);
+                } elseif ($authorEmail) {
+                    $q->where('author_email', $authorEmail);
+                }
+            })
             ->whereIn('status', [ProductReview::STATUS_PENDING, ProductReview::STATUS_APPROVED])
             ->exists();
 
         if ($already) {
             return back()
                 ->withInput()
-                ->withErrors(['body' => 'You have already reviewed this product.'])
+                ->withErrors(['review_body' => 'You have already submitted a review for this product.'])
                 ->withFragment('reviews');
         }
 
-        $verified = OrderItem::query()
-            ->where('product_id', $product->id)
-            ->whereHas('order', function ($q) use ($user) {
-                $q->where('user_id', $user->id)
-                    ->whereNotIn('status', ['cancelled']);
-            })
-            ->exists();
+        $verified = false;
+        if ($user) {
+            $verified = OrderItem::query()
+                ->where('product_id', $product->id)
+                ->whereHas('order', function ($q) use ($user) {
+                    $q->where(function ($w) use ($user) {
+                        $w->where('user_id', $user->id);
+                        if ($user->email) {
+                            $w->orWhere('customer_email', $user->email);
+                        }
+                        if ($user->phone) {
+                            $w->orWhere('customer_phone', $user->phone);
+                        }
+                    })->whereNotIn('status', ['cancelled']);
+                })
+                ->exists();
+        } elseif ($authorEmail) {
+            $verified = OrderItem::query()
+                ->where('product_id', $product->id)
+                ->whereHas('order', function ($q) use ($authorEmail) {
+                    $q->where('customer_email', $authorEmail)
+                        ->whereNotIn('status', ['cancelled']);
+                })
+                ->exists();
+        }
+
+        // STRICT ENFORCEMENT: Only buyers who purchased this product can rate
+        if (! $verified) {
+            return back()
+                ->withInput()
+                ->withErrors(['review_body' => 'Only customers who have purchased this product can leave a review.'])
+                ->withFragment('reviews');
+        }
 
         ProductReview::create([
             'product_id'           => $product->id,
-            'user_id'              => $user->id,
-            'author_name'          => $data['author_name'] ?: $user->name,
-            'author_email'         => $data['author_email'] ?? $user->email,
+            'user_id'              => $user?->id,
+            'author_name'          => $authorName,
+            'author_email'         => $authorEmail,
             'rating'               => $data['rating'],
             'title'                => $data['title'] ?? null,
             'body'                 => $data['body'],
             'status'               => ProductReview::STATUS_PENDING,
-            'is_verified_purchase' => $verified,
+            'is_verified_purchase' => true,
         ]);
 
-        return redirect()
-            ->route('product.show', $product)
-            ->with('status', 'Thanks! Your review was submitted and is awaiting approval.')
+        return back()
+            ->with('status', 'Thank you! Your feedback has been submitted for review.')
             ->withFragment('reviews');
     }
 }

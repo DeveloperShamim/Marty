@@ -65,4 +65,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(Order::class);
     }
+
+    public function avatarUrl(): ?string
+    {
+        if (!empty($this->avatar)) {
+            if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
+                return $this->avatar;
+            }
+            return asset('storage/' . ltrim($this->avatar, '/'));
+        }
+        return null;
+    }
 }
