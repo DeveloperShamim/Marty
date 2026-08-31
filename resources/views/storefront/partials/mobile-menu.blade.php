@@ -54,7 +54,7 @@
       </div>
     @endif
 
-    @if(isset($navBrands) && $navBrands->isNotEmpty())
+    @if(setting('show_featured_brands', '1') === '1' && isset($navBrands) && $navBrands->isNotEmpty())
       <div class="mt-4 pt-3 border-t border-stone-100">
         <div class="flex items-center justify-between mb-2">
           <p class="text-[11px] font-extrabold uppercase tracking-wider text-stone-400">Featured Brands</p>
