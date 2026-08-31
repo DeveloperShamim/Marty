@@ -41,11 +41,11 @@
 <header class="site-header sticky top-0 z-40 bg-white">
   {{-- ROW 1: Logo + Modern Search + Actions --}}
   <div class="bg-white border-b border-stone-100 shadow-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between gap-3 sm:gap-6">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-6">
       
       {{-- Mobile Menu Toggle & Brand Logo --}}
-      <div class="flex items-center gap-3 shrink-0">
-        <button type="button" data-open-menu class="lg:hidden text-stone-700 hover:text-brand-600 p-1.5 rounded-xl hover:bg-stone-100 transition" aria-label="Open Menu">
+      <div class="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0">
+        <button type="button" data-open-menu class="lg:hidden text-stone-700 hover:text-brand-600 p-1.5 rounded-xl hover:bg-stone-100 transition shrink-0 cursor-pointer" aria-label="Open Menu">
           <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
 
@@ -63,7 +63,7 @@
       </form>
 
       {{-- Top Actions: Track Order, Account, Cart --}}
-      <div class="ml-auto flex items-center gap-2.5 sm:gap-6 shrink-0">
+      <div class="ml-auto flex items-center gap-1 sm:gap-6 shrink-0">
         {{-- Mobile Search Trigger --}}
         <button type="button" data-toggle-search class="md:hidden flex flex-col items-center justify-center text-center group cursor-pointer focus:outline-none py-0.5 px-1 min-w-[38px] text-stone-700 hover:text-brand-600 transition-colors" aria-label="Search" aria-expanded="false" aria-controls="mobileSearchPanel">
           <svg class="w-6 h-6 text-stone-800 group-hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">

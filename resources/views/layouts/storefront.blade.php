@@ -60,6 +60,8 @@
       --brand-border: {{ $theme['primary_border'] }};
       --brand-dark: {{ $theme['dark'] }};
       --brand-surface: {{ $theme['surface'] }};
+    }
+
     /* Hide scrollbar for Chrome, Safari, Opera, Edge, and Firefox */
     .scrollbar-none::-webkit-scrollbar {
       display: none !important;

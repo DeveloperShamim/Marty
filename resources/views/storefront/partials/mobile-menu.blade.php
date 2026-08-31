@@ -1,6 +1,6 @@
-<aside id="mobileMenu" class="mobile-menu fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85%] -translate-x-full flex-col bg-white shadow-2xl lg:hidden transition-transform duration-300">
-  <div class="relative border-b border-stone-100 bg-stone-50 p-5">
-    <button type="button" data-close-menu class="absolute top-4 right-4 p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 rounded-full transition" aria-label="Close Menu">
+<aside id="mobileMenu" class="mobile-menu fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85vw] -translate-x-full flex-col bg-white shadow-2xl lg:hidden transition-transform duration-300 ease-in-out overscroll-contain">
+  <div class="relative border-b border-stone-100 bg-stone-50 p-5 shrink-0">
+    <button type="button" data-close-menu class="absolute top-4 right-4 p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 rounded-full transition cursor-pointer" aria-label="Close Menu">
       <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
     </button>
     @auth
@@ -17,7 +17,7 @@
         <a href="{{ route('account') }}" class="btn-account-outline rounded-xl bg-white px-3 py-2.5 text-center text-sm font-bold text-stone-800 border border-stone-300 hover:bg-brand-600 hover:border-brand-600 hover:!text-white transition-all duration-200 shadow-2xs hover:shadow-md">My Account</a>
         <form method="POST" action="{{ route('logout') }}">
           @csrf
-          <button type="submit" class="w-full rounded-xl bg-brand-600 hover:bg-brand-700 !text-white hover:!text-white px-3 py-2.5 text-center text-sm font-bold transition-all duration-200 shadow-2xs hover:shadow-md">Log out</button>
+          <button type="submit" class="w-full rounded-xl bg-brand-600 hover:bg-brand-700 !text-white hover:!text-white px-3 py-2.5 text-center text-sm font-bold transition-all duration-200 shadow-2xs hover:shadow-md cursor-pointer">Log out</button>
         </form>
       </div>
     @else
@@ -30,7 +30,7 @@
     @endauth
   </div>
 
-  <nav class="flex-1 overflow-y-auto px-4 py-3 text-sm font-medium">
+  <nav class="flex-1 overflow-y-auto overscroll-contain px-4 py-3 text-sm font-medium pb-8">
     <a href="{{ route('home') }}" class="block py-2.5 px-2.5 rounded-xl font-semibold text-stone-800 hover:text-brand-600 hover:bg-stone-100 transition-all">Home</a>
     <a href="{{ route('shop') }}" class="block py-2.5 px-2.5 rounded-xl font-semibold text-stone-800 hover:text-brand-600 hover:bg-stone-100 transition-all">Shop</a>
     @if($hasFlashSale ?? false)
