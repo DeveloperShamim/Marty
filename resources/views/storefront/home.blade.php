@@ -35,7 +35,7 @@
             : 'col-span-2 lg:col-span-10';
         @endphp
 
-        <div class="{{ $sliderClasses }} relative rounded-2xl sm:rounded-3xl overflow-hidden bg-neutral-900 shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-center aspect-[15/8] w-full">
+        <div class="{{ $sliderClasses }} relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-center aspect-[15/8] w-full bg-transparent">
           @if($heroBanners->count() > 1)
             {{-- Carousel Slider --}}
             <div id="homeHeroSlider" class="relative w-full h-full aspect-[15/8] overflow-hidden select-none">
@@ -108,11 +108,11 @@
 
         {{-- Side / Bottom Promo Banners (Direct grid children: col-span-1 lg:col-span-3) --}}
         @foreach($heroSideBanners->take(2) as $sideCard)
-          <a href="{{ $sideCard->linkHref() }}" class="col-span-1 lg:col-span-3 relative flex rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-0.5 bg-neutral-900 aspect-[868/476] lg:aspect-auto lg:h-full min-h-0" aria-label="{{ $sideCard->title ?: 'Promo Card' }}">
+          <a href="{{ $sideCard->linkHref() }}" class="col-span-1 lg:col-span-3 relative flex rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-0.5 bg-transparent aspect-[868/476] lg:aspect-auto lg:h-full min-h-0" aria-label="{{ $sideCard->title ?: 'Promo Card' }}">
             @if($sideCard->image)
-              <img src="{{ $sideCard->imageUrl() }}" alt="{{ $sideCard->title }}" class="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-500 rounded-2xl sm:rounded-3xl" loading="lazy">
+              <img src="{{ $sideCard->imageUrl() }}" alt="{{ $sideCard->title }}" class="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-500" loading="lazy">
             @else
-              <div class="w-full h-full bg-gradient-to-br from-neutral-800 to-stone-900 p-4 sm:p-6 text-white flex flex-col justify-between rounded-2xl sm:rounded-3xl">
+              <div class="w-full h-full bg-gradient-to-br from-neutral-800 to-stone-900 p-4 sm:p-6 text-white flex flex-col justify-between">
                 <div>
                   @if($sideCard->badge)<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-500 text-white uppercase">{{ $sideCard->badge }}</span>@endif
                   <h3 class="font-extrabold text-sm sm:text-base mt-2 line-clamp-2">{{ $sideCard->title }}</h3>
