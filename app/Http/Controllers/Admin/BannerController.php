@@ -18,10 +18,15 @@ class BannerController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        $defaultPlacement = $request->query('placement', 'hero');
+        if (! array_key_exists($defaultPlacement, Banner::PLACEMENTS)) {
+            $defaultPlacement = 'hero';
+        }
+
         return view('admin.banners.form', [
-            'banner'     => new Banner(['is_active' => true, 'placement' => 'hero', 'style' => 'brand', 'position' => 0]),
+            'banner'     => new Banner(['is_active' => true, 'placement' => $defaultPlacement, 'style' => 'brand', 'position' => 0]),
             'placements' => Banner::PLACEMENTS,
             'styles'     => Banner::STYLES,
         ]);
@@ -77,18 +82,24 @@ class BannerController extends Controller
 
     private function validateData(Request $request): array
     {
-        return $request->validate([
-            'title'       => ['nullable', 'string', 'max:180'],
-            'subtitle'    => ['nullable', 'string', 'max:400'],
+        $data = $request->validate([
+            'title'       => ['nullable', 'string', 'max:255'],
+            'subtitle'    => ['nullable', 'string', 'max:500'],
             'badge'       => ['nullable', 'string', 'max:60'],
             'link_url'    => ['nullable', 'string', 'max:255'],
             'button_text' => ['nullable', 'string', 'max:60'],
             'placement'   => ['required', 'in:' . implode(',', array_keys(Banner::PLACEMENTS))],
-            'style'       => ['required', 'in:' . implode(',', array_keys(Banner::STYLES))],
+            'style'       => ['nullable', 'string', 'max:30'],
             'position'    => ['nullable', 'integer', 'min:0'],
             'image_file'  => ['nullable', 'image', 'max:4096'],
             'image_url'   => ['nullable', 'string', 'max:255'],
         ]);
+
+        if (empty($data['style']) || ! array_key_exists($data['style'], Banner::STYLES)) {
+            $data['style'] = 'brand';
+        }
+
+        return $data;
     }
 
     private function handleImage(Request $request, array &$data, ?Banner $banner = null): void

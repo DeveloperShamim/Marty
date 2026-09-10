@@ -20,138 +20,114 @@
     $showHeroCta = (bool) ($heroTitle || $hero?->button_text);
   @endphp
 
+  @php
+    $hasHero = $heroBanners->isNotEmpty() || $heroSideBanners->isNotEmpty() || setting('hero_fallback_title') || setting('hero_fallback_badge');
+  @endphp
+
   @if($hasHero)
-    <section class="relative min-h-[300px] sm:min-h-[420px] lg:min-h-[480px] overflow-hidden" data-reveal>
-      @if($heroBanners->count() > 1)
-        <div id="heroSlider" class="absolute inset-0">
-          @foreach($heroBanners as $i => $slide)
-            <div data-slide class="hero-slide absolute inset-0 {{ $i > 0 ? 'is-hidden' : '' }}">
-              <div class="absolute inset-0 bg-cover bg-right-bottom bg-no-repeat"
-                @if($slide->image) style="background-image:linear-gradient(105deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,.15) 50%,transparent 100%),url('{{ $slide->imageUrl() }}')" @else style="background:linear-gradient(105deg,#1e293b,var(--brand-primary,#E8751B))" @endif>
-              </div>
-              @php
-                $sBadge = $slide->badge ?: setting('hero_fallback_badge');
-                $sTitle = $slide->title ?: setting('hero_fallback_title');
-                $sSubtitle = $slide->subtitle ?: setting('hero_fallback_subtitle');
-                $sShowCta = (bool) ($sTitle || $slide->button_text);
-              @endphp
-              <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-5 py-10 sm:py-20 lg:py-24 text-white">
-                <div class="max-w-xl pr-6 sm:pr-0">
-                  @if($sBadge)
-                    <span class="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-black tracking-wider uppercase bg-brand-500 text-white shadow-md border border-white/20 mb-2 sm:mb-3 max-w-[95%] truncate">
-                      <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-300 animate-pulse shrink-0"></span>
-                      <span class="truncate">{{ $sBadge }}</span>
-                    </span>
-                  @endif
+    <section class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pt-3 sm:pt-4 pb-2" data-reveal>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-3 sm:gap-4 lg:gap-4 items-stretch">
 
-                  @if($sTitle)
-                    <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight">{!! nl2br(e($sTitle)) !!}</h1>
-                  @endif
+        {{-- Main Hero Slider (col-span-1 md:col-span-2 lg:col-span-7) --}}
+        @php
+          $sliderColSpan = $heroSideBanners->isNotEmpty() ? 'col-span-1 md:col-span-2 lg:col-span-7' : 'col-span-1 md:col-span-2 lg:col-span-10';
+        @endphp
 
-                  @if($sSubtitle)
-                    <p class="mt-2 sm:mt-3 text-white/85 text-xs sm:text-base max-w-md line-clamp-3 sm:line-clamp-none">{{ $sSubtitle }}</p>
-                  @endif
-
-                  @if($sShowCta || setting('tagline'))
-                    <div class="mt-4 sm:mt-6 flex flex-wrap items-center gap-3 sm:gap-4">
-                      @if($sShowCta)
-                        <a href="{{ $slide->linkHref() }}" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white font-bold px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm shadow-md transition-all">
-                          {{ $slide->button_text ?: $ctaDefault }}
-                          <span class="h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-white text-brand-700 flex items-center justify-center text-[10px] sm:text-xs">→</span>
-                        </a>
-                      @endif
-                      @if(setting('tagline'))
-                        <span class="text-xs sm:text-sm text-white/80 italic hidden sm:inline">{{ setting('tagline') }}</span>
-                      @endif
-                    </div>
-                  @endif
+        <div class="{{ $sliderColSpan }} relative rounded-2xl sm:rounded-3xl overflow-hidden bg-neutral-900 shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-center">
+          @if($heroBanners->count() > 1)
+            {{-- Carousel Slider --}}
+            <div id="homeHeroSlider" class="relative w-full aspect-[15/8] overflow-hidden select-none">
+              @foreach($heroBanners as $i => $slide)
+                <div data-hero-slide class="absolute inset-0 transition-opacity duration-500 ease-in-out {{ $i === 0 ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none' }}">
+                  <a href="{{ $slide->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $slide->title ?: 'Banner Slide' }}">
+                    @if($slide->image)
+                      <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->title }}" class="w-full h-full object-cover object-center" loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
+                    @else
+                      <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center p-6 sm:p-12 text-white">
+                        <div class="max-w-md">
+                          @if($slide->badge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $slide->badge }}</span>@endif
+                          @if($slide->title)<h2 class="text-2xl sm:text-4xl font-extrabold leading-tight">{{ $slide->title }}</h2>@endif
+                          @if($slide->subtitle)<p class="text-xs sm:text-sm text-white/80 mt-2">{{ $slide->subtitle }}</p>@endif
+                          @if($slide->button_text)<span class="inline-block mt-4 px-5 py-2 rounded-full bg-blue-600 text-white text-xs sm:text-sm font-bold">{{ $slide->button_text }}</span>@endif
+                        </div>
+                      </div>
+                    @endif
+                  </a>
                 </div>
+              @endforeach
+
+              {{-- Chevron Previous Button --}}
+              <button type="button" data-hero-arrow-prev class="absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-neutral-800 shadow-md flex items-center justify-center transition-all opacity-80 hover:opacity-100 hover:scale-105 active:scale-95 focus:outline-none" aria-label="Previous Slide">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></svg>
+              </button>
+
+              {{-- Chevron Next Button --}}
+              <button type="button" data-hero-arrow-next class="absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-neutral-800 shadow-md flex items-center justify-center transition-all opacity-80 hover:opacity-100 hover:scale-105 active:scale-95 focus:outline-none" aria-label="Next Slide">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
+              </button>
+
+              {{-- Indicator Dots (Active is orange elongated pill, inactive is small white dot) --}}
+              <div class="absolute bottom-2.5 sm:bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-2 bg-black/15 backdrop-blur-[2px] px-2 py-1 rounded-full">
+                @foreach($heroBanners as $di => $dot)
+                  <button type="button" data-hero-dot="{{ $di }}" class="hero-slider-dot rounded-full transition-all duration-300 {{ $di === 0 ? 'w-7 sm:w-8 h-2 sm:h-2.5 bg-orange-500' : 'w-2 sm:w-2.5 h-2 sm:h-2.5 bg-white/70 hover:bg-white' }}" aria-label="Slide {{ $di + 1 }}"></button>
+                @endforeach
               </div>
             </div>
-          @endforeach
+          @elseif($mainHero)
+            {{-- Single Hero Slide --}}
+            <div class="relative w-full aspect-[15/8] overflow-hidden">
+              <a href="{{ $mainHero->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $mainHero->title ?: 'Banner' }}">
+                @if($mainHero->image)
+                  <img src="{{ $mainHero->imageUrl() }}" alt="{{ $mainHero->title }}" class="w-full h-full object-cover object-center">
+                @else
+                  <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center p-6 sm:p-12 text-white">
+                    <div class="max-w-md">
+                      @if($heroBadge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $heroBadge }}</span>@endif
+                      @if($heroTitle)<h2 class="text-2xl sm:text-4xl font-extrabold leading-tight">{{ $heroTitle }}</h2>@endif
+                      @if($heroSubtitle)<p class="text-xs sm:text-sm text-white/80 mt-2">{{ $heroSubtitle }}</p>@endif
+                      @if($showHeroCta)<span class="inline-block mt-4 px-5 py-2 rounded-full bg-blue-600 text-white text-xs sm:text-sm font-bold">{{ $mainHero->button_text ?: $ctaDefault }}</span>@endif
+                    </div>
+                  </div>
+                @endif
+              </a>
+            </div>
+          @else
+            {{-- Fallback Hero --}}
+            <div class="relative w-full aspect-[15/8] overflow-hidden bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center p-6 sm:p-12 text-white">
+              <div class="max-w-md">
+                @if($heroBadge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $heroBadge }}</span>@endif
+                <h2 class="text-2xl sm:text-4xl font-extrabold leading-tight">{{ $heroTitle ?: site_name() }}</h2>
+                @if($heroSubtitle)<p class="text-xs sm:text-sm text-white/80 mt-2">{{ $heroSubtitle }}</p>@endif
+                <a href="{{ route('shop') }}" class="inline-block mt-4 px-5 py-2 rounded-full bg-blue-600 text-white text-xs sm:text-sm font-bold">{{ $ctaDefault }}</a>
+              </div>
+            </div>
+          @endif
+        </div>
 
-          <div class="absolute bottom-3 sm:bottom-5 left-4 sm:left-8 flex gap-1.5 sm:gap-2 z-20">
-            @foreach($heroBanners as $di => $dot)
-              <button type="button" data-dot class="hero-dot {{ $di === 0 ? 'is-on' : '' }}" aria-label="Slide {{ $di + 1 }}"></button>
+        {{-- Side / Bottom Promo Banners (col-span-1 md:col-span-2 lg:col-span-3 grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4) --}}
+        @if($heroSideBanners->isNotEmpty())
+          <div class="col-span-1 md:col-span-2 lg:col-span-3 grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4 h-full">
+            @foreach($heroSideBanners->take(2) as $sideCard)
+              <div class="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-0.5 bg-neutral-900 aspect-[1.82/1] flex flex-col justify-center">
+                <a href="{{ $sideCard->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $sideCard->title ?: 'Promo Card' }}">
+                  @if($sideCard->image)
+                    <img src="{{ $sideCard->imageUrl() }}" alt="{{ $sideCard->title }}" class="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-500" loading="lazy">
+                  @else
+                    <div class="w-full h-full bg-gradient-to-br from-neutral-800 to-stone-900 p-4 sm:p-6 text-white flex flex-col justify-between">
+                      <div>
+                        @if($sideCard->badge)<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-500 text-white uppercase">{{ $sideCard->badge }}</span>@endif
+                        <h3 class="font-extrabold text-sm sm:text-base mt-2 line-clamp-2">{{ $sideCard->title }}</h3>
+                      </div>
+                      @if($sideCard->button_text)<span class="text-xs font-semibold text-brand-400 mt-2 inline-flex items-center gap-1">{{ $sideCard->button_text }} &rarr;</span>@endif
+                    </div>
+                  @endif
+                </a>
+              </div>
             @endforeach
           </div>
-          <button type="button" data-hero-prev class="absolute left-1.5 sm:left-3 top-1/2 -translate-y-1/2 grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-full bg-white/90 text-ink hover:bg-white shadow z-30 pointer-events-auto" aria-label="Previous">
-            <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="m15 18-6-6 6-6"/></svg>
-          </button>
-          <button type="button" data-hero-next class="absolute right-1.5 sm:right-3 top-1/2 -translate-y-1/2 grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-full bg-white/90 text-ink hover:bg-white shadow z-30 pointer-events-auto" aria-label="Next">
-            <svg class="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="m9 18 6-6-6-6"/></svg>
-          </button>
-        </div>
-      @elseif($mainHero)
-        <div class="absolute inset-0 bg-cover bg-right-bottom bg-no-repeat"
-          @if($mainHero->image) style="background-image:linear-gradient(105deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,.15) 50%,transparent 100%),url('{{ $mainHero->imageUrl() }}')" @else style="background:linear-gradient(105deg,#1e293b,var(--brand-primary,#E8751B))" @endif></div>
-        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-5 py-10 sm:py-20 lg:py-24 text-white">
-          <div class="max-w-xl">
-            @if($heroBadge)
-              <span class="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-black tracking-wider uppercase bg-brand-500 text-white shadow-md border border-white/20 mb-2 sm:mb-3 max-w-[95%] truncate">
-                <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-300 animate-pulse shrink-0"></span>
-                <span class="truncate">{{ $heroBadge }}</span>
-              </span>
-            @endif
+        @endif
 
-            @if($heroTitle)
-              <h1 class="text-2xl sm:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight">{!! nl2br(e($heroTitle)) !!}</h1>
-            @endif
-
-            @if($heroSubtitle)
-              <p class="mt-2 sm:mt-3 text-white/85 text-xs sm:text-base max-w-md line-clamp-3 sm:line-clamp-none">{{ $heroSubtitle }}</p>
-            @endif
-
-            @if($showHeroCta || setting('tagline'))
-              <div class="mt-4 sm:mt-6 flex flex-wrap items-center gap-3 sm:gap-4">
-                @if($showHeroCta)
-                  <a href="{{ $mainHero->linkHref() }}" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white font-bold px-4 py-2 sm:px-5 sm:py-2.5 rounded-full text-xs sm:text-sm shadow-md transition-all">
-                    {{ $mainHero->button_text ?: $ctaDefault }}
-                    <span class="h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-white text-brand-700 flex items-center justify-center text-[10px] sm:text-xs">→</span>
-                  </a>
-                @endif
-                @if(setting('tagline'))
-                  <span class="text-xs sm:text-sm text-white/80 italic hidden sm:inline">{{ setting('tagline') }}</span>
-                @endif
-              </div>
-            @endif
-          </div>
-        </div>
-      @else
-        <div class="absolute inset-0" style="background:linear-gradient(105deg,#1e293b,var(--brand-primary,#E8751B))"></div>
-        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-5 py-10 sm:py-20 lg:py-24 text-white">
-          <div class="max-w-xl">
-            @if($heroBadge)
-              <span class="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-black tracking-wider uppercase bg-brand-500 text-white shadow-md border border-white/20 mb-2 sm:mb-3 max-w-[95%] truncate">
-                <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-300 animate-pulse shrink-0"></span>
-                <span class="truncate">{{ $heroBadge }}</span>
-              </span>
-            @endif
-
-            @if($heroTitle)
-              <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight">{!! nl2br(e($heroTitle)) !!}</h1>
-            @endif
-
-            @if($heroSubtitle)
-              <p class="mt-3 text-white/85 text-sm sm:text-base max-w-md">{{ $heroSubtitle }}</p>
-            @endif
-
-            @if($showHeroCta || setting('tagline'))
-              <div class="mt-6 flex flex-wrap items-center gap-4">
-                @if($showHeroCta)
-                  <a href="{{ route('shop') }}" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white font-bold px-5 py-2.5 rounded-full text-sm">
-                    {{ $ctaDefault }}
-                    <span class="h-6 w-6 rounded-full bg-white text-brand-700 flex items-center justify-center text-xs">→</span>
-                  </a>
-                @endif
-                @if(setting('tagline'))
-                  <span class="text-sm text-white/80 italic hidden sm:inline">{{ setting('tagline') }}</span>
-                @endif
-              </div>
-            @endif
-          </div>
-        </div>
-      @endif
+      </div>
     </section>
   @endif
 
@@ -689,6 +665,96 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   }
+
+  /* ---------------- AppleGadgets-style Hero Slider ---------------- */
+  const homeHeroSlider = document.getElementById('homeHeroSlider');
+  if (homeHeroSlider) {
+    const slides = homeHeroSlider.querySelectorAll('[data-hero-slide]');
+    const dots = homeHeroSlider.querySelectorAll('[data-hero-dot]');
+    const prevBtn = homeHeroSlider.querySelector('[data-hero-arrow-prev]');
+    const nextBtn = homeHeroSlider.querySelector('[data-hero-arrow-next]');
+
+    if (slides.length > 1) {
+      let currentIndex = 0;
+      let slideTimer = null;
+      const totalSlides = slides.length;
+
+      function showSlide(index) {
+        currentIndex = (index + totalSlides) % totalSlides;
+        slides.forEach((slide, i) => {
+          if (i === currentIndex) {
+            slide.classList.remove('opacity-0', 'pointer-events-none', 'z-0');
+            slide.classList.add('opacity-100', 'pointer-events-auto', 'z-10');
+          } else {
+            slide.classList.remove('opacity-100', 'pointer-events-auto', 'z-10');
+            slide.classList.add('opacity-0', 'pointer-events-none', 'z-0');
+          }
+        });
+
+        dots.forEach((dot, i) => {
+          if (i === currentIndex) {
+            dot.className = 'hero-slider-dot rounded-full transition-all duration-300 w-7 sm:w-8 h-2 sm:h-2.5 bg-orange-500';
+          } else {
+            dot.className = 'hero-slider-dot rounded-full transition-all duration-300 w-2 sm:w-2.5 h-2 sm:h-2.5 bg-white/70 hover:bg-white';
+          }
+        });
+      }
+
+      function nextSlide() {
+        showSlide(currentIndex + 1);
+      }
+
+      function prevSlide() {
+        showSlide(currentIndex - 1);
+      }
+
+      function startAutoPlay() {
+        stopAutoPlay();
+        slideTimer = setInterval(nextSlide, 4500);
+      }
+
+      function stopAutoPlay() {
+        if (slideTimer) {
+          clearInterval(slideTimer);
+          slideTimer = null;
+        }
+      }
+
+      if (nextBtn) nextBtn.addEventListener('click', (e) => { e.preventDefault(); nextSlide(); startAutoPlay(); });
+      if (prevBtn) prevBtn.addEventListener('click', (e) => { e.preventDefault(); prevSlide(); startAutoPlay(); });
+
+      dots.forEach((dot, idx) => {
+        dot.addEventListener('click', (e) => {
+          e.preventDefault();
+          showSlide(idx);
+          startAutoPlay();
+        });
+      });
+
+      homeHeroSlider.addEventListener('mouseenter', stopAutoPlay);
+      homeHeroSlider.addEventListener('mouseleave', startAutoPlay);
+
+      // Touch swipe support
+      let touchStartX = 0;
+      let touchEndX = 0;
+      homeHeroSlider.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        stopAutoPlay();
+      }, { passive: true });
+      homeHeroSlider.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        const diffX = touchStartX - touchEndX;
+        if (Math.abs(diffX) > 40) {
+          if (diffX > 0) nextSlide();
+          else prevSlide();
+        }
+        startAutoPlay();
+      }, { passive: true });
+
+      startAutoPlay();
+    }
+  }
+
   if (typeof Swiper !== 'undefined' && document.querySelector('.bestSellersSwiper')) {
     new Swiper('.bestSellersSwiper', {
       slidesPerView: 2,

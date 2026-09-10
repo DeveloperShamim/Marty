@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Banner extends Model
 {
     public const PLACEMENTS = [
-        'hero' => 'Hero — homepage slider slides (add multiple; ordered by position)',
+        'hero'      => 'Hero Slider — Main homepage carousel slides (70% width on desktop)',
+        'hero_side' => 'Promo Cards — Featured side / bottom promo banners (30% width on desktop, 2 cards)',
     ];
 
     public const STYLES = [
