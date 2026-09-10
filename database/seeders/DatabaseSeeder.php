@@ -42,9 +42,9 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Super Admin
         User::updateOrCreate(
-            ['email' => 'admin@shodeshifood.com'],
+            ['email' => 'admin@marty.com'],
             [
-                'name' => 'ShodeshiFood Super Admin',
+                'name' => 'Marty Super Admin',
                 'password' => Hash::make('password'),
                 'role' => 'admin',
                 'phone' => '+880 1700-000000',
@@ -54,7 +54,7 @@ class DatabaseSeeder extends Seeder
 
         // 2. Store Manager
         User::updateOrCreate(
-            ['email' => 'store.manager@shodeshifood.com'],
+            ['email' => 'manager@marty.com'],
             [
                 'name' => 'Tanvir Alam (Store Manager)',
                 'password' => Hash::make('password'),
@@ -66,7 +66,7 @@ class DatabaseSeeder extends Seeder
 
         // 3. Order Manager
         User::updateOrCreate(
-            ['email' => 'order.manager@shodeshifood.com'],
+            ['email' => 'orders@marty.com'],
             [
                 'name' => 'Rafi Ahmed (Order Manager)',
                 'password' => Hash::make('password'),
@@ -78,7 +78,7 @@ class DatabaseSeeder extends Seeder
 
         // 4. Inventory Manager
         User::updateOrCreate(
-            ['email' => 'inventory.manager@shodeshifood.com'],
+            ['email' => 'inventory@marty.com'],
             [
                 'name' => 'Kalam Hossain (Inventory Manager)',
                 'password' => Hash::make('password'),
@@ -90,7 +90,7 @@ class DatabaseSeeder extends Seeder
 
         // 5. Customer Account
         User::updateOrCreate(
-            ['email' => 'customer@shodeshifood.com'],
+            ['email' => 'customer@marty.com'],
             [
                 'name' => 'Nusrat Jahan',
                 'password' => Hash::make('password'),
@@ -107,18 +107,18 @@ class DatabaseSeeder extends Seeder
     private function seedSettings(): void
     {
         $settings = [
-            'site_name' => 'ShodeshiFood',
-            'tagline' => '100% Chemical-Free Organic Food & Grocery Store',
+            'site_name' => 'Marty',
+            'tagline' => 'Smartwatches, Trending Shoes & Premium Gadgets',
             'logo' => 'uploads/logo.png',
             'favicon' => 'uploads/favicon.png',
-            'footer_text' => 'ShodeshiFood delivers 100% authentic, lab-tested, chemical-free organic groceries, raw Sundarban honey, cold-pressed oils, pure deshi ghee, and farm-fresh produce across Bangladesh.',
+            'footer_text' => 'Marty is your premier destination for 100% authentic smartwatches, trending sneakers, handcrafted leather shoes, and cutting-edge tech gadgets in Bangladesh with fast nationwide delivery.',
             'contact_phone' => '+880 1700-000000',
-            'contact_email' => 'support@shodeshifood.com',
-            'contact_address' => 'Level 4, Jamuna Future Park, Kuril, Dhaka 1229, Bangladesh',
+            'contact_email' => 'support@marty.com',
+            'contact_address' => 'Level 5, Bashundhara City Shopping Mall, Panthapath, Dhaka 1205, Bangladesh',
             'contact_hours' => 'Saturday–Thursday, 10:00 AM – 9:00 PM',
             'contact_title' => 'Customer Support',
-            'contact_intro' => 'Need help with an order, organic food specifications, or delivery? Our ShodeshiFood customer care team is happy to assist.',
-            'search_placeholder' => 'Search raw honey, mustard oil, deshi ghee, organic chia seeds, dates, nuts...',
+            'contact_intro' => 'Need help choosing a smartwatch, sizing shoes, or tracking an order? Our Marty customer care team is happy to assist.',
+            'search_placeholder' => 'Search smartwatches, sneakers, loafers, earbuds, power banks...',
             'facebook_url' => 'https://facebook.com/',
             'instagram_url' => 'https://instagram.com/',
             'twitter_url' => 'https://twitter.com/',
@@ -137,30 +137,30 @@ class DatabaseSeeder extends Seeder
             'shipping_outside_label' => 'Outside Dhaka',
             'currency_symbol' => '৳',
             'currency_code' => 'BDT',
-            'default_meta_title' => 'ShodeshiFood — 100% Chemical-Free Organic Food & Grocery in Bangladesh',
-            'default_meta_description' => 'Shop authentic raw Sundarban honey, cold-pressed mustard oil, pure cow ghee, organic spices, nuts & fresh produce online at best prices in Bangladesh.',
-            'default_meta_keywords' => 'ShodeshiFood, Raw Honey, Mustard Oil, Cow Ghee, Ajwa Dates, Chia Seeds, Organic Food Bangladesh',
+            'default_meta_title' => 'Marty — Smartwatches, Shoes & Smart Gadgets Store in Bangladesh',
+            'default_meta_description' => 'Buy 100% authentic Apple Watches, Nike & Adidas shoes, TWS earbuds, and smart gadgets in Bangladesh with warranty and fast delivery.',
+            'default_meta_keywords' => 'Marty, Smartwatches, Nike Shoes, Adidas Sneakers, Apple Watch, AirPods, TWS Earbuds, Gadgets Bangladesh',
             'tracking_gtm_id' => '',
             'tracking_ga4_id' => '',
             'tracking_meta_pixel_id' => '',
             'otp_enabled' => '1',
-            'header_promo_text' => 'Fresh Farm Harvest — use coupon <b class="text-amber-300">PURE10</b> for <b class="text-amber-300">10% OFF</b>',
+            'header_promo_text' => 'New Season Drops — Use code <b class="text-amber-300">MARTY10</b> for <b class="text-amber-300">10% OFF</b>',
             'header_promo_link' => '/shop?flash=1',
-            'shop_subtitle' => 'Our latest 100% chemical-free organic food & fresh pantry arrivals',
+            'shop_subtitle' => 'Our latest smartwatches, trending shoes, audio gear & smart tech arrivals',
             'flash_sale_ends_at' => now()->addDays(3)->format('Y-m-d H:i:s'),
             'delivery_eta_text' => 'Estimated delivery within 1–3 business days',
-            'home_categories_title' => 'Explore Organic Product Categories',
-            'home_hot_deal_title' => 'Organic Special Discount Items',
-            'home_featured_title' => 'Featured Organic Collection',
-            'home_reviews_title' => 'Customer Feedback',
+            'home_categories_title' => 'Explore Product Categories',
+            'home_hot_deal_title' => 'Flash Sale Deals',
+            'home_featured_title' => 'Featured Trending Collection',
+            'home_reviews_title' => 'Customer Reviews & Feedback',
             'home_view_more_label' => 'View All Products',
             'default_cta_text' => 'Add to Cart',
-            'hero_fallback_badge' => 'ShodeshiFood Organic Store',
-            'hero_fallback_title' => "100% Farm Fresh &\nChemical-Free Organic Food",
-            'hero_fallback_subtitle' => 'Authentic Sundarban raw honey, cold-pressed mustard oil, pure cow ghee & organic pantry items delivered to your door.',
+            'hero_fallback_badge' => 'Marty Lifestyle & Tech Store',
+            'hero_fallback_title' => "100% Authentic Smartwatches,\nShoes & Tech Essentials",
+            'hero_fallback_subtitle' => 'Official Apple & Samsung smartwatches, Nike & Adidas sneakers, and smart gadgets delivered to your door with genuine warranty.',
             'show_featured_brands' => '1',
-            'home_featured_brands_title' => 'Featured Organic Brands',
-            'home_featured_brands_subtitle' => 'Shop authentic organic products directly from trusted brands',
+            'home_featured_brands_title' => 'Featured Top Brands',
+            'home_featured_brands_subtitle' => 'Shop authentic products directly from globally trusted brands',
             'terms_content' => '',
             'privacy_content' => '',
             'mail_mailer' => 'log',
@@ -169,11 +169,11 @@ class DatabaseSeeder extends Seeder
             'mail_username' => '',
             'mail_password' => '',
             'mail_encryption' => 'tls',
-            'mail_from_address' => 'no-reply@shodeshifood.com',
-            'mail_from_name'    => 'ShodeshiFood',
-            'theme_primary_color'  => '#16A34A',
-            'theme_dark_color'     => '#1C1917',
-            'theme_surface_color'  => '#FAFAF5',
+            'mail_from_address' => 'no-reply@marty.com',
+            'mail_from_name'    => 'Marty',
+            'theme_primary_color'  => '#2563EB',
+            'theme_dark_color'     => '#0F172A',
+            'theme_surface_color'  => '#F8FAFC',
         ];
 
         foreach ($settings as $key => $value) {
@@ -188,12 +188,41 @@ class DatabaseSeeder extends Seeder
         Category::query()->delete();
 
         $data = [
-            ['Raw Honey', 'raw-honey', '🍯', '100% pure Sundarban raw honey, mustard flower honey & date molasses.', 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=600&h=600&q=80'],
-            ['Pure Oils', 'pure-oils', '🛢️', 'Wood-milled mustard oil, virgin coconut oil & Bilona cow milk ghee.', 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=600&h=600&q=80'],
-            ['Organic Grains', 'organic-grains', '🌾', 'Aromatic Kataribogh rice, organic chia seeds, oats & unpolished pulses.', 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=600&h=600&q=80'],
-            ['Pure Spices', 'pure-spices', '🌶️', 'High curcumin turmeric, unadulterated red chili, cumin & rock salt.', 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=600&h=600&q=80'],
-            ['Premium Dates', 'premium-dates', '🥜', 'Imported Madinah Ajwa dates, Medjool dates, almonds & roasted cashews.', 'https://images.unsplash.com/photo-1596560548464-f010549b84d7?auto=format&fit=crop&w=600&h=600&q=80'],
-            ['Herbal Tea', 'herbal-tea', '🍵', 'Organic cold-pressed black seed oil, Tulsi herbal tea & moringa powder.', 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&h=600&q=80'],
+            [
+                'Smartwatches & Watches',
+                'watches',
+                '⌚',
+                'Apple Watch, Samsung Galaxy Watch, Amazfit & classic chronograph timepieces.',
+                'https://adminapi.applegadgetsbd.com/storage/media/large/Apple-Watch-Series-10-Aluminum-Silver-7765.jpg',
+            ],
+            [
+                'Shoes & Footwear',
+                'shoes',
+                '👟',
+                'Trending sneakers, running shoes, loafers, and handcrafted leather footwear.',
+                'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&h=600&q=80',
+            ],
+            [
+                'Audio & Earbuds',
+                'audio-gadgets',
+                '🎧',
+                'High-fidelity TWS earbuds, noise-canceling headphones & portable Bluetooth speakers.',
+                'https://adminapi.applegadgetsbd.com/storage/media/large/AirPods-Pro-(2nd-generation)-USB‐C1a-9576.png',
+            ],
+            [
+                'Smart Gadgets & Power',
+                'gadgets',
+                '⚡',
+                'MagSafe wireless chargers, GaN fast adapters, and high-capacity power banks.',
+                'https://adminapi.applegadgetsbd.com/storage/media/thumb/Maxco-MW11-Geometry-Series-3-in-1-Magsafe-Wireless-Charger-3-6253.jpg',
+            ],
+            [
+                'Bags & Accessories',
+                'accessories',
+                '👜',
+                'The Patchee luxury tote bags, crossbody side bags & genuine leather wallets.',
+                'https://cdn.shopify.com/s/files/1/0916/6736/6162/files/Patchee-Logo-2025_4.png?v=1747217855&width=600',
+            ],
         ];
 
         $categories = [];
@@ -208,8 +237,8 @@ class DatabaseSeeder extends Seeder
                     'position' => $index,
                     'is_active' => true,
                     'is_featured' => true,
-                    'meta_title' => "{$name} — PureHarvest Organic",
-                    'meta_description' => "Shop 100% authentic {$name} in Bangladesh with fast home delivery.",
+                    'meta_title' => "{$name} — Marty Online Store",
+                    'meta_description' => "Shop 100% authentic {$name} in Bangladesh with warranty and fast delivery.",
                 ]
             );
         }
@@ -223,64 +252,84 @@ class DatabaseSeeder extends Seeder
 
         $brandList = [
             [
-                'name' => 'PureHarvest Organic',
-                'slug' => 'pureharvest-organic',
-                'logo' => 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=400&h=400&q=80',
-                'banner' => 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&h=800&q=80',
-                'description' => '100% Chemical-free organic farm direct pantry essentials and cold-pressed oils.',
-                'website' => 'https://pureharvestbd.com',
+                'name' => 'Apple',
+                'slug' => 'apple',
+                'logo' => 'https://adminapi.applegadgetsbd.com/storage/media/large/logo-3717.png',
+                'banner' => 'https://images.unsplash.com/photo-1510519138161-5844a492711f?auto=format&fit=crop&w=800&h=800&q=80',
+                'description' => 'Official Apple Watch, AirPods Pro, MagSafe accessories and premium tech devices.',
+                'website' => 'https://apple.com',
                 'is_featured' => true,
                 'position' => 1,
             ],
             [
-                'name' => 'Khaas Food',
-                'slug' => 'khaas-food',
-                'logo' => 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=400&h=400&q=80',
-                'banner' => 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=800&h=800&q=80',
-                'description' => 'Purity guaranteed natural food products, Bilona cow milk ghee, and organic spices.',
-                'website' => 'https://khaasfood.com',
+                'name' => 'Samsung',
+                'slug' => 'samsung',
+                'logo' => 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=400&h=400&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&h=800&q=80',
+                'description' => 'Galaxy Watch, Galaxy Buds, and smart wearables with advanced health monitoring.',
+                'website' => 'https://samsung.com',
                 'is_featured' => true,
                 'position' => 2,
             ],
             [
-                'name' => 'BioFresh Organic',
-                'slug' => 'biofresh-organic',
-                'logo' => 'https://images.unsplash.com/photo-1596560548464-f010549b84d7?auto=format&fit=crop&w=400&h=400&q=80',
-                'banner' => 'https://images.unsplash.com/photo-1596560548464-f010549b84d7?auto=format&fit=crop&w=800&h=800&q=80',
-                'description' => 'Premium imported Saudi Ajwa dates, roasted almonds, cashews, and organic seeds.',
-                'website' => 'https://biofreshbd.com',
+                'name' => 'Nike',
+                'slug' => 'nike',
+                'logo' => 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&h=400&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&h=800&q=80',
+                'description' => 'World-renowned footwear brand delivering iconic Air Force 1, Pegasus, and running shoes.',
+                'website' => 'https://nike.com',
                 'is_featured' => true,
                 'position' => 3,
             ],
             [
-                'name' => 'Sundarban Honey Co.',
-                'slug' => 'sundarban-honey-co',
-                'logo' => 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=400&h=400&q=80',
-                'banner' => 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&h=800&q=80',
-                'description' => 'Raw, unfiltered wild forest honey collected directly from Sundarbans honeycombs.',
-                'website' => 'https://sundarbanhoney.com',
+                'name' => 'Adidas',
+                'slug' => 'adidas',
+                'logo' => 'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?auto=format&fit=crop&w=400&h=400&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?auto=format&fit=crop&w=800&h=800&q=80',
+                'description' => 'Trending lifestyle sneakers and high-performance athletic footwear including Ultraboost and Samba.',
+                'website' => 'https://adidas.com',
                 'is_featured' => true,
                 'position' => 4,
             ],
             [
-                'name' => 'Naturals BD',
-                'slug' => 'naturals-bd',
-                'logo' => 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=400&h=400&q=80',
-                'banner' => 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                'description' => 'Pure cold-pressed black seed oil, organic chia seeds, moringa powder, and herbal teas.',
-                'website' => 'https://naturalsbd.com',
+                'name' => 'Anker',
+                'slug' => 'anker',
+                'logo' => 'https://images.unsplash.com/photo-1628149455678-16f37bc392f4?auto=format&fit=crop&w=400&h=400&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1628149455678-16f37bc392f4?auto=format&fit=crop&w=800&h=800&q=80',
+                'description' => 'Global leader in smart charging technology, GaN adapters, and Soundcore audio gear.',
+                'website' => 'https://anker.com',
                 'is_featured' => true,
                 'position' => 5,
             ],
             [
-                'name' => 'GreenValley Produce',
-                'slug' => 'greenvalley-produce',
-                'logo' => 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=400&h=400&q=80',
-                'banner' => 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                'description' => 'Farm-fresh organic produce, Dinajpur Kataribogh rice, and chemical-free pulses.',
-                'website' => 'https://greenvalley.com',
+                'name' => 'The Patchee',
+                'slug' => 'the-patchee',
+                'logo' => 'https://thepatchee.com/cdn/shop/files/The_Patchee-Logo-05.png',
+                'banner' => 'https://thepatchee.com/cdn/shop/files/Patchee-Logo-2025_4.png',
+                'description' => 'Chic, premium tote bags, crossbody side bags, and handcrafted leather accessories.',
+                'website' => 'https://thepatchee.com',
                 'is_featured' => true,
                 'position' => 6,
+            ],
+            [
+                'name' => 'Amazfit',
+                'slug' => 'amazfit',
+                'logo' => 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&h=400&q=80',
+                'banner' => 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&h=800&q=80',
+                'description' => 'High-precision GPS fitness smartwatches with ultra-long battery life and AMOLED displays.',
+                'website' => 'https://amazfit.com',
+                'is_featured' => true,
+                'position' => 7,
+            ],
+            [
+                'name' => 'JBL',
+                'slug' => 'jbl',
+                'logo' => 'https://adminapi.applegadgetsbd.com/storage/media/thumb/JBL-GO-4-Portable-Waterproof-Speaker-Blue-3987.jpg',
+                'banner' => 'https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&h=800&q=80',
+                'description' => 'Legendary pro sound, waterproof portable Bluetooth speakers, and high-bass wireless audio.',
+                'website' => 'https://jbl.com',
+                'is_featured' => true,
+                'position' => 8,
             ],
         ];
 
@@ -296,8 +345,8 @@ class DatabaseSeeder extends Seeder
                 'position' => $b['position'],
                 'is_active' => true,
                 'is_featured' => $b['is_featured'],
-                'meta_title' => "Buy {$b['name']} Products Online in Bangladesh — ShodeshiFood",
-                'meta_description' => "Shop 100% authentic {$b['name']} products at best prices in Bangladesh with fast home delivery.",
+                'meta_title' => "Buy {$b['name']} Products Online in Bangladesh — Marty",
+                'meta_description' => "Shop 100% authentic {$b['name']} products at best prices in Bangladesh with warranty and fast delivery.",
             ]);
             $brands[$b['name']] = $brand;
         }
@@ -310,10 +359,10 @@ class DatabaseSeeder extends Seeder
         Feature::query()->delete();
 
         $features = [
-            ['Express Delivery', 'Reliable 1–3 days home delivery across Bangladesh.', '🚚', 0],
-            ['100% Authentic', 'Guaranteed genuine products from authorized brands.', '🛡️', 1],
-            ['Easy Exchange & Returns', '7-day hassle-free size & product replacement.', '🔁', 2],
-            ['Genuine Quality', '100% chemical-free, unadulterated & farm-direct organic food.', '✨', 3],
+            ['Express Delivery', 'Reliable 1–3 days home delivery across all 64 districts in Bangladesh.', '🚚', 0],
+            ['100% Authentic Quality', 'Guaranteed genuine brand products with official warranty.', '🛡️', 1],
+            ['7-Day Easy Exchange', 'Hassle-free size replacement and product return policy.', '🔁', 2],
+            ['Dedicated Customer Care', 'Friendly support via live chat, phone, and WhatsApp.', '✨', 3],
         ];
 
         foreach ($features as [$title, $subtitle, $icon, $position]) {
@@ -332,7 +381,7 @@ class DatabaseSeeder extends Seeder
         Coupon::query()->delete();
 
         Coupon::create([
-            'code' => 'UNI10',
+            'code' => 'MARTY10',
             'description' => '10% Off New Season Collection',
             'type' => 'percentage',
             'value' => 10,
@@ -369,234 +418,356 @@ class DatabaseSeeder extends Seeder
     {
         Product::query()->delete();
 
-                // 12 Flagship Organic Products across 6 Categories & Brands.
-        // Position 0 (primary image) is ALWAYS on a pure white background with ShodeshiFood branding.
         $productsData = [
-            // ================= 1. RAW HONEY =================
+            // ================= 1. WATCHES & SMARTWATCHES =================
             [
-                'name' => 'Sundarban Raw Wildflower Honey (সুন্দরবন খাঁটি মধু)',
-                'slug' => 'sundarban-raw-wildflower-honey',
-                'brand' => 'Sundarban Honey Co.',
-                'category' => 'raw-honey',
-                'regular_price' => 850,
-                'sale_price' => 750,
-                'unit' => 'Jar',
-                'variant_type' => 'Weight',
-                'options' => ['500g', '1kg'],
+                'name' => 'Apple Watch Series 10 (GPS) - Aluminum Case with Sport Band',
+                'slug' => 'apple-watch-series-10-aluminum',
+                'brand' => 'Apple',
+                'category' => 'watches',
+                'regular_price' => 52000,
+                'sale_price' => 48500,
+                'unit' => 'Piece',
+                'variant_type' => 'Case Size',
+                'options' => ['42mm', '46mm'],
                 'is_featured' => true,
                 'is_new' => true,
                 'is_best_seller' => true,
                 'images' => [
-                    'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://adminapi.applegadgetsbd.com/storage/media/large/Apple-Watch-Series-10-Aluminum-Silver-7765.jpg',
+                    'https://adminapi.applegadgetsbd.com/storage/media/medium/Apple-Watch-Series-12d-5661.png',
                 ],
             ],
             [
-                'name' => 'Pure Mustard Flower Honey (খাঁটি সরিষা ফুল মধু)',
-                'slug' => 'pure-mustard-flower-honey',
-                'brand' => 'Sundarban Honey Co.',
-                'category' => 'raw-honey',
-                'regular_price' => 650,
-                'sale_price' => 580,
-                'unit' => 'Jar',
-                'variant_type' => 'Weight',
-                'options' => ['500g', '1kg'],
-                'is_featured' => true,
-                'is_new' => false,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1471943311424-646960669fbc?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-
-            // ================= 2. PURE OILS & GHEE =================
-            [
-                'name' => 'Wood-Milled Cold-Pressed Mustard Oil (কাটের ঘানি খাঁটি সরিষার তেল)',
-                'slug' => 'wood-milled-cold-pressed-mustard-oil',
-                'brand' => 'PureHarvest Organic',
-                'category' => 'pure-oils',
-                'regular_price' => 420,
-                'sale_price' => 380,
-                'unit' => 'Bottle',
-                'variant_type' => 'Volume',
-                'options' => ['1 Liter', '2 Liters', '5 Liters'],
+                'name' => 'Apple Watch Ultra 2 (GPS + Cellular) - Titanium Case',
+                'slug' => 'apple-watch-ultra-2-titanium',
+                'brand' => 'Apple',
+                'category' => 'watches',
+                'regular_price' => 98000,
+                'sale_price' => 92500,
+                'unit' => 'Piece',
+                'variant_type' => 'Band Color',
+                'options' => ['Orange Ocean Band', 'Midnight Trail Loop', 'Blue Ocean Band'],
                 'is_featured' => true,
                 'is_new' => true,
                 'is_best_seller' => true,
                 'images' => [
-                    'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://adminapi.applegadgetsbd.com/storage/media/medium/Apple-Watch-Ultra-4jjj-4058.png',
+                    'https://adminapi.applegadgetsbd.com/storage/media/large/Apple-Watch-Series-10-Aluminum-Silver-7765.jpg',
                 ],
             ],
             [
-                'name' => 'Handcrafted Premium Cow Milk Ghee (হাতে তৈরি খাঁটি গাওয়া ঘি)',
-                'slug' => 'handcrafted-cow-milk-ghee',
-                'brand' => 'Khaas Food',
-                'category' => 'pure-oils',
-                'regular_price' => 1650,
-                'sale_price' => 1450,
-                'unit' => 'Jar',
-                'variant_type' => 'Weight',
-                'options' => ['500g', '1kg'],
+                'name' => 'Samsung Galaxy Watch 6 Classic - Rotating Bezel Smartwatch',
+                'slug' => 'samsung-galaxy-watch-6-classic',
+                'brand' => 'Samsung',
+                'category' => 'watches',
+                'regular_price' => 38000,
+                'sale_price' => 34500,
+                'unit' => 'Piece',
+                'variant_type' => 'Case Size',
+                'options' => ['43mm', '47mm'],
                 'is_featured' => true,
                 'is_new' => false,
                 'is_best_seller' => true,
                 'images' => [
-                    'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1628088062854-d1870b4553da?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
             [
-                'name' => 'Extra Virgin Cold-Pressed Coconut Oil (খাঁটি নারকেল তেল)',
-                'slug' => 'extra-virgin-cold-pressed-coconut-oil',
-                'brand' => 'Khaas Food',
-                'category' => 'pure-oils',
-                'regular_price' => 580,
-                'sale_price' => 520,
-                'unit' => 'Bottle',
-                'variant_type' => 'Volume',
-                'options' => ['250ml', '500ml', '1 Liter'],
+                'name' => 'Amazfit Balance Smartwatch - AMOLED GPS Health & Fitness Watch',
+                'slug' => 'amazfit-balance-smartwatch',
+                'brand' => 'Amazfit',
+                'category' => 'watches',
+                'regular_price' => 24500,
+                'sale_price' => 21900,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Midnight Black', 'Sunset Grey'],
                 'is_featured' => false,
                 'is_new' => true,
                 'is_best_seller' => false,
                 'images' => [
-                    'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
 
-            // ================= 3. ORGANIC GRAINS =================
+            // ================= 2. SHOES & FOOTWEAR =================
             [
-                'name' => 'Dinajpur Kataribogh Aromatic Rice (সুগন্ধি কাটারীভোগ চাল)',
-                'slug' => 'dinajpur-kataribogh-aromatic-rice',
-                'brand' => 'GreenValley Produce',
-                'category' => 'organic-grains',
-                'regular_price' => 720,
-                'sale_price' => 650,
-                'unit' => 'Bag',
-                'variant_type' => 'Weight',
-                'options' => ['5kg', '10kg'],
-                'is_featured' => true,
-                'is_new' => false,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'Raw Organic Chia Seeds (খাঁটি অর্গানিক চিয়া সিড)',
-                'slug' => 'raw-organic-chia-seeds',
-                'brand' => 'Naturals BD',
-                'category' => 'organic-grains',
-                'regular_price' => 550,
-                'sale_price' => 480,
-                'unit' => 'Pack',
-                'variant_type' => 'Weight',
-                'options' => ['250g', '500g'],
+                'name' => "Nike Air Force 1 '07 Classic Triple White Sneakers",
+                'slug' => 'nike-air-force-1-07-triple-white',
+                'brand' => 'Nike',
+                'category' => 'shoes',
+                'regular_price' => 14500,
+                'sale_price' => 12800,
+                'unit' => 'Pair',
+                'variant_type' => 'Shoe Size',
+                'options' => ['EU 40', 'EU 41', 'EU 42', 'EU 43', 'EU 44'],
                 'is_featured' => true,
                 'is_new' => true,
-                'is_best_seller' => false,
+                'is_best_seller' => true,
                 'images' => [
-                    'https://images.unsplash.com/photo-1514733670139-4d87a1941d55?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
-
-            // ================= 4. PURE SPICES =================
             [
-                'name' => 'High-Curcumin Organic Turmeric Powder (খাঁটি দেশি হলুদ গুঁড়া)',
-                'slug' => 'high-curcumin-organic-turmeric-powder',
-                'brand' => 'PureHarvest Organic',
-                'category' => 'pure-spices',
-                'regular_price' => 260,
-                'sale_price' => 220,
-                'unit' => 'Pack',
-                'variant_type' => 'Weight',
-                'options' => ['250g', '500g'],
+                'name' => 'Nike Air Zoom Pegasus 40 Road Running Shoes',
+                'slug' => 'nike-air-zoom-pegasus-40',
+                'brand' => 'Nike',
+                'category' => 'shoes',
+                'regular_price' => 15800,
+                'sale_price' => 13900,
+                'unit' => 'Pair',
+                'variant_type' => 'Shoe Size',
+                'options' => ['EU 41', 'EU 42', 'EU 43', 'EU 44'],
                 'is_featured' => true,
                 'is_new' => false,
                 'is_best_seller' => true,
                 'images' => [
-                    'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1615485290176-0f8cf9c3bf79?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
             [
-                'name' => 'Unadulterated Red Chili Powder (খাঁটি লাল মরিচ গুঁড়া)',
-                'slug' => 'unadulterated-red-chili-powder',
-                'brand' => 'Khaas Food',
-                'category' => 'pure-spices',
-                'regular_price' => 280,
-                'sale_price' => 240,
-                'unit' => 'Pack',
-                'variant_type' => 'Weight',
-                'options' => ['250g', '500g'],
+                'name' => 'Adidas Ultraboost Light Running Shoes - Core Black',
+                'slug' => 'adidas-ultraboost-light-core-black',
+                'brand' => 'Adidas',
+                'category' => 'shoes',
+                'regular_price' => 18500,
+                'sale_price' => 16200,
+                'unit' => 'Pair',
+                'variant_type' => 'Shoe Size',
+                'options' => ['EU 40', 'EU 41', 'EU 42', 'EU 43', 'EU 44'],
+                'is_featured' => true,
+                'is_new' => true,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Adidas Samba OG Classic Leather Sneakers - White & Black',
+                'slug' => 'adidas-samba-og-classic',
+                'brand' => 'Adidas',
+                'category' => 'shoes',
+                'regular_price' => 13500,
+                'sale_price' => 11900,
+                'unit' => 'Pair',
+                'variant_type' => 'Shoe Size',
+                'options' => ['EU 40', 'EU 41', 'EU 42', 'EU 43'],
+                'is_featured' => true,
+                'is_new' => false,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Handcrafted Premium Leather Chelsea Boots - Cognac Tan',
+                'slug' => 'handcrafted-premium-leather-chelsea-boots',
+                'brand' => 'The Patchee',
+                'category' => 'shoes',
+                'regular_price' => 8500,
+                'sale_price' => 7400,
+                'unit' => 'Pair',
+                'variant_type' => 'Shoe Size',
+                'options' => ['EU 40', 'EU 41', 'EU 42', 'EU 43', 'EU 44'],
                 'is_featured' => false,
                 'is_new' => true,
                 'is_best_seller' => false,
                 'images' => [
-                    'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1588258254650-410a7620db4f?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1638247025967-b4e38f787b76?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
 
-            // ================= 5. PREMIUM DATES & NUTS =================
+            // ================= 3. AUDIO & EARBUDS =================
             [
-                'name' => 'Saudi Madinah Ajwa Dates (সৌদি আজওয়া খেজুর)',
-                'slug' => 'saudi-madinah-ajwa-dates',
-                'brand' => 'BioFresh Organic',
-                'category' => 'premium-dates',
-                'regular_price' => 1400,
-                'sale_price' => 1200,
-                'unit' => 'Box',
-                'variant_type' => 'Weight',
-                'options' => ['500g', '1kg'],
+                'name' => 'Apple AirPods Pro (2nd Generation) with MagSafe Case (USB-C)',
+                'slug' => 'apple-airpods-pro-2nd-gen-usbc',
+                'brand' => 'Apple',
+                'category' => 'audio-gadgets',
+                'regular_price' => 31000,
+                'sale_price' => 28500,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Glossy White'],
+                'is_featured' => true,
+                'is_new' => true,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://adminapi.applegadgetsbd.com/storage/media/large/AirPods-Pro-(2nd-generation)-USB‐C1a-9576.png',
+                    'https://adminapi.applegadgetsbd.com/storage/media/medium/Apple-AirPods-5-2202.png',
+                ],
+            ],
+            [
+                'name' => 'Anker Soundcore Liberty 4 NC True Wireless Noise Canceling Earbuds',
+                'slug' => 'anker-soundcore-liberty-4-nc',
+                'brand' => 'Anker',
+                'category' => 'audio-gadgets',
+                'regular_price' => 9500,
+                'sale_price' => 8400,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Velvet Black', 'Clear White', 'Navy Blue'],
                 'is_featured' => true,
                 'is_new' => false,
                 'is_best_seller' => true,
                 'images' => [
-                    'https://images.unsplash.com/photo-1596560548464-f010549b84d7?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1574856344991-aaa31b6f4ce3?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
             [
-                'name' => 'Dry-Roasted Salted Almonds (ভাজা কাঠবাদাম)',
-                'slug' => 'dry-roasted-salted-almonds',
-                'brand' => 'BioFresh Organic',
-                'category' => 'premium-dates',
-                'regular_price' => 950,
-                'sale_price' => 840,
-                'unit' => 'Pack',
-                'variant_type' => 'Weight',
-                'options' => ['250g', '500g'],
+                'name' => 'Samsung Galaxy Buds2 Pro - 24-bit Hi-Fi Sound & ANC',
+                'slug' => 'samsung-galaxy-buds2-pro',
+                'brand' => 'Samsung',
+                'category' => 'audio-gadgets',
+                'regular_price' => 19500,
+                'sale_price' => 17400,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Graphite', 'White', 'Bora Purple'],
+                'is_featured' => false,
+                'is_new' => false,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'JBL Flip 6 Portable Waterproof Bluetooth Speaker',
+                'slug' => 'jbl-flip-6-portable-bluetooth-speaker',
+                'brand' => 'JBL',
+                'category' => 'audio-gadgets',
+                'regular_price' => 13500,
+                'sale_price' => 11800,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Midnight Black', 'Ocean Blue', 'Squad Camo'],
                 'is_featured' => true,
+                'is_new' => true,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://adminapi.applegadgetsbd.com/storage/media/thumb/JBL-GO-4-Portable-Waterproof-Speaker-Blue-3987.jpg',
+                    'https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+
+            // ================= 4. SMART GADGETS & POWER =================
+            [
+                'name' => 'Anker 737 Power Bank (PowerCore 24K 140W Fast Charging)',
+                'slug' => 'anker-737-power-bank-24k-140w',
+                'brand' => 'Anker',
+                'category' => 'gadgets',
+                'regular_price' => 15500,
+                'sale_price' => 13800,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Space Gray'],
+                'is_featured' => true,
+                'is_new' => true,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://images.unsplash.com/photo-1628149455678-16f37bc392f4?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1609592424109-dd9892f1b177?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Maxco MW11 Geometry 3-in-1 MagSafe Fast Wireless Charger',
+                'slug' => 'maxco-mw11-3in1-magsafe-charger',
+                'brand' => 'Apple',
+                'category' => 'gadgets',
+                'regular_price' => 4500,
+                'sale_price' => 3800,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Matte Black', 'Arctic White'],
+                'is_featured' => true,
+                'is_new' => false,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://adminapi.applegadgetsbd.com/storage/media/thumb/Maxco-MW11-Geometry-Series-3-in-1-Magsafe-Wireless-Charger-3-6253.jpg',
+                    'https://images.unsplash.com/photo-1628149455678-16f37bc392f4?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Apple 20W USB-C Fast Power Adapter (Original)',
+                'slug' => 'apple-20w-usbc-power-adapter',
+                'brand' => 'Apple',
+                'category' => 'gadgets',
+                'regular_price' => 3200,
+                'sale_price' => 2650,
+                'unit' => 'Piece',
+                'variant_type' => 'Plug Type',
+                'options' => ['UK 3-Pin', 'US 2-Pin'],
+                'is_featured' => false,
+                'is_new' => false,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://images.unsplash.com/photo-1609592424109-dd9892f1b177?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1628149455678-16f37bc392f4?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+
+            // ================= 5. BAGS & ACCESSORIES =================
+            [
+                'name' => 'The Patchee Elegant Canvas & Leather Work Tote Bag',
+                'slug' => 'the-patchee-elegant-canvas-leather-tote',
+                'brand' => 'The Patchee',
+                'category' => 'accessories',
+                'regular_price' => 4200,
+                'sale_price' => 3650,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Classic Tan', 'Midnight Black', 'Espresso Brown'],
+                'is_featured' => true,
+                'is_new' => true,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://thepatchee.com/cdn/shop/files/Patchee-Logo-2025_4.png',
+                    'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'The Patchee Handcrafted Genuine Leather Crossbody Side Bag',
+                'slug' => 'the-patchee-leather-crossbody-bag',
+                'brand' => 'The Patchee',
+                'category' => 'accessories',
+                'regular_price' => 3800,
+                'sale_price' => 3200,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Vintage Brown', 'Matte Black'],
+                'is_featured' => false,
                 'is_new' => true,
                 'is_best_seller' => false,
                 'images' => [
-                    'https://images.unsplash.com/photo-1508061253366-f7da158b6d46?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1563636619-e9143da7973b?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://thepatchee.com/cdn/shop/files/Patchee-Logo-2025_4.png',
                 ],
             ],
-
-            // ================= 6. HERBAL & SUPERFOODS =================
             [
-                'name' => 'Cold-Pressed Black Seed Oil - Kalonji (খাঁটি কালোজিরা তেল)',
-                'slug' => 'cold-pressed-black-seed-oil',
-                'brand' => 'Naturals BD',
-                'category' => 'herbal-tea',
-                'regular_price' => 520,
-                'sale_price' => 450,
-                'unit' => 'Bottle',
-                'variant_type' => 'Volume',
-                'options' => ['100ml', '250ml'],
+                'name' => 'The Patchee Slim Bifold RFID Protected Leather Wallet',
+                'slug' => 'the-patchee-slim-bifold-rfid-wallet',
+                'brand' => 'The Patchee',
+                'category' => 'accessories',
+                'regular_price' => 1950,
+                'sale_price' => 1650,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Dark Brown', 'Pitch Black'],
                 'is_featured' => true,
                 'is_new' => false,
                 'is_best_seller' => true,
                 'images' => [
-                    'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://thepatchee.com/cdn/shop/files/Patchee-Logo-2025_4.png',
                 ],
             ],
         ];
@@ -617,10 +788,10 @@ class DatabaseSeeder extends Seeder
                     'category_id' => $category->id,
                     'brand_id'    => $brandObj?->id,
                     'name' => $pData['name'],
-                    'sku' => 'SHODESHI-' . strtoupper(Str::substr(md5($pData['slug']), 0, 6)),
+                    'sku' => 'MARTY-' . strtoupper(Str::substr(md5($pData['slug']), 0, 6)),
                     'brand' => $pData['brand'],
-                    'short_description' => "100% chemical-free, lab-tested authentic {$pData['name']} by {$pData['brand']}. Guaranteed pure and organic.",
-                    'description' => "Enjoy the highest quality 100% natural {$pData['name']} sourced directly by {$pData['brand']}. Free from preservatives, artificial colors, or chemicals. Lab-tested for maximum purity and freshness, delivered safely across Bangladesh.",
+                    'short_description' => "100% authentic, verified {$pData['name']} by {$pData['brand']}. Guaranteed genuine quality with warranty.",
+                    'description' => "Experience the original {$pData['name']} by {$pData['brand']}. Crafted with premium grade materials and certified authenticity. Backed by fast nationwide delivery and dedicated customer support across Bangladesh.",
                     'regular_price' => $pData['regular_price'],
                     'sale_price' => $pData['sale_price'],
                     'stock_quantity' => random_int(25, 80),
@@ -634,17 +805,14 @@ class DatabaseSeeder extends Seeder
                     'flash_sale_progress' => 50,
                     'rating' => $ratings[array_rand($ratings)],
                     'reviews_count' => random_int(14, 52),
-                    'meta_title' => "Buy {$pData['name']} Online in Bangladesh — ShodeshiFood",
-                    'meta_description' => "Order 100% pure & organic {$pData['name']} by {$pData['brand']} at best price in Bangladesh with fast home delivery.",
+                    'meta_title' => "Buy {$pData['name']} Online in Bangladesh — Marty",
+                    'meta_description' => "Order authentic {$pData['name']} by {$pData['brand']} at best price in Bangladesh with fast home delivery and warranty.",
                 ]
             );
 
-            // Add product images (position 0 is ALWAYS the dedicated white background matching product image)
+            // Add product images
             ProductImage::where('product_id', $product->id)->delete();
-            $dedicatedMainImage = "/uploads/products/{$product->slug}.png";
-            $productImages = array_merge([$dedicatedMainImage], array_diff($pData['images'], [$dedicatedMainImage]));
-
-            foreach ($productImages as $p => $imgUrl) {
+            foreach ($pData['images'] as $p => $imgUrl) {
                 ProductImage::create([
                     'product_id' => $product->id,
                     'path'       => $imgUrl,
@@ -663,17 +831,6 @@ class DatabaseSeeder extends Seeder
                 $pData['variant_type'] => $pData['options'],
             ];
 
-            // Packaging attribute for appropriate items
-            if ($pData['variant_type'] === 'Weight') {
-                if (str_contains(strtolower($product->name), 'ghee') || str_contains(strtolower($product->name), 'honey')) {
-                    $attributesMap['Packaging'] = ['Glass Jar', 'Food Grade Pack'];
-                } elseif (str_contains(strtolower($product->name), 'rice') || str_contains(strtolower($product->name), 'chia') || str_contains(strtolower($product->name), 'dates')) {
-                    $attributesMap['Packaging'] = ['Craft Pouch', 'Box Container'];
-                }
-            } elseif ($pData['variant_type'] === 'Volume') {
-                $attributesMap['Packaging'] = ['Plastic Bottle', 'Glass Bottle'];
-            }
-
             foreach ($attributesMap as $attType => $attVals) {
                 foreach ($attVals as $val) {
                     ProductVariant::create([
@@ -687,7 +844,7 @@ class DatabaseSeeder extends Seeder
                 }
             }
 
-            // Add Product SKUs matrix with Cartesian product
+            // Add Product SKUs matrix
             \App\Models\ProductSku::where('product_id', $product->id)->delete();
             $catPrefix = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $category->name), 0, 3)) ?: 'PRD';
             $productSkuBase = ! empty($product->sku) ? $product->sku : $catPrefix;
@@ -731,13 +888,13 @@ class DatabaseSeeder extends Seeder
             $product->syncTotalStock();
         }
 
-        // Set 6 flash sale products
+        // Set flash sale products
         $flashProducts = Product::take(6)->get();
         foreach ($flashProducts as $pos => $fp) {
             $fp->update([
                 'is_flash_sale' => true,
                 'flash_sale_position' => $pos,
-                'flash_sale_progress' => random_int(60, 92),
+                'flash_sale_progress' => random_int(55, 92),
             ]);
         }
     }
@@ -749,9 +906,9 @@ class DatabaseSeeder extends Seeder
         $reviews = [
             ['Tanvir Ahmed', 'tanvir@example.com', 5, 'Super premium quality and 100% authentic! Delivered within 2 days in Dhaka.'],
             ['Sabrina Akter', 'sabrina@example.com', 5, 'Loved the packaging and build quality. Highly recommended store!'],
-            ['Mahmudul Hasan', 'mahmud@example.com', 5, 'Great item! Leather quality and finish is top-notch.'],
+            ['Mahmudul Hasan', 'mahmud@example.com', 5, 'Great item! Leather and build finish is top-notch.'],
             ['Farhana Yeasmin', 'farhana@example.com', 5, 'Elegant design and smooth order process. Will buy again!'],
-            ['Asif Chowdhury', 'asif@example.com', 5, 'Completely genuine product with official tags. 10/10 service.'],
+            ['Asif Chowdhury', 'asif@example.com', 5, 'Completely genuine product with official serial tags. 10/10 service.'],
         ];
 
         $products = Product::take(12)->get();
@@ -784,7 +941,7 @@ class DatabaseSeeder extends Seeder
         }
 
         $customers = [
-            ['Nusrat Jahan', '01700-111111', 'customer@shodeshifood.com', 'House 24, Road 7, Dhanmondi', 'Dhaka', 'inside_dhaka'],
+            ['Nusrat Jahan', '01700-111111', 'customer@marty.com', 'House 24, Road 7, Dhanmondi', 'Dhaka', 'inside_dhaka'],
             ['Rafi Ahmed', '01822-222222', 'rafi@example.com', 'Flat 5A, GEC Circle', 'Chattogram', 'outside_dhaka'],
             ['Mim Islam', '01933-333333', 'mim@example.com', 'House 8, Uttara Sector 11', 'Dhaka', 'inside_dhaka'],
             ['Sakib Hasan', '01644-444444', 'sakib@example.com', 'Zindabazar Main Road', 'Sylhet', 'outside_dhaka'],
@@ -799,13 +956,13 @@ class DatabaseSeeder extends Seeder
 
         $insideFee = (float) setting('shipping_inside_dhaka', 70);
         $outsideFee = (float) setting('shipping_outside_dhaka', 130);
-        $customerUser = User::where('email', 'customer@shodeshifood.com')->first();
+        $customerUser = User::where('email', 'customer@marty.com')->first();
 
         foreach ($scenarios as $index => [$status, $method, $paymentStatus, $fraudScore, $fraudFlags]) {
             [$name, $phone, $email, $address, $city, $zone] = $customers[$index];
             $order = new Order([
-                'user_id' => $email === 'customer@shodeshifood.com' ? $customerUser?->id : null,
-                'order_number' => 'SHODESHI-' . now()->subDays($index)->format('ymd') . '-' . strtoupper(Str::random(4)),
+                'user_id' => $email === 'customer@marty.com' ? $customerUser?->id : null,
+                'order_number' => 'MARTY-' . now()->subDays($index)->format('ymd') . '-' . strtoupper(Str::random(4)),
                 'customer_name' => $name,
                 'customer_phone' => $phone,
                 'customer_email' => $email,
@@ -884,10 +1041,10 @@ class DatabaseSeeder extends Seeder
         $logs = [
             [
                 'user_id'     => $superAdmin?->id,
-                'staff_name'  => $superAdmin?->name ?? 'ShodeshiFood Super Admin',
+                'staff_name'  => $superAdmin?->name ?? 'Marty Super Admin',
                 'staff_role'  => 'admin',
                 'action'      => 'System Initialization',
-                'description' => 'Configured site settings, 6 organic brand profiles, 6 categories, and payment gateways.',
+                'description' => 'Configured Marty multi-category catalog, 8 brand profiles, categories, and payment gateways.',
                 'ip_address'  => '127.0.0.1',
                 'created_at'  => now()->subDays(3),
             ],
@@ -896,7 +1053,7 @@ class DatabaseSeeder extends Seeder
                 'staff_name'  => $storeManager?->name ?? 'Tanvir Alam',
                 'staff_role'  => 'store_manager',
                 'action'      => 'Created Product Catalog',
-                'description' => "Seeded 36 authentic organic products across 6 brands (PureHarvest, Khaas Food, BioFresh, Sundarban Honey Co., Naturals BD, GreenValley) with clean white background 1:1 media.",
+                'description' => 'Seeded authentic smartwatches, Nike & Adidas shoes, audio earbuds, and accessories.',
                 'ip_address'  => '103.45.12.89',
                 'created_at'  => now()->subDays(2),
             ],
@@ -905,7 +1062,7 @@ class DatabaseSeeder extends Seeder
                 'staff_name'  => $orderManager?->name ?? 'Rafi Ahmed',
                 'staff_role'  => 'order_manager',
                 'action'      => 'Verified Order Payment',
-                'description' => 'Verified bKash transaction for Order #SHODESHI-260817-NYJD.',
+                'description' => 'Verified bKash transaction for Order #MARTY-260910-NYJD.',
                 'ip_address'  => '103.112.44.12',
                 'created_at'  => now()->subDays(1),
             ],
@@ -926,7 +1083,7 @@ class DatabaseSeeder extends Seeder
             [
                 'customer_name'      => $customer->name,
                 'customer_phone'     => $customer->phone ?? '01700-111111',
-                'customer_email'     => $customer->email ?? 'customer@shodeshifood.com',
+                'customer_email'     => $customer->email ?? 'customer@marty.com',
                 'status'             => 'open',
                 'unread_admin_count' => 1,
                 'last_message_at'    => now(),
@@ -934,7 +1091,7 @@ class DatabaseSeeder extends Seeder
         );
 
         \App\Models\ConversationMessage::updateOrCreate(
-            ['conversation_id' => $conv->id, 'message' => 'Hello! 👋 I have a question about my order delivery.'],
+            ['conversation_id' => $conv->id, 'message' => 'Hello! 👋 Is the Nike Air Force 1 true to size?'],
             [
                 'sender_type' => 'customer',
                 'sender_id'   => $customer->id,
@@ -945,7 +1102,7 @@ class DatabaseSeeder extends Seeder
         );
 
         \App\Models\ConversationMessage::updateOrCreate(
-            ['conversation_id' => $conv->id, 'message' => 'Welcome to ShodeshiFood Live Support! We are happy to help.'],
+            ['conversation_id' => $conv->id, 'message' => 'Welcome to Marty Live Support! Yes, Nike Air Force 1 runs true to size. If you prefer a snug fit, you can take your standard EU shoe size.'],
             [
                 'sender_type' => 'admin',
                 'sender_id'   => 1,
@@ -959,12 +1116,11 @@ class DatabaseSeeder extends Seeder
     private function seedAttributes(): void
     {
         $presets = [
-            'Weight'    => ['250g', '500g', '1kg', '2kg', '5kg'],
-            'Volume'    => ['250ml', '500ml', '1 Liter', '2 Liters', '5 Liters'],
-            'Packaging' => ['Glass Jar', 'Plastic Bottle', 'Pouch', 'Tin Container', 'Carton Box'],
-            'Flavor'    => ['Original', 'Raw Honey', 'Black Seed Infused', 'Spicy'],
-            'Size'      => ['S', 'M', 'L', 'XL', 'EU 40', 'EU 41', 'EU 42'],
-            'Color'     => ['Black', 'Brown', 'Natural Gold', 'White'],
+            'Shoe Size' => ['EU 40', 'EU 41', 'EU 42', 'EU 43', 'EU 44', 'EU 45'],
+            'Case Size' => ['41mm', '42mm', '43mm', '45mm', '46mm', '47mm', '49mm'],
+            'Color'     => ['Midnight', 'Starlight', 'Silver', 'Space Gray', 'Triple White', 'Core Black', 'Panda', 'Navy Blue'],
+            'Wattage'   => ['20W', '35W', '65W', '100W', '140W'],
+            'Material'  => ['Genuine Leather', 'Canvas', 'Breathable Mesh', 'Titanium', 'Silicone'],
         ];
 
         foreach ($presets as $typeName => $vals) {
