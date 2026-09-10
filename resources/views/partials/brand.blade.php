@@ -13,15 +13,15 @@
         default => 'text-xl sm:text-2xl',
     };
     $customClass = match ($size) {
-        'sm' => 'h-8 w-auto max-w-[140px]',
-        'lg' => 'h-11 w-auto max-w-[200px]',
-        default => 'h-9 sm:h-10 w-auto max-w-[180px]',
+        'sm' => 'h-8 sm:h-9 w-auto max-w-[140px]',
+        'lg' => 'h-11 sm:h-14 w-auto max-w-[220px]',
+        default => 'h-9 sm:h-11 w-auto max-w-[170px] sm:max-w-[210px]',
     };
 @endphp
 
 <a href="{{ $href }}" class="flex items-center gap-2 shrink-0 min-w-0 {{ $class }}" aria-label="{{ $name }}">
   @if($custom)
-    <img src="{{ logo_url() }}" alt="{{ $name }}" class="{{ $customClass }} object-contain" />
+    <img src="{{ logo_url() }}" alt="{{ $name }}" class="{{ $customClass }} {{ $logoClass ?? '' }} object-contain" />
   @else
     <span class="h-10 w-10 rounded-lg {{ $light ? 'bg-white text-brand-700' : 'bg-brand-600 text-white' }} flex items-center justify-center shrink-0">
       <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">

@@ -3,6 +3,9 @@
     <button type="button" data-close-menu class="absolute top-4 right-4 p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 rounded-full transition cursor-pointer" aria-label="Close Menu">
       <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
     </button>
+    <div class="mb-4 pr-10">
+      @include('partials.brand', ['size' => 'sm'])
+    </div>
     @auth
       <a href="{{ route('account') }}" class="flex items-center gap-3">
         <span class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-600 text-white font-bold">
