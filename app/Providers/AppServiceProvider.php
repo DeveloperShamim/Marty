@@ -26,7 +26,6 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\Cache::forget('storefront_nav_categories');
             \Illuminate\Support\Facades\Cache::forget('storefront_nav_brands');
             \Illuminate\Support\Facades\Cache::forget('storefront_has_flash_sale');
-            \Illuminate\Support\Facades\Cache::forget('storefront_home_data');
         };
 
         Category::saved($clearCatalogCache);

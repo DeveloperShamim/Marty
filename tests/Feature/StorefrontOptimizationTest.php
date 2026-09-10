@@ -16,13 +16,11 @@ class StorefrontOptimizationTest extends TestCase
     {
         Cache::flush();
 
-        $this->assertFalse(Cache::has('storefront_home_data'));
         $this->assertFalse(Cache::has('storefront_nav_categories'));
 
         $response = $this->get('/');
         $response->assertStatus(200);
 
-        $this->assertTrue(Cache::has('storefront_home_data'));
         $this->assertTrue(Cache::has('storefront_nav_categories'));
         $this->assertTrue(Cache::has('storefront_nav_brands'));
         $this->assertTrue(Cache::has('storefront_has_flash_sale'));
@@ -30,7 +28,6 @@ class StorefrontOptimizationTest extends TestCase
 
     public function test_category_save_invalidates_storefront_cache(): void
     {
-        Cache::put('storefront_home_data', 'cached_data', 60);
         Cache::put('storefront_nav_categories', 'cached_nav', 60);
 
         Category::create([
@@ -40,7 +37,6 @@ class StorefrontOptimizationTest extends TestCase
             'position'  => 1,
         ]);
 
-        $this->assertFalse(Cache::has('storefront_home_data'));
         $this->assertFalse(Cache::has('storefront_nav_categories'));
     }
 
