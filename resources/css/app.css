@@ -1,9 +1,31 @@
 @import 'tailwindcss';
 
+@source '../views/**/*.blade.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Plus Jakarta Sans', 'Hind Siliguri', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Plus Jakarta Sans', 'Hind Siliguri', ui-sans-serif, system-ui, sans-serif;
+
+    --color-brand-50: var(--brand-soft-bg, #fdf4ec);
+    --color-brand-100: var(--brand-border, #f8dfcb);
+    --color-brand-200: var(--brand-border, #f8dfcb);
+    --color-brand-300: var(--brand-primary, #E8751B);
+    --color-brand-400: var(--brand-primary, #E8751B);
+    --color-brand-500: var(--brand-primary, #E8751B);
+    --color-brand-600: var(--brand-primary, #E8751B);
+    --color-brand-700: var(--brand-hover, #c65d0d);
+    --color-brand-800: var(--brand-dark, #353535);
+    --color-brand-900: var(--brand-dark, #353535);
+
+    --color-accent-400: var(--brand-border, #f8dfcb);
+    --color-accent-500: var(--brand-primary, #E8751B);
+    --color-accent-600: var(--brand-primary, #E8751B);
+    --color-accent-700: var(--brand-dark, #353535);
+
+    --color-ink: var(--brand-dark, #353535);
+    --color-surface-light: #FFFFFF;
+    --color-surface-soft: var(--brand-surface, #F8FAFC);
 }
+

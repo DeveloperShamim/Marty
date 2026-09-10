@@ -16,41 +16,29 @@
   @endphp
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50:  '{{ $theme["primary_soft_bg"] }}',
-              100: '{{ $theme["primary_border"] }}',
-              200: '{{ $theme["primary_border"] }}',
-              300: '{{ $theme["primary"] }}',
-              400: '{{ $theme["primary"] }}',
-              500: '{{ $theme["primary"] }}',
-              600: '{{ $theme["primary"] }}',
-              700: '{{ $theme["primary_hover"] }}',
-              800: '{{ $theme["dark"] }}',
-              900: '{{ $theme["dark"] }}',
-            },
-            accent: {
-              400: '{{ $theme["primary_border"] }}',
-              500: '{{ $theme["primary"] }}',
-              600: '{{ $theme["primary"] }}',
-              700: '{{ $theme["dark"] }}',
-            },
-            ink: '{{ $theme["dark"] }}',
-            surface: {
-              light: '#FFFFFF',
-              soft: '{{ $theme["surface"] }}',
-            },
-          },
-          fontFamily: { sans:['Plus Jakarta Sans','Hind Siliguri','sans-serif'], display:['Plus Jakarta Sans','Hind Siliguri','sans-serif'] },
+  @if (file_exists(public_path('hot')) || file_exists(public_path('build/manifest.json')))
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+  @else
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50:  'var(--brand-primary-50, #f0fdf4)',
+                100: 'var(--brand-primary-100, #dcfce7)',
+                200: 'var(--brand-primary-200, #bbf7d0)',
+                500: 'var(--brand-primary, #16a34a)',
+                600: 'var(--brand-primary-hover, #15803d)',
+                700: 'var(--brand-primary-active, #166534)',
+              }
+            }
+          }
         }
       }
-    };
-  </script>
+    </script>
+  @endif
 
   <style>
     :root {
@@ -123,7 +111,7 @@
     }
   </style>
 
-  <link rel="stylesheet" href="{{ asset('theme/css/style.css') . '?v=' . time() }}" />
+  <link rel="stylesheet" href="{{ asset('theme/css/style.css') . '?v=' . (file_exists(public_path('theme/css/style.css')) ? filemtime(public_path('theme/css/style.css')) : '1') }}" />
   <link rel="icon" href="{{ favicon_url() }}" />
   <link rel="apple-touch-icon" href="{{ favicon_url() }}" />
 
@@ -143,7 +131,6 @@
 </head>
 
 <body class="@yield('body_class', 'bg-white text-ink antialiased')">
-  @include('storefront.partials.preloader')
   @include('partials.tracking-body')
 
   @hasSection('checkout_header')
@@ -167,7 +154,7 @@
   @include('storefront.partials.mobile-menu')
   @include('storefront.partials.quick-select-modal')
   @include('storefront.partials.size-guide-modal')
-  @include('storefront.partials.chat-widget')
+  @include('storefront.partials.whatsapp-widget')
 
   <div id="overlay" data-drawer-overlay class="fixed inset-0 bg-ink/40 z-40 opacity-0 pointer-events-none transition-opacity"></div>
 

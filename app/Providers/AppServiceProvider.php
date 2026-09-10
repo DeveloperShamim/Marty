@@ -21,23 +21,56 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::useTailwind();
 
-        // Shared chrome data for every storefront view (header nav + cart drawer + brand).
-        View::composer(['layouts.storefront', 'storefront.*'], function ($view) {
+        // Clear storefront navigation and home caches when catalog changes
+        $clearCatalogCache = function () {
+            \Illuminate\Support\Facades\Cache::forget('storefront_nav_categories');
+            \Illuminate\Support\Facades\Cache::forget('storefront_nav_brands');
+            \Illuminate\Support\Facades\Cache::forget('storefront_has_flash_sale');
+            \Illuminate\Support\Facades\Cache::forget('storefront_home_data');
+        };
+
+        Category::saved($clearCatalogCache);
+        Category::deleted($clearCatalogCache);
+        Brand::saved($clearCatalogCache);
+        Brand::deleted($clearCatalogCache);
+        Product::saved($clearCatalogCache);
+        Product::deleted($clearCatalogCache);
+        \App\Models\Banner::saved($clearCatalogCache);
+        \App\Models\Banner::deleted($clearCatalogCache);
+        \App\Models\Coupon::saved($clearCatalogCache);
+        \App\Models\Coupon::deleted($clearCatalogCache);
+        \App\Models\Feature::saved($clearCatalogCache);
+        \App\Models\Feature::deleted($clearCatalogCache);
+
+        // Shared chrome data for storefront layout (single execution per page with caching)
+        View::composer('layouts.storefront', function ($view) {
             $cart = app(CartService::class);
+
+            $navCategories = \Illuminate\Support\Facades\Cache::remember('storefront_nav_categories', 3600, function () {
+                return Category::where('is_active', true)
+                    ->withCount(['products' => fn ($q) => $q->published()])
+                    ->orderByDesc('products_count')
+                    ->orderBy('position')
+                    ->get();
+            });
+
+            $navBrands = \Illuminate\Support\Facades\Cache::remember('storefront_nav_brands', 3600, function () {
+                return Brand::where('is_active', true)
+                    ->withCount(['products' => fn ($q) => $q->published()])
+                    ->orderByDesc('products_count')
+                    ->orderBy('position')
+                    ->get();
+            });
+
+            $hasFlashSale = \Illuminate\Support\Facades\Cache::remember('storefront_has_flash_sale', 1800, function () {
+                return Product::query()->published()->where('is_flash_sale', true)->exists();
+            });
 
             $view->with([
                 'siteName'      => site_name(),
-                'navCategories' => Category::where('is_active', true)
-                    ->withCount(['products' => fn ($q) => $q->published()])
-                    ->orderByDesc('products_count')
-                    ->orderBy('position')
-                    ->get(),
-                'navBrands'     => Brand::where('is_active', true)
-                    ->withCount(['products' => fn ($q) => $q->published()])
-                    ->orderByDesc('products_count')
-                    ->orderBy('position')
-                    ->get(),
-                'hasFlashSale'  => Product::query()->published()->where('is_flash_sale', true)->exists(),
+                'navCategories' => $navCategories,
+                'navBrands'     => $navBrands,
+                'hasFlashSale'  => $hasFlashSale,
                 'cartItems'     => $cart->items(),
                 'cartCount'     => $cart->count(),
                 'cartSubtotal'  => $cart->subtotal(),
