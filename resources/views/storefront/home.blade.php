@@ -26,17 +26,19 @@
 
   @if($hasHero)
     <section class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pt-3 sm:pt-4 pb-2" data-reveal>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-3 sm:gap-4 lg:gap-4 items-stretch">
+      <div class="grid grid-cols-2 lg:grid-cols-10 gap-2.5 sm:gap-3.5 lg:gap-4">
 
-        {{-- Main Hero Slider (col-span-1 md:col-span-2 lg:col-span-7) --}}
+        {{-- Main Hero Slider --}}
         @php
-          $sliderColSpan = $heroSideBanners->isNotEmpty() ? 'col-span-1 md:col-span-2 lg:col-span-7' : 'col-span-1 md:col-span-2 lg:col-span-10';
+          $sliderClasses = $heroSideBanners->isNotEmpty()
+            ? 'col-span-2 lg:col-span-7 lg:row-span-2'
+            : 'col-span-2 lg:col-span-10';
         @endphp
 
-        <div class="{{ $sliderColSpan }} relative rounded-2xl sm:rounded-3xl overflow-hidden bg-neutral-900 shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-center">
+        <div class="{{ $sliderClasses }} relative rounded-2xl sm:rounded-3xl overflow-hidden bg-neutral-900 shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-center aspect-[15/8] w-full">
           @if($heroBanners->count() > 1)
             {{-- Carousel Slider --}}
-            <div id="homeHeroSlider" class="relative w-full aspect-[15/8] overflow-hidden select-none">
+            <div id="homeHeroSlider" class="relative w-full h-full aspect-[15/8] overflow-hidden select-none">
               @foreach($heroBanners as $i => $slide)
                 <div data-hero-slide class="absolute inset-0 transition-opacity duration-500 ease-in-out {{ $i === 0 ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none' }}">
                   <a href="{{ $slide->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $slide->title ?: 'Banner Slide' }}">
@@ -75,7 +77,7 @@
             </div>
           @elseif($mainHero)
             {{-- Single Hero Slide --}}
-            <div class="relative w-full aspect-[15/8] overflow-hidden">
+            <div class="relative w-full h-full aspect-[15/8] overflow-hidden">
               <a href="{{ $mainHero->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $mainHero->title ?: 'Banner' }}">
                 @if($mainHero->image)
                   <img src="{{ $mainHero->imageUrl() }}" alt="{{ $mainHero->title }}" class="w-full h-full object-cover object-center">
@@ -93,7 +95,7 @@
             </div>
           @else
             {{-- Fallback Hero --}}
-            <div class="relative w-full aspect-[15/8] overflow-hidden bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center p-6 sm:p-12 text-white">
+            <div class="relative w-full h-full aspect-[15/8] overflow-hidden bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center p-6 sm:p-12 text-white">
               <div class="max-w-md">
                 @if($heroBadge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $heroBadge }}</span>@endif
                 <h2 class="text-2xl sm:text-4xl font-extrabold leading-tight">{{ $heroTitle ?: site_name() }}</h2>
@@ -104,28 +106,22 @@
           @endif
         </div>
 
-        {{-- Side / Bottom Promo Banners (col-span-1 md:col-span-2 lg:col-span-3 grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4) --}}
-        @if($heroSideBanners->isNotEmpty())
-          <div class="col-span-1 md:col-span-2 lg:col-span-3 grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4 h-full">
-            @foreach($heroSideBanners->take(2) as $sideCard)
-              <div class="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-0.5 bg-neutral-900 aspect-[1.82/1] flex flex-col justify-center">
-                <a href="{{ $sideCard->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $sideCard->title ?: 'Promo Card' }}">
-                  @if($sideCard->image)
-                    <img src="{{ $sideCard->imageUrl() }}" alt="{{ $sideCard->title }}" class="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-500" loading="lazy">
-                  @else
-                    <div class="w-full h-full bg-gradient-to-br from-neutral-800 to-stone-900 p-4 sm:p-6 text-white flex flex-col justify-between">
-                      <div>
-                        @if($sideCard->badge)<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-500 text-white uppercase">{{ $sideCard->badge }}</span>@endif
-                        <h3 class="font-extrabold text-sm sm:text-base mt-2 line-clamp-2">{{ $sideCard->title }}</h3>
-                      </div>
-                      @if($sideCard->button_text)<span class="text-xs font-semibold text-brand-400 mt-2 inline-flex items-center gap-1">{{ $sideCard->button_text }} &rarr;</span>@endif
-                    </div>
-                  @endif
-                </a>
+        {{-- Side / Bottom Promo Banners (Direct grid children: col-span-1 lg:col-span-3) --}}
+        @foreach($heroSideBanners->take(2) as $sideCard)
+          <a href="{{ $sideCard->linkHref() }}" class="col-span-1 lg:col-span-3 relative flex rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-0.5 bg-neutral-900 aspect-[868/476] lg:aspect-auto lg:h-full min-h-0" aria-label="{{ $sideCard->title ?: 'Promo Card' }}">
+            @if($sideCard->image)
+              <img src="{{ $sideCard->imageUrl() }}" alt="{{ $sideCard->title }}" class="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-500 rounded-2xl sm:rounded-3xl" loading="lazy">
+            @else
+              <div class="w-full h-full bg-gradient-to-br from-neutral-800 to-stone-900 p-4 sm:p-6 text-white flex flex-col justify-between rounded-2xl sm:rounded-3xl">
+                <div>
+                  @if($sideCard->badge)<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-500 text-white uppercase">{{ $sideCard->badge }}</span>@endif
+                  <h3 class="font-extrabold text-sm sm:text-base mt-2 line-clamp-2">{{ $sideCard->title }}</h3>
+                </div>
+                @if($sideCard->button_text)<span class="text-xs font-semibold text-brand-400 mt-2 inline-flex items-center gap-1">{{ $sideCard->button_text }} &rarr;</span>@endif
               </div>
-            @endforeach
-          </div>
-        @endif
+            @endif
+          </a>
+        @endforeach
 
       </div>
     </section>
