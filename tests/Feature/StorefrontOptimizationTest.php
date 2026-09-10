@@ -26,7 +26,7 @@ class StorefrontOptimizationTest extends TestCase
         $response->assertSee('Organic Veggies');
     }
 
-    public function test_storefront_renders_vite_assets_and_whatsapp_widget(): void
+    public function test_storefront_renders_styles_and_whatsapp_widget(): void
     {
         Cache::flush();
         \App\Models\Setting::put('whatsapp_number', '01711111111');
@@ -34,10 +34,10 @@ class StorefrontOptimizationTest extends TestCase
         $response = $this->get('/');
         $response->assertStatus(200);
 
-        // Does not load the heavy Tailwind Play CDN
-        $response->assertDontSee('cdn.tailwindcss.com');
+        // Ensures Tailwind CSS engine is loaded for full styling
+        $response->assertSee('cdn.tailwindcss.com');
 
-        // Does not render artificial preloader
+        // Does not render artificial preloader delay
         $response->assertDontSee('id="preloader"', false);
 
         // Renders WhatsApp floating widget

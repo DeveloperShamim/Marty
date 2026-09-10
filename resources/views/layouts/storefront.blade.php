@@ -16,29 +16,41 @@
   @endphp
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-  @if (file_exists(public_path('hot')) || file_exists(public_path('build/manifest.json')))
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-  @else
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              brand: {
-                50:  'var(--brand-primary-50, #f0fdf4)',
-                100: 'var(--brand-primary-100, #dcfce7)',
-                200: 'var(--brand-primary-200, #bbf7d0)',
-                500: 'var(--brand-primary, #16a34a)',
-                600: 'var(--brand-primary-hover, #15803d)',
-                700: 'var(--brand-primary-active, #166534)',
-              }
-            }
-          }
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:  '{{ $theme["primary_soft_bg"] }}',
+              100: '{{ $theme["primary_border"] }}',
+              200: '{{ $theme["primary_border"] }}',
+              300: '{{ $theme["primary"] }}',
+              400: '{{ $theme["primary"] }}',
+              500: '{{ $theme["primary"] }}',
+              600: '{{ $theme["primary"] }}',
+              700: '{{ $theme["primary_hover"] }}',
+              800: '{{ $theme["dark"] }}',
+              900: '{{ $theme["dark"] }}',
+            },
+            accent: {
+              400: '{{ $theme["primary_border"] }}',
+              500: '{{ $theme["primary"] }}',
+              600: '{{ $theme["primary"] }}',
+              700: '{{ $theme["dark"] }}',
+            },
+            ink: '{{ $theme["dark"] }}',
+            surface: {
+              light: '#FFFFFF',
+              soft: '{{ $theme["surface"] }}',
+            },
+          },
+          fontFamily: { sans:['Plus Jakarta Sans','Hind Siliguri','sans-serif'], display:['Plus Jakarta Sans','Hind Siliguri','sans-serif'] },
         }
       }
-    </script>
-  @endif
+    };
+  </script>
 
   <style>
     :root {
