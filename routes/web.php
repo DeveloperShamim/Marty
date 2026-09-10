@@ -137,6 +137,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
             Route::get('orders/{order}/invoice', [AdminOrderController::class, 'invoice'])->name('orders.invoice');
             Route::patch('orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');
+            Route::patch('orders/{order}/customer', [AdminOrderController::class, 'updateCustomer'])->name('orders.update-customer');
             Route::delete('orders/{order}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');
             Route::patch('orders/{order}/items/{item}', [AdminOrderController::class, 'updateItemVariant'])->name('orders.items.update-variant');
             Route::post('orders/{order}/verify', [AdminOrderController::class, 'verify'])->name('orders.verify');

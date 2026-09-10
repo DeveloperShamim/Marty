@@ -18,8 +18,24 @@ class IntegrationController extends Controller
 
     public function index()
     {
+        $dbSettings = Setting::pluck('value', 'key')->toArray();
+        $keys = [
+            'steadfast_enabled', 'steadfast_api_key', 'steadfast_secret_key',
+            'pathao_enabled', 'pathao_env', 'pathao_client_id', 'pathao_client_secret', 'pathao_username', 'pathao_password', 'pathao_store_id',
+            'redx_enabled', 'redx_env', 'redx_api_token',
+            'tracking_gtm_id', 'tracking_ga4_id', 'tracking_meta_pixel_id',
+            'google_client_id', 'google_client_secret', 'google_redirect_uri',
+            'otp_enabled', 'mail_mailer', 'mail_host', 'mail_port', 'mail_username',
+            'mail_encryption', 'mail_from_address', 'mail_from_name',
+        ];
+
+        $settings = [];
+        foreach ($keys as $key) {
+            $settings[$key] = $dbSettings[$key] ?? (string) setting($key, '');
+        }
+
         return view('admin.integrations.index', [
-            'settings' => Setting::pluck('value', 'key'),
+            'settings' => $settings,
         ]);
     }
 

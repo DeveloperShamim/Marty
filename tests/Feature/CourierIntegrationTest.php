@@ -86,4 +86,50 @@ class CourierIntegrationTest extends TestCase
         $this->assertEquals('Steadfast Courier', $order->courierLabel());
         $this->assertStringContainsString('steadfast.com.bd/t/STD998877', $order->courierTrackingUrl());
     }
+
+    public function test_order_dispatch_redx(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        Setting::put('redx_enabled', '1');
+        Setting::put('redx_api_token', 'test_redx_token_secret');
+
+        $order = Order::create([
+            'order_number'      => 'ORD-2026-REDX',
+            'customer_name'     => 'RedX Customer',
+            'customer_phone'    => '01811000000',
+            'shipping_address'  => 'Mirpur 10',
+            'city'              => 'Dhaka',
+            'subtotal'          => 1200,
+            'shipping_charge'   => 80,
+            'total'             => 1280,
+            'payment_method'    => 'cod',
+            'status'            => 'pending',
+        ]);
+
+        Http::fake([
+            'https://openapi.redx.com.bd/v1.0.0-beta/parcel' => function ($request) {
+                $headers = $request->headers();
+                $body = $request->data();
+
+                $hasAccessToken = isset($headers['api-access-token']) || isset($headers['API-ACCESS-TOKEN']);
+                $hasValidEndpoint = str_ends_with($request->url(), '/parcel');
+                $hasValue = isset($body['value']);
+
+                if ($hasAccessToken && $hasValidEndpoint && $hasValue) {
+                    return Http::response(['tracking_id' => 'REDX123456'], 200);
+                }
+
+                return Http::response(['message' => 'Please check your specified endpoint and request method'], 400);
+            },
+        ]);
+
+        $response = $this->actingAs($admin)->post(route('admin.orders.dispatch-courier', [$order, 'redx']));
+        $response->assertRedirect();
+        $order->refresh();
+
+        $this->assertTrue($order->isDispatchedToCourier());
+        $this->assertEquals('redx', $order->courier_name);
+        $this->assertEquals('REDX123456', $order->courier_tracking_code);
+        $this->assertEquals('RedX Courier', $order->courierLabel());
+    }
 }

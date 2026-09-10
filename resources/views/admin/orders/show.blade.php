@@ -353,16 +353,30 @@
         @endif
       </div>
 
-      <!-- Customer Address Card (Original Position) -->
-      <div class="card p-5 space-y-2 text-xs">
-        <h3 class="font-extrabold text-sm text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-1.5">
-          <span>👤</span> Customer Details
-        </h3>
-        <div class="space-y-1 pt-1">
-          <p class="text-sm font-extrabold text-slate-900">{{ $order->customer_name }}</p>
-          <p class="font-mono text-slate-700 font-semibold">📞 {{ $order->customer_phone }}</p>
+      <!-- Customer Address Card -->
+      <div class="card p-5 space-y-3 text-xs">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <h3 class="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
+            <span>👤</span> Customer Details
+          </h3>
+          <button type="button" onclick="openEditCustomerModal()" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-extrabold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200/80 rounded-xl transition cursor-pointer shadow-2xs">
+            <span>✏️</span> Edit
+          </button>
+        </div>
+        <div class="space-y-1.5 pt-0.5">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 font-bold text-[10px] uppercase">Name:</span>
+            <span class="text-sm font-extrabold text-slate-900">{{ $order->customer_name }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400 font-bold text-[10px] uppercase">Phone:</span>
+            <a href="tel:{{ $order->customer_phone }}" class="font-mono text-slate-700 font-bold hover:text-brand-600 hover:underline">📞 {{ $order->customer_phone }}</a>
+          </div>
           @if($order->customer_email)
-            <p class="text-slate-500">✉️ {{ $order->customer_email }}</p>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400 font-bold text-[10px] uppercase">Email:</span>
+              <a href="mailto:{{ $order->customer_email }}" class="text-slate-600 hover:text-brand-600 hover:underline">✉️ {{ $order->customer_email }}</a>
+            </div>
           @endif
           <div class="pt-2 border-t border-slate-100 mt-2">
             <span class="text-slate-400 font-bold block mb-0.5 text-[10px] uppercase">Delivery Address:</span>
@@ -444,4 +458,115 @@
     </div>
   </div>
 </div>
+
+<!-- Edit Customer Details Modal -->
+<div id="editCustomerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs">
+  <div class="bg-white rounded-3xl shadow-2xl border border-stone-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-stone-100 bg-stone-50/70">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center font-bold text-base border border-brand-100 shadow-2xs">
+          👤
+        </div>
+        <div>
+          <h3 class="font-black text-stone-900 text-sm sm:text-base">Edit Customer Details</h3>
+          <p class="text-[11px] text-stone-500 font-medium">Update recipient contact and delivery location</p>
+        </div>
+      </div>
+      <button type="button" onclick="closeEditCustomerModal()" class="w-8 h-8 rounded-xl hover:bg-stone-200/60 flex items-center justify-center text-stone-400 hover:text-stone-700 font-bold transition cursor-pointer">
+        ✕
+      </button>
+    </div>
+
+    <form method="POST" action="{{ route('admin.orders.update-customer', $order) }}" class="p-6 space-y-4">
+      @csrf
+      @method('PATCH')
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div>
+          <label class="block text-[11px] font-black text-stone-700 mb-1">Recipient Name <span class="text-rose-500">*</span></label>
+          <input type="text" name="customer_name" required value="{{ old('customer_name', $order->customer_name) }}" class="w-full text-xs font-bold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" placeholder="Full name" />
+          @error('customer_name')
+            <p class="text-rose-600 text-[10px] font-bold mt-1">{{ $message }}</p>
+          @enderror
+        </div>
+        <div>
+          <label class="block text-[11px] font-black text-stone-700 mb-1">Phone Number <span class="text-rose-500">*</span></label>
+          <input type="text" name="customer_phone" required value="{{ old('customer_phone', $order->customer_phone) }}" class="w-full text-xs font-mono font-bold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" placeholder="01XXXXXXXXX" />
+          @error('customer_phone')
+            <p class="text-rose-600 text-[10px] font-bold mt-1">{{ $message }}</p>
+          @enderror
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-black text-stone-700 mb-1">Email Address <span class="text-stone-400 font-normal">(Optional)</span></label>
+        <input type="email" name="customer_email" value="{{ old('customer_email', $order->customer_email) }}" class="w-full text-xs font-medium px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" placeholder="customer@example.com" />
+        @error('customer_email')
+          <p class="text-rose-600 text-[10px] font-bold mt-1">{{ $message }}</p>
+        @enderror
+      </div>
+
+      <div>
+        <label class="block text-[11px] font-black text-stone-700 mb-1">Delivery Address <span class="text-rose-500">*</span></label>
+        <textarea name="shipping_address" required rows="2" class="w-full text-xs font-semibold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" placeholder="House, Road, Area, Landmark">{{ old('shipping_address', $order->shipping_address) }}</textarea>
+        @error('shipping_address')
+          <p class="text-rose-600 text-[10px] font-bold mt-1">{{ $message }}</p>
+        @enderror
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div>
+          <label class="block text-[11px] font-black text-stone-700 mb-1">City / District <span class="text-rose-500">*</span></label>
+          <input type="text" name="city" required value="{{ old('city', $order->city) }}" class="w-full text-xs font-bold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" placeholder="e.g. Dhaka, Chittagong" />
+          @error('city')
+            <p class="text-rose-600 text-[10px] font-bold mt-1">{{ $message }}</p>
+          @enderror
+        </div>
+        <div>
+          <label class="block text-[11px] font-black text-stone-700 mb-1">Postal Code <span class="text-stone-400 font-normal">(Optional)</span></label>
+          <input type="text" name="postal_code" value="{{ old('postal_code', $order->postal_code) }}" class="w-full text-xs font-mono font-bold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" placeholder="e.g. 1212" />
+          @error('postal_code')
+            <p class="text-rose-600 text-[10px] font-bold mt-1">{{ $message }}</p>
+          @enderror
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 pt-3.5 border-t border-stone-100">
+        <button type="button" onclick="closeEditCustomerModal()" class="px-4 py-2.5 rounded-xl border border-stone-200 text-stone-600 font-extrabold text-xs hover:bg-stone-50 transition cursor-pointer">
+          Cancel
+        </button>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-black text-xs shadow-md transition cursor-pointer flex items-center gap-1.5">
+          <span>💾</span> Save Customer Details
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openEditCustomerModal() {
+    const m = document.getElementById('editCustomerModal');
+    if (m) m.classList.remove('hidden');
+  }
+
+  function closeEditCustomerModal() {
+    const m = document.getElementById('editCustomerModal');
+    if (m) m.classList.add('hidden');
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeEditCustomerModal();
+  });
+  document.getElementById('editCustomerModal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'editCustomerModal') closeEditCustomerModal();
+  });
+</script>
+
+@if($errors->hasAny(['customer_name', 'customer_phone', 'customer_email', 'shipping_address', 'city', 'postal_code']))
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    openEditCustomerModal();
+  });
+</script>
+@endif
 @endsection

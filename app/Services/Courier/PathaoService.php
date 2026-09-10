@@ -23,7 +23,7 @@ class PathaoService
     protected function getBaseUrl(): string
     {
         return setting('pathao_env', 'production') === 'sandbox'
-            ? 'https://openapi-sandbox.pathao.com'
+            ? 'https://courier-api-sandbox.pathao.com'
             : 'https://api-hermes.pathao.com';
     }
 
@@ -72,20 +72,25 @@ class PathaoService
         $codAmount = $order->payment_status === 'verified' ? 0 : (float) $order->total;
         $totalItems = $order->items->sum('quantity') ?: 1;
 
+        // Clean BD phone number (e.g. 01XXXXXXXXX)
+        $phone = preg_replace('/[^0-9]/', '', (string) $order->customer_phone);
+        if (str_starts_with($phone, '880')) {
+            $phone = substr($phone, 2);
+        }
+
         $payload = [
-            'store_id'          => (int) setting('pathao_store_id'),
-            'merchant_order_id' => $order->order_number,
-            'recipient_name'    => $order->customer_name,
-            'recipient_phone'   => $order->customer_phone,
-            'recipient_address' => $order->shipping_address . ($order->city ? ', ' . $order->city : ''),
-            'recipient_city'    => (int) setting('pathao_default_city_id', 1), // Default Dhaka 1
-            'recipient_zone'    => (int) setting('pathao_default_zone_id', 1),
-            'delivery_type'     => 48, // 48 Hours / Standard
-            'item_type'         => 2,  // Parcel
+            'store_id'            => (int) setting('pathao_store_id'),
+            'merchant_order_id'   => $order->order_number,
+            'recipient_name'      => $order->customer_name,
+            'recipient_phone'     => $phone,
+            'recipient_address'   => $order->shipping_address . ($order->city ? ', ' . $order->city : ''),
+            'delivery_type'       => 48, // 48 Hours / Standard
+            'item_type'           => 2,  // Parcel
             'special_instruction' => $order->internal_note ?: 'Handle parcel carefully.',
-            'item_quantity'     => $totalItems,
-            'item_weight'       => 0.5,
-            'amount_to_collect' => (int) $codAmount,
+            'item_quantity'       => $totalItems,
+            'item_weight'         => 0.5,
+            'item_description'    => 'Order #' . $order->order_number . ' from ' . site_name(),
+            'amount_to_collect'   => (int) $codAmount,
         ];
 
         try {

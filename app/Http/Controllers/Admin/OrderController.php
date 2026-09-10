@@ -125,6 +125,28 @@ class OrderController extends Controller
         return back()->with('status', "Order {$order->order_number} updated.");
     }
 
+    /** Update customer contact & delivery details for an order. */
+    public function updateCustomer(Request $request, Order $order)
+    {
+        $data = $request->validate([
+            'customer_name'    => ['required', 'string', 'max:150'],
+            'customer_phone'   => ['required', 'string', 'max:30'],
+            'customer_email'   => ['nullable', 'email', 'max:150'],
+            'shipping_address' => ['required', 'string', 'max:500'],
+            'city'             => ['required', 'string', 'max:100'],
+            'postal_code'      => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $order->update($data);
+
+        \App\Services\ActivityLogger::log(
+            'Updated Customer Details',
+            "Updated customer details for order #{$order->order_number} ({$order->customer_name})"
+        );
+
+        return back()->with('status', "Customer details for order {$order->order_number} updated successfully.");
+    }
+
     /** Delete an order from system. */
     public function destroy(Order $order)
     {

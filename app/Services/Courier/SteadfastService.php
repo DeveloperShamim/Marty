@@ -29,10 +29,16 @@ class SteadfastService
 
         $codAmount = $order->payment_status === 'verified' ? 0 : (float) $order->total;
 
+        // Clean BD phone number (e.g. 01XXXXXXXXX)
+        $phone = preg_replace('/[^0-9]/', '', (string) $order->customer_phone);
+        if (str_starts_with($phone, '880')) {
+            $phone = substr($phone, 2);
+        }
+
         $payload = [
             'invoice'           => $order->order_number,
             'recipient_name'    => $order->customer_name,
-            'recipient_phone'   => $order->customer_phone,
+            'recipient_phone'   => $phone,
             'recipient_address' => $order->shipping_address . ($order->city ? ', ' . $order->city : ''),
             'cod_amount'        => $codAmount,
             'note'              => $order->internal_note ?: 'Order from ' . site_name(),
