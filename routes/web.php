@@ -170,20 +170,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('reviews/{review}/reject', [AdminReviewController::class, 'reject'])->name('reviews.reject');
             Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
 
-            // Live Support Chat Inbox & Sharing
-            Route::get('conversations', [\App\Http\Controllers\Admin\ConversationController::class, 'index'])->name('conversations.index');
-            Route::get('conversations/products/search', [\App\Http\Controllers\Admin\ConversationController::class, 'searchProducts'])->name('conversations.products.search');
-            Route::get('conversations/coupons/list', [\App\Http\Controllers\Admin\ConversationController::class, 'getCoupons'])->name('conversations.coupons.list');
-            Route::post('conversations/prune-storage', [\App\Http\Controllers\Admin\ConversationController::class, 'pruneStorage'])->name('conversations.prune-storage');
-            Route::get('conversations/{conversation}', [\App\Http\Controllers\Admin\ConversationController::class, 'show'])->name('conversations.show');
-            Route::post('conversations/{conversation}/reply', [\App\Http\Controllers\Admin\ConversationController::class, 'reply'])->name('conversations.reply');
-            Route::post('conversations/{conversation}/send-product', [\App\Http\Controllers\Admin\ConversationController::class, 'sendProduct'])->name('conversations.send-product');
-            Route::post('conversations/{conversation}/send-order', [\App\Http\Controllers\Admin\ConversationController::class, 'sendOrder'])->name('conversations.send-order');
-            Route::post('conversations/{conversation}/send-coupon', [\App\Http\Controllers\Admin\ConversationController::class, 'sendCoupon'])->name('conversations.send-coupon');
-            Route::post('conversations/{conversation}/upload-attachment', [\App\Http\Controllers\Admin\ConversationController::class, 'uploadAttachment'])->name('conversations.upload-attachment');
-            Route::post('conversations/{conversation}/upload-voice', [\App\Http\Controllers\Admin\ConversationController::class, 'uploadVoiceNote'])->name('conversations.upload-voice');
-            Route::post('conversations/{conversation}/orders/{order}/status', [\App\Http\Controllers\Admin\ConversationController::class, 'updateOrderStatus'])->name('conversations.orders.update-status');
-            Route::post('conversations/{conversation}/toggle-status', [\App\Http\Controllers\Admin\ConversationController::class, 'toggleStatus'])->name('conversations.toggle-status');
+
         });
 
         // Catalog & Inventory Routes (Inventory Managers, Store Managers & Admins)

@@ -33,7 +33,6 @@ class DatabaseSeeder extends Seeder
         $this->seedProducts($categories, $brands);
         $this->seedReviews();
         $this->seedOrders();
-        $this->seedConversations();
         $this->seedVisitorLogs();
         $this->seedStaffActivityLogs();
     }
@@ -1141,45 +1140,6 @@ class DatabaseSeeder extends Seeder
         }
     }
 
-    private function seedConversations(): void
-    {
-        $customer = User::where('role', 'customer')->first();
-        if (! $customer) return;
-
-        $conv = \App\Models\Conversation::updateOrCreate(
-            ['user_id' => $customer->id],
-            [
-                'customer_name'      => $customer->name,
-                'customer_phone'     => $customer->phone ?? '01700-111111',
-                'customer_email'     => $customer->email ?? 'customer@marty.com',
-                'status'             => 'open',
-                'unread_admin_count' => 1,
-                'last_message_at'    => now(),
-            ]
-        );
-
-        \App\Models\ConversationMessage::updateOrCreate(
-            ['conversation_id' => $conv->id, 'message' => 'Hello! 👋 Is the Nike Air Force 1 true to size?'],
-            [
-                'sender_type' => 'customer',
-                'sender_id'   => $customer->id,
-                'type'        => 'text',
-                'is_read'     => true,
-                'created_at'  => now()->subMinutes(15),
-            ]
-        );
-
-        \App\Models\ConversationMessage::updateOrCreate(
-            ['conversation_id' => $conv->id, 'message' => 'Welcome to Marty Live Support! Yes, Nike Air Force 1 runs true to size. If you prefer a snug fit, you can take your standard EU shoe size.'],
-            [
-                'sender_type' => 'admin',
-                'sender_id'   => 1,
-                'type'        => 'text',
-                'is_read'     => true,
-                'created_at'  => now()->subMinutes(10),
-            ]
-        );
-    }
 
     private function seedAttributes(): void
     {
