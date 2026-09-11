@@ -382,6 +382,78 @@
       </section>
     @endif
 
+    {{-- ADMIN HOMEPAGE FEATURED CATEGORIES (Shown only when admin enables 'Featured on Homepage' & has products) --}}
+    @if(($featuredHomeCategories ?? collect())->isNotEmpty())
+      @foreach($featuredHomeCategories as $featuredCat)
+        @if($featuredCat->products->isNotEmpty())
+          <section class="mt-12 sm:mt-16" data-reveal>
+            <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-6 gap-3">
+              <div>
+                <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">
+                  @if($featuredCat->icon)<span class="mr-1.5">{{ $featuredCat->icon }}</span>@endif
+                  {{ $featuredCat->name }}
+                </h2>
+                <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
+              </div>
+              <a href="{{ route('shop.category', $featuredCat) }}" class="text-xs sm:text-sm font-extrabold text-brand-500 hover:text-brand-600 tracking-wider uppercase inline-flex items-center gap-1 transition-colors shrink-0">
+                VIEW ALL ITEMS <span class="text-base font-normal">&rarr;</span>
+              </a>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              @foreach($featuredCat->products as $product)
+                @include('storefront.partials.product-card', ['product' => $product])
+              @endforeach
+            </div>
+
+            <div class="mt-5 text-center">
+              <a href="{{ route('shop.category', $featuredCat) }}" class="group inline-flex items-center justify-center gap-1.5 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95">
+                <span>VIEW ALL {{ strtoupper($featuredCat->name) }}</span>
+                <span class="text-sm font-normal transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
+              </a>
+            </div>
+          </section>
+        @endif
+      @endforeach
+    @endif
+
+    {{-- ADMIN HOMEPAGE FEATURED BRANDS (Shown only when admin enables 'Homepage Featured' on Brand & has products) --}}
+    @if(($featuredHomeBrands ?? collect())->isNotEmpty())
+      @foreach($featuredHomeBrands as $featuredBrand)
+        @if($featuredBrand->products->isNotEmpty())
+          <section class="mt-12 sm:mt-16" data-reveal>
+            <div class="flex items-center justify-between border-b border-stone-200/80 pb-3 mb-6 gap-3">
+              <div class="flex items-center gap-3">
+                <img src="{{ $featuredBrand->logoUrl() }}" class="h-10 w-10 object-contain rounded-xl border border-stone-200 bg-white p-1 shadow-xs" alt="{{ $featuredBrand->name }}">
+                <div>
+                  <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">
+                    {{ $featuredBrand->name }}
+                  </h2>
+                  <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
+                </div>
+              </div>
+              <a href="{{ route('shop.brand', $featuredBrand) }}" class="text-xs sm:text-sm font-extrabold text-brand-500 hover:text-brand-600 tracking-wider uppercase inline-flex items-center gap-1 transition-colors shrink-0">
+                EXPLORE BRAND PAGE <span class="text-base font-normal">&rarr;</span>
+              </a>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              @foreach($featuredBrand->products as $product)
+                @include('storefront.partials.product-card', ['product' => $product])
+              @endforeach
+            </div>
+
+            <div class="mt-5 text-center">
+              <a href="{{ route('shop.brand', $featuredBrand) }}" class="group inline-flex items-center justify-center gap-1.5 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95">
+                <span>VIEW ALL {{ strtoupper($featuredBrand->name) }} PRODUCTS</span>
+                <span class="text-sm font-normal transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
+              </a>
+            </div>
+          </section>
+        @endif
+      @endforeach
+    @endif
+
     {{-- 7. EXCLUSIVE COUPONS & VOUCHERS --}}
     @if($coupons->isNotEmpty())
       <section class="mt-14 sm:mt-16" data-reveal>

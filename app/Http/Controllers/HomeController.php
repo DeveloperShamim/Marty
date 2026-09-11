@@ -64,24 +64,42 @@ class HomeController extends Controller
             ->take(4)
             ->get();
 
+        $featuredHomeCategories = Category::where('is_active', true)
+            ->where('is_featured', true)
+            ->orderBy('position')
+            ->with(['products' => function ($q) {
+                $q->published()->with('images', 'category', 'brand', 'variants', 'skus')->latest()->take(8);
+            }])
+            ->get();
+
+        $featuredHomeBrands = Brand::where('is_active', true)
+            ->where('is_featured', true)
+            ->orderBy('position')
+            ->with(['products' => function ($q) {
+                $q->published()->with('images', 'category', 'brand', 'variants', 'skus')->latest()->take(8);
+            }])
+            ->get();
+
         return view('storefront.home', [
-            'heroBanners'     => $banners('hero')->get(),
-            'heroSideBanners' => $banners('hero_side')->get(),
-            'features'        => Feature::where('is_active', true)->orderBy('position')->get(),
-            'categories'      => $categories,
-            'coupons'         => Coupon::query()
+            'heroBanners'            => $banners('hero')->get(),
+            'heroSideBanners'        => $banners('hero_side')->get(),
+            'features'               => Feature::where('is_active', true)->orderBy('position')->get(),
+            'categories'             => $categories,
+            'featuredHomeCategories' => $featuredHomeCategories,
+            'featuredHomeBrands'     => $featuredHomeBrands,
+            'coupons'                => Coupon::query()
                 ->where('is_active', true)
                 ->orderByDesc('created_at')
                 ->get()
                 ->filter(fn (Coupon $c) => $c->isCurrentlyActive())
                 ->values()
                 ->take(4),
-            'flashProducts'   => $flashProducts,
-            'bestSellers'     => $bestSellers,
-            'newArrivals'     => $newArrivals,
-            'trending'        => $trending,
-            'featuredBrands'  => $featuredBrands,
-            'homeReviews'     => $homeReviews,
+            'flashProducts'          => $flashProducts,
+            'bestSellers'            => $bestSellers,
+            'newArrivals'            => $newArrivals,
+            'trending'               => $trending,
+            'featuredBrands'         => $featuredBrands,
+            'homeReviews'            => $homeReviews,
         ]);
     }
 
