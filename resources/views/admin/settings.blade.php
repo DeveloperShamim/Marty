@@ -350,6 +350,78 @@
     </div>
   </form>
 
+  <!-- TAB 2 (PART 2): SEO & GOOGLE SEARCH APPEARANCE -->
+  <form method="POST" action="{{ route('admin.settings.update-section', 'seo') }}" class="settings-section-form space-y-6" data-section="seo">
+    @csrf @method('PUT')
+
+    <div class="flex items-center justify-between bg-stone-50 p-4 rounded-xl border border-stone-200">
+      <div>
+        <span class="text-xs font-extrabold text-stone-600 uppercase tracking-wider block">Section: SEO &amp; Google Search Appearance</span>
+        <span class="text-[11px] text-stone-400">Controls the website title and description snippet shown in Google search results</span>
+      </div>
+      <button type="submit" class="section-save-btn px-4 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-extrabold shadow-2xs cursor-pointer">Save SEO Section</button>
+    </div>
+    <div class="section-feedback hidden text-xs font-bold rounded-xl px-4 py-2"></div>
+
+    <div class="bg-white p-4 sm:p-6 rounded-2xl border border-stone-200 shadow-2xs space-y-5">
+      <div class="border-b border-stone-100 pb-3">
+        <h3 class="font-extrabold text-base text-stone-900 flex items-center gap-2">
+          <span>🔍</span> Google Search Snippet &amp; Meta Tags
+        </h3>
+        <p class="text-xs text-stone-500 mt-0.5">Customize default meta title, description snippet, and keywords for search engines and social sharing</p>
+      </div>
+
+      {{-- Live Google Search Preview --}}
+      <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-1.5">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-extrabold text-stone-400 uppercase tracking-wider flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-stone-500" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.93V18a1 1 0 0 1-2 0v-1.07A7 7 0 0 1 5.07 11H4a1 1 0 0 1 0-2h1.07A7 7 0 0 1 11 3.07V2a1 1 0 0 1 2 0v1.07A7 7 0 0 1 18.93 9H20a1 1 0 0 1 0 2h-1.07A7 7 0 0 1 13 16.93zM7 11a5 5 0 0 0 10 0 5 5 0 0 0-10 0z"/></svg>
+            Google Search Preview
+          </span>
+          <span class="text-[10px] text-stone-400 font-medium">Desktop &amp; Mobile Result</span>
+        </div>
+        <div class="pt-1 bg-white p-3 rounded-xl border border-stone-100 space-y-1">
+          <p class="text-[12px] text-stone-700 truncate flex items-center gap-1.5 font-mono">
+            <span class="w-4 h-4 rounded-full bg-stone-100 border border-stone-200 inline-flex items-center justify-center text-[9px] font-bold text-stone-700">M</span>
+            <span>{{ config('app.url') }}</span>
+          </p>
+          <p id="globalSeoPreviewTitle" class="text-sm sm:text-base font-medium text-blue-700 hover:underline cursor-pointer truncate">
+            {{ $settings['default_meta_title'] ?? ($settings['site_name'] ?? 'Marty') }}
+          </p>
+          <p id="globalSeoPreviewDesc" class="text-xs text-stone-600 line-clamp-2 leading-relaxed">
+            {{ $settings['default_meta_description'] ?? 'Buy authentic gadgets, watches, and accessories online with fast delivery.' }}
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-extrabold text-stone-800">Website Title (Google Title Tag) <span class="text-rose-500">*</span></label>
+            <span id="titleCharCount" class="text-[11px] text-stone-400 font-mono">0 / 60</span>
+          </div>
+          <input type="text" id="globalMetaTitleInput" name="default_meta_title" maxlength="180" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs" value="{{ $settings['default_meta_title'] ?? '' }}" placeholder="e.g. Marty — Smartwatches, Shoes & Smart Gadgets Store in Bangladesh" />
+          <p class="text-[11px] text-stone-500 mt-1">Recommended length: 50–60 characters. This is the clickable headline in Google search results and browser tabs.</p>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-extrabold text-stone-800">Website Meta Description (Google Snippet) <span class="text-rose-500">*</span></label>
+            <span id="descCharCount" class="text-[11px] text-stone-400 font-mono">0 / 160</span>
+          </div>
+          <textarea id="globalMetaDescInput" name="default_meta_description" rows="3" maxlength="400" class="w-full text-xs font-medium px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs" placeholder="Short description of your store that appears under the title in Google search results...">{{ $settings['default_meta_description'] ?? '' }}</textarea>
+          <p class="text-[11px] text-stone-500 mt-1">Recommended length: 150–160 characters. Clearly describe what your store offers to attract shoppers from Google.</p>
+        </div>
+
+        <div>
+          <label class="text-xs font-extrabold text-stone-800 block mb-1">Meta Keywords</label>
+          <input type="text" name="default_meta_keywords" maxlength="400" class="w-full text-xs font-medium px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs" value="{{ $settings['default_meta_keywords'] ?? '' }}" placeholder="e.g. smartwatches, apple watch, sneakers, gadgets bd" />
+          <p class="text-[11px] text-stone-500 mt-1">Comma-separated keywords for search engines and internal metadata.</p>
+        </div>
+      </div>
+    </div>
+  </form>
+
   <!-- TAB 3: PAYMENTS & SHIPPING -->
   <form method="POST" action="{{ route('admin.settings.update-section', 'payments') }}" class="settings-section-form space-y-6" data-section="payments">
     @csrf @method('PUT')
@@ -579,6 +651,36 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
+  // Live update SEO Google Search Preview & Character Counters
+  const seoTitleInput = document.getElementById('globalMetaTitleInput');
+  const seoDescInput = document.getElementById('globalMetaDescInput');
+  const seoPreviewTitle = document.getElementById('globalSeoPreviewTitle');
+  const seoPreviewDesc = document.getElementById('globalSeoPreviewDesc');
+  const titleCharCount = document.getElementById('titleCharCount');
+  const descCharCount = document.getElementById('descCharCount');
+
+  function updateSeoPreview() {
+    if (seoTitleInput && seoPreviewTitle && titleCharCount) {
+      const val = seoTitleInput.value.trim();
+      seoPreviewTitle.textContent = val || '{{ $settings['site_name'] ?? 'Marty' }} — Smartwatches &amp; Gadgets';
+      titleCharCount.textContent = `${seoTitleInput.value.length} / 60`;
+      titleCharCount.className = (seoTitleInput.value.length > 60)
+        ? 'text-[11px] text-amber-600 font-mono font-bold'
+        : 'text-[11px] text-stone-400 font-mono';
+    }
+    if (seoDescInput && seoPreviewDesc && descCharCount) {
+      const val = seoDescInput.value.trim();
+      seoPreviewDesc.textContent = val || 'Buy authentic gadgets, smartwatches, shoes, and accessories online with warranty and fast delivery.';
+      descCharCount.textContent = `${seoDescInput.value.length} / 160`;
+      descCharCount.className = (seoDescInput.value.length > 160)
+        ? 'text-[11px] text-amber-600 font-mono font-bold'
+        : 'text-[11px] text-stone-400 font-mono';
+    }
+  }
+
+  if (seoTitleInput) seoTitleInput.addEventListener('input', updateSeoPreview);
+  if (seoDescInput) seoDescInput.addEventListener('input', updateSeoPreview);
+  updateSeoPreview();
 });
 </script>
 @endpush
