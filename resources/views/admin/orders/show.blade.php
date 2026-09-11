@@ -38,61 +38,168 @@
     <!-- Left Column (Items, Payment Verification & Financial Totals) -->
     <div class="lg:col-span-2 space-y-6">
       
-      <!-- Fraud Risk Warning Card -->
-      @if($order->fraud_score !== null)
-        @if($order->fraudRiskLevel() === 'high' || $order->fraudRiskLevel() === 'medium')
-          @php
-            $isHighRisk = $order->fraudRiskLevel() === 'high';
-            $cardBg = $isHighRisk ? 'bg-rose-50 border-rose-300 shadow-sm' : 'bg-amber-50 border-amber-300 shadow-sm';
-            $headerColor = $isHighRisk ? 'text-rose-900' : 'text-amber-900';
-            $btnClass = $isHighRisk ? 'bg-rose-600 hover:bg-rose-700 text-white' : 'bg-amber-600 hover:bg-amber-700 text-white';
-            $icon = $isHighRisk ? '🔴 HIGH RISK FRAUD WARNING' : '🟡 MEDIUM RISK WARNING';
-          @endphp
-          <div class="card p-5 border {{ $cardBg }} space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b {{ $isHighRisk ? 'border-rose-200' : 'border-amber-200' }} pb-3">
-              <div>
-                <h3 class="font-black text-sm {{ $headerColor }} flex items-center gap-2">
-                  <span>{{ $icon }}</span>
-                </h3>
-                <p class="text-xs font-bold {{ $headerColor }} opacity-80 mt-1">Fraud Risk Score: {{ (int) $order->fraud_score }} / 100</p>
-              </div>
-              <form action="{{ route('admin.blacklist.store') }}" method="POST" class="shrink-0">
-                @csrf
-                <input type="hidden" name="type" value="phone">
-                <input type="hidden" name="value" value="{{ $order->customer_phone }}">
-                <input type="hidden" name="reason" value="Blocked from Order #{{ $order->order_number }} - High Fraud Score">
-                <button type="submit" class="px-3.5 py-2 text-xs font-black rounded-xl shadow-xs transition {{ $btnClass }} inline-flex items-center gap-1.5 cursor-pointer">
-                  <span>🚫</span> Block Phone Number
-                </button>
-              </form>
+      <!-- Automated Steadfast Delivery Success Check Card -->
+      @php
+        $st = $steadfastDeliveryCheck ?? [
+          'configured' => false,
+          'success' => false,
+          'risk_level' => 'unconfigured',
+          'rating_label' => 'Not Configured',
+          'rating_color' => 'slate',
+          'total' => 0,
+          'delivered' => 0,
+          'cancelled' => 0,
+          'fraud' => 0,
+          'rate' => null
+        ];
+        $isConfigured = !empty($st['configured']);
+        $riskLevel = $st['risk_level'] ?? 'unknown';
+        $rate = $st['rate'] ?? null;
+      @endphp
+
+      <div class="card p-5 border border-slate-200/90 shadow-xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 border border-sky-200 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M9 12l2 2 4-4"/>
+              </svg>
             </div>
-            
-            @if(is_array($order->fraud_flags) && count($order->fraud_flags) > 0)
-              <div class="space-y-2">
-                <p class="text-xs font-extrabold {{ $headerColor }}">Triggered Fraud Rules:</p>
-                <ul class="space-y-1.5 ml-1">
-                  @foreach($order->fraud_flags as $flag)
-                    <li class="text-xs font-bold {{ $headerColor }} flex items-start gap-1.5">
-                      <span class="mt-0.5">⚠️</span> 
-                      <span>{{ $flag }}</span>
-                    </li>
-                  @endforeach
-                </ul>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="font-bold text-sm text-slate-900">Steadfast Courier Delivery History</h3>
+                @if(!$isConfigured)
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                    API Not Configured
+                  </span>
+                @elseif($riskLevel === 'low')
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    {{ $rate }}% High Success Rate
+                  </span>
+                @elseif($riskLevel === 'medium')
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                    {{ $rate }}% Moderate Success
+                  </span>
+                @elseif($riskLevel === 'high')
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                    High Return Risk {{ $rate !== null ? "({$rate}%)" : '' }}
+                  </span>
+                @elseif($riskLevel === 'new')
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                    New Buyer (No History)
+                  </span>
+                @else
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                    {{ $st['rating_label'] ?? 'Checked' }}
+                  </span>
+                @endif
               </div>
+              <p class="text-[11px] text-slate-500 font-mono mt-0.5">Automated check for phone: <span class="font-bold text-slate-700">{{ $order->customer_phone }}</span></p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0">
+            @if($isConfigured)
+              <a href="{{ request()->fullUrlWithQuery(['refresh_courier' => 1]) }}" title="Re-query live Steadfast API" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                </svg>
+                <span>Refresh</span>
+              </a>
             @endif
+
+            <form action="{{ route('admin.blacklist.store') }}" method="POST" class="inline">
+              @csrf
+              <input type="hidden" name="type" value="phone">
+              <input type="hidden" name="value" value="{{ $order->customer_phone }}">
+              <input type="hidden" name="reason" value="Blocked from Order #{{ $order->order_number }} - High Courier Return Risk">
+              <button type="submit" onclick="return confirm('Block phone {{ $order->customer_phone }} from placing future orders?')" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition cursor-pointer">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                </svg>
+                <span>Block Phone</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        @if(!$isConfigured)
+          <div class="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200 text-xs text-amber-800 flex items-start gap-2.5">
+            <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <div>
+              <p class="font-bold">Steadfast API is not configured yet.</p>
+              <p class="text-amber-700 text-[11px] mt-0.5">Enter your free Steadfast Merchant API Key and Secret Key in <a href="{{ route('admin.integrations.index') }}" class="underline font-bold hover:text-amber-900">Admin &gt; Integrations</a> to enable automatic nationwide delivery history checks.</p>
+            </div>
           </div>
         @else
-          <div class="card p-4 border bg-emerald-50 border-emerald-200 flex items-center justify-between shadow-2xs">
-              <h3 class="font-extrabold text-sm text-emerald-800 flex items-center gap-2">
-                <span>🟢</span> Low Risk Order
-              </h3>
-              <div class="text-right">
-                <span class="block text-xs font-extrabold text-emerald-700">Score: {{ (int) $order->fraud_score }} / 100</span>
-                <span class="block text-[10px] font-medium text-emerald-600">Passed automated fraud checks</span>
+          <!-- 4 KPI Metrics -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="p-3 bg-slate-50/80 rounded-xl border border-slate-100">
+              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Total Parcels</span>
+              <p class="text-lg font-black text-slate-800 mt-0.5 font-mono">{{ (int) ($st['total'] ?? 0) }}</p>
+              <span class="text-[10px] text-slate-500 font-medium">Nationwide bookings</span>
+            </div>
+
+            <div class="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
+              <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">Delivered</span>
+              <p class="text-lg font-black text-emerald-800 mt-0.5 font-mono">{{ (int) ($st['delivered'] ?? 0) }}</p>
+              <span class="text-[10px] text-emerald-600 font-medium">{{ $rate !== null ? $rate . '% success' : 'No history' }}</span>
+            </div>
+
+            <div class="p-3 bg-rose-50/50 rounded-xl border border-rose-100">
+              <span class="text-[10px] font-bold text-rose-700 uppercase tracking-wider block">Returned / Cancelled</span>
+              <p class="text-lg font-black text-rose-800 mt-0.5 font-mono">{{ (int) ($st['cancelled'] ?? 0) }}</p>
+              <span class="text-[10px] text-rose-600 font-medium">{{ $st['total'] > 0 ? round(($st['cancelled'] / $st['total']) * 100, 1) . '% return rate' : '0 returns' }}</span>
+            </div>
+
+            <div class="p-3 bg-slate-50/80 rounded-xl border border-slate-100">
+              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Fraud Reports</span>
+              <p class="text-lg font-black {{ ($st['fraud'] ?? 0) > 0 ? 'text-rose-700' : 'text-slate-800' }} mt-0.5 font-mono">{{ (int) ($st['fraud'] ?? 0) }}</p>
+              <span class="text-[10px] {{ ($st['fraud'] ?? 0) > 0 ? 'text-rose-600 font-bold' : 'text-slate-500' }} font-medium">{{ ($st['fraud'] ?? 0) > 0 ? 'Complaints filed' : 'Zero complaints' }}</span>
+            </div>
+          </div>
+
+          <!-- Progress Bar & Recommendation -->
+          @if($st['total'] > 0)
+            <div class="space-y-1.5 pt-1">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-bold text-slate-700">Delivery Ratio</span>
+                <span class="font-mono text-slate-600 text-[11px]"><strong class="text-emerald-700">{{ $st['delivered'] }} delivered</strong> / <strong class="text-rose-700">{{ $st['cancelled'] }} returned</strong></span>
               </div>
+              <div class="w-full h-2.5 bg-rose-100 rounded-full overflow-hidden flex">
+                <div class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: {{ $rate }}%"></div>
+              </div>
+            </div>
+          @endif
+
+          <!-- Recommendation Alert -->
+          <div class="p-3 rounded-xl text-xs flex items-center gap-2.5 {{ $riskLevel === 'low' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : ($riskLevel === 'medium' ? 'bg-amber-50 text-amber-800 border border-amber-200' : ($riskLevel === 'high' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-slate-50 text-slate-700 border border-slate-200')) }}">
+            @if($riskLevel === 'low')
+              <svg class="w-4 h-4 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span><strong>Safe to dispatch:</strong> Customer has a reliable delivery track record ({{ $rate }}% success) on Steadfast Courier.</span>
+            @elseif($riskLevel === 'medium')
+              <svg class="w-4 h-4 text-amber-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span><strong>Moderate return risk:</strong> Delivery rate is {{ $rate }}%. We recommend phone confirmation before dispatching.</span>
+            @elseif($riskLevel === 'high')
+              <svg class="w-4 h-4 text-rose-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span><strong>High return risk:</strong> Customer has {{ $st['cancelled'] }} returned orders or reported fraud. Advance delivery fee or verification strongly advised.</span>
+            @else
+              <svg class="w-4 h-4 text-slate-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <span><strong>First-time buyer:</strong> No prior Steadfast records found for this phone number. Verify delivery address before sending.</span>
+            @endif
           </div>
         @endif
-      @endif
+      </div>
 
       <!-- Ordered Items Card -->
       <div class="card overflow-hidden">
@@ -382,63 +489,33 @@
             <span class="text-slate-400 font-bold block mb-0.5 text-[10px] uppercase">Delivery Address:</span>
             <p class="font-semibold text-slate-800 leading-snug">{{ $order->shipping_address }}, {{ $order->city }} {{ $order->postal_code }}</p>
           </div>
-        </div>
-      </div>
 
-      <!-- Fraud & Risk Check Card (Placed directly after Customer Information) -->
-      <div class="card p-5 space-y-3 border-l-4 {{ $order->fraudRiskLevel() === 'high' ? 'border-l-rose-500 bg-rose-50/30' : ($order->fraudRiskLevel() === 'medium' ? 'border-l-amber-500 bg-amber-50/30' : 'border-l-emerald-500') }}">
-        <div class="flex items-center justify-between border-b border-gray-100 pb-2">
-          <h3 class="font-extrabold text-sm flex items-center gap-1.5 text-slate-900">
-            <span>🛡️</span> Fraud &amp; Risk Check
-          </h3>
-          <span class="px-2.5 py-0.5 text-xs font-extrabold rounded-full {{ $order->fraudBadgeClass() }}">
-            @if($order->fraudRiskLevel() === 'high')
-              🔴 High Risk ({{ $order->fraud_score }}%)
-            @elseif($order->fraudRiskLevel() === 'medium')
-              🟡 Medium Risk ({{ $order->fraud_score }}%)
-            @else
-              🟢 Low Risk ({{ $order->fraud_score }}%)
-            @endif
-          </span>
-        </div>
-
-        @if(!empty($order->fraud_flags))
-          <div class="space-y-1.5 pt-1">
-            <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 block">Triggered Risk Indicators:</span>
-            @foreach($order->fraud_flags as $flag)
-              <div class="p-2 rounded-xl bg-white border border-rose-200 text-xs font-semibold text-rose-800 flex items-start gap-1.5">
-                <span class="shrink-0">🚩</span>
-                <span>{{ $flag }}</span>
-              </div>
-            @endforeach
-          </div>
-        @else
-          <p class="text-xs text-emerald-700 font-medium">✓ No fraud risk indicators detected for this order.</p>
-        @endif
-
-        <!-- Quick Blacklist Action Buttons -->
-        <div class="pt-2 border-t border-gray-100 flex items-center gap-2 flex-wrap text-xs">
-          <form method="POST" action="{{ route('admin.blacklist.store') }}" class="inline">
-            @csrf
-            <input type="hidden" name="type" value="phone" />
-            <input type="hidden" name="value" value="{{ $order->customer_phone }}" />
-            <input type="hidden" name="reason" value="Blacklisted from Order #{{ $order->order_number }}" />
-            <button type="submit" onclick="return confirm('Block phone {{ $order->customer_phone }} from placing future orders?')" class="px-2.5 py-1 text-xs font-extrabold rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300 transition cursor-pointer">
-              🚫 Block Phone
-            </button>
-          </form>
-
-          @if($order->ip_address)
+          <!-- Quick Blacklist Action Buttons -->
+          <div class="pt-2 border-t border-slate-100 flex items-center gap-2 flex-wrap text-xs">
             <form method="POST" action="{{ route('admin.blacklist.store') }}" class="inline">
               @csrf
-              <input type="hidden" name="type" value="ip" />
-              <input type="hidden" name="value" value="{{ $order->ip_address }}" />
-              <input type="hidden" name="reason" value="Blacklisted IP from Order #{{ $order->order_number }}" />
-              <button type="submit" onclick="return confirm('Block IP {{ $order->ip_address }}?')" class="px-2.5 py-1 text-xs font-extrabold rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-300 transition cursor-pointer">
-                🌐 Block IP
+              <input type="hidden" name="type" value="phone" />
+              <input type="hidden" name="value" value="{{ $order->customer_phone }}" />
+              <input type="hidden" name="reason" value="Blacklisted from Order #{{ $order->order_number }}" />
+              <button type="submit" onclick="return confirm('Block phone {{ $order->customer_phone }} from placing future orders?')" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition cursor-pointer">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                <span>Block Phone</span>
               </button>
             </form>
-          @endif
+
+            @if($order->ip_address)
+              <form method="POST" action="{{ route('admin.blacklist.store') }}" class="inline">
+                @csrf
+                <input type="hidden" name="type" value="ip" />
+                <input type="hidden" name="value" value="{{ $order->ip_address }}" />
+                <input type="hidden" name="reason" value="Blacklisted IP from Order #{{ $order->order_number }}" />
+                <button type="submit" onclick="return confirm('Block IP {{ $order->ip_address }}?')" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition cursor-pointer">
+                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  <span>Block IP</span>
+                </button>
+              </form>
+            @endif
+          </div>
         </div>
       </div>
 

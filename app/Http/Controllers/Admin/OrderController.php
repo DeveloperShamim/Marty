@@ -52,7 +52,7 @@ class OrderController extends Controller
         return view('admin.orders.index', compact('orders', 'status', 'counts') + ['method' => $request->input('method'), 'q' => $term]);
     }
 
-    public function show(Order $order, SteadfastService $steadfast, PathaoService $pathao, RedxService $redx)
+    public function show(Order $order, SteadfastService $steadfast, PathaoService $pathao, RedxService $redx, Request $request)
     {
         $order->load(['items.product.variants']);
 
@@ -62,7 +62,10 @@ class OrderController extends Controller
             'redx'      => ['name' => 'RedX Courier', 'configured' => $redx->isConfigured()],
         ];
 
-        return view('admin.orders.show', compact('order', 'couriers'));
+        $forceRefresh = $request->boolean('refresh_courier');
+        $steadfastDeliveryCheck = $steadfast->checkDeliveryHistory($order->customer_phone, $forceRefresh);
+
+        return view('admin.orders.show', compact('order', 'couriers', 'steadfastDeliveryCheck'));
     }
 
     public function invoice(Order $order)

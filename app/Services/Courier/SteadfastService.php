@@ -80,4 +80,147 @@ class SteadfastService
             ];
         }
     }
+
+    /**
+     * Live courier delivery success & fraud check via Steadfast API
+     */
+    public function checkDeliveryHistory(?string $phone, bool $forceRefresh = false): array
+    {
+        $apiKey = trim((string) setting('steadfast_api_key'));
+        $secretKey = trim((string) setting('steadfast_secret_key'));
+
+        if (! $apiKey || ! $secretKey) {
+            return [
+                'configured'   => false,
+                'success'      => false,
+                'message'      => 'Steadfast API Key or Secret Key is not configured.',
+                'phone'        => $phone,
+                'total'        => 0,
+                'delivered'    => 0,
+                'cancelled'    => 0,
+                'fraud'        => 0,
+                'rate'         => null,
+                'risk_level'   => 'unconfigured',
+                'rating_label' => 'API Not Configured',
+                'rating_color' => 'slate',
+            ];
+        }
+
+        // Clean BD phone number (e.g. 01XXXXXXXXX)
+        $cleanPhone = preg_replace('/[^0-9]/', '', (string) $phone);
+        if (str_starts_with($cleanPhone, '880')) {
+            $cleanPhone = substr($cleanPhone, 2);
+        }
+
+        if (strlen($cleanPhone) < 10) {
+            return [
+                'configured'   => true,
+                'success'      => false,
+                'message'      => 'Invalid phone number format.',
+                'phone'        => $phone,
+                'total'        => 0,
+                'delivered'    => 0,
+                'cancelled'    => 0,
+                'fraud'        => 0,
+                'rate'         => null,
+                'risk_level'   => 'unknown',
+                'rating_label' => 'Invalid Phone Number',
+                'rating_color' => 'slate',
+            ];
+        }
+
+        $cacheKey = "steadfast_fraud_check_{$cleanPhone}";
+        if ($forceRefresh) {
+            cache()->forget($cacheKey);
+        }
+
+        return cache()->remember($cacheKey, now()->addMinutes(30), function () use ($apiKey, $secretKey, $cleanPhone) {
+            try {
+                $response = Http::withHeaders([
+                    'Api-Key'      => $apiKey,
+                    'Secret-Key'   => $secretKey,
+                    'Content-Type' => 'application/json',
+                ])->timeout(10)->get($this->baseUrl . '/fraud_check/' . urlencode($cleanPhone));
+
+                if (! $response->successful()) {
+                    return [
+                        'configured'   => true,
+                        'success'      => false,
+                        'message'      => 'Steadfast API returned HTTP ' . $response->status(),
+                        'phone'        => $cleanPhone,
+                        'total'        => 0,
+                        'delivered'    => 0,
+                        'cancelled'    => 0,
+                        'fraud'        => 0,
+                        'rate'         => null,
+                        'risk_level'   => 'unknown',
+                        'rating_label' => 'Check Failed (HTTP ' . $response->status() . ')',
+                        'rating_color' => 'slate',
+                    ];
+                }
+
+                $data = $response->json() ?? [];
+
+                $total = (int) ($data['Total_parcels'] ?? $data['total_parcels'] ?? 0);
+                $delivered = (int) ($data['total_delivered'] ?? 0);
+                $cancelled = (int) ($data['total_cancelled'] ?? 0);
+                $fraudReports = is_array($data['total_fraud_reports'] ?? null)
+                    ? count($data['total_fraud_reports'])
+                    : (int) ($data['total_fraud_reports'] ?? 0);
+
+                $rate = $total > 0 ? round(($delivered / $total) * 100, 1) : null;
+
+                // Risk categorization
+                if ($total === 0) {
+                    $riskLevel = 'new';
+                    $ratingLabel = 'New Buyer (No History)';
+                    $ratingColor = 'slate';
+                } elseif ($fraudReports > 0 || ($rate !== null && $rate < 50)) {
+                    $riskLevel = 'high';
+                    $ratingLabel = 'High Return Risk';
+                    $ratingColor = 'rose';
+                } elseif ($rate !== null && $rate < 80) {
+                    $riskLevel = 'medium';
+                    $ratingLabel = 'Moderate Delivery Ratio';
+                    $ratingColor = 'amber';
+                } else {
+                    $riskLevel = 'low';
+                    $ratingLabel = 'High Success Ratio';
+                    $ratingColor = 'emerald';
+                }
+
+                return [
+                    'configured'   => true,
+                    'success'      => true,
+                    'phone'        => $cleanPhone,
+                    'total'        => $total,
+                    'delivered'    => $delivered,
+                    'cancelled'    => $cancelled,
+                    'fraud'        => $fraudReports,
+                    'rate'         => $rate,
+                    'risk_level'   => $riskLevel,
+                    'rating_label' => $ratingLabel,
+                    'rating_color' => $ratingColor,
+                    'raw'          => $data,
+                ];
+            } catch (\Throwable $e) {
+                Log::warning('Steadfast fraud check exception: ' . $e->getMessage(), ['phone' => $cleanPhone]);
+
+                return [
+                    'configured'   => true,
+                    'success'      => false,
+                    'message'      => 'Could not reach Steadfast server.',
+                    'phone'        => $cleanPhone,
+                    'total'        => 0,
+                    'delivered'    => 0,
+                    'cancelled'    => 0,
+                    'fraud'        => 0,
+                    'rate'         => null,
+                    'risk_level'   => 'unknown',
+                    'rating_label' => 'Connection Timeout',
+                    'rating_color' => 'slate',
+                ];
+            }
+        });
+    }
 }
