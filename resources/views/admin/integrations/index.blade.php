@@ -332,7 +332,7 @@
           <p class="text-xs text-stone-500 mt-0.5">Inject tracking snippets cleanly into storefront pages without code edits</p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="space-y-1">
             <label class="text-xs font-black text-stone-800 block">Google Tag Manager (GTM ID)</label>
             <input name="tracking_gtm_id" class="w-full text-xs font-mono font-bold uppercase px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" value="{{ $settings['tracking_gtm_id'] ?? '' }}" placeholder="GTM-XXXXXXX" />
@@ -344,6 +344,10 @@
           <div class="space-y-1">
             <label class="text-xs font-black text-stone-800 block">Meta Pixel ID (Facebook)</label>
             <input name="tracking_meta_pixel_id" class="w-full text-xs font-mono font-bold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" value="{{ $settings['tracking_meta_pixel_id'] ?? '' }}" placeholder="1234567890" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-xs font-black text-stone-800 block">Google Search Console Tag</label>
+            <input name="google_site_verification" class="w-full text-xs font-mono font-bold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" value="{{ $settings['google_site_verification'] ?? '' }}" placeholder="Verification Code / Tag" />
           </div>
         </div>
       </div>

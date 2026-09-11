@@ -32,4 +32,9 @@ fbq('track', 'PageView');
 </script>
 @endif
 
+@if($gscCode = trim((string) setting('google_site_verification', '')))
+<!-- Google Search Console Verification -->
+<meta name="google-site-verification" content="{{ $gscCode }}" />
+@endif
+
 @stack('tracking-head')

@@ -76,9 +76,13 @@ Route::post('/chat/send-attachment', [\App\Http\Controllers\ChatController::clas
 Route::post('/chat/send-voice', [\App\Http\Controllers\ChatController::class, 'sendVoiceNote'])->name('chat.send-voice');
 Route::get('/chat/poll', [\App\Http\Controllers\ChatController::class, 'pollMessages'])->name('chat.poll');
 
-// SEO
+// SEO & Google Search Console
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
+Route::get('/google{code}.html', function (string $code) {
+    return response("google-site-verification: google{$code}.html", 200)
+        ->header('Content-Type', 'text/html; charset=UTF-8');
+})->where('code', '[a-zA-Z0-9_-]+');
 
 /*
 |--------------------------------------------------------------------------

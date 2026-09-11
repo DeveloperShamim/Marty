@@ -23,7 +23,7 @@ class IntegrationController extends Controller
             'steadfast_enabled', 'steadfast_api_key', 'steadfast_secret_key',
             'pathao_enabled', 'pathao_env', 'pathao_client_id', 'pathao_client_secret', 'pathao_username', 'pathao_password', 'pathao_store_id',
             'redx_enabled', 'redx_env', 'redx_api_token',
-            'tracking_gtm_id', 'tracking_ga4_id', 'tracking_meta_pixel_id',
+            'tracking_gtm_id', 'tracking_ga4_id', 'tracking_meta_pixel_id', 'google_site_verification',
             'google_client_id', 'google_client_secret', 'google_redirect_uri',
             'otp_enabled', 'mail_mailer', 'mail_host', 'mail_port', 'mail_username',
             'mail_encryption', 'mail_from_address', 'mail_from_name',
@@ -114,9 +114,10 @@ class IntegrationController extends Controller
                 'redx_api_token'       => ['nullable', 'string', 'max:1000'],
             ],
             'tracking' => [
-                'tracking_gtm_id'        => ['nullable', 'string', 'max:20', 'regex:/^(|GTM-[A-Z0-9]+)$/i'],
-                'tracking_ga4_id'        => ['nullable', 'string', 'max:20', 'regex:/^(|G-[A-Z0-9]+)$/i'],
-                'tracking_meta_pixel_id' => ['nullable', 'string', 'max:20', 'regex:/^(|\d+)$/'],
+                'tracking_gtm_id'          => ['nullable', 'string', 'max:20', 'regex:/^(|GTM-[A-Z0-9]+)$/i'],
+                'tracking_ga4_id'          => ['nullable', 'string', 'max:20', 'regex:/^(|G-[A-Z0-9]+)$/i'],
+                'tracking_meta_pixel_id'   => ['nullable', 'string', 'max:20', 'regex:/^(|\d+)$/'],
+                'google_site_verification' => ['nullable', 'string', 'max:255'],
             ],
             'google' => [
                 'google_client_id'     => ['nullable', 'string', 'max:255'],
@@ -146,7 +147,7 @@ class IntegrationController extends Controller
                 'pathao_env', 'pathao_client_id', 'pathao_client_secret', 'pathao_username', 'pathao_password', 'pathao_store_id',
                 'redx_env', 'redx_api_token',
             ],
-            'tracking' => ['tracking_gtm_id', 'tracking_ga4_id', 'tracking_meta_pixel_id'],
+            'tracking' => ['tracking_gtm_id', 'tracking_ga4_id', 'tracking_meta_pixel_id', 'google_site_verification'],
             'google'   => ['google_client_id', 'google_client_secret', 'google_redirect_uri'],
             'mail' => [
                 'mail_mailer', 'mail_host', 'mail_port', 'mail_username',
