@@ -29,11 +29,11 @@
 
 <footer class="bg-white text-stone-700 mt-16 sm:mt-20 border-t border-stone-200/90 font-sans">
   {{-- Main Footer Body --}}
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 lg:py-16">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12 lg:py-16">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-8">
       
-      {{-- Brand Profile & Direct Contacts --}}
-      <div class="lg:col-span-4 space-y-4">
+      {{-- Brand Profile & Direct Contacts (Full width on mobile/tablet, 4 cols on desktop) --}}
+      <div class="col-span-1 md:col-span-2 lg:col-span-4 space-y-4">
         @include('partials.brand', ['size' => 'lg'])
         
         @if($footerText !== '')
@@ -43,10 +43,10 @@
         @endif
 
         {{-- Contact Details --}}
-        <div class="space-y-3 pt-2">
+        <div class="space-y-2.5 sm:space-y-3 pt-1">
           @if($phone !== '')
             <div>
-              <a href="tel:{{ preg_replace('/\s+/', '', $phone) }}" class="inline-flex items-center gap-3 text-stone-700 hover:text-brand-600 transition-colors group">
+              <a href="tel:{{ preg_replace('/\s+/', '', $phone) }}" class="inline-flex items-center gap-2.5 sm:gap-3 text-stone-700 hover:text-brand-600 transition-colors group">
                 <span class="w-8 h-8 rounded-xl bg-stone-100 group-hover:bg-brand-50 border border-stone-200/80 group-hover:border-brand-200 text-stone-600 group-hover:text-brand-600 flex items-center justify-center shrink-0 transition shadow-2xs">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
@@ -62,7 +62,7 @@
 
           @if($email !== '')
             <div>
-              <a href="mailto:{{ $email }}" class="inline-flex items-center gap-3 text-stone-700 hover:text-brand-600 transition-colors group">
+              <a href="mailto:{{ $email }}" class="inline-flex items-center gap-2.5 sm:gap-3 text-stone-700 hover:text-brand-600 transition-colors group">
                 <span class="w-8 h-8 rounded-xl bg-stone-100 group-hover:bg-brand-50 border border-stone-200/80 group-hover:border-brand-200 text-stone-600 group-hover:text-brand-600 flex items-center justify-center shrink-0 transition shadow-2xs">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
@@ -77,7 +77,7 @@
           @endif
 
           @if($address !== '')
-            <div class="flex items-start gap-3 pt-0.5">
+            <div class="flex items-start gap-2.5 sm:gap-3 pt-0.5">
               <span class="w-8 h-8 rounded-xl bg-stone-100 border border-stone-200/80 text-stone-600 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -98,17 +98,17 @@
             <span class="block text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-2.5">Follow Our Socials</span>
             <div class="flex items-center gap-2">
               @if($facebook)
-                <a href="{{ $facebook }}" target="_blank" rel="noopener" class="h-9 w-9 rounded-xl bg-stone-100 hover:bg-[#1877F2] border border-stone-200/90 text-stone-600 hover:text-white flex items-center justify-center transition shadow-2xs hover:scale-105" aria-label="Facebook">
+                <a href="{{ $facebook }}" target="_blank" rel="noopener" class="h-9 w-9 rounded-xl bg-stone-100 hover:bg-[#1877F2] border border-stone-200/90 text-stone-600 hover:text-white flex items-center justify-center transition shadow-2xs hover:scale-105 active:scale-95" aria-label="Facebook">
                   <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7A10 10 0 0 0 22 12z"/></svg>
                 </a>
               @endif
               @if($instagram)
-                <a href="{{ $instagram }}" target="_blank" rel="noopener" class="h-9 w-9 rounded-xl bg-stone-100 hover:bg-gradient-to-tr hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 border border-stone-200/90 text-stone-600 hover:text-white flex items-center justify-center transition shadow-2xs hover:scale-105" aria-label="Instagram">
+                <a href="{{ $instagram }}" target="_blank" rel="noopener" class="h-9 w-9 rounded-xl bg-stone-100 hover:bg-gradient-to-tr hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 border border-stone-200/90 text-stone-600 hover:text-white flex items-center justify-center transition shadow-2xs hover:scale-105 active:scale-95" aria-label="Instagram">
                   <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r="1" fill="currentColor" stroke="none"/></svg>
                 </a>
               @endif
               @if($twitter)
-                <a href="{{ $twitter }}" target="_blank" rel="noopener" class="h-9 w-9 rounded-xl bg-stone-100 hover:bg-black border border-stone-200/90 text-stone-600 hover:text-white flex items-center justify-center transition shadow-2xs hover:scale-105" aria-label="X (Twitter)">
+                <a href="{{ $twitter }}" target="_blank" rel="noopener" class="h-9 w-9 rounded-xl bg-stone-100 hover:bg-black border border-stone-200/90 text-stone-600 hover:text-white flex items-center justify-center transition shadow-2xs hover:scale-105 active:scale-95" aria-label="X (Twitter)">
                   <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2H21.5l-7.5 8.57L22.5 22h-6.59l-5.16-6.74L5.2 22H1.94l8.03-9.17L1.5 2h6.75l4.66 6.18L18.244 2Zm-1.16 18.1h1.83L7.05 3.79H5.09L17.084 20.1Z"/></svg>
                 </a>
               @endif
@@ -117,51 +117,56 @@
         @endif
       </div>
 
-      {{-- Column 2: Explore Shop --}}
-      <div class="lg:col-span-2">
-        <h4 class="text-xs font-bold uppercase tracking-wider text-stone-900 mb-4 pb-1 inline-block border-b-2 border-brand-500">Explore Shop</h4>
-        <ul class="space-y-2.5 text-xs sm:text-sm text-stone-600">
-          <li><a href="{{ route('home') }}" class="hover:text-brand-600 transition-colors">Home</a></li>
-          <li><a href="{{ route('shop') }}" class="hover:text-brand-600 transition-colors">All Products</a></li>
-          @if($hasFlashSale ?? false)
-            <li>
-              <a href="{{ route('shop', ['flash' => 1]) }}" class="hover:text-brand-600 transition-colors inline-flex items-center gap-1.5 font-medium text-amber-700">
-                <span>Flash Deals</span>
-                <span class="px-1.5 py-0.5 text-[9px] font-extrabold bg-amber-100 text-amber-800 rounded uppercase tracking-wider">Hot</span>
-              </a>
-            </li>
-          @endif
-          <li><a href="{{ route('shop') }}?sort=newest" class="hover:text-brand-600 transition-colors">New Arrivals</a></li>
-          <li><a href="{{ route('track') }}" class="hover:text-brand-600 transition-colors">Track Order</a></li>
-          <li><a href="{{ route('contact') }}" class="hover:text-brand-600 transition-colors">Store Locator</a></li>
-        </ul>
+      {{-- Link Columns: 2 Columns on Mobile, 3 on Tablet, 6 Columns on Large Desktop --}}
+      <div class="col-span-1 md:col-span-2 lg:col-span-6 grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8">
+        
+        {{-- Column 1: Explore Shop --}}
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-stone-900 mb-3.5 pb-1 inline-block border-b-2 border-brand-500">Explore Shop</h4>
+          <ul class="space-y-2 text-xs sm:text-sm text-stone-600">
+            <li><a href="{{ route('home') }}" class="block py-0.5 hover:text-brand-600 transition-colors">Home</a></li>
+            <li><a href="{{ route('shop') }}" class="block py-0.5 hover:text-brand-600 transition-colors">All Products</a></li>
+            @if($hasFlashSale ?? false)
+              <li>
+                <a href="{{ route('shop', ['flash' => 1]) }}" class="inline-flex items-center gap-1.5 py-0.5 hover:text-brand-600 transition-colors font-medium text-amber-700">
+                  <span>Flash Deals</span>
+                  <span class="px-1.5 py-0.5 text-[9px] font-extrabold bg-amber-100 text-amber-800 rounded uppercase tracking-wider">Hot</span>
+                </a>
+              </li>
+            @endif
+            <li><a href="{{ route('shop') }}?sort=newest" class="block py-0.5 hover:text-brand-600 transition-colors">New Arrivals</a></li>
+            <li><a href="{{ route('track') }}" class="block py-0.5 hover:text-brand-600 transition-colors">Track Order</a></li>
+            <li><a href="{{ route('contact') }}" class="block py-0.5 hover:text-brand-600 transition-colors">Store Locator</a></li>
+          </ul>
+        </div>
+
+        {{-- Column 2: Customer Care --}}
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-stone-900 mb-3.5 pb-1 inline-block border-b-2 border-brand-500">Customer Care</h4>
+          <ul class="space-y-2 text-xs sm:text-sm text-stone-600">
+            <li><a href="{{ route('contact') }}" class="block py-0.5 hover:text-brand-600 transition-colors">Help &amp; Contact Us</a></li>
+            <li><a href="{{ route('track') }}" class="block py-0.5 hover:text-brand-600 transition-colors">Track My Order</a></li>
+            <li><a href="{{ route('login') }}" class="block py-0.5 hover:text-brand-600 transition-colors">My Account / Login</a></li>
+            <li><a href="{{ route('terms') }}" class="block py-0.5 hover:text-brand-600 transition-colors">Shipping Information</a></li>
+            <li><a href="{{ route('terms') }}" class="block py-0.5 hover:text-brand-600 transition-colors">Returns &amp; Exchange</a></li>
+          </ul>
+        </div>
+
+        {{-- Column 3: Policies & Trust --}}
+        <div class="col-span-2 sm:col-span-1">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-stone-900 mb-3.5 pb-1 inline-block border-b-2 border-brand-500">Policies</h4>
+          <ul class="space-y-2 text-xs sm:text-sm text-stone-600">
+            <li><a href="{{ route('terms') }}" class="block py-0.5 hover:text-brand-600 transition-colors">Terms of Service</a></li>
+            <li><a href="{{ route('privacy') }}" class="block py-0.5 hover:text-brand-600 transition-colors">Privacy Policy</a></li>
+            <li><a href="{{ route('terms') }}" class="block py-0.5 hover:text-brand-600 transition-colors">Authenticity Guarantee</a></li>
+            <li><a href="{{ route('terms') }}" class="block py-0.5 hover:text-brand-600 transition-colors">Warranty &amp; Support</a></li>
+          </ul>
+        </div>
+
       </div>
 
-      {{-- Column 3: Customer Care --}}
-      <div class="lg:col-span-2">
-        <h4 class="text-xs font-bold uppercase tracking-wider text-stone-900 mb-4 pb-1 inline-block border-b-2 border-brand-500">Customer Care</h4>
-        <ul class="space-y-2.5 text-xs sm:text-sm text-stone-600">
-          <li><a href="{{ route('contact') }}" class="hover:text-brand-600 transition-colors">Help &amp; Contact Us</a></li>
-          <li><a href="{{ route('track') }}" class="hover:text-brand-600 transition-colors">Track My Order</a></li>
-          <li><a href="{{ route('login') }}" class="hover:text-brand-600 transition-colors">My Account / Login</a></li>
-          <li><a href="{{ route('terms') }}" class="hover:text-brand-600 transition-colors">Shipping Information</a></li>
-          <li><a href="{{ route('terms') }}" class="hover:text-brand-600 transition-colors">Returns &amp; Exchange</a></li>
-        </ul>
-      </div>
-
-      {{-- Column 4: Policies & Trust --}}
-      <div class="lg:col-span-2">
-        <h4 class="text-xs font-bold uppercase tracking-wider text-stone-900 mb-4 pb-1 inline-block border-b-2 border-brand-500">Policies</h4>
-        <ul class="space-y-2.5 text-xs sm:text-sm text-stone-600">
-          <li><a href="{{ route('terms') }}" class="hover:text-brand-600 transition-colors">Terms of Service</a></li>
-          <li><a href="{{ route('privacy') }}" class="hover:text-brand-600 transition-colors">Privacy Policy</a></li>
-          <li><a href="{{ route('terms') }}" class="hover:text-brand-600 transition-colors">Authenticity Guarantee</a></li>
-          <li><a href="{{ route('terms') }}" class="hover:text-brand-600 transition-colors">Warranty &amp; Support</a></li>
-        </ul>
-      </div>
-
-      {{-- Column 5: Stay Updated & Payments --}}
-      <div class="lg:col-span-2 space-y-6">
+      {{-- Column 4: Stay Updated & Payments (Full width on mobile/tablet, 2 cols on desktop) --}}
+      <div class="col-span-1 md:col-span-2 lg:col-span-2 space-y-6">
         <div>
           <h4 class="text-xs font-bold uppercase tracking-wider text-stone-900 mb-2 pb-1 inline-block border-b-2 border-brand-500">Stay Updated</h4>
           <p class="text-xs text-stone-500 mb-3 leading-relaxed">Subscribe for latest drops, exclusive coupons &amp; tech deals.</p>
@@ -169,7 +174,7 @@
             <div class="relative">
               <input type="email" placeholder="Enter your email" required class="w-full text-xs bg-stone-50 border border-stone-200/90 rounded-xl px-3.5 py-2.5 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-stone-800 placeholder:text-stone-400 transition shadow-2xs" />
             </div>
-            <button type="submit" class="w-full bg-stone-900 hover:bg-brand-600 text-white text-xs font-bold py-2.5 px-3 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer">
+            <button type="submit" class="w-full bg-stone-900 hover:bg-brand-600 active:scale-[0.99] text-white text-xs font-bold py-2.5 px-3 rounded-xl transition shadow-xs flex items-center justify-center gap-1.5 cursor-pointer">
               <span>Subscribe</span>
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
@@ -182,7 +187,7 @@
         @if(count($paymentBadges))
           <div>
             <span class="block text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-2.5">We Accept</span>
-            <div class="flex flex-wrap gap-1.5">
+            <div class="flex flex-wrap gap-1.5 sm:gap-2">
               @foreach($paymentBadges as $badge)
                 @if($badge === 'bKash')
                   <span class="inline-flex items-center gap-1.5 bg-[#e2136e]/10 text-[#c2185b] border border-[#e2136e]/25 px-2.5 py-1 rounded-lg font-bold text-[11px] shadow-2xs">
@@ -225,12 +230,12 @@
   </div>
 
   {{-- 3. Bottom Bar / Sub-footer --}}
-  <div class="border-t border-stone-200/80 bg-stone-50/60 py-5">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500">
+  <div class="border-t border-stone-200/80 bg-stone-50/60 py-4 sm:py-5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-3 text-center sm:text-left text-xs text-stone-500">
       <div>
         <span>© {{ date('Y') }} <strong class="text-stone-800 font-bold">{{ $site }}</strong>. All rights reserved.</span>
       </div>
-      <div class="flex items-center gap-2 text-stone-500 text-[11px]">
+      <div class="flex items-center justify-center gap-2 text-stone-500 text-[11px]">
         <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
         </svg>
