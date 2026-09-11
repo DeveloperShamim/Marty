@@ -41,79 +41,79 @@
     </div>
   </div>
 
-  {{-- Primary Financial & Order KPIs (1-col on mobile, 2-col on small tablet, 4-col on desktop) --}}
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+  {{-- Primary Financial & Order KPIs (2-col on mobile, 4-col on desktop) --}}
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 sm:gap-5">
 
     {{-- 1. Total Revenue --}}
-    <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-5 shadow-2xs hover:shadow-sm transition-all">
-      <div class="flex items-center justify-between">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Revenue</span>
-        <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <div class="bg-white rounded-2xl border border-gray-200/90 p-3 sm:p-4 md:p-5 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between gap-1.5">
+        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider truncate">Total Revenue</span>
+        <div class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0">
+          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
       </div>
-      <div class="mt-3 space-y-1">
-        <p class="text-xl sm:text-2xl font-bold text-gray-900 font-mono tracking-tight">{{ money($revenue) }}</p>
-        <p class="text-xs text-gray-500 flex items-center justify-between">
-          <span>Verified orders:</span>
+      <div class="mt-2 sm:mt-3 space-y-0.5 sm:space-y-1">
+        <p class="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 font-mono tracking-tight truncate">{{ money($revenue) }}</p>
+        <p class="text-[10px] sm:text-xs text-gray-500 flex items-center justify-between pt-0.5">
+          <span>Orders:</span>
           <span class="font-semibold text-gray-700 font-mono">{{ number_format($ordersCount) }}</span>
         </p>
       </div>
     </div>
 
     {{-- 2. Today's Revenue --}}
-    <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-5 shadow-2xs hover:shadow-sm transition-all">
-      <div class="flex items-center justify-between">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Today's Sales</span>
-        <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+    <div class="bg-white rounded-2xl border border-gray-200/90 p-3 sm:p-4 md:p-5 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between gap-1.5">
+        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider truncate">Today's Sales</span>
+        <div class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
+          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
         </div>
       </div>
-      <div class="mt-3 space-y-1">
-        <p class="text-xl sm:text-2xl font-bold text-gray-900 font-mono tracking-tight">{{ money($todayRevenue) }}</p>
-        <p class="text-xs text-gray-500 flex items-center justify-between">
-          <span>Yesterday:</span>
+      <div class="mt-2 sm:mt-3 space-y-0.5 sm:space-y-1">
+        <p class="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 font-mono tracking-tight truncate">{{ money($todayRevenue) }}</p>
+        <p class="text-[10px] sm:text-xs text-gray-500 flex items-center justify-between pt-0.5 truncate">
+          <span>Yest:</span>
           <span class="font-semibold text-gray-700 font-mono">{{ money($yesterdayRevenue) }}</span>
         </p>
       </div>
     </div>
 
     {{-- 3. Active Orders --}}
-    <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-5 shadow-2xs hover:shadow-sm transition-all">
-      <div class="flex items-center justify-between">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Active Orders</span>
-        <div class="w-9 h-9 rounded-xl bg-violet-50 text-violet-600 border border-violet-100 flex items-center justify-center">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+    <div class="bg-white rounded-2xl border border-gray-200/90 p-3 sm:p-4 md:p-5 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between gap-1.5">
+        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider truncate">Active Orders</span>
+        <div class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl bg-violet-50 text-violet-600 border border-violet-100 flex items-center justify-center shrink-0">
+          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
         </div>
       </div>
-      <div class="mt-3 space-y-1">
-        <p class="text-xl sm:text-2xl font-bold text-gray-900 font-mono tracking-tight">{{ number_format($ordersCount) }}</p>
-        <p class="text-xs text-gray-500 truncate">
-          Excludes {{ number_format($cancelledOrdersCount ?? 0) }} cancelled
+      <div class="mt-2 sm:mt-3 space-y-0.5 sm:space-y-1">
+        <p class="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 font-mono tracking-tight">{{ number_format($ordersCount) }}</p>
+        <p class="text-[10px] sm:text-xs text-gray-400 truncate pt-0.5">
+          {{ number_format($cancelledOrdersCount ?? 0) }} cancelled
         </p>
       </div>
     </div>
 
     {{-- 4. Pending Payment Approvals --}}
-    <div class="bg-white rounded-2xl border {{ $pendingCount > 0 ? 'border-amber-300/80 bg-amber-50/20' : 'border-gray-200/90' }} p-4 sm:p-5 shadow-2xs hover:shadow-sm transition-all">
-      <div class="flex items-center justify-between">
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Pending Payments</span>
-        <div class="w-9 h-9 rounded-xl {{ $pendingCount > 0 ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-gray-100 text-gray-600' }} flex items-center justify-center">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <div class="bg-white rounded-2xl border {{ $pendingCount > 0 ? 'border-amber-300/80 bg-amber-50/15' : 'border-gray-200/90' }} p-3 sm:p-4 md:p-5 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between">
+      <div class="flex items-center justify-between gap-1.5">
+        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider truncate">Pending Review</span>
+        <div class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl {{ $pendingCount > 0 ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-gray-100 text-gray-600' }} flex items-center justify-center shrink-0">
+          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
       </div>
-      <div class="mt-3 flex items-center justify-between">
-        <p class="text-xl sm:text-2xl font-bold {{ $pendingCount > 0 ? 'text-amber-800' : 'text-gray-900' }} font-mono tracking-tight">
+      <div class="mt-2 sm:mt-3 flex items-center justify-between gap-1.5 flex-wrap">
+        <p class="text-base sm:text-xl lg:text-2xl font-bold {{ $pendingCount > 0 ? 'text-amber-800' : 'text-gray-900' }} font-mono tracking-tight">
           {{ number_format($pendingCount) }}
         </p>
         @if($pendingCount > 0)
-          <a href="{{ route('admin.orders.index', ['status' => 'pending_verification']) }}" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-amber-600 hover:bg-amber-700 text-white transition-colors shadow-2xs">
+          <a href="{{ route('admin.orders.index', ['status' => 'pending_verification']) }}" class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-bold rounded-lg bg-amber-600 hover:bg-amber-700 text-white transition-colors shadow-2xs">
             Review &rarr;
           </a>
         @else
-          <span class="text-xs font-medium text-emerald-600 flex items-center gap-1">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-            All clear
+          <span class="text-[10px] sm:text-xs font-medium text-emerald-600 flex items-center gap-0.5">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            Clear
           </span>
         @endif
       </div>
