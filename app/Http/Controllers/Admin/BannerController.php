@@ -99,6 +99,8 @@ class BannerController extends Controller
             $data['style'] = 'brand';
         }
 
+        $data['position'] = (int) ($data['position'] ?? 0);
+
         return $data;
     }
 

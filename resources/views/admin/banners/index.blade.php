@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Banners & Hero Management')
+@section('title', 'Banners Management')
 
 @section('content')
 <div class="space-y-6">
@@ -10,11 +10,11 @@
       <div class="flex items-center gap-2">
         <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Homepage Banners</h2>
         <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-          AppleGadgetsBD Layout
+          Hero &amp; Promo
         </span>
       </div>
       <p class="text-xs sm:text-sm text-gray-500 mt-1">
-        Manage rotating hero carousel slides and side/bottom promo cards. Changes reflect instantly on the storefront.
+        Manage rotating hero carousel slides and featured promo cards. Upload banner graphics and set destination URLs.
       </p>
     </div>
     <div class="flex items-center gap-2">
@@ -26,6 +26,10 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
         Add Slide
       </a>
+      <a href="{{ route('admin.banners.create', ['placement' => 'hero_side']) }}" class="px-4 py-2 text-xs sm:text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors shadow-sm inline-flex items-center gap-1.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Add Promo Card
+      </a>
     </div>
   </div>
 
@@ -36,70 +40,44 @@
     $activePromoCount = $promoCards->where('is_active', true)->count();
   @endphp
 
-  {{-- Visual Layout Blueprint Card --}}
-  <div class="card p-5 sm:p-6 bg-gradient-to-br from-white to-gray-50 border-gray-200 shadow-sm">
-    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-      <div class="flex items-center gap-2">
-        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Live Layout Blueprint</h3>
+  {{-- Overview / Status Banner --}}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {{-- Hero Carousel Summary --}}
+    <div class="card p-5 bg-white border-gray-200 shadow-sm flex items-center justify-between">
+      <div class="flex items-center gap-3.5">
+        <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-gray-900">Hero Main Carousel</h3>
+          <p class="text-xs text-gray-400 mt-0.5">Recommended: 1500 &times; 800 px (15:8)</p>
+        </div>
       </div>
-      <span class="text-xs text-gray-400">Desktop: 70% Slider + 30% Promo &middot; Mobile: Stacked Slider + 2-Col Cards</span>
+      <div class="text-right">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold {{ $activeHeroCount > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
+          <span class="w-1.5 h-1.5 rounded-full {{ $activeHeroCount > 0 ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
+          {{ $activeHeroCount }} / {{ $heroSlides->count() }} Live
+        </span>
+      </div>
     </div>
 
-    {{-- Interactive Blueprint Wireframe --}}
-    <div class="grid grid-cols-1 lg:grid-cols-10 gap-3 p-3 bg-gray-900/5 rounded-2xl border border-gray-200/80">
-      
-      {{-- Blueprint Left: Main Carousel --}}
-      <div class="lg:col-span-7 bg-white rounded-xl border-2 border-dashed {{ $activeHeroCount > 0 ? 'border-primary/40' : 'border-amber-400/60' }} p-4 flex flex-col justify-between min-h-[140px] shadow-sm relative overflow-hidden group">
-        <div class="flex items-start justify-between gap-2">
-          <div>
-            <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-wider">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-              Hero Main Carousel (70% Width)
-            </div>
-            <p class="text-xs text-gray-500 mt-1">Recommended size: <strong>1500 &times; 800 px</strong> (Aspect ratio 15:8)</p>
-          </div>
-          <span class="text-xs font-bold px-2 py-0.5 rounded-full {{ $activeHeroCount > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }}">
-            {{ $activeHeroCount }} Active / {{ $heroSlides->count() }} Total
-          </span>
+    {{-- Promo Cards Summary --}}
+    <div class="card p-5 bg-white border-gray-200 shadow-sm flex items-center justify-between">
+      <div class="flex items-center gap-3.5">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-sm shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
         </div>
-
-        <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400">
-          <div class="flex items-center gap-1.5">
-            <span class="w-5 h-1.5 rounded-full bg-orange-500"></span>
-            <span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
-            <span class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>
-            <span class="text-[11px] ml-1">Auto-plays with smooth fade & touch controls</span>
-          </div>
-          <a href="{{ route('admin.banners.create', ['placement' => 'hero']) }}" class="text-primary font-semibold hover:underline inline-flex items-center gap-1">
-            + Add Slide &rarr;
-          </a>
+        <div>
+          <h3 class="text-sm font-bold text-gray-900">Featured Promo Cards</h3>
+          <p class="text-xs text-gray-400 mt-0.5">Recommended: 868 &times; 476 px (1.82:1)</p>
         </div>
       </div>
-
-      {{-- Blueprint Right: Promo Cards --}}
-      <div class="lg:col-span-3 grid grid-cols-2 lg:grid-cols-1 gap-2">
-        <div class="bg-white rounded-xl border-2 border-dashed {{ $activePromoCount >= 1 ? 'border-amber-500/40' : 'border-gray-300' }} p-3 flex flex-col justify-between min-h-[66px] shadow-sm">
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-gray-700">Promo Slot 1 (Top)</span>
-            <span class="text-[10px] text-gray-400">868 &times; 476 px</span>
-          </div>
-          <div class="text-[11px] text-gray-500 truncate mt-1">
-            {{ $promoCards->firstWhere('position', 0)?->title ?? ($promoCards->values()->get(0)?->title ?? 'Empty slot') }}
-          </div>
-        </div>
-
-        <div class="bg-white rounded-xl border-2 border-dashed {{ $activePromoCount >= 2 ? 'border-amber-500/40' : 'border-gray-300' }} p-3 flex flex-col justify-between min-h-[66px] shadow-sm">
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-gray-700">Promo Slot 2 (Bottom)</span>
-            <span class="text-[10px] text-gray-400">868 &times; 476 px</span>
-          </div>
-          <div class="text-[11px] text-gray-500 truncate mt-1">
-            {{ $promoCards->firstWhere('position', 1)?->title ?? ($promoCards->values()->get(1)?->title ?? 'Empty slot') }}
-          </div>
-        </div>
+      <div class="text-right">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold {{ $activePromoCount > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
+          <span class="w-1.5 h-1.5 rounded-full {{ $activePromoCount > 0 ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
+          {{ $activePromoCount }} / {{ $promoCards->count() }} Live
+        </span>
       </div>
-
     </div>
   </div>
 
@@ -111,7 +89,7 @@
           <span class="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">1</span>
           <h3 class="text-base font-bold text-gray-900">Hero Main Carousel Slides</h3>
         </div>
-        <p class="text-xs text-gray-500 mt-0.5">These banners rotate automatically on the left side of desktop and top of mobile.</p>
+        <p class="text-xs text-gray-500 mt-0.5">Main rotating slider on top of homepage. Displays at 15:8 aspect ratio.</p>
       </div>
       <div class="flex items-center gap-2">
         <span class="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg font-medium">
@@ -143,20 +121,15 @@
                   <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                 @else
                   <div class="w-full h-full bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center text-white text-xs font-semibold p-4 text-center">
-                    No image &mdash; gradient fallback
+                    No image uploaded
                   </div>
                 @endif
 
                 {{-- Badges on preview --}}
-                <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                  <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold tracking-wide uppercase bg-black/60 backdrop-blur-sm text-white">
-                    Pos #{{ $slide->position }}
+                <div class="absolute top-2.5 left-2.5">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold tracking-wide uppercase bg-black/60 backdrop-blur-sm text-white shadow-sm">
+                    Order #{{ $slide->position }}
                   </span>
-                  @if($slide->badge)
-                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-primary text-white shadow-sm">
-                      {{ $slide->badge }}
-                    </span>
-                  @endif
                 </div>
 
                 <div class="absolute top-2.5 right-2.5">
@@ -171,29 +144,19 @@
                 <h4 class="font-bold text-sm text-gray-900 line-clamp-1" title="{{ $slide->title }}">
                   {{ $slide->title ?: 'Untitled Slide' }}
                 </h4>
-                @if($slide->subtitle)
-                  <p class="text-xs text-gray-500 line-clamp-2">{{ $slide->subtitle }}</p>
-                @endif
 
-                <div class="pt-2 flex flex-wrap items-center gap-2 text-[11px] text-gray-400">
-                  @if($slide->link_url)
-                    <span class="inline-flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded-md font-mono text-gray-600 truncate max-w-[200px]" title="{{ $slide->link_url }}">
-                      <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                      {{ $slide->link_url }}
-                    </span>
-                  @endif
-                  @if($slide->button_text)
-                    <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md font-medium">
-                      Btn: {{ $slide->button_text }}
-                    </span>
-                  @endif
+                <div>
+                  <a href="{{ $slide->linkHref() }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-mono text-gray-500 hover:text-primary transition-colors bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100 truncate max-w-full" title="{{ $slide->link_url ?: route('shop') }}">
+                    <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                    <span class="truncate">{{ $slide->link_url ?: '/shop' }}</span>
+                  </a>
                 </div>
               </div>
             </div>
 
             {{-- Actions Footer --}}
             <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-xs">
-              <span class="text-gray-400 font-medium">Order: {{ $slide->position }}</span>
+              <span class="text-gray-400 font-medium">Position: {{ $slide->position }}</span>
               <div class="flex items-center gap-1.5">
                 {{-- Quick Toggle Visibility --}}
                 <form method="POST" action="{{ route('admin.banners.toggle', $slide) }}">
@@ -230,9 +193,9 @@
       <div>
         <div class="flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-xs">2</span>
-          <h3 class="text-base font-bold text-gray-900">Featured Promo Cards (Side &amp; Bottom)</h3>
+          <h3 class="text-base font-bold text-gray-900">Featured Promo Cards</h3>
         </div>
-        <p class="text-xs text-gray-500 mt-0.5">Top 2 active cards display stacked beside carousel on desktop, or in a 2-column grid on mobile.</p>
+        <p class="text-xs text-gray-500 mt-0.5">Side cards stacked beside the carousel on desktop (or 2-column on mobile). Displays at 1.82:1 aspect ratio.</p>
       </div>
       <div class="flex items-center gap-2">
         <span class="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg font-medium">
@@ -248,7 +211,7 @@
       <div class="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
         <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
         <p class="text-sm font-semibold text-gray-700">No Featured Promo Cards Yet</p>
-        <p class="text-xs text-gray-400 mt-1 max-w-sm mx-auto">Add up to 2 promo cards (e.g. MacBook Neo or AirPods Pro offers) to flank the main hero carousel.</p>
+        <p class="text-xs text-gray-400 mt-1 max-w-sm mx-auto">Add promo cards (e.g. MacBook Neo or AirPods Pro offers) to flank the main hero carousel.</p>
         <a href="{{ route('admin.banners.create', ['placement' => 'hero_side']) }}" class="btn-primary text-xs mt-4 inline-flex bg-amber-600 hover:bg-amber-700">
           + Create First Promo Card
         </a>
@@ -264,20 +227,15 @@
                   <img src="{{ $card->imageUrl() }}" alt="{{ $card->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                 @else
                   <div class="w-full h-full bg-gradient-to-br from-amber-600 to-stone-800 flex items-center justify-center text-white text-xs font-semibold p-4 text-center">
-                    No image &mdash; gradient fallback
+                    No image uploaded
                   </div>
                 @endif
 
                 {{-- Badges --}}
-                <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                  <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold tracking-wide uppercase bg-black/60 backdrop-blur-sm text-white">
+                <div class="absolute top-2.5 left-2.5">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold tracking-wide uppercase bg-black/60 backdrop-blur-sm text-white shadow-sm">
                     Slot Pos #{{ $card->position }}
                   </span>
-                  @if($card->badge)
-                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500 text-white shadow-sm">
-                      {{ $card->badge }}
-                    </span>
-                  @endif
                 </div>
 
                 <div class="absolute top-2.5 right-2.5">
@@ -292,29 +250,19 @@
                 <h4 class="font-bold text-sm text-gray-900 line-clamp-1" title="{{ $card->title }}">
                   {{ $card->title ?: 'Untitled Promo Card' }}
                 </h4>
-                @if($card->subtitle)
-                  <p class="text-xs text-gray-500 line-clamp-2">{{ $card->subtitle }}</p>
-                @endif
 
-                <div class="pt-2 flex flex-wrap items-center gap-2 text-[11px] text-gray-400">
-                  @if($card->link_url)
-                    <span class="inline-flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded-md font-mono text-gray-600 truncate max-w-[200px]" title="{{ $card->link_url }}">
-                      <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                      {{ $card->link_url }}
-                    </span>
-                  @endif
-                  @if($card->button_text)
-                    <span class="bg-amber-50 text-amber-700 px-2 py-0.5 rounded-md font-medium border border-amber-200">
-                      Btn: {{ $card->button_text }}
-                    </span>
-                  @endif
+                <div>
+                  <a href="{{ $card->linkHref() }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-mono text-gray-500 hover:text-amber-600 transition-colors bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100 truncate max-w-full" title="{{ $card->link_url ?: route('shop') }}">
+                    <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                    <span class="truncate">{{ $card->link_url ?: '/shop' }}</span>
+                  </a>
                 </div>
               </div>
             </div>
 
             {{-- Actions Footer --}}
             <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-xs">
-              <span class="text-gray-400 font-medium">Order: {{ $card->position }}</span>
+              <span class="text-gray-400 font-medium">Position: {{ $card->position }}</span>
               <div class="flex items-center gap-1.5">
                 {{-- Quick Toggle Visibility --}}
                 <form method="POST" action="{{ route('admin.banners.toggle', $card) }}">
