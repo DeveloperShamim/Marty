@@ -161,32 +161,30 @@
     <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-6 shadow-2xs lg:col-span-2 flex flex-col justify-between space-y-5">
       
       {{-- Card Header & Filter Bar --}}
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+      <div class="flex items-center justify-between gap-3 border-b border-gray-100 pb-3 sm:pb-4 flex-wrap">
         <div>
           <div class="flex items-center gap-2 flex-wrap">
-            <h2 class="font-bold text-sm sm:text-base text-gray-900">Monthly Revenue Performance</h2>
-            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-md bg-gray-100 text-gray-600 border border-gray-200">
+            <h2 class="font-bold text-sm sm:text-base text-gray-900">Monthly Revenue</h2>
+            <span class="px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold rounded-md bg-gray-100 text-gray-600 border border-gray-200">
               12 Months
             </span>
           </div>
-          <p class="text-xs text-gray-500 mt-0.5">
-            Rolling window: <span class="font-mono text-gray-700 font-medium">{{ $firstMonthLabel }} – {{ $lastMonthLabel }}</span>
+          <p class="text-[11px] sm:text-xs text-gray-400 mt-0.5">
+            {{ $firstMonthLabel }} – {{ $lastMonthLabel }}
           </p>
         </div>
 
-        <div class="flex items-center gap-2.5">
-          <form method="GET" action="{{ route('admin.dashboard') }}" class="flex items-center gap-1.5">
-            <label for="year" class="text-xs font-semibold text-gray-500">Filter Year:</label>
-            <div class="relative">
-              <select name="year" id="year" onchange="this.form.submit()" class="text-xs bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded-xl px-3 py-1.5 pr-7 text-gray-800 font-bold focus:outline-none focus:ring-2 focus:ring-primary shadow-2xs cursor-pointer appearance-none">
-                @foreach($availableYears as $yr)
-                  <option value="{{ $yr }}" {{ $selectedYear == $yr ? 'selected' : '' }}>{{ $yr }}</option>
-                @endforeach
-              </select>
-              <svg class="w-3 h-3 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-            </div>
-          </form>
-        </div>
+        <form method="GET" action="{{ route('admin.dashboard') }}" class="flex items-center gap-1.5 ml-auto sm:ml-0">
+          <label for="year" class="text-xs font-semibold text-gray-500 hidden sm:inline">Year:</label>
+          <div class="relative">
+            <select name="year" id="year" onchange="this.form.submit()" class="text-xs bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded-xl px-2.5 sm:px-3 py-1 sm:py-1.5 pr-6 sm:pr-7 text-gray-800 font-bold focus:outline-none focus:ring-2 focus:ring-primary shadow-2xs cursor-pointer appearance-none">
+              @foreach($availableYears as $yr)
+                <option value="{{ $yr }}" {{ $selectedYear == $yr ? 'selected' : '' }}>{{ $yr }}</option>
+              @endforeach
+            </select>
+            <svg class="w-3 h-3 text-gray-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </div>
+        </form>
       </div>
 
       {{-- Total Period Revenue Highlight --}}
@@ -203,54 +201,58 @@
         </div>
       </div>
 
-      {{-- Interactive Bar Chart Canvas with Background Grid Guidelines --}}
-      <div class="pt-2 overflow-x-auto no-scrollbar">
-        <div class="min-w-[460px] relative">
+      {{-- Interactive Bar Chart Canvas (Fully responsive, no horizontal cutoff) --}}
+      <div class="pt-2 w-full">
+        <div class="w-full relative">
           
           {{-- Subtle Background Guidelines --}}
-          <div class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8 pt-1" aria-hidden="true">
+          <div class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-7 pt-1" aria-hidden="true">
             <div class="w-full border-b border-dashed border-gray-100"></div>
             <div class="w-full border-b border-dashed border-gray-100"></div>
             <div class="w-full border-b border-dashed border-gray-100"></div>
             <div class="w-full border-b border-gray-200"></div>
           </div>
 
-          {{-- Bars Container --}}
-          <div class="relative z-10 flex items-end gap-2 sm:gap-3.5 h-48 sm:h-56 px-2 pb-2">
-            @foreach($monthlySeries as $point)
+          {{-- Bars Container (12 months fully scaled across available width) --}}
+          <div class="relative z-10 flex items-end gap-1 sm:gap-2.5 md:gap-3.5 h-44 sm:h-56 px-0.5 sm:px-2 pb-2">
+            @foreach($monthlySeries as $index => $point)
               @php
                 $hasRevenue = $point['value'] > 0;
-                $heightPercent = $hasRevenue && $seriesMax > 0 ? max(8, (int) round(($point['value'] / $seriesMax) * 75)) : 0;
+                $heightPercent = $hasRevenue && $seriesMax > 0 ? max(8, (int) round(($point['value'] / $seriesMax) * 72)) : 0;
+                $isCurrent = $point['is_current'];
               @endphp
-              <div class="flex-1 flex flex-col items-center justify-end h-full relative cursor-default" title="{{ $point['full_label'] }}: {{ money($point['value']) }}">
+              <div class="flex-1 flex flex-col items-center justify-end h-full relative cursor-default group {{ $isCurrent ? 'bg-primary/5 rounded-t-xl px-0.5 sm:px-1' : '' }}" title="{{ $point['full_label'] }}: {{ money($point['value']) }}">
                 
                 {{-- Direct Value Label Above Bar --}}
                 @if($hasRevenue)
-                  <span class="text-[10px] sm:text-[11px] font-bold font-mono text-emerald-700 mb-1.5 leading-none text-center whitespace-nowrap">
+                  <span class="text-[9px] sm:text-[11px] font-bold font-mono text-emerald-700 mb-1 leading-none text-center truncate max-w-full">
                     {{ money($point['value']) }}
                   </span>
                 @endif
 
                 {{-- Bar Column --}}
                 @if($hasRevenue)
-                  <div class="w-full max-w-[28px] mx-auto rounded-t-lg sm:rounded-t-xl transition-all duration-300 {{ $point['is_current'] ? 'bg-gradient-to-t from-primary to-teal-500 shadow-sm ring-2 ring-teal-400/40' : 'bg-slate-800 hover:bg-primary transition-colors' }}" style="height: {{ $heightPercent }}%">
+                  <div class="w-full max-w-[18px] sm:max-w-[28px] mx-auto rounded-t-md sm:rounded-t-xl transition-all duration-300 {{ $isCurrent ? 'bg-gradient-to-t from-primary to-teal-500 shadow-sm ring-1 sm:ring-2 ring-teal-400/40' : 'bg-slate-800 hover:bg-primary transition-colors' }}" style="height: {{ $heightPercent }}%">
                   </div>
                 @else
-                  <div class="w-3 h-0.5 bg-gray-200 rounded-full mx-auto mb-0.5"></div>
+                  <div class="w-2 sm:w-3 h-0.5 bg-gray-200 rounded-full mx-auto mb-0.5"></div>
                 @endif
               </div>
             @endforeach
           </div>
 
-          {{-- X-Axis Labels --}}
-          <div class="mt-2.5 grid grid-cols-12 text-center text-[10px] sm:text-[11px] font-semibold text-gray-400 relative z-10">
+          {{-- X-Axis Labels (All 12 months fit natively on mobile) --}}
+          <div class="mt-2 grid grid-cols-12 text-center text-[9px] sm:text-[11px] font-semibold text-gray-400 relative z-10">
             @foreach($monthlySeries as $point)
-              <div class="flex flex-col items-center gap-0.5">
-                <span class="{{ $point['is_current'] ? 'text-primary font-bold' : ($point['value'] > 0 ? 'text-gray-700 font-medium' : '') }}">
-                  {{ $point['label'] }}
-                </span>
+              <div class="flex flex-col items-center justify-center">
                 @if($point['is_current'])
-                  <span class="w-1.5 h-1.5 rounded-full bg-primary" title="Current Month"></span>
+                  <span class="px-1 py-0.5 rounded text-[8px] sm:text-[10px] font-bold bg-primary text-white shadow-2xs leading-none">
+                    {{ $point['label'] }}
+                  </span>
+                @else
+                  <span class="{{ $point['value'] > 0 ? 'text-gray-800 font-bold' : 'text-gray-400' }}">
+                    {{ $point['label'] }}
+                  </span>
                 @endif
               </div>
             @endforeach
