@@ -9,13 +9,14 @@ use App\Models\Coupon;
 use App\Models\Feature;
 use App\Models\Product;
 
+use App\Models\ProductReview;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        $withImages = fn ($q) => $q->published()->with('images', 'category', 'variants', 'skus');
+        $withImages = fn ($q) => $q->published()->with('images', 'category', 'brand', 'variants', 'skus');
 
         $categories = Category::where('is_active', true)
             ->withCount(['products' => fn ($q) => $q->published()])
@@ -37,61 +38,50 @@ class HomeController extends Controller
         if ((clone $featuredQuery)->count() === 0) {
             $featuredQuery = Product::query()->tap($withImages)->latest();
         }
-        $totalFeatured = (clone $featuredQuery)->count();
-        $trending = $featuredQuery->take(8)->get();
+        $trending = $featuredQuery->take(12)->get();
+
+        $bestSellersQuery = Product::query()->tap($withImages)->where('is_best_seller', true)->latest();
+        if ((clone $bestSellersQuery)->count() === 0) {
+            $bestSellersQuery = Product::query()->tap($withImages)->latest();
+        }
+        $bestSellers = $bestSellersQuery->take(12)->get();
 
         $newArrivalsQuery = Product::query()->tap($withImages)->where('is_new_arrival', true)->latest();
         if ((clone $newArrivalsQuery)->count() === 0) {
             $newArrivalsQuery = Product::query()->tap($withImages)->latest();
         }
+        $newArrivals = $newArrivalsQuery->take(12)->get();
 
-        $featuredHomeCategories = Category::where('is_active', true)
-            ->where('is_featured', true)
-            ->orderBy('position')
-            ->with(['products' => function ($q) {
-                $q->published()->with('images', 'category', 'variants', 'skus')->latest()->take(8);
-            }])
+        $flashProducts = Product::query()->tap($withImages)
+            ->where('is_flash_sale', true)
+            ->orderBy('flash_sale_position')
+            ->orderBy('id')
             ->get();
 
-        $featuredHomeBrands = Brand::where('is_active', true)
-            ->where('is_featured', true)
-            ->orderBy('position')
-            ->with(['products' => function ($q) {
-                $q->published()->with('images', 'category', 'brand', 'variants', 'skus')->latest()->take(8);
-            }])
-            ->get();
-
-        $onSaleProducts = Product::query()
-            ->tap($withImages)
-            ->whereNotNull('sale_price')
-            ->whereColumn('sale_price', '<', 'regular_price')
+        $homeReviews = ProductReview::approved()
+            ->with('product')
             ->latest()
-            ->take(12)
+            ->take(4)
             ->get();
 
         return view('storefront.home', [
-            'heroBanners'            => $banners('hero')->get(),
-            'heroSideBanners'        => $banners('hero_side')->get(),
-            'features'               => Feature::where('is_active', true)->orderBy('position')->get(),
-            'categories'             => $categories,
-            'featuredHomeCategories' => $featuredHomeCategories,
-            'featuredHomeBrands'     => $featuredHomeBrands,
-            'coupons'                => Coupon::query()
+            'heroBanners'     => $banners('hero')->get(),
+            'heroSideBanners' => $banners('hero_side')->get(),
+            'features'        => Feature::where('is_active', true)->orderBy('position')->get(),
+            'categories'      => $categories,
+            'coupons'         => Coupon::query()
                 ->where('is_active', true)
                 ->orderByDesc('created_at')
                 ->get()
                 ->filter(fn (Coupon $c) => $c->isCurrentlyActive())
                 ->values()
                 ->take(4),
-            'flashProducts'          => Product::query()->tap($withImages)->where('is_flash_sale', true)->orderBy('flash_sale_position')->orderBy('id')->get(),
-            'onSaleProducts'         => $onSaleProducts,
-            'trending'               => $trending,
-            'hasMoreProducts'        => $totalFeatured > 8,
-            'initialLoadedCount'     => min(8, $totalFeatured),
-            'totalFeaturedCount'     => $totalFeatured,
-            'bestSellers'            => Product::query()->tap($withImages)->where('is_best_seller', true)->latest()->take(12)->get(),
-            'newArrivals'            => $newArrivalsQuery->take(12)->get(),
-            'featuredBrands'         => $featuredBrands,
+            'flashProducts'   => $flashProducts,
+            'bestSellers'     => $bestSellers,
+            'newArrivals'     => $newArrivals,
+            'trending'        => $trending,
+            'featuredBrands'  => $featuredBrands,
+            'homeReviews'     => $homeReviews,
         ]);
     }
 
