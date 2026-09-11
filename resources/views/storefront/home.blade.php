@@ -298,9 +298,11 @@
             @endforeach
           </div>
           <div class="mt-6 text-center">
-            <a href="{{ route('shop', ['best_seller' => 1]) }}" class="group inline-flex items-center justify-center gap-1.5 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95">
-              <span>View All Best Sellers</span>
-              <span class="text-sm font-normal transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
+            <a href="{{ route('shop', ['best_seller' => 1]) }}" class="group inline-flex items-center gap-3 pl-6 pr-2.5 py-2 rounded-full border border-stone-200/90 bg-white hover:border-brand-500/40 hover:bg-stone-50/80 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-95">
+              <span class="text-xs font-bold uppercase tracking-wider text-stone-800 group-hover:text-brand-600 transition-colors">View All Best Sellers</span>
+              <span class="h-7 w-7 rounded-full bg-stone-100 group-hover:bg-brand-500 text-stone-500 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-2xs">
+                <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              </span>
             </a>
           </div>
         </div>
@@ -313,9 +315,11 @@
             @endforeach
           </div>
           <div class="mt-6 text-center">
-            <a href="{{ route('shop', ['new' => 1]) }}" class="group inline-flex items-center justify-center gap-1.5 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95">
-              <span>View All New Arrivals</span>
-              <span class="text-sm font-normal transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
+            <a href="{{ route('shop', ['new' => 1]) }}" class="group inline-flex items-center gap-3 pl-6 pr-2.5 py-2 rounded-full border border-stone-200/90 bg-white hover:border-brand-500/40 hover:bg-stone-50/80 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-95">
+              <span class="text-xs font-bold uppercase tracking-wider text-stone-800 group-hover:text-brand-600 transition-colors">View All New Arrivals</span>
+              <span class="h-7 w-7 rounded-full bg-stone-100 group-hover:bg-brand-500 text-stone-500 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-2xs">
+                <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              </span>
             </a>
           </div>
         </div>
@@ -328,9 +332,11 @@
             @endforeach
           </div>
           <div class="mt-6 text-center">
-            <a href="{{ route('shop') }}" class="group inline-flex items-center justify-center gap-1.5 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95">
-              <span>Explore All Products</span>
-              <span class="text-sm font-normal transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
+            <a href="{{ route('shop') }}" class="group inline-flex items-center gap-3 pl-6 pr-2.5 py-2 rounded-full border border-stone-200/90 bg-white hover:border-brand-500/40 hover:bg-stone-50/80 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-95">
+              <span class="text-xs font-bold uppercase tracking-wider text-stone-800 group-hover:text-brand-600 transition-colors">Explore All Products</span>
+              <span class="h-7 w-7 rounded-full bg-stone-100 group-hover:bg-brand-500 text-stone-500 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-2xs">
+                <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              </span>
             </a>
           </div>
         </div>
@@ -406,10 +412,12 @@
               @endforeach
             </div>
 
-            <div class="mt-5 text-center">
-              <a href="{{ route('shop.category', $featuredCat) }}" class="group inline-flex items-center justify-center gap-1.5 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95">
-                <span>VIEW ALL {{ strtoupper($featuredCat->name) }}</span>
-                <span class="text-sm font-normal transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
+            <div class="mt-6 text-center">
+              <a href="{{ route('shop.category', $featuredCat) }}" class="group inline-flex items-center gap-3 pl-6 pr-2.5 py-2 rounded-full border border-stone-200/90 bg-white hover:border-brand-500/40 hover:bg-stone-50/80 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-95">
+                <span class="text-xs font-bold uppercase tracking-wider text-stone-800 group-hover:text-brand-600 transition-colors">View All {{ $featuredCat->name }}</span>
+                <span class="h-7 w-7 rounded-full bg-stone-100 group-hover:bg-brand-500 text-stone-500 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-2xs">
+                  <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                </span>
               </a>
             </div>
           </section>
@@ -443,10 +451,12 @@
               @endforeach
             </div>
 
-            <div class="mt-5 text-center">
-              <a href="{{ route('shop.brand', $featuredBrand) }}" class="group inline-flex items-center justify-center gap-1.5 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95">
-                <span>VIEW ALL {{ strtoupper($featuredBrand->name) }} PRODUCTS</span>
-                <span class="text-sm font-normal transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
+            <div class="mt-6 text-center">
+              <a href="{{ route('shop.brand', $featuredBrand) }}" class="group inline-flex items-center gap-3 pl-6 pr-2.5 py-2 rounded-full border border-stone-200/90 bg-white hover:border-brand-500/40 hover:bg-stone-50/80 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-95">
+                <span class="text-xs font-bold uppercase tracking-wider text-stone-800 group-hover:text-brand-600 transition-colors">Explore {{ $featuredBrand->name }}</span>
+                <span class="h-7 w-7 rounded-full bg-stone-100 group-hover:bg-brand-500 text-stone-500 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-2xs">
+                  <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                </span>
               </a>
             </div>
           </section>
