@@ -203,8 +203,8 @@
             <div class="swiper-wrapper">
               @foreach($categories as $cat)
                 <div class="swiper-slide">
-                  <a href="{{ route('shop.category', $cat) }}" class="group block rounded-2xl bg-white p-3 sm:p-3.5 text-center transition-all duration-300 shadow-xs hover:shadow-md hover:-translate-y-1">
-                    <div class="relative w-full aspect-square rounded-xl overflow-hidden mb-2.5 bg-stone-50 grid place-items-center">
+                  <a href="{{ route('shop.category', $cat) }}" class="group block rounded-2xl border border-stone-200/90 bg-white hover:border-brand-300/60 p-3 sm:p-3.5 text-center transition-all duration-300 shadow-2xs hover:shadow-md hover:-translate-y-1">
+                    <div class="relative w-full aspect-square rounded-xl overflow-hidden mb-2.5 bg-stone-100/80 border border-stone-150/80 grid place-items-center">
                       @if($cat->image)
                         <img src="{{ $cat->imageUrl() }}" alt="{{ $cat->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-108" />
                       @else
@@ -363,8 +363,8 @@
             <div class="swiper-wrapper">
               @foreach($featuredBrands as $b)
                 <div class="swiper-slide">
-                  <a href="{{ route('shop.brand', $b) }}" class="group flex flex-col items-center justify-center p-3.5 sm:p-4 rounded-2xl bg-white transition-all duration-300 shadow-xs hover:shadow-md hover:-translate-y-1 text-center h-full">
-                    <div class="h-14 sm:h-16 w-full flex items-center justify-center mb-2.5 p-2 bg-stone-50 rounded-xl group-hover:bg-brand-50/50 transition-colors duration-300">
+                  <a href="{{ route('shop.brand', $b) }}" class="group flex flex-col items-center justify-center p-3.5 sm:p-4 rounded-2xl border border-stone-200/90 bg-white hover:border-brand-300/60 transition-all duration-300 shadow-2xs hover:shadow-md hover:-translate-y-1 text-center h-full">
+                    <div class="h-14 sm:h-16 w-full flex items-center justify-center mb-2.5 p-2 bg-stone-50 rounded-xl border border-stone-150/80 group-hover:bg-brand-50/50 group-hover:border-brand-200/60 transition-all duration-300">
                       <img src="{{ $b->logoUrl() }}" alt="{{ $b->name }}" loading="lazy" class="max-h-full max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-110" />
                     </div>
                     <span class="text-xs sm:text-sm font-bold text-stone-800 group-hover:text-brand-600 transition-colors truncate w-full">{{ $b->name }}</span>
