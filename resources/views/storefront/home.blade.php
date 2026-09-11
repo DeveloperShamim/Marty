@@ -204,7 +204,7 @@
               @foreach($categories as $cat)
                 <div class="swiper-slide">
                   <a href="{{ route('shop.category', $cat) }}" class="group block rounded-2xl border border-stone-200/90 bg-white hover:border-brand-300/60 p-3 sm:p-3.5 text-center transition-all duration-300 shadow-2xs hover:shadow-md hover:-translate-y-1">
-                    <div class="relative w-full aspect-square rounded-xl overflow-hidden mb-2.5 bg-stone-100/80 border border-stone-150/80 grid place-items-center">
+                    <div class="relative w-full aspect-square rounded-xl overflow-hidden mb-2.5 bg-stone-100/80 grid place-items-center">
                       @if($cat->image)
                         <img src="{{ $cat->imageUrl() }}" alt="{{ $cat->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-108" />
                       @else
