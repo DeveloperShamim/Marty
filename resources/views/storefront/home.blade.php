@@ -298,9 +298,9 @@
             @endforeach
           </div>
           <div class="mt-6 text-center">
-            <a href="{{ route('shop', ['best_seller' => 1]) }}" class="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full border border-stone-300 hover:border-stone-900 text-stone-900 font-bold text-xs uppercase tracking-wider transition-all hover:bg-stone-900 hover:text-white">
+            <a href="{{ route('shop', ['best_seller' => 1]) }}" class="group inline-flex items-center justify-center gap-1.5 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95">
               <span>View All Best Sellers</span>
-              <span class="text-sm">&rarr;</span>
+              <span class="text-sm font-normal transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
             </a>
           </div>
         </div>
@@ -313,9 +313,9 @@
             @endforeach
           </div>
           <div class="mt-6 text-center">
-            <a href="{{ route('shop', ['new' => 1]) }}" class="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full border border-stone-300 hover:border-stone-900 text-stone-900 font-bold text-xs uppercase tracking-wider transition-all hover:bg-stone-900 hover:text-white">
+            <a href="{{ route('shop', ['new' => 1]) }}" class="group inline-flex items-center justify-center gap-1.5 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95">
               <span>View All New Arrivals</span>
-              <span class="text-sm">&rarr;</span>
+              <span class="text-sm font-normal transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
             </a>
           </div>
         </div>
@@ -328,9 +328,9 @@
             @endforeach
           </div>
           <div class="mt-6 text-center">
-            <a href="{{ route('shop') }}" class="inline-flex items-center gap-1.5 px-6 py-2.5 rounded-full border border-stone-300 hover:border-stone-900 text-stone-900 font-bold text-xs uppercase tracking-wider transition-all hover:bg-stone-900 hover:text-white">
+            <a href="{{ route('shop') }}" class="group inline-flex items-center justify-center gap-1.5 border border-brand-500 bg-white hover:bg-brand-500 text-brand-600 hover:text-white font-bold px-6 py-2.5 rounded-full text-xs uppercase tracking-wider transition-all duration-200 shadow-2xs hover:shadow-xs hover:scale-105 active:scale-95">
               <span>Explore All Products</span>
-              <span class="text-sm">&rarr;</span>
+              <span class="text-sm font-normal transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
             </a>
           </div>
         </div>
