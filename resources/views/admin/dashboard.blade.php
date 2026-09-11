@@ -219,24 +219,25 @@
           <div class="relative z-10 flex items-end gap-2 sm:gap-3.5 h-48 sm:h-56 px-2 pb-2">
             @foreach($monthlySeries as $point)
               @php
-                $heightPercent = max(5, (int) round(($point['value'] / $seriesMax) * 100));
-                $pctOfTotal = $totalSeriesRevenue > 0 ? round(($point['value'] / $totalSeriesRevenue) * 100, 1) : 0;
+                $hasRevenue = $point['value'] > 0;
+                $heightPercent = $hasRevenue && $seriesMax > 0 ? max(8, (int) round(($point['value'] / $seriesMax) * 75)) : 0;
               @endphp
-              <div class="flex-1 flex flex-col items-center justify-end h-full group relative">
+              <div class="flex-1 flex flex-col items-center justify-end h-full relative cursor-default" title="{{ $point['full_label'] }}: {{ money($point['value']) }}">
                 
-                {{-- Clean Floating Tooltip --}}
-                <div class="opacity-0 group-hover:opacity-100 transition-all duration-150 absolute -top-14 bg-gray-900/95 backdrop-blur-xs text-white text-[11px] font-semibold py-1.5 px-3 rounded-xl shadow-lg pointer-events-none z-30 whitespace-nowrap flex flex-col items-center">
-                  <span class="text-gray-300 text-[10px]">{{ $point['full_label'] }}</span>
-                  <span class="text-emerald-300 font-mono font-bold">{{ money($point['value']) }}</span>
-                  @if($point['value'] > 0)
-                    <span class="text-[9px] text-gray-400 font-mono">{{ $pctOfTotal }}% of 12m total</span>
-                  @endif
-                  <div class="w-2 h-2 bg-gray-900 rotate-45 -mb-1 mt-0.5"></div>
-                </div>
+                {{-- Direct Value Label Above Bar --}}
+                @if($hasRevenue)
+                  <span class="text-[10px] sm:text-[11px] font-bold font-mono text-emerald-700 mb-1.5 leading-none text-center whitespace-nowrap">
+                    {{ money($point['value']) }}
+                  </span>
+                @endif
 
                 {{-- Bar Column --}}
-                <div class="w-full max-w-[28px] mx-auto rounded-t-lg sm:rounded-t-xl transition-all duration-300 {{ $point['is_current'] ? 'bg-gradient-to-t from-primary to-teal-500 shadow-sm ring-2 ring-teal-400/40' : ($point['value'] > 0 ? 'bg-slate-800 hover:bg-primary transition-colors' : 'bg-gray-100') }}" style="height: {{ $heightPercent }}%">
-                </div>
+                @if($hasRevenue)
+                  <div class="w-full max-w-[28px] mx-auto rounded-t-lg sm:rounded-t-xl transition-all duration-300 {{ $point['is_current'] ? 'bg-gradient-to-t from-primary to-teal-500 shadow-sm ring-2 ring-teal-400/40' : 'bg-slate-800 hover:bg-primary transition-colors' }}" style="height: {{ $heightPercent }}%">
+                  </div>
+                @else
+                  <div class="w-3 h-0.5 bg-gray-200 rounded-full mx-auto mb-0.5"></div>
+                @endif
               </div>
             @endforeach
           </div>
