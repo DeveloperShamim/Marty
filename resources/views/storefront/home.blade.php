@@ -719,8 +719,8 @@ document.addEventListener('DOMContentLoaded', function () {
       breakpoints: {
         480: { slidesPerView: 3, spaceBetween: 12 },
         640: { slidesPerView: 4, spaceBetween: 14 },
-        768: { slidesPerView: 5, spaceBetween: 16 },
-        1024: { slidesPerView: 5, spaceBetween: 16 },
+        768: { slidesPerView: 5, spaceBetween: 14 },
+        1024: { slidesPerView: 6, spaceBetween: 16 },
       },
     });
   }
