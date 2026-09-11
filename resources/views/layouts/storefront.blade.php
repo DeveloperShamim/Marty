@@ -115,11 +115,17 @@
     .add-to-cart-btn:hover,
     .add-to-cart:hover,
     #pdAddToCart:hover,
-    #qmAddToCartBtn:hover,
-    [data-open-cart]:hover {
+    #qmAddToCartBtn:hover {
       background-color: var(--brand-primary) !important;
       border-color: var(--brand-primary) !important;
       color: #ffffff !important;
+    }
+
+    .site-header [data-open-cart],
+    .site-header [data-open-cart]:hover,
+    .site-header [data-open-cart]:focus {
+      background-color: transparent !important;
+      border-color: transparent !important;
     }
   </style>
 
