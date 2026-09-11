@@ -115,66 +115,35 @@
     </section>
   @endif
 
-  {{-- 2. TRUST & GUARANTEE BAR (Positioned directly under Hero for immediate CRO trust) --}}
-  <section class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 mt-3 sm:mt-4" data-reveal>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5 bg-white border border-stone-200/80 rounded-2xl p-3 sm:p-4 shadow-2xs">
-      
-      {{-- Trust 1: Cash on Delivery --}}
-      <div class="flex items-center gap-3 p-1.5 sm:p-2">
-        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-            <rect width="20" height="12" x="2" y="6" rx="2" />
-            <circle cx="12" cy="12" r="2" />
-            <path d="M6 12h.01M18 12h.01" />
-          </svg>
-        </div>
-        <div class="min-w-0">
-          <h4 class="text-xs sm:text-sm font-extrabold text-stone-900 truncate">Cash on Delivery</h4>
-          <p class="text-[11px] text-stone-500 truncate">Pay at your doorstep</p>
-        </div>
+  {{-- 2. TRUST & GUARANTEE BAR (Managed dynamically via https://marty.test/admin/features) --}}
+  @if(isset($features) && $features->isNotEmpty())
+    <section class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 mt-3 sm:mt-4" data-reveal>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 bg-white border border-stone-200/80 rounded-2xl p-3 sm:p-4 shadow-2xs">
+        @foreach($features as $index => $feature)
+          @php
+            $palettes = [
+              ['bg' => 'bg-amber-50/90', 'border' => 'border-amber-200/90', 'text' => 'text-amber-600'],
+              ['bg' => 'bg-emerald-50/90', 'border' => 'border-emerald-200/90', 'text' => 'text-emerald-600'],
+              ['bg' => 'bg-amber-50/90', 'border' => 'border-amber-200/90', 'text' => 'text-amber-600'],
+              ['bg' => 'bg-sky-50/90', 'border' => 'border-sky-200/90', 'text' => 'text-sky-600'],
+            ];
+            $palette = $palettes[$index % count($palettes)];
+          @endphp
+          <div class="flex items-center gap-3 p-1.5 sm:p-2 min-w-0">
+            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl {{ $palette['bg'] }} {{ $palette['text'] }} flex items-center justify-center shrink-0 border {{ $palette['border'] }} shadow-2xs">
+              {!! $feature->renderIconHtml('w-5 h-5', $palette['text']) !!}
+            </div>
+            <div class="min-w-0 flex-1">
+              <h4 class="text-xs sm:text-sm font-extrabold text-stone-900 truncate leading-snug">{{ $feature->title }}</h4>
+              @if($feature->subtitle)
+                <p class="text-[11px] text-stone-500 truncate mt-0.5">{{ $feature->subtitle }}</p>
+              @endif
+            </div>
+          </div>
+        @endforeach
       </div>
-
-      {{-- Trust 2: 100% Authentic --}}
-      <div class="flex items-center gap-3 p-1.5 sm:p-2">
-        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
-          </svg>
-        </div>
-        <div class="min-w-0">
-          <h4 class="text-xs sm:text-sm font-extrabold text-stone-900 truncate">100% Authentic</h4>
-          <p class="text-[11px] text-stone-500 truncate">Genuine warranty backed</p>
-        </div>
-      </div>
-
-      {{-- Trust 3: Express Delivery --}}
-      <div class="flex items-center gap-3 p-1.5 sm:p-2">
-        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.25V4.125C14.25 3.504 13.746 3 13.125 3H4.875c-.621 0-1.125.504-1.125 1.125v10.125M14.25 7.5h4.125" />
-          </svg>
-        </div>
-        <div class="min-w-0">
-          <h4 class="text-xs sm:text-sm font-extrabold text-stone-900 truncate">Express Delivery</h4>
-          <p class="text-[11px] text-stone-500 truncate">1–3 Days nationwide</p>
-        </div>
-      </div>
-
-      {{-- Trust 4: 3-Day Easy Exchange --}}
-      <div class="flex items-center gap-3 p-1.5 sm:p-2">
-        <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 border border-purple-100">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-          </svg>
-        </div>
-        <div class="min-w-0">
-          <h4 class="text-xs sm:text-sm font-extrabold text-stone-900 truncate">Easy Exchange</h4>
-          <p class="text-[11px] text-stone-500 truncate">Hassle-free size change</p>
-        </div>
-      </div>
-
-    </div>
-  </section>
+    </section>
+  @endif
 
   <main class="max-w-7xl mx-auto px-4 sm:px-5">
 

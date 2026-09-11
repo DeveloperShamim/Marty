@@ -358,10 +358,30 @@ class DatabaseSeeder extends Seeder
         Feature::query()->delete();
 
         $features = [
-            ['Express Delivery', 'Reliable 1–3 days home delivery across all 64 districts in Bangladesh.', '🚚', 0],
-            ['100% Authentic Quality', 'Guaranteed genuine brand products with official warranty.', '🛡️', 1],
-            ['7-Day Easy Exchange', 'Hassle-free size replacement and product return policy.', '🔁', 2],
-            ['Dedicated Customer Care', 'Friendly support via live chat, phone, and WhatsApp.', '✨', 3],
+            [
+                'Nationwide Delivery',
+                'Fast, tracked shipping in Bangladesh',
+                'M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0',
+                0,
+            ],
+            [
+                '100% Genuine Products',
+                'Direct source & genuine warranty',
+                'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+                1,
+            ],
+            [
+                'Flexible Payments',
+                'Cash on delivery & mobile banking',
+                'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
+                2,
+            ],
+            [
+                'Dedicated Support',
+                'Sat–Thu: 10:00 AM – 9:00 PM',
+                'M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z',
+                3,
+            ],
         ];
 
         foreach ($features as [$title, $subtitle, $icon, $position]) {

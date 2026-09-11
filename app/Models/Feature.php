@@ -36,6 +36,6 @@ class Feature extends Model
         }
 
         // Fallback: Emoji or text symbol
-        return '<span class="text-3xl inline-block leading-none select-none">' . e($icon) . '</span>';
+        return '<span class="text-2xl inline-block leading-none select-none">' . e($icon) . '</span>';
     }
 }
