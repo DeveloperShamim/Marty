@@ -161,8 +161,21 @@
       {{-- Dynamic Variants (Color, Size, Weight, Packaging, Pack Option, etc.) --}}
       @if(isset($variantGroups) && $variantGroups->isNotEmpty())
         @foreach($variantGroups as $groupType => $group)
+          @php
+            $groupLower = strtolower($groupType);
+            $catLower = strtolower($product->category->name ?? '');
+            $isSizeRelated = str_contains($groupLower, 'size') || str_contains($catLower, 'shoe') || str_contains($catLower, 'belt') || str_contains($catLower, 'watch') || str_contains($catLower, 'apparel') || str_contains($catLower, 'footwear');
+          @endphp
           <div data-variant-group="{{ $groupType }}" class="mb-3">
-            <p class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">{{ $groupType }}</p>
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-xs font-bold uppercase tracking-wider text-stone-500">{{ $groupType }}</p>
+              @if(setting('size_guide_enabled', '1') === '1' && $isSizeRelated)
+                <button type="button" data-open-size-guide data-category-hint="{{ $product->category->name ?? $groupType }}" class="text-xs font-bold text-brand-600 hover:text-brand-700 inline-flex items-center gap-1 transition-colors cursor-pointer" title="Open Size Guide & Measurements">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></svg>
+                  <span>Size Guide</span>
+                </button>
+              @endif
+            </div>
             <div class="flex flex-wrap gap-2">
               @foreach($group->options as $optValue)
                 <button type="button" class="variant-btn px-4 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all border border-stone-200 text-stone-700 hover:border-stone-300" data-type="{{ $groupType }}" data-value="{{ $optValue }}">{{ $optValue }}</button>
