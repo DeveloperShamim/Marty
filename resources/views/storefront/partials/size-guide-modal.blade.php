@@ -225,6 +225,17 @@
   </div>
 </div>
 
+@php
+  $customShoes = json_decode((string) setting('size_guide_shoes_data'), true);
+  $shoesData = (!empty($customShoes) && is_array($customShoes)) ? $customShoes : \App\Http\Controllers\Admin\SizeGuideController::defaultShoes();
+
+  $customBelts = json_decode((string) setting('size_guide_belts_data'), true);
+  $beltsData = (!empty($customBelts) && is_array($customBelts)) ? $customBelts : \App\Http\Controllers\Admin\SizeGuideController::defaultBelts();
+
+  $customWatches = json_decode((string) setting('size_guide_watches_data'), true);
+  $watchesData = (!empty($customWatches) && is_array($customWatches)) ? $customWatches : \App\Http\Controllers\Admin\SizeGuideController::defaultWatches();
+@endphp
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const modal = document.getElementById('sizeGuideModal');
@@ -232,37 +243,18 @@ document.addEventListener('DOMContentLoaded', function () {
   let currentUnit = '{{ setting("size_guide_default_unit", "cm") }}';
   let currentTab = 'shoes';
 
-  // Size data definitions in CM
-  const shoesData = [
-    { eu: '39', usM: '6.5', usW: '8.0', uk: '5.5', cm: 24.5 },
-    { eu: '40', usM: '7.5', usW: '9.0', uk: '6.5', cm: 25.0 },
-    { eu: '41', usM: '8.0', usW: '9.5', uk: '7.0', cm: 25.8 },
-    { eu: '42', usM: '8.5', usW: '10.0', uk: '7.5', cm: 26.5 },
-    { eu: '43', usM: '9.5', usW: '11.0', uk: '8.5', cm: 27.3 },
-    { eu: '44', usM: '10.5', usW: '12.0', uk: '9.5', cm: 28.0 },
-    { eu: '45', usM: '11.5', usW: '13.0', uk: '10.5', cm: 28.8 },
-    { eu: '46', usM: '12.0', usW: '13.5', uk: '11.0', cm: 29.5 }
-  ];
-
-  const beltsData = [
-    { size: '32 (S)', waistCm: 81, pants: '28 - 30', strapLengthCm: 95 },
-    { size: '34 (M)', waistCm: 86, pants: '30 - 32', strapLengthCm: 100 },
-    { size: '36 (L)', waistCm: 91, pants: '32 - 34', strapLengthCm: 105 },
-    { size: '38 (XL)', waistCm: 97, pants: '34 - 36', strapLengthCm: 110 },
-    { size: '40 (XXL)', waistCm: 102, pants: '36 - 38', strapLengthCm: 115 }
-  ];
-
-  const watchesData = [
-    { wristCm: '14.0 - 16.0', caseSize: '36mm - 38mm', look: 'Classic / Minimalist', strap: '18mm - 20mm' },
-    { wristCm: '16.0 - 18.0', caseSize: '40mm - 42mm', look: 'Standard / Versatile', strap: '20mm - 22mm' },
-    { wristCm: '18.0 - 20.0+', caseSize: '44mm - 46mm', look: 'Bold / Oversized', strap: '22mm - 24mm' }
-  ];
+  // Dynamic size data definitions
+  const shoesData = {!! json_encode($shoesData) !!};
+  const beltsData = {!! json_encode($beltsData) !!};
+  const watchesData = {!! json_encode($watchesData) !!};
 
   function formatVal(valCm) {
+    const num = parseFloat(valCm);
+    if (isNaN(num)) return valCm;
     if (currentUnit === 'in') {
-      return (valCm / 2.54).toFixed(1) + '"';
+      return (num / 2.54).toFixed(1) + '"';
     }
-    return valCm.toFixed(1) + ' cm';
+    return num.toFixed(1) + ' cm';
   }
 
   function renderTables(highlightRowIndex = -1) {
@@ -274,11 +266,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (shoesBody) {
       shoesBody.innerHTML = shoesData.map((row, idx) => `
         <tr class="transition-colors ${idx === highlightRowIndex && currentTab === 'shoes' ? 'bg-brand-100/60 font-bold text-brand-900' : (idx % 2 === 0 ? 'bg-white' : 'bg-stone-50/60')} hover:bg-brand-50">
-          <td class="py-2.5 px-4 font-bold text-brand-600">${row.eu}</td>
-          <td class="py-2.5 px-4">${row.usM}</td>
-          <td class="py-2.5 px-4">${row.usW}</td>
-          <td class="py-2.5 px-4">${row.uk}</td>
-          <td class="py-2.5 px-4 font-semibold">${formatVal(row.cm)}</td>
+          <td class="py-2.5 px-4 font-bold text-brand-600">${row.eu ?? ''}</td>
+          <td class="py-2.5 px-4">${row.usM ?? ''}</td>
+          <td class="py-2.5 px-4">${row.usW ?? ''}</td>
+          <td class="py-2.5 px-4">${row.uk ?? ''}</td>
+          <td class="py-2.5 px-4 font-semibold">${formatVal(row.cm ?? 0)}</td>
         </tr>
       `).join('');
     }
@@ -288,10 +280,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (beltsBody) {
       beltsBody.innerHTML = beltsData.map((row, idx) => `
         <tr class="transition-colors ${idx === highlightRowIndex && currentTab === 'belts' ? 'bg-brand-100/60 font-bold text-brand-900' : (idx % 2 === 0 ? 'bg-white' : 'bg-stone-50/60')} hover:bg-brand-50">
-          <td class="py-2.5 px-4 font-bold text-brand-600">${row.size}</td>
-          <td class="py-2.5 px-4 font-semibold">${formatVal(row.waistCm)}</td>
-          <td class="py-2.5 px-4">${row.pants}</td>
-          <td class="py-2.5 px-4">${formatVal(row.strapLengthCm)}</td>
+          <td class="py-2.5 px-4 font-bold text-brand-600">${row.size ?? ''}</td>
+          <td class="py-2.5 px-4 font-semibold">${formatVal(row.waistCm ?? 0)}</td>
+          <td class="py-2.5 px-4">${row.pants ?? ''}</td>
+          <td class="py-2.5 px-4">${formatVal(row.strapLengthCm ?? 0)}</td>
         </tr>
       `).join('');
     }
@@ -300,18 +292,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const watchesBody = document.getElementById('sgWatchesTableBody');
     if (watchesBody) {
       watchesBody.innerHTML = watchesData.map((row, idx) => {
-        let displayWrist = row.wristCm;
-        if (currentUnit === 'in') {
+        let displayWrist = row.wristCm ?? '';
+        if (currentUnit === 'in' && String(row.wristCm).includes(' - ')) {
           displayWrist = row.wristCm.split(' - ').map(v => (parseFloat(v) / 2.54).toFixed(1)).join(' - ') + '"';
         } else {
           displayWrist = row.wristCm + ' cm';
         }
         return `
-          <tr class="transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-stone-50/60'} hover:bg-brand-50">
+          <tr class="transition-colors ${idx === highlightRowIndex && currentTab === 'watches' ? 'bg-brand-100/60 font-bold text-brand-900' : (idx % 2 === 0 ? 'bg-white' : 'bg-stone-50/60')} hover:bg-brand-50">
             <td class="py-2.5 px-4 font-bold text-brand-600">${displayWrist}</td>
-            <td class="py-2.5 px-4 font-bold text-stone-900">${row.caseSize}</td>
-            <td class="py-2.5 px-4">${row.look}</td>
-            <td class="py-2.5 px-4 font-medium text-stone-600">${row.strap}</td>
+            <td class="py-2.5 px-4 font-bold text-stone-900">${row.caseSize ?? ''}</td>
+            <td class="py-2.5 px-4">${row.look ?? ''}</td>
+            <td class="py-2.5 px-4 font-medium text-stone-600">${row.strap ?? ''}</td>
           </tr>
         `;
       }).join('');
@@ -398,6 +390,9 @@ document.addEventListener('DOMContentLoaded', function () {
       if (tabId === 'belts') {
         calcLabel.innerHTML = `Enter Waist Size (<span class="sg-unit-text">${currentUnit.toUpperCase()}</span>):`;
         calcInput.placeholder = currentUnit === 'cm' ? 'e.g. 86' : 'e.g. 34';
+      } else if (tabId === 'watches') {
+        calcLabel.innerHTML = `Enter Wrist Circumference (<span class="sg-unit-text">${currentUnit.toUpperCase()}</span>):`;
+        calcInput.placeholder = currentUnit === 'cm' ? 'e.g. 17.0' : 'e.g. 6.7';
       } else {
         calcLabel.innerHTML = `Enter Foot Length (<span class="sg-unit-text">${currentUnit.toUpperCase()}</span>):`;
         calcInput.placeholder = currentUnit === 'cm' ? 'e.g. 26.5' : 'e.g. 10.4';
@@ -450,44 +445,67 @@ document.addEventListener('DOMContentLoaded', function () {
         valCm = rawVal * 2.54;
       }
 
-      if (currentTab === 'shoes') {
+      if (currentTab === 'shoes' && shoesData.length > 0) {
         let match = shoesData[0];
         let matchIdx = 0;
         for (let i = 0; i < shoesData.length; i++) {
-          if (valCm <= shoesData[i].cm + 0.3) {
+          if (valCm <= parseFloat(shoesData[i].cm) + 0.3) {
             match = shoesData[i];
             matchIdx = i;
             break;
           }
         }
-        if (valCm > shoesData[shoesData.length - 1].cm + 0.3) {
+        if (valCm > parseFloat(shoesData[shoesData.length - 1].cm) + 0.3) {
           match = shoesData[shoesData.length - 1];
           matchIdx = shoesData.length - 1;
         }
 
         if (resultText && resultBox) {
-          resultText.textContent = `EU ${match.eu} (US Men ${match.usM} / UK ${match.uk})`;
+          resultText.textContent = `Recommended: EU ${match.eu} (US Men ${match.usM} / UK ${match.uk})`;
           resultBox.classList.remove('hidden');
         }
         renderTables(matchIdx);
 
-      } else if (currentTab === 'belts') {
+      } else if (currentTab === 'belts' && beltsData.length > 0) {
         let match = beltsData[0];
         let matchIdx = 0;
         for (let i = 0; i < beltsData.length; i++) {
-          if (valCm <= beltsData[i].waistCm + 3) {
+          if (valCm <= parseFloat(beltsData[i].waistCm) + 3) {
             match = beltsData[i];
             matchIdx = i;
             break;
           }
         }
-        if (valCm > beltsData[beltsData.length - 1].waistCm + 3) {
+        if (valCm > parseFloat(beltsData[beltsData.length - 1].waistCm) + 3) {
           match = beltsData[beltsData.length - 1];
           matchIdx = beltsData.length - 1;
         }
 
         if (resultText && resultBox) {
-          resultText.textContent = `Belt Size ${match.size} (Pants ${match.pants})`;
+          resultText.textContent = `Recommended: Belt Size ${match.size} (Pants ${match.pants})`;
+          resultBox.classList.remove('hidden');
+        }
+        renderTables(matchIdx);
+
+      } else if (currentTab === 'watches' && watchesData.length > 0) {
+        let match = watchesData[0];
+        let matchIdx = 0;
+        for (let i = 0; i < watchesData.length; i++) {
+          let parts = String(watchesData[i].wristCm).replace('+', '').split(' - ').map(parseFloat);
+          let upper = parts[1] || (parts[0] + 2);
+          if (valCm <= upper + 0.5) {
+            match = watchesData[i];
+            matchIdx = i;
+            break;
+          }
+        }
+        if (valCm > 18) {
+          match = watchesData[watchesData.length - 1];
+          matchIdx = watchesData.length - 1;
+        }
+
+        if (resultText && resultBox) {
+          resultText.textContent = `Recommended: ${match.caseSize} Case (${match.look}) & ${match.strap} Strap`;
           resultBox.classList.remove('hidden');
         }
         renderTables(matchIdx);

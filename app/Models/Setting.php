@@ -43,6 +43,12 @@ class Setting extends Model
         static::forgetCache();
     }
 
+    public static function forget(string $key): void
+    {
+        static::where('key', $key)->delete();
+        static::forgetCache();
+    }
+
     public static function forgetCache(): void
     {
         static::$bag = null;
