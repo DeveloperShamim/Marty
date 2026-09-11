@@ -189,35 +189,35 @@
             <p class="text-xs text-stone-500 mt-1">Discover curated lifestyle essentials &amp; smart tech</p>
           </div>
           <div class="flex items-center gap-2">
-            <button type="button" id="catPrev" class="h-8 w-8 rounded-full border border-stone-200 bg-white hover:bg-stone-900 hover:text-white hover:border-stone-900 text-stone-600 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Previous Category">
+            <button type="button" id="catPrev" class="h-8 w-8 rounded-full border border-stone-200 bg-white hover:bg-brand-500 hover:text-white hover:border-brand-500 text-stone-600 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Previous Category">
               <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
             </button>
-            <button type="button" id="catNext" class="h-8 w-8 rounded-full border border-stone-200 bg-white hover:bg-stone-900 hover:text-white hover:border-stone-900 text-stone-600 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Next Category">
+            <button type="button" id="catNext" class="h-8 w-8 rounded-full border border-stone-200 bg-white hover:bg-brand-500 hover:text-white hover:border-brand-500 text-stone-600 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Next Category">
               <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </button>
           </div>
         </div>
 
         <div class="relative group/carousel">
-          <div class="swiper categoriesSwiper !py-1 !px-0.5 -mx-0.5">
+          <div class="swiper categoriesSwiper !py-2.5 !px-1 -mx-1">
             <div class="swiper-wrapper">
               @foreach($categories as $cat)
                 <div class="swiper-slide">
-                  <a href="{{ route('shop.category', $cat) }}" class="group block rounded-2xl border border-stone-200/80 bg-white hover:border-stone-900 p-3 sm:p-3.5 text-center transition-all duration-200 shadow-2xs hover:shadow-md">
-                    <div class="relative w-full aspect-square rounded-xl overflow-hidden mb-2.5 bg-stone-100 grid place-items-center">
+                  <a href="{{ route('shop.category', $cat) }}" class="group block rounded-2xl bg-white p-3 sm:p-3.5 text-center transition-all duration-300 shadow-xs hover:shadow-md hover:-translate-y-1">
+                    <div class="relative w-full aspect-square rounded-xl overflow-hidden mb-2.5 bg-stone-50 grid place-items-center">
                       @if($cat->image)
-                        <img src="{{ $cat->imageUrl() }}" alt="{{ $cat->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        <img src="{{ $cat->imageUrl() }}" alt="{{ $cat->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-108" />
                       @else
-                        <div class="w-full h-full grid place-items-center bg-stone-100 text-stone-700 font-extrabold text-2xl group-hover:scale-105 transition-transform">
+                        <div class="w-full h-full grid place-items-center bg-stone-100 text-stone-700 font-extrabold text-2xl group-hover:scale-108 transition-transform">
                           {{ mb_strtoupper(mb_substr($cat->name, 0, 1)) }}
                         </div>
                       @endif
                     </div>
-                    <h3 class="font-bold text-xs sm:text-sm text-stone-900 group-hover:text-stone-950 transition-colors line-clamp-1 leading-snug">{{ $cat->name }}</h3>
+                    <h3 class="font-bold text-xs sm:text-sm text-stone-800 group-hover:text-brand-600 transition-colors line-clamp-1 leading-snug">{{ $cat->name }}</h3>
                     @if(isset($cat->products_count) && $cat->products_count > 0)
-                      <p class="text-[11px] font-semibold text-stone-400 mt-0.5">{{ $cat->products_count }} {{ Str::plural('Item', $cat->products_count) }}</p>
+                      <p class="text-[11px] font-medium text-stone-400 mt-0.5">{{ $cat->products_count }} {{ Str::plural('Item', $cat->products_count) }}</p>
                     @else
-                      <p class="text-[11px] font-semibold text-stone-400 mt-0.5">Explore</p>
+                      <p class="text-[11px] font-medium text-stone-400 mt-0.5">Explore</p>
                     @endif
                   </a>
                 </div>
@@ -348,30 +348,30 @@
             <p class="text-xs text-stone-500 mt-1">{{ setting('home_featured_brands_subtitle', '100% genuine products sourced directly from authorized channels') }}</p>
           </div>
           <div class="flex items-center gap-2">
-            <a href="{{ route('shop') }}" class="text-xs font-bold text-stone-600 hover:text-stone-900 mr-2 hidden sm:inline-block">View All Brands &rarr;</a>
-            <button type="button" id="brandPrev" class="h-8 w-8 rounded-full border border-stone-200 bg-white hover:bg-stone-900 hover:text-white hover:border-stone-900 text-stone-600 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Previous Brand">
+            <a href="{{ route('shop') }}" class="text-xs font-bold text-stone-600 hover:text-brand-600 mr-2 hidden sm:inline-block transition-colors">View All Brands &rarr;</a>
+            <button type="button" id="brandPrev" class="h-8 w-8 rounded-full border border-stone-200 bg-white hover:bg-brand-500 hover:text-white hover:border-brand-500 text-stone-600 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Previous Brand">
               <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
             </button>
-            <button type="button" id="brandNext" class="h-8 w-8 rounded-full border border-stone-200 bg-white hover:bg-stone-900 hover:text-white hover:border-stone-900 text-stone-600 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Next Brand">
+            <button type="button" id="brandNext" class="h-8 w-8 rounded-full border border-stone-200 bg-white hover:bg-brand-500 hover:text-white hover:border-brand-500 text-stone-600 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Next Brand">
               <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </button>
           </div>
         </div>
 
         <div class="relative group/carousel">
-          <div class="swiper brandsSwiper !py-1 !px-0.5 -mx-0.5">
+          <div class="swiper brandsSwiper !py-2.5 !px-1 -mx-1">
             <div class="swiper-wrapper">
               @foreach($featuredBrands as $b)
                 <div class="swiper-slide">
-                  <a href="{{ route('shop.brand', $b) }}" class="group flex flex-col items-center justify-center p-3 sm:p-4 rounded-2xl border border-stone-200/80 bg-white hover:border-stone-900 hover:shadow-md transition-all text-center h-full">
-                    <div class="h-12 sm:h-14 w-full flex items-center justify-center mb-2 p-1 bg-stone-50 rounded-xl group-hover:bg-stone-100 transition-colors">
-                      <img src="{{ $b->logoUrl() }}" alt="{{ $b->name }}" loading="lazy" class="max-h-full max-w-full object-contain transition-transform duration-200 group-hover:scale-105" />
+                  <a href="{{ route('shop.brand', $b) }}" class="group flex flex-col items-center justify-center p-3.5 sm:p-4 rounded-2xl bg-white transition-all duration-300 shadow-xs hover:shadow-md hover:-translate-y-1 text-center h-full">
+                    <div class="h-14 sm:h-16 w-full flex items-center justify-center mb-2.5 p-2 bg-stone-50 rounded-xl group-hover:bg-brand-50/50 transition-colors duration-300">
+                      <img src="{{ $b->logoUrl() }}" alt="{{ $b->name }}" loading="lazy" class="max-h-full max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-110" />
                     </div>
-                    <span class="text-xs font-bold text-stone-900 group-hover:text-black truncate w-full">{{ $b->name }}</span>
+                    <span class="text-xs sm:text-sm font-bold text-stone-800 group-hover:text-brand-600 transition-colors truncate w-full">{{ $b->name }}</span>
                     @if(isset($b->products_count) && $b->products_count > 0)
-                      <span class="text-[10px] text-stone-400 font-medium mt-0.5">{{ $b->products_count }} {{ Str::plural('item', $b->products_count) }}</span>
+                      <span class="text-[10px] sm:text-[11px] text-stone-400 group-hover:text-brand-500/80 font-medium mt-0.5 transition-colors">{{ $b->products_count }} {{ Str::plural('item', $b->products_count) }}</span>
                     @else
-                      <span class="text-[10px] text-stone-400 font-medium mt-0.5">Official</span>
+                      <span class="text-[10px] sm:text-[11px] text-stone-400 group-hover:text-brand-500/80 font-medium mt-0.5 transition-colors">Official Brand</span>
                     @endif
                   </a>
                 </div>
@@ -465,10 +465,10 @@
             <p class="text-xs text-stone-500 mt-1">Apply promo codes at checkout for instant savings</p>
           </div>
           <div class="flex items-center gap-2">
-            <button type="button" id="couponPrev" class="h-8 w-8 rounded-full bg-white hover:bg-stone-900 hover:text-white border border-stone-200 text-stone-700 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Previous Coupon">
+            <button type="button" id="couponPrev" class="h-8 w-8 rounded-full bg-white hover:bg-brand-500 hover:text-white border border-stone-200 hover:border-brand-500 text-stone-700 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Previous Coupon">
               <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
             </button>
-            <button type="button" id="couponNext" class="h-8 w-8 rounded-full bg-white hover:bg-stone-900 hover:text-white border border-stone-200 text-stone-700 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Next Coupon">
+            <button type="button" id="couponNext" class="h-8 w-8 rounded-full bg-white hover:bg-brand-500 hover:text-white border border-stone-200 hover:border-brand-500 text-stone-700 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Next Coupon">
               <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </button>
           </div>
