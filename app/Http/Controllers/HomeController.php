@@ -20,6 +20,7 @@ class HomeController extends Controller
 
         $categories = Category::where('is_active', true)
             ->withCount(['products' => fn ($q) => $q->published()])
+            ->orderByDesc('products_count')
             ->orderBy('position')
             ->get();
 
