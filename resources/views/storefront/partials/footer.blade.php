@@ -117,8 +117,8 @@
         @endif
       </div>
 
-      {{-- Link Columns: Hidden on Mobile, visible on Tablet/Desktop --}}
-      <div class="hidden md:grid md:col-span-2 lg:col-span-6 grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8">
+      {{-- Link Columns: 2 Columns on Mobile, 3 on Tablet, 6 Columns on Large Desktop --}}
+      <div class="col-span-1 md:col-span-2 lg:col-span-6 grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-8">
         
         {{-- Column 1: Explore Shop --}}
         <div>
@@ -165,10 +165,9 @@
 
       </div>
 
-      {{-- Column 4: Stay Updated & Payments --}}
+      {{-- Column 4: Stay Updated & Payments (Full width on mobile/tablet, 2 cols on desktop) --}}
       <div class="col-span-1 md:col-span-2 lg:col-span-2 space-y-6">
-        {{-- Stay Updated: Hidden on Mobile, visible on Tablet/Desktop --}}
-        <div class="hidden md:block">
+        <div>
           <h4 class="text-xs font-bold uppercase tracking-wider text-stone-900 mb-2 pb-1 inline-block border-b-2 border-brand-500">Stay Updated</h4>
           <p class="text-xs text-stone-500 mb-3 leading-relaxed">Subscribe for latest drops, exclusive coupons &amp; tech deals.</p>
           <form onsubmit="event.preventDefault(); var btn = this.querySelector('button'); btn.innerText = 'Subscribed!'; btn.disabled = true; this.querySelector('input').value = '';" class="space-y-2">
