@@ -153,10 +153,17 @@
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
     {{-- Left: Revenue Trend Chart (2 cols on desktop) --}}
+    @php
+      $monthlyAvg = $totalSeriesRevenue > 0 ? ($totalSeriesRevenue / 12) : 0;
+      $currentMonthData = $monthlySeries->firstWhere('is_current', true) ?? ['value' => 0];
+      $activeSalesMonths = $monthlySeries->where('value', '>', 0)->count();
+    @endphp
     <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-6 shadow-2xs lg:col-span-2 flex flex-col justify-between space-y-5">
-      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-4">
+      
+      {{-- Card Header & Filter Bar --}}
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
         <div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <h2 class="font-bold text-sm sm:text-base text-gray-900">Monthly Revenue Performance</h2>
             <span class="px-2 py-0.5 text-[11px] font-semibold rounded-md bg-gray-100 text-gray-600 border border-gray-200">
               12 Months
@@ -167,68 +174,108 @@
           </p>
         </div>
 
-        <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-          <div class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs">
-            <span class="font-medium">Peak:</span>
-            <span class="font-bold font-mono">{{ $peakMonth['full_label'] ?? 'N/A' }} ({{ money($peakMonth['value'] ?? 0) }})</span>
-          </div>
-
+        <div class="flex items-center gap-2.5">
           <form method="GET" action="{{ route('admin.dashboard') }}" class="flex items-center gap-1.5">
-            <label for="year" class="text-xs font-semibold text-gray-600">Year:</label>
-            <select name="year" id="year" onchange="this.form.submit()" class="text-xs bg-gray-50 border border-gray-300 rounded-lg px-2.5 py-1 text-gray-800 font-semibold focus:outline-none focus:ring-2 focus:ring-primary shadow-2xs cursor-pointer">
-              @foreach($availableYears as $yr)
-                <option value="{{ $yr }}" {{ $selectedYear == $yr ? 'selected' : '' }}>{{ $yr }}</option>
-              @endforeach
-            </select>
+            <label for="year" class="text-xs font-semibold text-gray-500">Filter Year:</label>
+            <div class="relative">
+              <select name="year" id="year" onchange="this.form.submit()" class="text-xs bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded-xl px-3 py-1.5 pr-7 text-gray-800 font-bold focus:outline-none focus:ring-2 focus:ring-primary shadow-2xs cursor-pointer appearance-none">
+                @foreach($availableYears as $yr)
+                  <option value="{{ $yr }}" {{ $selectedYear == $yr ? 'selected' : '' }}>{{ $yr }}</option>
+                @endforeach
+              </select>
+              <svg class="w-3 h-3 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </div>
           </form>
         </div>
       </div>
 
-      {{-- Bar Chart Canvas --}}
+      {{-- Total Period Revenue Highlight --}}
+      <div class="flex flex-wrap items-baseline justify-between gap-2 px-1">
+        <div>
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 block">Total 12-Month Revenue</span>
+          <p class="text-2xl sm:text-3xl font-bold text-gray-900 font-mono tracking-tight mt-0.5">{{ money($totalSeriesRevenue) }}</p>
+        </div>
+        <div class="text-right">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold {{ $activeSalesMonths > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-gray-50 text-gray-600 border border-gray-200' }}">
+            <span class="w-1.5 h-1.5 rounded-full {{ $activeSalesMonths > 0 ? 'bg-emerald-500' : 'bg-gray-400' }}"></span>
+            {{ $activeSalesMonths }} / 12 Months with Sales
+          </span>
+        </div>
+      </div>
+
+      {{-- Interactive Bar Chart Canvas with Background Grid Guidelines --}}
       <div class="pt-2 overflow-x-auto no-scrollbar">
-        <div class="min-w-[440px]">
-          <div class="flex items-end gap-2 sm:gap-3 h-48 sm:h-56 px-2 border-b border-gray-200 pb-2">
+        <div class="min-w-[460px] relative">
+          
+          {{-- Subtle Background Guidelines --}}
+          <div class="absolute inset-0 flex flex-col justify-between pointer-events-none pb-8 pt-1" aria-hidden="true">
+            <div class="w-full border-b border-dashed border-gray-100"></div>
+            <div class="w-full border-b border-dashed border-gray-100"></div>
+            <div class="w-full border-b border-dashed border-gray-100"></div>
+            <div class="w-full border-b border-gray-200"></div>
+          </div>
+
+          {{-- Bars Container --}}
+          <div class="relative z-10 flex items-end gap-2 sm:gap-3.5 h-48 sm:h-56 px-2 pb-2">
             @foreach($monthlySeries as $point)
               @php
                 $heightPercent = max(5, (int) round(($point['value'] / $seriesMax) * 100));
+                $pctOfTotal = $totalSeriesRevenue > 0 ? round(($point['value'] / $totalSeriesRevenue) * 100, 1) : 0;
               @endphp
               <div class="flex-1 flex flex-col items-center justify-end h-full group relative">
-                {{-- Tooltip on hover --}}
-                <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-150 absolute -top-12 bg-gray-900 text-white text-[11px] font-semibold py-1.5 px-2.5 rounded-lg shadow-md pointer-events-none z-20 whitespace-nowrap flex flex-col items-center">
-                  <span>{{ $point['full_label'] }}</span>
-                  <span class="text-emerald-300 font-mono">{{ money($point['value']) }}</span>
+                
+                {{-- Clean Floating Tooltip --}}
+                <div class="opacity-0 group-hover:opacity-100 transition-all duration-150 absolute -top-14 bg-gray-900/95 backdrop-blur-xs text-white text-[11px] font-semibold py-1.5 px-3 rounded-xl shadow-lg pointer-events-none z-30 whitespace-nowrap flex flex-col items-center">
+                  <span class="text-gray-300 text-[10px]">{{ $point['full_label'] }}</span>
+                  <span class="text-emerald-300 font-mono font-bold">{{ money($point['value']) }}</span>
+                  @if($point['value'] > 0)
+                    <span class="text-[9px] text-gray-400 font-mono">{{ $pctOfTotal }}% of 12m total</span>
+                  @endif
                   <div class="w-2 h-2 bg-gray-900 rotate-45 -mb-1 mt-0.5"></div>
                 </div>
 
-                {{-- The Bar --}}
-                <div class="w-full rounded-t-lg transition-all duration-300 {{ $point['is_current'] ? 'bg-primary shadow-xs' : ($point['value'] > 0 ? 'bg-gray-700 group-hover:bg-primary/90' : 'bg-gray-100') }}" style="height: {{ $heightPercent }}%">
+                {{-- Bar Column --}}
+                <div class="w-full max-w-[28px] mx-auto rounded-t-lg sm:rounded-t-xl transition-all duration-300 {{ $point['is_current'] ? 'bg-gradient-to-t from-primary to-teal-500 shadow-sm ring-2 ring-teal-400/40' : ($point['value'] > 0 ? 'bg-slate-800 hover:bg-primary transition-colors' : 'bg-gray-100') }}" style="height: {{ $heightPercent }}%">
                 </div>
               </div>
             @endforeach
           </div>
 
-          {{-- Month Labels --}}
-          <div class="mt-2.5 grid grid-cols-12 text-center text-[10px] sm:text-[11px] font-semibold text-gray-400">
+          {{-- X-Axis Labels --}}
+          <div class="mt-2.5 grid grid-cols-12 text-center text-[10px] sm:text-[11px] font-semibold text-gray-400 relative z-10">
             @foreach($monthlySeries as $point)
-              <span class="{{ $point['is_current'] ? 'text-primary font-bold underline decoration-2 underline-offset-4' : ($point['value'] > 0 ? 'text-gray-800' : '') }}">
-                {{ $point['label'] }}
-              </span>
+              <div class="flex flex-col items-center gap-0.5">
+                <span class="{{ $point['is_current'] ? 'text-primary font-bold' : ($point['value'] > 0 ? 'text-gray-700 font-medium' : '') }}">
+                  {{ $point['label'] }}
+                </span>
+                @if($point['is_current'])
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary" title="Current Month"></span>
+                @endif
+              </div>
             @endforeach
           </div>
+
         </div>
       </div>
 
-      {{-- Footer Summary --}}
-      <div class="pt-3 border-t border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-gray-500">
-        <div>
-          <span>12-Month Total Sales: </span>
-          <strong class="font-bold text-gray-900 font-mono">{{ money($totalSeriesRevenue) }}</strong>
+      {{-- Bottom Key Insights Strip --}}
+      <div class="pt-3 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs text-gray-600">
+        <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-200/70 flex items-center justify-between">
+          <span class="text-gray-400 text-[11px]">Peak Month:</span>
+          <span class="font-bold text-gray-900 font-mono text-[11px] truncate max-w-[140px]" title="{{ $peakMonth['full_label'] ?? 'N/A' }}">
+            {{ $peakMonth['label'] ?? '' }} &middot; {{ money($peakMonth['value'] ?? 0) }}
+          </span>
         </div>
-        <div class="flex items-center gap-3 text-[11px]">
-          <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-primary"></span> Current Month</span>
-          <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-gray-700"></span> Verified Sales</span>
+        <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-200/70 flex items-center justify-between">
+          <span class="text-gray-400 text-[11px]">Monthly Average:</span>
+          <span class="font-bold text-gray-900 font-mono text-[11px]">{{ money($monthlyAvg) }}</span>
+        </div>
+        <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-200/70 flex items-center justify-between">
+          <span class="text-gray-400 text-[11px]">Current Month:</span>
+          <span class="font-bold text-primary font-mono text-[11px]">{{ money($currentMonthData['value'] ?? 0) }}</span>
         </div>
       </div>
+
     </div>
 
     {{-- Right: Action Items & Operations (1 col on desktop) --}}
