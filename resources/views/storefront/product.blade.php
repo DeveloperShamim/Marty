@@ -57,144 +57,111 @@
   </nav>
 
   {{-- Main Product Card Container --}}
-  <div class="bg-white rounded-2xl border border-stone-200/80 p-4 sm:p-7 flex flex-col md:flex-row gap-7 lg:gap-10 items-start shadow-xs">
+  <div class="bg-white rounded-2xl border border-stone-200/80 p-5 sm:p-8 flex flex-col md:flex-row gap-8 lg:gap-12 items-start shadow-xs">
     {{-- Left: Vertical Thumbnails + Main Image Frame --}}
     <div class="flex flex-col-reverse sm:flex-row gap-4 items-start w-full md:w-1/2 shrink-0">
       @if($product->images->count() > 0)
-        <div class="flex sm:flex-col gap-3 overflow-x-auto sm:overflow-y-auto w-full sm:w-20 shrink-0 pb-1 sm:pb-0 max-h-[480px] no-scrollbar">
+        <div class="flex sm:flex-col gap-2.5 overflow-x-auto sm:overflow-y-auto w-full sm:w-20 shrink-0 pb-1 sm:pb-0 max-h-[480px] no-scrollbar">
           @foreach($product->images as $img)
-            <button type="button" data-thumb="{{ $img->url() }}" data-color="{{ strtolower(trim($img->color ?? '')) }}" data-variation-tag="{{ strtolower(trim($img->color ?? '')) }}" data-alt="{{ strtolower(trim($img->alt ?? '')) }}" class="gallery-thumb-btn w-16 h-16 sm:w-20 sm:h-20 rounded-xl border {{ $loop->first ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-stone-200 opacity-80 hover:opacity-100' }} shrink-0 bg-white overflow-hidden relative transition-all focus:outline-none">
-              <img src="{{ $img->url() }}" loading="lazy" decoding="async" class="w-full h-full object-cover" alt="{{ $img->alt }}">
-              @if($loop->first)
-                <span data-active-check class="absolute inset-0 flex items-center justify-center pointer-events-none"><span class="w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-xs shadow-sm">✓</span></span>
-              @endif
+            <button type="button" data-thumb="{{ $img->url() }}" data-color="{{ strtolower(trim($img->color ?? '')) }}" data-variation-tag="{{ strtolower(trim($img->color ?? '')) }}" data-alt="{{ strtolower(trim($img->alt ?? '')) }}" class="gallery-thumb-btn w-16 h-16 sm:w-20 sm:h-20 rounded-xl border {{ $loop->first ? 'border-stone-900 ring-1 ring-stone-900/10' : 'border-stone-200 opacity-70 hover:opacity-100 hover:border-stone-400' }} shrink-0 bg-white overflow-hidden p-1 transition-all focus:outline-none cursor-pointer">
+              <img src="{{ $img->url() }}" loading="lazy" decoding="async" class="w-full h-full object-contain" alt="{{ $img->alt }}">
             </button>
           @endforeach
         </div>
       @endif
 
-      <div class="flex-1 relative border border-stone-200/80 rounded-2xl aspect-square w-full bg-white overflow-hidden shadow-xs flex items-center justify-center group">
-        {{-- Unified Floating Badge --}}
-        <div class="absolute top-4 left-4 z-10 flex flex-col gap-1.5 items-start pointer-events-none">
+      <div class="flex-1 relative border border-stone-200/80 rounded-2xl aspect-square w-full bg-white overflow-hidden shadow-xs flex items-center justify-center group p-4">
+        {{-- Minimal Floating Badge --}}
+        <div class="absolute top-3.5 left-3.5 z-10 pointer-events-none">
           @if($isOutOfStock)
-            <span class="bg-stone-900/90 backdrop-blur-md text-white font-extrabold text-xs tracking-wider uppercase px-3.5 py-1.5 rounded-full shadow-md flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+            <span class="bg-stone-900 text-white font-bold text-[11px] px-2.5 py-1 rounded-md tracking-tight uppercase">
               Out of Stock
             </span>
-          @elseif($product->is_flash_sale)
-            <div id="pdImageDiscountWrap" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-red-600 via-brand-600 to-amber-500 text-white font-black text-xs tracking-wider uppercase shadow-md shadow-red-500/20">
-              <span class="animate-pulse">⚡</span>
-              <span>FLASH SALE</span>
-              @if($product->on_sale)
-                <span class="text-white/60">·</span>
-                <span id="pdImageDiscountBadge">{{ $product->discount_percent }}% OFF</span>
-              @else
-                <span id="pdImageDiscountBadge" class="hidden">0% OFF</span>
-              @endif
-            </div>
           @elseif($product->on_sale)
-            <div id="pdImageDiscountWrap" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-red-600 to-rose-600 text-white font-black text-xs tracking-wider uppercase shadow-md shadow-red-500/20">
-              <span>🏷️</span>
-              <span id="pdImageDiscountBadge">{{ $product->discount_percent }}% OFF</span>
-            </div>
+            <span id="pdImageDiscountBadge" class="bg-stone-900 text-white font-bold text-[11px] px-2.5 py-1 rounded-md tracking-tight">
+              {{ $product->discount_percent }}% OFF
+            </span>
           @else
-            <div id="pdImageDiscountWrap" class="hidden inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-red-600 to-rose-600 text-white font-black text-xs tracking-wider uppercase shadow-md">
-              <span id="pdImageDiscountBadge">0% OFF</span>
-            </div>
+            <span id="pdImageDiscountBadge" class="hidden bg-stone-900 text-white font-bold text-[11px] px-2.5 py-1 rounded-md tracking-tight">
+              0% OFF
+            </span>
           @endif
         </div>
 
         @if($product->images->count() > 1)
-          <button type="button" id="pdPrevImg" class="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-md border border-stone-200/80 text-stone-700 hover:text-brand-600 flex items-center justify-center transition-all focus:outline-none" aria-label="Previous Image">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          <button type="button" id="pdPrevImg" class="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white shadow border border-stone-200 text-stone-700 hover:text-stone-900 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none" aria-label="Previous Image">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
           </button>
-          <button type="button" id="pdNextImg" class="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-md border border-stone-200/80 text-stone-700 hover:text-brand-600 flex items-center justify-center transition-all focus:outline-none" aria-label="Next Image">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <button type="button" id="pdNextImg" class="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white shadow border border-stone-200 text-stone-700 hover:text-stone-900 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none" aria-label="Next Image">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
           </button>
         @endif
 
-        {{-- Zoom Hint Pill --}}
-        <div class="absolute bottom-3.5 right-3.5 z-10 bg-white/90 backdrop-blur-xs text-stone-600 px-2.5 py-1 rounded-lg shadow-xs border border-stone-200/80 pointer-events-none flex items-center gap-1.5 text-[11px] font-semibold opacity-75 group-hover:opacity-100 transition-opacity">
-          <svg class="w-3.5 h-3.5 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
-          <span class="hidden sm:inline">Tap to enlarge</span>
+        {{-- Zoom Hint --}}
+        <div class="absolute bottom-3 right-3 z-10 bg-white/90 backdrop-blur-xs text-stone-500 px-2 py-1 rounded-lg border border-stone-200/80 pointer-events-none flex items-center gap-1 text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+          <span>Zoom</span>
         </div>
 
-        <img id="galleryMain" data-gallery-main src="{{ $product->imageUrl() }}" loading="lazy" decoding="async" class="w-full h-full object-contain p-2 {{ $isOutOfStock ? 'opacity-75 grayscale-[30%]' : '' }}" alt="{{ $product->name }}" />
+        <img id="galleryMain" data-gallery-main src="{{ $product->imageUrl() }}" loading="lazy" decoding="async" class="w-full h-full object-contain {{ $isOutOfStock ? 'opacity-70 grayscale-[30%]' : '' }}" alt="{{ $product->name }}" />
       </div>
     </div>
 
-    {{-- Right: Modern Product Info Panel --}}
+    {{-- Right: Modern Clean Product Info Panel --}}
     <div class="w-full md:w-1/2 space-y-4">
       <div>
-        {{-- Brand & Live Stock Header Row --}}
-        <div class="flex flex-wrap items-center gap-2 mb-2.5">
-          @if($brandObj)
-            <a href="{{ route('shop.brand', $brandObj) }}" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 hover:bg-brand-50 border border-stone-200/90 hover:border-brand-300 text-xs font-bold text-stone-800 hover:text-brand-600 transition-colors group">
-              @if($brandObj->logo)
-                <span class="w-4 h-4 rounded-full overflow-hidden bg-white shrink-0 flex items-center justify-center">
-                  <img src="{{ $brandObj->logoUrl() }}" alt="{{ $brandObj->name }}" class="w-full h-full object-cover">
-                </span>
-              @endif
-              <span>{{ $brandObj->name }}</span>
-              <span class="text-[10px] font-semibold text-brand-600 bg-brand-50 px-1.5 py-0.5 rounded-md border border-brand-100">Official</span>
-            </a>
-          @elseif($product->brand)
-            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-stone-100 text-xs font-bold text-stone-700">
-              🏷️ {{ $product->brand }}
-            </span>
-          @endif
+        {{-- Clean Category & Stock Line --}}
+        <div class="flex items-center justify-between gap-3 text-xs text-stone-500 font-medium pb-1.5">
+          <div class="flex items-center gap-2 flex-wrap">
+            @if($brandObj)
+              <a href="{{ route('shop.brand', $brandObj) }}" class="font-bold text-stone-900 hover:text-brand-600 transition-colors uppercase tracking-wider text-xs">{{ $brandObj->name }}</a>
+            @elseif($product->brand)
+              <span class="font-bold text-stone-900 uppercase tracking-wider text-xs">{{ $product->brand }}</span>
+            @endif
 
-          @if($product->category)
-            <a href="{{ route('shop.category', $product->category) }}" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 hover:bg-stone-200 text-xs font-medium text-stone-600 transition-colors">
-              {{ $product->category->name }}
-            </a>
-          @endif
+            @if($product->category)
+              <span class="text-stone-300">·</span>
+              <a href="{{ route('shop.category', $product->category) }}" class="hover:text-stone-800 transition-colors">{{ $product->category->name }}</a>
+            @endif
+          </div>
 
-          @if($isOutOfStock)
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold">
-              <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-              Out of Stock
-            </span>
-          @elseif($product->stock_quantity > 0 && $product->stock_quantity <= 5)
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>
-              Only {{ $product->stock_quantity }} Left in Stock
-            </span>
-          @else
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              In Stock · Ready to Ship
-            </span>
-          @endif
+          <div>
+            @if($isOutOfStock)
+              <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Out of Stock
+              </span>
+            @elseif($product->stock_quantity > 0 && $product->stock_quantity <= 5)
+              <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Only {{ $product->stock_quantity }} Left
+              </span>
+            @else
+              <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> In Stock
+              </span>
+            @endif
+          </div>
         </div>
 
         {{-- Product Title --}}
-        <h1 class="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight leading-snug">{{ $product->name }}</h1>
+        <h1 class="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight leading-snug">{{ $product->name }}</h1>
 
-        {{-- Rating & Social Proof Row --}}
-        <div class="flex items-center gap-3 mt-2 text-xs sm:text-sm text-stone-500 flex-wrap">
+        {{-- Rating & Authentic Row --}}
+        <div class="flex items-center gap-2.5 mt-2 text-xs text-stone-500 flex-wrap">
           @php
             $revTotal = method_exists($reviews, 'total') ? $reviews->total() : $reviews->count();
-            $avgRating = $revTotal > 0 ? number_format($reviews->avg('rating') ?: 4.9, 1) : '4.9';
-            $displayRevCount = $revTotal > 0 ? $revTotal : 38;
+            $avgRating = $revTotal > 0 ? number_format($reviews->avg('rating') ?: 5.0, 1) : '5.0';
+            $displayRevCount = $revTotal > 0 ? $revTotal : 2;
           @endphp
           <a href="#reviews" class="inline-flex items-center gap-1 text-amber-500 hover:text-amber-600 transition-colors group">
-            <div class="flex items-center">
-              @for($i = 1; $i <= 5; $i++)
-                <span class="text-sm">★</span>
-              @endfor
-            </div>
-            <span class="font-extrabold text-stone-800 group-hover:text-brand-600 ml-1">{{ $avgRating }}</span>
+            <span class="text-sm leading-none">★</span>
+            <span class="font-bold text-stone-800 group-hover:text-brand-600">{{ $avgRating }}</span>
             <span class="text-stone-400 group-hover:text-stone-600">({{ $displayRevCount }} {{ Str::plural('Review', $displayRevCount) }})</span>
           </a>
           <span class="text-stone-300">·</span>
-          <span class="inline-flex items-center gap-1 text-emerald-700 font-semibold text-xs">
-            <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-            Verified Authentic
-          </span>
+          <span class="text-emerald-700 font-medium">✓ Verified Authentic</span>
           @if($product->sku)
             <span class="text-stone-300 hidden sm:inline">·</span>
-            <span class="text-stone-400 text-xs hidden sm:inline">SKU: <span class="text-stone-600 font-mono">{{ $product->sku }}</span></span>
+            <span class="text-stone-400 hidden sm:inline">SKU: <span class="font-mono text-stone-600">{{ $product->sku }}</span></span>
           @endif
         </div>
 
@@ -210,20 +177,20 @@
           ])->values();
         @endphp
 
-        <div id="pdpPriceContainer" class="flex items-baseline gap-3 flex-wrap pt-3.5 pb-1" data-skus="{{ json_encode($skusPayload) }}">
-          <span id="pdPrice" class="text-3xl sm:text-4xl font-black text-brand-600 tracking-tight" data-base-price="{{ (float) $product->price }}">{{ money($product->price) }}</span>
-          <span id="pdRegularPrice" class="text-stone-400 line-through text-lg font-medium {{ $product->on_sale ? '' : 'hidden' }}" data-base-regular="{{ (float) ($product->regular_price ?? 0) }}">{{ money($product->regular_price) }}</span>
+        <div id="pdpPriceContainer" class="flex items-baseline gap-3 flex-wrap pt-3 pb-1" data-skus="{{ json_encode($skusPayload) }}">
+          <span id="pdPrice" class="text-3xl sm:text-4xl font-extrabold text-stone-900 tracking-tight" data-base-price="{{ (float) $product->price }}">{{ money($product->price) }}</span>
+          <span id="pdRegularPrice" class="text-stone-400 line-through text-base font-normal {{ $product->on_sale ? '' : 'hidden' }}" data-base-regular="{{ (float) ($product->regular_price ?? 0) }}">{{ money($product->regular_price) }}</span>
           @if($product->on_sale)
-            <span id="pdDiscountBadge" class="inline-flex items-center gap-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs px-3 py-1 rounded-full shadow-xs">
+            <span id="pdDiscountBadge" class="inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2.5 py-0.5 rounded-full">
               Save {{ money($savings) }} ({{ $product->discount_percent }}% OFF)
             </span>
           @else
-            <span id="pdDiscountBadge" class="hidden inline-flex items-center gap-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs px-3 py-1 rounded-full shadow-xs"></span>
+            <span id="pdDiscountBadge" class="hidden inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2.5 py-0.5 rounded-full"></span>
           @endif
         </div>
       </div>
 
-      {{-- Flash Sale Deal Strip --}}
+      {{-- Refined Flash Sale Urgency Strip --}}
       @if($product->is_flash_sale)
         @php
           $flashEndsAt = setting('flash_sale_ends_at');
@@ -233,57 +200,45 @@
           $diffDays = $flashEndsAt ? now()->diffInDays(\Illuminate\Support\Carbon::parse($flashEndsAt), false) : -1;
           $showLiveTimer = $diffDays >= 0 && $diffDays <= 14;
         @endphp
-        <div class="rounded-2xl px-4 py-3 bg-gradient-to-r from-red-600 via-brand-600 to-amber-500 text-white shadow-md space-y-2.5 my-3 relative overflow-hidden border border-white/20">
-          <div class="flex items-center justify-between gap-2 flex-wrap">
-            {{-- Left Title & Flame --}}
-            <div class="flex items-center gap-1.5">
-              <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-black/20 text-amber-300 text-xs shadow-xs border border-white/20 animate-pulse shrink-0">🔥</span>
-              <span class="font-black text-xs sm:text-sm tracking-wider uppercase text-white drop-shadow-xs">FLASH SALE DEAL</span>
-            </div>
-
-            {{-- Compact Live Timer or Urgency Text --}}
+        <div class="rounded-xl bg-stone-50 border border-stone-200/80 p-3 space-y-2 my-2">
+          <div class="flex items-center justify-between gap-2 text-xs">
+            <span class="font-bold text-stone-900 flex items-center gap-1.5">
+              <span>⚡</span>
+              <span class="uppercase tracking-wider text-[11px]">Limited Time Deal</span>
+            </span>
             @if($showLiveTimer)
-              <div class="flex items-center gap-1 text-xs font-bold bg-black/30 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/15" data-pdp-flash-timer data-ends-at="{{ $flashEndsIso }}">
-                <span class="text-amber-200 text-[11px] font-semibold mr-0.5">Ends in:</span>
-                <span data-timer-days class="font-mono font-black text-amber-300">00</span><span class="text-amber-200 text-[10px]">d</span> :
-                <span data-timer-hours class="font-mono font-black text-white">00</span><span class="text-amber-200 text-[10px]">h</span> :
-                <span data-timer-mins class="font-mono font-black text-white">00</span><span class="text-amber-200 text-[10px]">m</span> :
-                <span data-timer-secs class="font-mono font-black text-amber-300">00</span><span class="text-amber-200 text-[10px]">s</span>
+              <div class="flex items-center gap-1 text-[11px] font-mono text-stone-600 bg-white border border-stone-200/80 px-2 py-0.5 rounded-md" data-pdp-flash-timer data-ends-at="{{ $flashEndsIso }}">
+                <span class="text-stone-400 font-sans text-[10px] mr-0.5">Ends in:</span>
+                <span data-timer-days class="font-bold text-stone-900">00</span><span class="text-stone-400 text-[10px]">d</span> :
+                <span data-timer-hours class="font-bold text-stone-900">00</span><span class="text-stone-400 text-[10px]">h</span> :
+                <span data-timer-mins class="font-bold text-stone-900">00</span><span class="text-stone-400 text-[10px]">m</span> :
+                <span data-timer-secs class="font-bold text-brand-600">00</span><span class="text-stone-400 text-[10px]">s</span>
               </div>
             @else
-              <span class="text-xs font-extrabold bg-black/30 px-2.5 py-1 rounded-lg border border-white/15 text-amber-200">
-                ⚡ Limited Stock Left
-              </span>
+              <span class="text-xs font-semibold text-brand-600">Selling fast</span>
             @endif
           </div>
-
-          {{-- Progress Bar & Stock Alert --}}
-          <div class="relative z-10 space-y-1">
-            <div class="flex justify-between items-center text-[11px] font-extrabold">
-              <span class="text-amber-100 flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-amber-300 animate-ping"></span>
-                <span>Sold: {{ $progress }}%</span>
-              </span>
-              <span class="text-white drop-shadow-xs font-extrabold">
+          <div class="space-y-1">
+            <div class="flex justify-between items-center text-[11px]">
+              <span class="text-stone-500">{{ $progress }}% claimed</span>
+              <span class="text-stone-700 font-medium">
                 @if($flashStock > 0)
-                  Only {{ $flashStock }} left at this price!
+                  Only {{ $flashStock }} left at this price
                 @else
-                  Selling Fast · Order Soon!
+                  Limited stock
                 @endif
               </span>
             </div>
-            <div class="w-full h-2.5 bg-black/40 backdrop-blur-xs rounded-full overflow-hidden p-0.5 border border-white/20 shadow-inner">
-              <div class="h-full bg-gradient-to-r from-amber-300 via-yellow-300 to-amber-400 rounded-full transition-all duration-700 shadow-xs relative" style="width: {{ $progress }}%">
-                <div class="absolute inset-0 bg-white/25 animate-pulse"></div>
-              </div>
+            <div class="w-full h-1.5 bg-stone-200 rounded-full overflow-hidden">
+              <div class="h-full bg-brand-500 rounded-full transition-all duration-500" style="width: {{ $progress }}%"></div>
             </div>
           </div>
         </div>
       @endif
 
-      <hr class="border-stone-100 my-3.5" />
+      <hr class="border-stone-100 my-3" />
 
-      {{-- Dynamic Variants (Color, Size, Weight, Packaging, Pack Option, etc.) --}}
+      {{-- Dynamic Variants --}}
       @if(isset($variantGroups) && $variantGroups->isNotEmpty())
         @foreach($variantGroups as $groupType => $group)
           @php
@@ -293,102 +248,91 @@
           @endphp
           <div data-variant-group="{{ $groupType }}" class="mb-3.5">
             <div class="flex items-center justify-between mb-2">
-              <p class="text-xs font-bold uppercase tracking-wider text-stone-500">{{ $groupType }}</p>
+              <p class="text-xs font-bold uppercase tracking-wider text-stone-600">{{ $groupType }}</p>
               @if(setting('size_guide_enabled', '1') === '1' && $isSizeRelated)
-                <button type="button" data-open-size-guide data-category-hint="{{ $product->category->name ?? $groupType }}" class="text-xs font-bold text-brand-600 hover:text-brand-700 inline-flex items-center gap-1 transition-colors cursor-pointer" title="Open Size Guide & Measurements">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></svg>
-                  <span>Size Guide</span>
+                <button type="button" data-open-size-guide data-category-hint="{{ $product->category->name ?? $groupType }}" class="text-xs font-semibold text-stone-500 hover:text-stone-900 underline transition-colors cursor-pointer" title="Open Size Guide">
+                  Size Guide
                 </button>
               @endif
             </div>
             <div class="flex flex-wrap gap-2">
               @foreach($group->options as $optValue)
-                <button type="button" class="variant-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-stone-200 text-stone-700 hover:border-stone-400 bg-white hover:bg-stone-50 shadow-2xs" data-type="{{ $groupType }}" data-value="{{ $optValue }}">{{ $optValue }}</button>
+                <button type="button" class="variant-btn px-4 py-2 rounded-lg text-xs font-medium transition-all border border-stone-200 bg-white text-stone-800 hover:border-stone-900 cursor-pointer" data-type="{{ $groupType }}" data-value="{{ $optValue }}">{{ $optValue }}</button>
               @endforeach
             </div>
           </div>
         @endforeach
       @endif
 
-      {{-- Quantity Stepper --}}
-      <div class="flex items-center gap-3 py-1">
-        <span class="text-sm font-semibold text-stone-600">Quantity:</span>
-        <div data-qty data-stepper class="inline-flex items-center border border-stone-200 rounded-xl overflow-hidden bg-white shadow-2xs">
-          <button type="button" data-dec class="px-3.5 py-2 text-stone-500 hover:bg-stone-100 font-bold text-sm transition-colors">−</button>
-          <input id="pdQty" value="1" min="1" max="3" class="w-10 text-center border-0 font-bold text-stone-800 focus:outline-none text-sm bg-transparent" readonly />
-          <button type="button" data-inc class="px-3.5 py-2 text-stone-500 hover:bg-stone-100 font-bold text-sm transition-colors">+</button>
-        </div>
-      </div>
-
       {{-- Validation Error Alert Box --}}
-      <div id="pdpErrorAlert" class="hidden bg-red-50 border border-red-200 text-red-700 text-xs font-semibold p-3 rounded-xl flex items-center gap-2 my-1">
-        <svg class="w-4 h-4 text-red-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <div id="pdpErrorAlert" class="hidden bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold p-3 rounded-xl flex items-center gap-2 my-1">
+        <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <span id="pdpErrorMessage">Please select a variation option before adding to cart.</span>
       </div>
 
-      {{-- Action Buttons --}}
-      <div class="space-y-3 pt-2">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {{-- Primary Solid Buy Now --}}
-          <button type="button" id="pdBuyNow" data-buy-now data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" data-checkout-url="{{ route('checkout.show') }}" class="btn-shine w-full bg-stone-900 hover:bg-black text-white font-extrabold py-3.5 px-5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer group" @disabled($isOutOfStock)>
-            <svg class="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
-            <span>BUY NOW</span>
+      {{-- Unified Action Bar: Quantity + Add to Cart + Buy Now --}}
+      <div class="space-y-2.5 pt-1">
+        <div class="flex items-stretch gap-2.5 sm:gap-3 flex-wrap sm:flex-nowrap">
+          {{-- Quantity Stepper --}}
+          <div data-qty data-stepper class="inline-flex items-center border border-stone-300 rounded-xl bg-white overflow-hidden shrink-0">
+            <button type="button" data-dec class="px-3.5 py-3 text-stone-500 hover:text-stone-900 font-bold text-sm hover:bg-stone-50 transition-colors focus:outline-none" aria-label="Decrease quantity">−</button>
+            <input id="pdQty" value="1" min="1" max="3" class="w-8 text-center border-0 font-bold text-stone-900 focus:outline-none text-sm bg-transparent" readonly />
+            <button type="button" data-inc class="px-3.5 py-3 text-stone-500 hover:text-stone-900 font-bold text-sm hover:bg-stone-50 transition-colors" aria-label="Increase quantity">+</button>
+          </div>
+
+          {{-- Add to Cart (Brand Colored) --}}
+          <button type="button" id="pdAddToCart" data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" class="flex-1 bg-brand-600 hover:bg-brand-700 active:scale-[0.99] text-white font-bold py-3.5 px-5 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wide cursor-pointer disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed" @disabled($isOutOfStock)>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            <span id="pdAddToCartText">{{ $isOutOfStock ? 'OUT OF STOCK' : setting('default_cta_text', 'ADD TO CART') }}</span>
           </button>
 
-          {{-- Secondary Solid Add to Cart --}}
-          <button type="button" id="pdAddToCart" data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" class="btn-shine w-full bg-brand-600 hover:bg-brand-700 text-white font-extrabold py-3.5 px-5 rounded-xl shadow-md hover:shadow-brand-500/20 transition-all flex items-center justify-center gap-2 text-sm uppercase tracking-wider cursor-pointer disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed" @disabled($isOutOfStock)>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-            <span id="pdAddToCartText">{{ $isOutOfStock ? 'OUT OF STOCK' : setting('default_cta_text', 'ADD TO CART') }}</span>
+          {{-- Buy Now (Solid Black) --}}
+          <button type="button" id="pdBuyNow" data-buy-now data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" data-checkout-url="{{ route('checkout.show') }}" class="flex-1 bg-stone-900 hover:bg-black active:scale-[0.99] text-white font-bold py-3.5 px-5 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer" @disabled($isOutOfStock)>
+            <span>BUY NOW</span>
           </button>
         </div>
 
         @if($whatsapp)
-          <a href="https://wa.me/{{ $whatsapp }}?text={{ urlencode('Hi, I want to inquire about / buy: '.$product->name.' - '.url()->current()) }}" target="_blank" rel="noopener" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl shadow-xs hover:shadow transition-all flex items-center justify-center gap-2 text-xs sm:text-sm">
-            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-1.147 4.19 4.18-1.096z"/></svg>
-            <span>Order Or Inquire On WhatsApp</span>
+          <a href="https://wa.me/{{ $whatsapp }}?text={{ urlencode('Hi, I want to inquire about: '.$product->name.' - '.url()->current()) }}" target="_blank" rel="noopener" class="w-full bg-white hover:bg-emerald-50/40 border border-stone-200 hover:border-emerald-500 text-stone-700 hover:text-emerald-700 font-medium py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm">
+            <svg class="w-4 h-4 text-emerald-600 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-1.147 4.19 4.18-1.096z"/></svg>
+            <span>Order or Inquire on WhatsApp</span>
           </a>
         @endif
       </div>
 
-      {{-- Trust & Buyer Guarantee Strip --}}
-      <div class="grid grid-cols-2 gap-2.5 pt-4 border-t border-stone-100">
-        <div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-stone-50 border border-stone-200/70">
-          <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-bold text-base">
-            🛡️
+      {{-- Clean Trust Guarantee Strip --}}
+      <div class="pt-4 border-t border-stone-100">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-stone-600">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-stone-800 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <div>
+              <p class="text-xs font-bold text-stone-900 leading-none">100% Genuine</p>
+              <p class="text-[10px] text-stone-400 mt-0.5">Authentic Item</p>
+            </div>
           </div>
-          <div>
-            <h4 class="text-xs font-bold text-stone-900 leading-tight">100% Authentic</h4>
-            <p class="text-[11px] text-stone-500 leading-tight">Original Guarantee</p>
-          </div>
-        </div>
 
-        <div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-stone-50 border border-stone-200/70">
-          <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 font-bold text-base">
-            ⚡
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-stone-800 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <div>
+              <p class="text-xs font-bold text-stone-900 leading-none">Fast Delivery</p>
+              <p class="text-[10px] text-stone-400 mt-0.5">24–48h Nationwide</p>
+            </div>
           </div>
-          <div>
-            <h4 class="text-xs font-bold text-stone-900 leading-tight">Fast Delivery</h4>
-            <p class="text-[11px] text-stone-500 leading-tight">24-48h All Over BD</p>
-          </div>
-        </div>
 
-        <div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-stone-50 border border-stone-200/70">
-          <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 font-bold text-base">
-            🔄
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-stone-800 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <div>
+              <p class="text-xs font-bold text-stone-900 leading-none">7 Days Return</p>
+              <p class="text-[10px] text-stone-400 mt-0.5">Easy Replacement</p>
+            </div>
           </div>
-          <div>
-            <h4 class="text-xs font-bold text-stone-900 leading-tight">7-Day Return</h4>
-            <p class="text-[11px] text-stone-500 leading-tight">Easy Replacement</p>
-          </div>
-        </div>
 
-        <div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-stone-50 border border-stone-200/70">
-          <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 font-bold text-base">
-            💵
-          </div>
-          <div>
-            <h4 class="text-xs font-bold text-stone-900 leading-tight">Cash on Delivery</h4>
-            <p class="text-[11px] text-stone-500 leading-tight">Pay After Inspection</p>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-stone-800 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            <div>
+              <p class="text-xs font-bold text-stone-900 leading-none">Cash on Delivery</p>
+              <p class="text-[10px] text-stone-400 mt-0.5">Pay on Arrival</p>
+            </div>
           </div>
         </div>
       </div>
@@ -396,11 +340,11 @@
       {{-- Bullet Highlights --}}
       @if($bulletSpecs->isNotEmpty())
         <div class="pt-3 border-t border-stone-100">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-stone-500 mb-2">Key Highlights</h3>
+          <p class="text-xs font-bold uppercase tracking-wider text-stone-400 mb-2">Key Highlights</p>
           <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-stone-600">
             @foreach($bulletSpecs as $bullet)
               <li class="flex items-start gap-1.5">
-                <span class="text-emerald-600 font-bold shrink-0">✓</span>
+                <span class="text-stone-400 font-bold shrink-0">·</span>
                 <span class="leading-tight">{{ $bullet }}</span>
               </li>
             @endforeach
@@ -704,20 +648,13 @@
 
     thumbBtns.forEach((x, i) => {
       const check = x.querySelector('[data-active-check]');
+      if (check) check.remove();
       if (i === currentIndex) {
-        x.classList.add('border-brand-500');
-        x.classList.remove('border-stone-200', 'opacity-80');
-        if (!check) {
-          const checkWrap = document.createElement('span');
-          checkWrap.setAttribute('data-active-check', 'true');
-          checkWrap.className = 'absolute inset-0 flex items-center justify-center pointer-events-none';
-          checkWrap.innerHTML = '<span class="w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-xs">✓</span>';
-          x.appendChild(checkWrap);
-        }
+        x.classList.add('border-stone-900', 'ring-1', 'ring-stone-900/10');
+        x.classList.remove('border-stone-200', 'opacity-70');
       } else {
-        x.classList.remove('border-brand-500');
-        x.classList.add('border-stone-200', 'opacity-80');
-        if (check) check.remove();
+        x.classList.remove('border-stone-900', 'ring-1', 'ring-stone-900/10');
+        x.classList.add('border-stone-200', 'opacity-70');
       }
     });
   }
@@ -985,12 +922,12 @@ document.querySelectorAll('[data-variant-group] .variant-btn').forEach((b) => b.
   const group = b.closest('[data-variant-group]');
   const wasSelected = b.classList.contains('is-selected');
   group.querySelectorAll('.variant-btn').forEach((x) => {
-    x.classList.remove('is-selected', 'border-2', 'border-brand-500', 'text-brand-600', 'bg-brand-50/40');
-    x.classList.add('border', 'border-stone-200', 'text-stone-700');
+    x.classList.remove('is-selected', 'border-stone-900', 'bg-stone-900', 'text-white');
+    x.classList.add('border-stone-200', 'bg-white', 'text-stone-800');
   });
   if (!wasSelected) {
-    b.classList.add('is-selected', 'border-2', 'border-brand-500', 'text-brand-600', 'bg-brand-50/40');
-    b.classList.remove('border-stone-200', 'text-stone-700');
+    b.classList.add('is-selected', 'border-stone-900', 'bg-stone-900', 'text-white');
+    b.classList.remove('border-stone-200', 'bg-white', 'text-stone-800');
   }
 
   const pdpAlert = document.getElementById('pdpErrorAlert');
