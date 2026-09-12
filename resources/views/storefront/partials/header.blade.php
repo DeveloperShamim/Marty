@@ -29,24 +29,24 @@
 @endphp
 
 @if($promoText !== '')
-  <div class="bg-slate-900 text-slate-100 text-xs sm:text-sm text-center py-2 px-4 font-medium border-b border-slate-800">
+  <div class="bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 text-stone-200 text-[11px] sm:text-xs text-center py-2 px-3 sm:px-4 font-semibold border-b border-stone-800/80 tracking-wide">
     @if($promoLink !== '')
-      <a href="{{ $promoLink }}" class="hover:text-brand-300 transition">{!! strip_tags($promoText, '<b><strong><span>') !!}</a>
+      <a href="{{ $promoLink }}" class="hover:text-brand-400 transition inline-flex items-center justify-center gap-1.5 flex-wrap">{!! strip_tags($promoText, '<b><strong><span>') !!}</a>
     @else
-      {!! strip_tags($promoText, '<b><strong><span>') !!}
+      <span class="inline-flex items-center justify-center gap-1.5 flex-wrap">{!! strip_tags($promoText, '<b><strong><span>') !!}</span>
     @endif
   </div>
 @endif
 
 <header class="site-header sticky top-0 z-40 bg-white">
   {{-- ROW 1: Logo + Modern Search + Actions --}}
-  <div class="bg-white border-b border-stone-100 shadow-xs">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-6">
+  <div class="bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-2xs">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-3 flex items-center justify-between gap-2 sm:gap-6">
       
       {{-- Mobile Menu Toggle & Brand Logo --}}
       <div class="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0">
-        <button type="button" data-open-menu class="lg:hidden text-stone-700 hover:text-brand-600 p-1.5 rounded-xl hover:bg-stone-100 transition shrink-0 cursor-pointer" aria-label="Open Menu">
-          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <button type="button" data-open-menu class="lg:hidden text-stone-800 hover:text-brand-600 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-stone-100 active:scale-95 transition-all shrink-0 cursor-pointer" aria-label="Open Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
         </button>
 
         @include('partials.brand')
@@ -56,20 +56,19 @@
       <form action="{{ route('shop') }}" method="GET" class="hidden md:flex flex-1 max-w-xl lg:max-w-2xl mx-auto px-2 lg:px-4">
         <div class="flex items-center w-full rounded-full border border-stone-200/90 bg-stone-50/80 hover:bg-white focus-within:bg-white focus-within:border-brand-500 focus-within:ring-4 focus-within:ring-brand-500/10 transition-all duration-200 pl-4 pr-1.5 py-1 shadow-2xs">
           <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ setting('search_placeholder', 'Search shoes, watches, leather belts, wallets...') }}" class="flex-1 text-xs sm:text-sm font-medium bg-transparent focus:outline-none text-stone-800 placeholder:text-stone-400" autocomplete="off" />
-          <button type="submit" class="h-8 w-8 rounded-full bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 shadow-xs shrink-0" aria-label="Search">
+          <button type="submit" class="h-8 w-8 rounded-full bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 shadow-xs shrink-0 cursor-pointer" aria-label="Search">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
           </button>
         </div>
       </form>
 
       {{-- Top Actions: Track Order, Account, Cart --}}
-      <div class="ml-auto flex items-center gap-1 sm:gap-6 shrink-0">
+      <div class="ml-auto flex items-center gap-1 sm:gap-4 lg:gap-6 shrink-0">
         {{-- Mobile Search Trigger --}}
-        <button type="button" data-toggle-search class="md:hidden flex flex-col items-center justify-center text-center group cursor-pointer focus:outline-none py-0.5 px-1 min-w-[38px] text-stone-700 hover:text-brand-600 transition-colors" aria-label="Search" aria-expanded="false" aria-controls="mobileSearchPanel">
-          <svg class="w-6 h-6 text-stone-800 group-hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <button type="button" data-toggle-search class="md:hidden flex items-center justify-center w-9 h-9 rounded-xl text-stone-800 hover:text-brand-600 hover:bg-stone-100 active:scale-95 transition-all cursor-pointer focus:outline-none" aria-label="Search" aria-expanded="false" aria-controls="mobileSearchPanel">
+          <svg class="w-5 h-5 text-stone-800 hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/>
           </svg>
-          <span class="text-[11px] sm:text-xs font-medium text-stone-700 group-hover:text-brand-600 mt-0.5 tracking-tight whitespace-nowrap">Search</span>
         </button>
 
         {{-- 1. Track Order (Desktop & Tablet) --}}
@@ -85,18 +84,18 @@
         @include('storefront.partials.account-dropdown', ['lightHeader' => false])
 
         {{-- 3. Cart Button --}}
-        <button type="button" data-open-cart class="flex flex-col items-center justify-center text-center group cursor-pointer focus:outline-none py-0.5 px-1 min-w-[42px] text-stone-700 hover:text-brand-600 transition-colors" aria-label="Cart">
+        <button type="button" data-open-cart class="flex flex-col sm:flex-col items-center justify-center text-center group cursor-pointer focus:outline-none w-9 h-9 sm:w-auto sm:h-auto sm:min-w-[44px] rounded-xl sm:rounded-none hover:bg-stone-100 sm:hover:bg-transparent active:scale-95 transition-all text-stone-700 hover:text-brand-600" aria-label="Cart">
           <div class="relative inline-flex items-center justify-center">
-            <svg class="w-6 h-6 text-stone-800 group-hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-stone-800 group-hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="9" cy="21" r="1"/>
               <circle cx="20" cy="21" r="1"/>
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
             </svg>
-            <span data-cart-count class="cart-count absolute -top-1.5 -right-2.5 bg-brand-500 text-white text-[10px] font-black h-4 min-w-4 px-1 rounded-full flex items-center justify-center shadow-xs leading-none">
+            <span data-cart-count class="cart-count absolute -top-1 -right-1.5 sm:-top-1.5 sm:-right-2 bg-brand-500 text-white text-[10px] font-black h-4 min-w-4 px-1 rounded-full flex items-center justify-center shadow-xs ring-2 ring-white leading-none">
               {{ $cartCount }}
             </span>
           </div>
-          <span class="text-[11px] sm:text-xs font-medium text-stone-700 group-hover:text-brand-600 mt-0.5 tracking-tight whitespace-nowrap">Cart</span>
+          <span class="hidden sm:block text-[11px] sm:text-xs font-medium text-stone-700 group-hover:text-brand-600 mt-0.5 tracking-tight whitespace-nowrap">Cart</span>
         </button>
       </div>
     </div>
@@ -195,12 +194,13 @@
   </div>
 
   {{-- Mobile Search Dropdown Panel --}}
-  <div id="mobileSearchPanel" class="hidden bg-white border-b border-stone-200 py-3 shadow-md md:hidden">
-    <form action="{{ route('shop') }}" method="GET" class="max-w-7xl mx-auto px-4 flex items-center gap-2">
-      <div class="flex items-center flex-1 rounded-full border border-stone-200 bg-stone-50 pl-4 pr-1 py-1 focus-within:bg-white focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
-        <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ setting('search_placeholder', 'Search products...') }}" class="flex-1 text-xs sm:text-sm font-medium bg-transparent focus:outline-none text-stone-800 placeholder:text-stone-400" data-mobile-search-input autocomplete="off" />
-        <button type="submit" class="h-8 w-8 rounded-full bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center transition shadow-xs shrink-0" aria-label="Search">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+  <div id="mobileSearchPanel" class="hidden bg-white/95 backdrop-blur-md border-b border-stone-200/80 px-3.5 py-2.5 shadow-md md:hidden transition-all">
+    <form action="{{ route('shop') }}" method="GET" class="max-w-7xl mx-auto flex items-center gap-2">
+      <div class="flex items-center flex-1 rounded-full border border-stone-200/90 bg-stone-50/90 hover:bg-white focus-within:bg-white focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 pl-3.5 pr-1 py-1 transition-all shadow-2xs">
+        <svg class="w-4 h-4 text-stone-400 mr-2 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+        <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ setting('search_placeholder', 'Search shoes, watches, gadgets...') }}" class="flex-1 text-xs font-medium bg-transparent focus:outline-none text-stone-800 placeholder:text-stone-400" data-mobile-search-input autocomplete="off" />
+        <button type="submit" class="h-7 w-7 rounded-full bg-brand-500 hover:bg-brand-600 text-white flex items-center justify-center transition-all duration-200 active:scale-95 shadow-xs shrink-0 cursor-pointer" aria-label="Search">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
         </button>
       </div>
     </form>

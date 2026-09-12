@@ -3,20 +3,20 @@
   $lightHeader = $lightHeader ?? false;
 @endphp
 <div class="relative" data-account-menu>
-  <button type="button" data-account-toggle class="flex flex-col items-center justify-center text-center group cursor-pointer focus:outline-none py-0.5 px-1 min-w-[44px]" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
+  <button type="button" data-account-toggle class="flex flex-col items-center justify-center text-center group cursor-pointer focus:outline-none w-9 h-9 sm:w-auto sm:h-auto sm:min-w-[44px] rounded-xl sm:rounded-none hover:bg-stone-100 sm:hover:bg-transparent transition-all" aria-label="Account menu" aria-expanded="false" aria-haspopup="true">
     @auth
       <div class="relative inline-flex items-center justify-center">
-        <svg class="w-6 h-6 text-stone-800 group-hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-stone-800 group-hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.5 8.5 0 0 1 13 0"/>
         </svg>
         <span class="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-white"></span>
       </div>
-      <span class="text-[11px] sm:text-xs font-medium text-stone-700 group-hover:text-brand-600 mt-0.5 tracking-tight whitespace-nowrap">Account</span>
+      <span class="hidden sm:block text-[11px] sm:text-xs font-medium text-stone-700 group-hover:text-brand-600 mt-0.5 tracking-tight whitespace-nowrap">Account</span>
     @else
-      <svg class="w-6 h-6 text-stone-800 group-hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <svg class="w-5 h-5 sm:w-6 sm:h-6 text-stone-800 group-hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.5 8.5 0 0 1 13 0"/>
       </svg>
-      <span class="text-[11px] sm:text-xs font-medium text-stone-700 group-hover:text-brand-600 mt-0.5 tracking-tight whitespace-nowrap">Sign In</span>
+      <span class="hidden sm:block text-[11px] sm:text-xs font-medium text-stone-700 group-hover:text-brand-600 mt-0.5 tracking-tight whitespace-nowrap">Sign In</span>
     @endauth
   </button>
 

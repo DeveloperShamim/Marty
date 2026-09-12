@@ -8,14 +8,14 @@
     $custom = has_custom_logo();
 
     $textClass = match ($size) {
-        'sm' => 'text-lg sm:text-xl',
+        'sm' => 'text-base sm:text-xl',
         'lg' => 'text-2xl sm:text-3xl',
-        default => 'text-xl sm:text-2xl',
+        default => 'text-lg sm:text-2xl',
     };
     $customClass = match ($size) {
-        'sm' => 'h-8 sm:h-9 w-auto max-w-[140px]',
+        'sm' => 'h-7 sm:h-9 w-auto max-w-[130px]',
         'lg' => 'h-11 sm:h-14 w-auto max-w-[220px]',
-        default => 'h-9 sm:h-11 w-auto max-w-[170px] sm:max-w-[210px]',
+        default => 'h-8 sm:h-10 w-auto max-w-[140px] sm:max-w-[210px]',
     };
 @endphp
 
