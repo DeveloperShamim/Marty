@@ -106,9 +106,10 @@
     .add-to-cart,
     #pdAddToCart,
     #qmAddToCartBtn {
-      background-color: transparent !important;
-      border: 1.5px solid var(--brand-primary) !important;
-      color: var(--brand-primary) !important;
+      background-color: var(--brand-primary) !important;
+      border: 1px solid var(--brand-primary) !important;
+      color: #ffffff !important;
+      border-radius: 12px !important;
     }
 
     .fk-add-btn:hover,
@@ -116,9 +117,10 @@
     .add-to-cart:hover,
     #pdAddToCart:hover,
     #qmAddToCartBtn:hover {
-      background-color: var(--brand-primary) !important;
-      border-color: var(--brand-primary) !important;
+      background-color: var(--brand-hover) !important;
+      border-color: var(--brand-hover) !important;
       color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12) !important;
     }
 
     .site-header [data-open-cart],
