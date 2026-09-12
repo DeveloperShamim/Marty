@@ -258,7 +258,8 @@
     const baseRegPrice = parseFloat(String(baseRegStr).replace(/[^0-9.]/g, "")) || 0;
 
     function formatMoney(amount) {
-      return "৳" + Math.max(0, amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const isWhole = Math.round(amount) === amount;
+      return "৳" + Math.max(0, amount).toLocaleString("en-US", { minimumFractionDigits: isWhole ? 0 : 2, maximumFractionDigits: 2 });
     }
 
     function syncPdpPrice() {
@@ -335,7 +336,8 @@
       if (pdDiscount) {
         if (finalRegPrice > finalPrice) {
           const pct = Math.round(((finalRegPrice - finalPrice) / finalRegPrice) * 100);
-          pdDiscount.textContent = `Save ${pct}%`;
+          const savedCash = finalRegPrice - finalPrice;
+          pdDiscount.textContent = `Save ${formatMoney(savedCash)} (${pct}% OFF)`;
           pdDiscount.classList.remove("hidden");
         } else {
           pdDiscount.classList.add("hidden");
