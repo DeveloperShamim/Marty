@@ -129,6 +129,25 @@ class Product extends Model
         return (int) $this->stock_quantity <= $threshold;
     }
 
+    public function isOutOfStock(): bool
+    {
+        if ($this->relationLoaded('skus') ? $this->skus->isNotEmpty() : $this->skus()->exists()) {
+            $activeSkus = $this->relationLoaded('skus')
+                ? $this->skus->where('is_active', true)
+                : $this->activeSkus()->get();
+            if ($activeSkus->isNotEmpty()) {
+                return (int) $activeSkus->sum('stock_quantity') <= 0;
+            }
+        }
+
+        return (int) $this->stock_quantity <= 0;
+    }
+
+    public function isInStock(): bool
+    {
+        return ! $this->isOutOfStock();
+    }
+
     public function reviews(): HasMany
     {
         return $this->hasMany(ProductReview::class)->latest();

@@ -9,7 +9,7 @@
 @endphp
 
 @if($waUrl)
-<aside aria-label="WhatsApp Support" class="fixed bottom-20 right-5 sm:right-6 z-40 select-none">
+<aside aria-label="WhatsApp Support" class="fixed {{ request()->routeIs('checkout.*') ? 'bottom-24 right-4 sm:right-6' : (request()->routeIs('product.show') ? 'bottom-28 right-4 sm:right-6' : 'bottom-20 right-5 sm:right-6') }} z-40 select-none">
   <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer" class="group relative flex items-center justify-center w-12 h-12 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer" title="Chat with us on WhatsApp" aria-label="Chat on WhatsApp">
     <!-- Pulse ring -->
     <span class="absolute -inset-0.5 rounded-full bg-emerald-400 opacity-40 animate-ping pointer-events-none"></span>

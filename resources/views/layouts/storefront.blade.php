@@ -180,18 +180,20 @@
 
   <div id="overlay" data-drawer-overlay class="fixed inset-0 bg-ink/40 z-40 opacity-0 pointer-events-none transition-opacity"></div>
 
-  {{-- Floating Side Quick Cart Widget --}}
-  <button type="button" data-open-cart class="hidden sm:flex fixed right-0 top-1/2 -translate-y-1/2 z-50 flex-col items-center rounded-l-lg shadow-xl overflow-hidden focus:outline-none bg-white border border-r-0 border-brand-500/30 min-w-[72px]" aria-label="Quick Cart">
-    <div class="bg-brand-500 text-white p-2.5 px-3.5 flex flex-col items-center text-center w-full">
-      <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-      <span class="cart-count-text text-xs font-extrabold tracking-tight leading-none whitespace-nowrap">{{ ($cartCount ?? 0) }} {{ Str::plural('Item', ($cartCount ?? 0)) }}</span>
-    </div>
-    <div class="bg-white text-stone-800 p-2 px-3.5 text-xs font-extrabold w-full text-center whitespace-nowrap border-t border-stone-100">
-      <span class="cart-total text-brand-600 font-extrabold">{{ money($cartSubtotal ?? 0) }}</span>
-    </div>
-  </button>
+  {{-- Floating Side Quick Cart Widget (Hidden on checkout to prevent covering form/sticky bar) --}}
+  @if(!request()->routeIs('checkout.*'))
+    <button type="button" data-open-cart class="fixed right-0 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center rounded-l-xl shadow-2xl overflow-hidden focus:outline-none bg-white border border-r-0 border-brand-500/40 min-w-[58px] sm:min-w-[72px] transition-transform active:scale-95 cursor-pointer" aria-label="Quick Cart">
+      <div class="bg-brand-500 text-white p-2 sm:p-2.5 px-2.5 sm:px-3.5 flex flex-col items-center text-center w-full">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5 mb-0.5 sm:mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        <span class="cart-count-text text-[10px] sm:text-xs font-black tracking-tight leading-none whitespace-nowrap">{{ ($cartCount ?? 0) }} {{ Str::plural('Item', ($cartCount ?? 0)) }}</span>
+      </div>
+      <div class="bg-white text-stone-800 p-1.5 sm:p-2 px-2 sm:px-3.5 text-[10px] sm:text-xs font-extrabold w-full text-center whitespace-nowrap border-t border-stone-100">
+        <span class="cart-total text-brand-600 font-extrabold">{{ money($cartSubtotal ?? 0) }}</span>
+      </div>
+    </button>
+  @endif
 
-  <button type="button" id="backToTop" data-back-top class="fixed {{ request()->routeIs('product.show') ? 'hidden lg:flex bottom-6 right-6' : 'bottom-6 right-5 sm:right-6' }} z-40 h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-stone-900/85 hover:bg-stone-950 text-white shadow-xl flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 backdrop-blur-xs border border-white/10 hover:scale-105 active:scale-95" aria-label="Back to top">
+  <button type="button" id="backToTop" data-back-top class="fixed {{ request()->routeIs('product.show') ? 'hidden lg:flex bottom-6 right-6' : (request()->routeIs('checkout.*') ? 'hidden' : 'bottom-6 right-5 sm:right-6') }} z-40 h-10 w-10 sm:h-11 sm:w-11 rounded-full bg-stone-900/85 hover:bg-stone-950 text-white shadow-xl flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 backdrop-blur-xs border border-white/10 hover:scale-105 active:scale-95" aria-label="Back to top">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
   </button>
 

@@ -14,7 +14,7 @@ class TrackOrderController extends Controller
         $token = trim((string) $request->query('token', ''));
 
         if ($orderQuery !== '') {
-            $foundOrder = Order::with('items')
+            $foundOrder = Order::with(['items.product', 'coupon'])
                 ->where('order_number', $orderQuery)
                 ->orWhere('id', $orderQuery)
                 ->first();
@@ -50,7 +50,7 @@ class TrackOrderController extends Controller
         // Strip non-digits from input
         $inputDigits = preg_replace('/\D+/', '', $rawPhone);
 
-        $order = Order::with('items')
+        $order = Order::with(['items.product', 'coupon'])
             ->where('order_number', $orderNumber)
             ->first();
 

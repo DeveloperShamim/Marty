@@ -17,7 +17,7 @@
     }
     $specRows = $product->specificationRows();
     $whatsapp = preg_replace('/\D+/', '', (string) setting('contact_phone', ''));
-    $isOutOfStock = (int) $product->stock_quantity <= 0;
+    $isOutOfStock = $product->isOutOfStock();
     $savings = $product->on_sale ? ($product->regular_price - $product->price) : 0;
 
     $brandObj = null;
@@ -279,16 +279,16 @@
           </div>
 
           {{-- Balanced 50/50 CTA Buttons Grid --}}
-          <div class="flex items-center gap-2.5 sm:gap-3 flex-1">
+          <div id="mainProductActions" class="flex items-center gap-2.5 sm:gap-3 flex-1">
             {{-- Add to Cart (Brand Colored) --}}
-            <button type="button" id="pdAddToCart" data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" class="flex-1 h-11 sm:h-12 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider cursor-pointer disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed" @disabled($isOutOfStock)>
+            <button type="button" id="pdAddToCart" data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" class="flex-1 h-11 sm:h-12 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider cursor-pointer disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
               <span id="pdAddToCartText">{{ $isOutOfStock ? 'OUT OF STOCK' : setting('default_cta_text', 'ADD TO CART') }}</span>
             </button>
 
             {{-- Buy Now (Solid Black with Eye-Catching Motion) --}}
-            <button type="button" id="pdBuyNow" data-buy-now data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" data-checkout-url="{{ route('checkout.show') }}" class="buy-now-cta-effect flex-1 h-11 sm:h-12 bg-stone-950 hover:bg-black text-white font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer select-none" @disabled($isOutOfStock)>
-              <span>BUY NOW</span>
+            <button type="button" id="pdBuyNow" data-buy-now data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" data-checkout-url="{{ route('checkout.show') }}" class="buy-now-cta-effect flex-1 h-11 sm:h-12 bg-stone-950 hover:bg-black text-white font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none cursor-pointer select-none" @disabled($isOutOfStock)>
+              <span id="pdBuyNowText">{{ $isOutOfStock ? 'OUT OF STOCK' : 'BUY NOW' }}</span>
             </button>
           </div>
         </div>
@@ -601,6 +601,21 @@
         pointer-events: none;
       }
 
+      .buy-now-cta-effect:disabled {
+        animation: none !important;
+        box-shadow: none !important;
+        transform: none !important;
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
+        pointer-events: none !important;
+        background-color: #e7e5e4 !important;
+        color: #a8a29e !important;
+      }
+
+      .buy-now-cta-effect:disabled::after {
+        display: none !important;
+      }
+
       .buy-now-cta-effect:hover {
         animation-play-state: paused;
         transform: translateY(-2px) scale(1.02);
@@ -807,35 +822,18 @@
     </div>
   </div>
 
-  {{-- Mobile & Tablet Sticky Bottom Action Bar (`lg:hidden`) --}}
-  <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-stone-200/90 px-3.5 sm:px-5 py-2.5 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] flex items-center justify-between gap-3" style="padding-bottom: max(0.625rem, env(safe-area-inset-bottom, 0.625rem));">
-    <div class="min-w-0 flex-1">
-      <div class="flex items-baseline gap-1.5 flex-wrap">
-        <span class="text-base sm:text-lg font-black text-stone-950 leading-tight tracking-tight" data-mobile-price>{{ money($product->price) }}</span>
-        @if($product->on_sale)
-          <span class="text-stone-400 line-through text-xs font-normal" data-mobile-reg>{{ money($product->regular_price) }}</span>
-        @else
-          <span class="text-stone-400 line-through text-xs font-normal hidden" data-mobile-reg></span>
-        @endif
-      </div>
-      <div class="flex items-center gap-1.5 mt-0.5" data-mobile-stock>
-        @if($isOutOfStock)
-          <span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-          <span class="text-[11px] font-semibold text-rose-600 truncate">Out of Stock</span>
-        @else
-          <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          <span class="text-[11px] font-semibold text-emerald-700 truncate">In Stock · Ready to Ship</span>
-        @endif
-      </div>
-    </div>
-
-    <div class="flex items-center gap-2 shrink-0">
-      <button type="button" id="stickyBarAddToCart" class="h-10 px-3.5 sm:px-4 bg-stone-100 hover:bg-stone-200 active:scale-95 text-stone-900 border border-stone-200/80 font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" @disabled($isOutOfStock)>
-        <svg class="w-3.5 h-3.5 text-stone-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-        <span>+ Cart</span>
+  {{-- Mobile & Tablet Floating Action Buttons (`lg:hidden`) - Floating with No Background Below --}}
+  <div id="stickyMobileBar" class="lg:hidden fixed bottom-6 sm:bottom-7 left-4 right-4 sm:left-6 sm:right-6 z-50 pointer-events-none transition-all duration-300 ease-out transform translate-y-28 opacity-0" style="bottom: max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1.25rem));">
+    <div class="max-w-md mx-auto grid grid-cols-2 gap-2.5 sm:gap-3 w-full pointer-events-auto">
+      {{-- Add to Cart (Brand Orange Floating Pill Button) --}}
+      <button type="button" id="stickyBarAddToCart" class="btn-shine h-12 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider rounded-2xl shadow-[0_8px_20px_rgba(234,88,12,0.38)] hover:shadow-[0_10px_25px_rgba(234,88,12,0.45)] transition-all flex items-center justify-center gap-2 cursor-pointer border border-white/20 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
+        <svg class="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        <span id="stickyBarAddToCartText">{{ $isOutOfStock ? 'OUT OF STOCK' : 'ADD TO CART' }}</span>
       </button>
-      <button type="button" id="stickyBarBuyNow" class="buy-now-cta-effect h-10 px-4 sm:px-5 bg-stone-950 hover:bg-black text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed select-none" @disabled($isOutOfStock)>
-        <span>BUY NOW</span>
+
+      {{-- Buy Now (Solid Black Floating Pill Button) --}}
+      <button type="button" id="stickyBarBuyNow" class="buy-now-cta-effect h-12 bg-stone-950 hover:bg-black active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.35)] hover:shadow-[0_10px_25px_rgba(0,0,0,0.45)] transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-white/10 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none select-none" @disabled($isOutOfStock)>
+        <span id="stickyBarBuyNowText">{{ $isOutOfStock ? 'OUT OF STOCK' : 'BUY NOW' }}</span>
       </button>
     </div>
   </div>
@@ -1004,11 +1002,20 @@ function findPdpMatchingSku(skus, selectedAttrs) {
   if (selKeys.length === 0) return null;
 
   return skus.find(sku => {
-    const attrs = sku.attributes || {};
+    let attrs = sku.attributes || {};
+    if (typeof attrs === 'string') {
+      try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
+    }
+    const attrMap = {};
+    Object.keys(attrs).forEach(k => {
+      attrMap[String(k).trim().toLowerCase()] = String(attrs[k]).trim().toLowerCase();
+    });
+
     return selKeys.every(k => {
       const targetVal = String(selectedAttrs[k] || '').trim().toLowerCase();
-      const skuVal = String(attrs[k] || '').trim().toLowerCase();
-      return skuVal === targetVal;
+      const kLower = String(k).trim().toLowerCase();
+      if (attrMap[kLower] === undefined) return true;
+      return attrMap[kLower] === targetVal;
     });
   }) || null;
 }
@@ -1054,16 +1061,28 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
         const testAttrs = Object.assign({}, selectedAttrs, { [gType]: val });
         const matchingSku = findPdpMatchingSku(window.productSkus, testAttrs);
 
+        let optionStock = 0;
         if (matchingSku) {
-          if (matchingSku.stock > 0) {
-            btn.disabled = false;
-            btn.classList.remove('opacity-40', 'line-through', 'cursor-not-allowed');
-            btn.title = '';
-          } else {
-            btn.disabled = true;
-            btn.classList.add('opacity-40', 'line-through', 'cursor-not-allowed');
-            btn.title = `${val} is out of stock`;
-          }
+          optionStock = parseInt(matchingSku.stock, 10) || 0;
+        } else {
+          const skusWithOpt = window.productSkus.filter(s => {
+            let attrs = s.attributes || {};
+            if (typeof attrs === 'string') {
+              try { attrs = JSON.parse(attrs); } catch (e) { attrs = {}; }
+            }
+            return Object.values(attrs).some(v => String(v).trim().toLowerCase() === String(val).trim().toLowerCase());
+          });
+          optionStock = skusWithOpt.reduce((sum, s) => sum + (parseInt(s.stock, 10) || 0), 0);
+        }
+
+        if (optionStock <= 0) {
+          btn.disabled = true;
+          btn.classList.add('opacity-40', 'line-through', 'cursor-not-allowed', 'pointer-events-none');
+          btn.title = `${val} is out of stock`;
+        } else {
+          btn.disabled = false;
+          btn.classList.remove('opacity-40', 'line-through', 'cursor-not-allowed', 'pointer-events-none');
+          btn.title = '';
         }
       });
     });
@@ -1074,7 +1093,24 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
 
   let finalPrice = basePrice;
   let finalReg = baseReg;
-  let isAvailable = true;
+
+  const hasSkus = window.productSkus && window.productSkus.length > 0;
+  const totalSkuStock = hasSkus ? window.productSkus.reduce((sum, s) => sum + (parseInt(s.stock, 10) || 0), 0) : 0;
+  const isProductOutOfStockServer = {{ $isOutOfStock ? 'true' : 'false' }};
+
+  let isAvailable = !isProductOutOfStockServer;
+
+  if (hasSkus) {
+    if (totalSkuStock <= 0) {
+      isAvailable = false;
+    } else if (matchedSku) {
+      isAvailable = (parseInt(matchedSku.stock, 10) || 0) > 0;
+    } else {
+      isAvailable = totalSkuStock > 0;
+    }
+  } else {
+    isAvailable = !isProductOutOfStockServer;
+  }
 
   if (matchedSku) {
     const skuSalePrice = parseFloat(matchedSku.sale_price);
@@ -1095,7 +1131,6 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
       finalReg = 0;
     }
 
-    isAvailable = matchedSku.stock > 0;
     if (addBtn) addBtn.dataset.skuId = matchedSku.id;
   }
 
@@ -1160,12 +1195,15 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
     }
   }
 
+  const pdpDefaultCta = "{{ setting('default_cta_text', 'ADD TO CART') }}";
   if (addBtn) {
     addBtn.disabled = !isAvailable;
-    if (btnText) btnText.textContent = isAvailable ? 'ADD TO CART' : 'OUT OF STOCK';
+    if (btnText) btnText.textContent = isAvailable ? pdpDefaultCta : 'OUT OF STOCK';
   }
   if (buyBtn) {
     buyBtn.disabled = !isAvailable;
+    const buyBtnText = document.getElementById('pdBuyNowText') || buyBtn.querySelector('span');
+    if (buyBtnText) buyBtnText.textContent = isAvailable ? 'BUY NOW' : 'OUT OF STOCK';
   }
 
   const mobStock = document.querySelector('[data-mobile-stock]');
@@ -1179,8 +1217,16 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
 
   const stickyAddBtn = document.getElementById('stickyBarAddToCart');
   const stickyBuyBtn = document.getElementById('stickyBarBuyNow');
-  if (stickyAddBtn) stickyAddBtn.disabled = !isAvailable;
-  if (stickyBuyBtn) stickyBuyBtn.disabled = !isAvailable;
+  if (stickyAddBtn) {
+    stickyAddBtn.disabled = !isAvailable;
+    const sAddText = document.getElementById('stickyBarAddToCartText') || stickyAddBtn.querySelector('span');
+    if (sAddText) sAddText.textContent = isAvailable ? 'ADD TO CART' : 'OUT OF STOCK';
+  }
+  if (stickyBuyBtn) {
+    stickyBuyBtn.disabled = !isAvailable;
+    const sBuyText = document.getElementById('stickyBarBuyNowText') || stickyBuyBtn.querySelector('span');
+    if (sBuyText) sBuyText.textContent = isAvailable ? 'BUY NOW' : 'OUT OF STOCK';
+  }
 }
 
 document.getElementById('stickyBarAddToCart')?.addEventListener('click', (e) => {
@@ -1191,6 +1237,38 @@ document.getElementById('stickyBarBuyNow')?.addEventListener('click', (e) => {
   e.preventDefault();
   document.getElementById('pdBuyNow')?.click();
 });
+
+// Show mobile sticky bar only when visitor scrolls down past the original in-page action buttons
+(function initStickyBarScrollTrigger() {
+  const stickyBar = document.getElementById('stickyMobileBar');
+  const mainActions = document.getElementById('mainProductActions') || document.getElementById('pdAddToCart');
+
+  if (!stickyBar || !mainActions) return;
+
+  function updateStickyBar() {
+    const rect = mainActions.getBoundingClientRect();
+    // When the bottom of the original action buttons is scrolled past the top of the viewport
+    if (rect.bottom < 0) {
+      stickyBar.classList.remove('translate-y-28', 'opacity-0', 'pointer-events-none');
+      stickyBar.classList.add('translate-y-0', 'opacity-100');
+    } else {
+      stickyBar.classList.add('translate-y-28', 'opacity-0', 'pointer-events-none');
+      stickyBar.classList.remove('translate-y-0', 'opacity-100');
+    }
+  }
+
+  window.addEventListener('scroll', updateStickyBar, { passive: true });
+  window.addEventListener('resize', updateStickyBar, { passive: true });
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(() => {
+      updateStickyBar();
+    }, { threshold: [0, 1] });
+    observer.observe(mainActions);
+  }
+
+  updateStickyBar();
+})();
 
 document.querySelectorAll('[data-variant-group] .variant-btn').forEach((b) => b.addEventListener('click', (e) => {
   if (b.disabled) {

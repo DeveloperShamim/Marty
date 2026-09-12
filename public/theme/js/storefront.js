@@ -344,18 +344,73 @@
         }
       }
 
+      const totalSkuStock = skus.length > 0 ? skus.reduce((sum, s) => sum + (parseInt(s.stock, 10) || 0), 0) : 0;
+      let isSkuInStock = true;
+
+      if (skus.length > 0) {
+        if (totalSkuStock <= 0) {
+          isSkuInStock = false;
+        } else if (matchedSku) {
+          isSkuInStock = (parseInt(matchedSku.stock, 10) || 0) > 0;
+        } else {
+          isSkuInStock = totalSkuStock > 0;
+        }
+      } else {
+        isSkuInStock = pdAddToCartBtn ? !pdAddToCartBtn.hasAttribute("disabled") : true;
+      }
+
       if (matchedSku) {
         if (pdAddToCartBtn) pdAddToCartBtn.dataset.skuId = matchedSku.id;
         if (pdBuyNowBtn) pdBuyNowBtn.dataset.skuId = matchedSku.id;
+      }
 
-        if (matchedSku.stock <= 0) {
-          if (pdAddToCartBtn) pdAddToCartBtn.disabled = true;
-          if (pdBuyNowBtn) pdBuyNowBtn.disabled = true;
+      if (!isSkuInStock) {
+        if (pdAddToCartBtn) {
+          pdAddToCartBtn.disabled = true;
           if (pdAddToCartText) pdAddToCartText.textContent = "OUT OF STOCK";
-        } else {
-          if (pdAddToCartBtn) pdAddToCartBtn.disabled = false;
-          if (pdBuyNowBtn) pdBuyNowBtn.disabled = false;
-          if (pdAddToCartText) pdAddToCartText.textContent = "ADD TO CART";
+        }
+        if (pdBuyNowBtn) {
+          pdBuyNowBtn.disabled = true;
+          const buyNowSpan = pdBuyNowBtn.querySelector("#pdBuyNowText") || pdBuyNowBtn.querySelector("span");
+          if (buyNowSpan) buyNowSpan.textContent = "OUT OF STOCK";
+        }
+        const sAdd = $("#stickyBarAddToCart");
+        const sBuy = $("#stickyBarBuyNow");
+        if (sAdd) {
+          sAdd.disabled = true;
+          const sAddText = document.getElementById('stickyBarAddToCartText') || sAdd.querySelector('span');
+          if (sAddText) sAddText.textContent = "Out of Stock";
+        }
+        if (sBuy) {
+          sBuy.disabled = true;
+          const sBuyText = document.getElementById('stickyBarBuyNowText') || sBuy.querySelector('span');
+          if (sBuyText) sBuyText.textContent = "Out of Stock";
+        }
+        const mobStock = document.querySelector('[data-mobile-stock]');
+        if (mobStock) {
+          mobStock.innerHTML = '<span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500"></span><span class="text-[11px] font-semibold text-rose-600 truncate">Out of Stock</span>';
+        }
+      } else if (matchedSku) {
+        if (pdAddToCartBtn) pdAddToCartBtn.disabled = false;
+        if (pdBuyNowBtn) pdBuyNowBtn.disabled = false;
+        if (pdAddToCartText) pdAddToCartText.textContent = window.pdpDefaultCta || "ADD TO CART";
+        const buyNowSpan = pdBuyNowBtn ? (pdBuyNowBtn.querySelector("#pdBuyNowText") || pdBuyNowBtn.querySelector("span")) : null;
+        if (buyNowSpan) buyNowSpan.textContent = "BUY NOW";
+        const sAdd = $("#stickyBarAddToCart");
+        const sBuy = $("#stickyBarBuyNow");
+        if (sAdd) {
+          sAdd.disabled = false;
+          const sAddText = document.getElementById('stickyBarAddToCartText') || sAdd.querySelector('span');
+          if (sAddText) sAddText.textContent = "+ Cart";
+        }
+        if (sBuy) {
+          sBuy.disabled = false;
+          const sBuyText = document.getElementById('stickyBarBuyNowText') || sBuy.querySelector('span');
+          if (sBuyText) sBuyText.textContent = "BUY NOW";
+        }
+        const mobStock = document.querySelector('[data-mobile-stock]');
+        if (mobStock) {
+          mobStock.innerHTML = '<span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span class="text-[11px] font-semibold text-emerald-700 truncate">In Stock · Ready to Ship</span>';
         }
       }
 
@@ -592,6 +647,49 @@
         qmDiscount.classList.add("hidden");
       }
     }
+
+    const qmAddBtn = $("#qmAddToCartBtn");
+    const qmBuyBtn = $("#qmBuyNowBtn");
+    const qmAddSpan = qmAddBtn ? qmAddBtn.querySelector("span") : null;
+    const qmBuySpan = qmBuyBtn ? qmBuyBtn.querySelector("span") : null;
+
+    let isAvailable = true;
+    if (matchedSku) {
+      isAvailable = (parseInt(matchedSku.stock, 10) || 0) > 0;
+    } else if (currentQmProduct.skus && currentQmProduct.skus.length > 0) {
+      const totalSkusStock = currentQmProduct.skus.reduce((sum, s) => sum + (parseInt(s.stock, 10) || 0), 0);
+      isAvailable = totalSkusStock > 0;
+    } else {
+      isAvailable = (parseInt(currentQmProduct.stock, 10) || 0) > 0;
+    }
+
+    if (!isAvailable) {
+      if (qmAddBtn) {
+        qmAddBtn.disabled = true;
+        qmAddBtn.classList.add("opacity-40", "cursor-not-allowed", "pointer-events-none", "bg-stone-100", "text-stone-400", "border-stone-200");
+        qmAddBtn.classList.remove("hover:bg-brand-500", "hover:text-white");
+        if (qmAddSpan) qmAddSpan.textContent = "OUT OF STOCK";
+      }
+      if (qmBuyBtn) {
+        qmBuyBtn.disabled = true;
+        qmBuyBtn.classList.add("opacity-40", "cursor-not-allowed", "pointer-events-none", "bg-stone-200", "text-stone-400");
+        qmBuyBtn.classList.remove("hover:bg-black");
+        if (qmBuySpan) qmBuySpan.textContent = "OUT OF STOCK";
+      }
+    } else {
+      if (qmAddBtn) {
+        qmAddBtn.disabled = false;
+        qmAddBtn.classList.remove("opacity-40", "cursor-not-allowed", "pointer-events-none", "bg-stone-100", "text-stone-400", "border-stone-200");
+        qmAddBtn.classList.add("hover:bg-brand-500", "hover:text-white");
+        if (qmAddSpan) qmAddSpan.textContent = "ADD TO CART";
+      }
+      if (qmBuyBtn) {
+        qmBuyBtn.disabled = false;
+        qmBuyBtn.classList.remove("opacity-40", "cursor-not-allowed", "pointer-events-none", "bg-stone-200", "text-stone-400");
+        qmBuyBtn.classList.add("hover:bg-black");
+        if (qmBuySpan) qmBuySpan.textContent = "BUY NOW";
+      }
+    }
   }
 
   function openQuickModal(data) {
@@ -719,6 +817,7 @@
   if (qmAddBtn) {
     qmAddBtn.addEventListener("click", async (e) => {
       e.preventDefault();
+      if (qmAddBtn.disabled) return;
       if (!currentQmProduct) return;
 
       const missing = [];
@@ -753,6 +852,7 @@
   if (qmBuyBtn) {
     qmBuyBtn.addEventListener("click", async (e) => {
       e.preventDefault();
+      if (qmBuyBtn.disabled) return;
       if (!currentQmProduct) return;
 
       const missing = [];
@@ -794,6 +894,9 @@
   /* ---------------- Card Add To Cart Click Listener ---------------- */
   $$(".add-to-cart, [data-add-cart]").forEach((btn) => btn.addEventListener("click", (e) => {
     e.preventDefault();
+    if (btn.disabled || btn.getAttribute("disabled") !== null || btn.classList.contains("disabled")) {
+      return;
+    }
     const productId = btn.dataset.productId || btn.dataset.id;
     const hasVariants = btn.dataset.hasVariants === "true";
     let variantsData = null;
@@ -817,6 +920,7 @@
       openQuickModal({
         productId: productId,
         title: btn.dataset.title,
+        stock: btn.dataset.stock !== undefined ? parseInt(btn.dataset.stock, 10) : 99,
         price: btn.dataset.price,
         rawPrice: btn.dataset.rawPrice,
         regularPrice: btn.dataset.regularPrice,
@@ -899,7 +1003,7 @@
   if (pdBuyNow) {
     pdBuyNow.addEventListener("click", (e) => {
       e.preventDefault();
-      if (pdBuyNow.disabled) return;
+      if (pdBuyNow.disabled || pdBuyNow.getAttribute("disabled") !== null) return;
       const source = pdBtn || pdBuyNow;
       const { variant, missing } = getPdpSelectedVariant();
       const pdpAlert = $("#pdpErrorAlert");

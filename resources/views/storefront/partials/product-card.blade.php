@@ -4,7 +4,7 @@
   $discount = $product->discount_percent;
   $flashCard = $flashCard ?? false;
   $cta = setting('default_cta_text', 'Add to Cart');
-  $isOutOfStock = (int) $product->stock_quantity <= 0;
+  $isOutOfStock = $product->isOutOfStock();
   $brandName = is_object($product->brand) ? ($product->brand->name ?? null) : (string) ($product->brand ?: '');
   $variantsGrouped = $product->variants ? $product->variants->groupBy('type')->map(fn($items) => $items->pluck('value')->unique()->values()) : collect();
   if ($variantsGrouped->isEmpty() && $product->skus && $product->skus->isNotEmpty()) {
@@ -93,13 +93,14 @@
 
     {{-- Add to Cart Action --}}
     @if($isOutOfStock)
-      <button type="button" disabled class="w-full mt-auto py-2 px-2 sm:py-2.5 sm:px-3 rounded-xl bg-stone-100 text-stone-400 font-bold text-[11px] sm:text-xs cursor-not-allowed border border-stone-200 text-center" aria-disabled="true">
+      <button type="button" disabled class="w-full mt-auto py-2 px-2 sm:py-2.5 sm:px-3 rounded-xl bg-stone-100 text-stone-400 font-bold text-[11px] sm:text-xs cursor-not-allowed border border-stone-200 text-center pointer-events-none select-none" aria-disabled="true">
         Out of Stock
       </button>
     @else
       <button type="button" class="fk-add-btn add-to-cart w-full mt-auto py-2 px-2 sm:py-2.5 sm:px-3 rounded-xl font-extrabold text-[11px] sm:text-xs flex items-center justify-center gap-1 sm:gap-1.5 shadow-2xs hover:shadow-md active:scale-95 transition-all cursor-pointer" 
               data-product-id="{{ $product->id }}" 
               data-title="{{ $product->name }}" 
+              data-stock="{{ $product->stock_quantity }}"
               data-price="{{ money($product->price) }}"
               data-raw-price="{{ (float) $product->price }}"
               data-regular-price="{{ $product->on_sale ? money($product->regular_price) : '' }}"
