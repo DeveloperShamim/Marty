@@ -178,8 +178,120 @@
           </div>
 
           <div>
-            <label class="text-xs font-bold text-stone-800 block mb-1.5">Full Detailed Description &amp; Highlights</label>
-            <textarea name="description" rows="5" class="w-full px-3.5 py-2.5 text-xs font-medium text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" placeholder="Provide full details, nutritional benefits, harvest origin, and usage instructions...">{{ old('description', $product->description) }}</textarea>
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <label class="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                <span>Full Detailed Description &amp; Highlights</span>
+                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">Rich Media &amp; HTML</span>
+              </label>
+              <div class="flex items-center gap-1 bg-stone-100 p-0.5 rounded-lg text-xs font-semibold">
+                <button type="button" id="descModeVisualBtn" class="px-2.5 py-1 rounded-md bg-white text-stone-900 shadow-2xs font-bold text-[11px] transition-all cursor-pointer">Visual</button>
+                <button type="button" id="descModeHtmlBtn" class="px-2.5 py-1 rounded-md text-stone-600 hover:text-stone-900 font-bold text-[11px] transition-all cursor-pointer">&lt;&gt; HTML</button>
+                <button type="button" id="descModePreviewBtn" class="px-2.5 py-1 rounded-md text-stone-600 hover:text-stone-900 font-bold text-[11px] transition-all cursor-pointer">👁 Preview</button>
+              </div>
+            </div>
+
+            {{-- Rich Editor Frame --}}
+            <div class="border border-stone-200 rounded-2xl overflow-hidden bg-white shadow-2xs focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+              {{-- Toolbar --}}
+              <div id="descEditorToolbar" class="flex flex-wrap items-center gap-1 p-2 bg-stone-50/90 border-b border-stone-200 text-xs text-stone-700">
+                {{-- Format / Heading select --}}
+                <select id="descHeadingSelect" class="h-7 px-2 text-xs font-semibold bg-white border border-stone-200 rounded-lg focus:outline-none cursor-pointer">
+                  <option value="p">Paragraph</option>
+                  <option value="h2">Heading 2</option>
+                  <option value="h3">Heading 3</option>
+                  <option value="h4">Heading 4</option>
+                </select>
+
+                <div class="w-px h-5 bg-stone-200 mx-1"></div>
+
+                {{-- Inline formatting --}}
+                <button type="button" data-cmd="bold" class="desc-tool-btn h-7 w-7 rounded-lg hover:bg-stone-200 active:scale-95 flex items-center justify-center font-black transition-colors cursor-pointer" title="Bold (Ctrl+B)">B</button>
+                <button type="button" data-cmd="italic" class="desc-tool-btn h-7 w-7 rounded-lg hover:bg-stone-200 active:scale-95 flex items-center justify-center italic font-serif font-bold transition-colors cursor-pointer" title="Italic (Ctrl+I)">I</button>
+                <button type="button" data-cmd="underline" class="desc-tool-btn h-7 w-7 rounded-lg hover:bg-stone-200 active:scale-95 flex items-center justify-center underline font-bold transition-colors cursor-pointer" title="Underline (Ctrl+U)">U</button>
+                <button type="button" data-cmd="strikeThrough" class="desc-tool-btn h-7 w-7 rounded-lg hover:bg-stone-200 active:scale-95 flex items-center justify-center line-through font-bold transition-colors cursor-pointer" title="Strikethrough">S</button>
+
+                <div class="w-px h-5 bg-stone-200 mx-1"></div>
+
+                {{-- Lists --}}
+                <button type="button" data-cmd="insertUnorderedList" class="desc-tool-btn h-7 px-2 rounded-lg hover:bg-stone-200 active:scale-95 flex items-center gap-1 text-[11px] font-bold transition-colors cursor-pointer" title="Bullet List">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16M2 6h.01M2 12h.01M2 18h.01"/></svg>
+                </button>
+                <button type="button" data-cmd="insertOrderedList" class="desc-tool-btn h-7 px-2 rounded-lg hover:bg-stone-200 active:scale-95 flex items-center gap-1 text-[11px] font-bold transition-colors cursor-pointer" title="Numbered List">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 6h14M7 12h14M7 18h14M3 6h1M3 12h1M3 18h1"/></svg>
+                </button>
+
+                <div class="w-px h-5 bg-stone-200 mx-1"></div>
+
+                {{-- Alignment --}}
+                <button type="button" data-cmd="justifyLeft" class="desc-tool-btn h-7 w-7 rounded-lg hover:bg-stone-200 active:scale-95 flex items-center justify-center transition-colors cursor-pointer" title="Align Left">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h10M4 18h16"/></svg>
+                </button>
+                <button type="button" data-cmd="justifyCenter" class="desc-tool-btn h-7 w-7 rounded-lg hover:bg-stone-200 active:scale-95 flex items-center justify-center transition-colors cursor-pointer" title="Align Center">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M7 12h10M4 18h16"/></svg>
+                </button>
+                <button type="button" data-cmd="justifyRight" class="desc-tool-btn h-7 w-7 rounded-lg hover:bg-stone-200 active:scale-95 flex items-center justify-center transition-colors cursor-pointer" title="Align Right">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M10 12h10M4 18h16"/></svg>
+                </button>
+
+                <div class="w-px h-5 bg-stone-200 mx-1"></div>
+
+                {{-- Quote & Table --}}
+                <button type="button" id="descInsertQuoteBtn" class="h-7 px-2 rounded-lg hover:bg-stone-200 active:scale-95 flex items-center gap-1 text-[11px] font-bold transition-colors cursor-pointer" title="Blockquote">
+                  <span>❝ Quote</span>
+                </button>
+                <button type="button" id="descInsertTableBtn" class="h-7 px-2 rounded-lg hover:bg-stone-200 active:scale-95 flex items-center gap-1 text-[11px] font-bold transition-colors cursor-pointer" title="Insert Spec Table">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  <span>Table</span>
+                </button>
+
+                <div class="w-px h-5 bg-stone-200 mx-1"></div>
+
+                {{-- Media insertion buttons --}}
+                <button type="button" id="descOpenImageModalBtn" class="h-7 px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 active:scale-95 flex items-center gap-1.5 font-extrabold text-[11px] transition-colors cursor-pointer" title="Add Image (Upload or URL)">
+                  <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  <span>Image</span>
+                </button>
+
+                <button type="button" id="descOpenVideoModalBtn" class="h-7 px-2.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 active:scale-95 flex items-center gap-1.5 font-extrabold text-[11px] transition-colors cursor-pointer" title="Add Video (YouTube, Vimeo, MP4)">
+                  <svg class="w-3.5 h-3.5 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <span>Video / Link</span>
+                </button>
+
+                <button type="button" id="descInsertLinkBtn" class="h-7 px-2 rounded-lg hover:bg-stone-200 active:scale-95 flex items-center gap-1 text-[11px] font-bold transition-colors cursor-pointer" title="Insert Link">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                  <span>Link</span>
+                </button>
+
+                <div class="w-px h-5 bg-stone-200 mx-1"></div>
+
+                <button type="button" data-cmd="removeFormat" class="desc-tool-btn h-7 px-2 rounded-lg hover:bg-stone-200 active:scale-95 text-[11px] text-stone-500 font-semibold transition-colors cursor-pointer" title="Clear Formatting">✕ Clear</button>
+              </div>
+
+              {{-- Editor Viewport 1: Visual WYSIWYG --}}
+              <div id="descVisualEditor" contenteditable="true" class="min-h-[220px] max-h-[500px] overflow-y-auto p-4 text-xs sm:text-sm text-stone-800 focus:outline-none leading-relaxed prose prose-stone max-w-none">
+                {!! old('description', $product->description) !!}
+              </div>
+
+              {{-- Editor Viewport 2: Custom HTML Code View --}}
+              <textarea id="descHtmlEditor" name="description" rows="12" class="hidden w-full p-4 font-mono text-xs text-stone-100 bg-stone-900 border-0 focus:outline-none resize-y leading-relaxed" placeholder="Type or paste custom HTML, iframes, styles, video tags, or tables here...">{{ old('description', $product->description) }}</textarea>
+
+              {{-- Editor Viewport 3: Real-Time Live Preview --}}
+              <div id="descPreviewEditor" class="hidden min-h-[220px] max-h-[500px] overflow-y-auto p-4 bg-stone-50/50 text-xs sm:text-sm text-stone-800 leading-relaxed prose prose-stone max-w-none">
+              </div>
+
+              {{-- Status Footer --}}
+              <div class="flex items-center justify-between px-3.5 py-1.5 bg-stone-50 border-t border-stone-200 text-[11px] text-stone-500">
+                <span id="descWordCount">0 words · 0 chars</span>
+                <span class="text-stone-400 hidden sm:inline">Tip: Switch to &lt;&gt; HTML mode to paste custom embed codes or CSS</span>
+              </div>
+            </div>
+
+            <style>
+              #descVisualEditor img, #descVisualEditor iframe, #descVisualEditor video, #descVisualEditor .aspect-video,
+              #descPreviewEditor img, #descPreviewEditor iframe, #descPreviewEditor video, #descPreviewEditor .aspect-video {
+                border-radius: 0 !important;
+              }
+            </style>
           </div>
         </div>
       </div>
@@ -194,7 +306,7 @@
               <p class="text-[11px] text-stone-500">Base pricing, discount rules and default inventory counts</p>
             </div>
           </div>
-          <span id="autoStockNotice" class="hidden px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300"></span>
+          <span id="autoStockNoticeHeader" class="hidden px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300"></span>
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -208,9 +320,20 @@
             <input type="number" step="0.01" id="salePriceInput" name="sale_price" class="w-full px-3.5 py-2.5 text-xs sm:text-sm font-black text-emerald-700 bg-emerald-50/40 rounded-xl border border-emerald-200 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" value="{{ old('sale_price', $product->sale_price) }}" placeholder="e.g. 750 (optional)" />
           </div>
 
-          <div>
-            <label class="text-xs font-bold text-stone-800 block mb-1.5">Total Stock <span class="text-rose-500">*</span></label>
-            <input type="number" name="stock_quantity" class="w-full px-3.5 py-2.5 text-xs sm:text-sm font-black text-stone-900 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" value="{{ old('stock_quantity', $product->stock_quantity ?? 0) }}" required />
+          <div id="stockQuantityFieldGroup">
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-xs font-bold text-stone-800">Total Stock <span class="text-rose-500">*</span></label>
+              <span id="autoStockNotice" class="hidden px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
+                ⚡ Auto-Calculated
+              </span>
+            </div>
+            <input type="number" id="mainStockInput" name="stock_quantity" class="w-full px-3.5 py-2.5 text-xs sm:text-sm font-black text-stone-900 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all" value="{{ old('stock_quantity', $product->stock_quantity ?? 0) }}" required />
+            <div id="variantStockLinkHint" class="hidden mt-1.5 flex items-center justify-between text-[11px]">
+              <span class="text-stone-500">Auto-sum of active variants</span>
+              <a href="#skuMatrixSection" class="font-extrabold text-emerald-700 hover:text-emerald-900 flex items-center gap-0.5">
+                <span>Edit in Variations</span> ↓
+              </a>
+            </div>
           </div>
 
           <div>
@@ -226,7 +349,7 @@
       </div>
 
       {{-- Card 3: Variants & Weight Pack Options --}}
-      <div class="bg-white p-5 sm:p-6 lg:p-7 rounded-2xl sm:rounded-3xl border border-emerald-200/80 shadow-2xs space-y-5">
+      <div id="skuMatrixSection" class="bg-white p-5 sm:p-6 lg:p-7 rounded-2xl sm:rounded-3xl border border-emerald-200/80 shadow-2xs space-y-5">
         <input type="hidden" name="sku_matrix_submitted" value="1" />
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-100 pb-3.5">
           <div class="flex items-center gap-2.5">
@@ -298,16 +421,39 @@
           $skus = $editing ? $product->skus : collect();
         @endphp
 
-        {{-- Combination Matrix: Desktop/Tablet Table Layout (`hidden md:block`) --}}
-        <div class="hidden md:block overflow-x-auto w-full border border-stone-200 rounded-2xl">
-          <table class="w-full text-left text-xs">
+        {{-- Quick Variant Stock Toolbar --}}
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-emerald-50/60 p-3.5 sm:p-4 rounded-2xl border border-emerald-200/80">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white font-black text-sm flex items-center justify-center shadow-xs">📦</div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-black text-emerald-950 uppercase tracking-wider">Variation Stock Matrix</span>
+                <span id="matrixActiveCountBadge" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-white text-emerald-800 border border-emerald-200 shadow-2xs">
+                  {{ $skus->count() }} Variations
+                </span>
+              </div>
+              <p class="text-[11px] text-emerald-800/80 font-medium">Edit individual variant stock below. The total stock in Card 2 auto-calculates from these rows.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 self-start sm:self-auto bg-white p-1.5 rounded-xl border border-emerald-200 shadow-2xs">
+            <span class="text-[11px] font-bold text-stone-600 pl-1">Set all to:</span>
+            <input type="number" id="bulkStockQtyInput" min="0" placeholder="Qty" class="w-16 px-2 py-1 text-xs text-center font-black rounded-lg border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:border-emerald-500" />
+            <button type="button" id="applyBulkStockBtn" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors cursor-pointer shadow-xs">
+              Apply to All
+            </button>
+          </div>
+        </div>
+
+        {{-- Combination Matrix: Unified Responsive Table Layout for All Devices --}}
+        <div class="overflow-x-auto w-full border border-stone-200 rounded-2xl shadow-2xs">
+          <table class="w-full text-left text-xs min-w-[660px]">
             <thead class="bg-stone-100 text-stone-700 font-extrabold border-b border-stone-200 whitespace-nowrap">
               <tr>
                 <th class="py-3 px-4">Option / Weight</th>
                 <th class="py-3 px-4">SKU Code</th>
                 <th class="py-3 px-4 w-36 text-center bg-stone-200/60">Regular Price (৳)</th>
                 <th class="py-3 px-4 w-36 text-center bg-emerald-100/60 text-emerald-900">Sale Price (৳)</th>
-                <th class="py-3 px-4 w-28 text-center">Stock Qty</th>
+                <th class="py-3 px-4 w-32 text-center bg-emerald-50 text-emerald-900 border-x border-emerald-200 font-black">Stock Qty 📦</th>
                 <th class="py-3 px-4 w-16 text-center">Active</th>
                 <th class="py-3 px-3 w-10 text-center"></th>
               </tr>
@@ -337,8 +483,8 @@
                   <td class="py-3 px-4">
                     <input name="sku_matrix[{{ $index }}][sale_price]" type="number" step="0.01" value="{{ $isCustomSale ? $sku->sale_price : '' }}" class="w-full px-2.5 py-1.5 text-xs text-center font-black text-emerald-700 bg-emerald-50/40 rounded-lg border border-emerald-200 sku-sale-price-input focus:outline-none focus:border-emerald-500" placeholder="Auto Base" />
                   </td>
-                  <td class="py-3 px-4">
-                    <input name="sku_matrix[{{ $index }}][stock]" type="number" min="0" value="{{ $sku->stock_quantity }}" class="w-full px-2.5 py-1.5 text-xs text-center font-bold rounded-lg border border-stone-200 sku-stock-input focus:outline-none focus:border-brand-500" required />
+                  <td class="py-3 px-4 bg-emerald-50/30 border-x border-emerald-100">
+                    <input name="sku_matrix[{{ $index }}][stock]" type="number" min="0" value="{{ $sku->stock_quantity }}" class="w-full px-2.5 py-1.5 text-xs text-center font-black text-stone-900 rounded-lg border border-emerald-300 bg-white sku-stock-input focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" required />
                   </td>
                   <td class="py-3 px-4 text-center">
                     <input type="checkbox" name="sku_matrix[{{ $index }}][is_active]" value="1" @checked($sku->is_active) class="accent-emerald-600 h-4 w-4 cursor-pointer sku-active-check" />
@@ -357,58 +503,6 @@
               @endforelse
             </tbody>
           </table>
-        </div>
-
-        {{-- Combination Matrix: Mobile Card View (`block md:hidden`) --}}
-        <div id="skuMatrixMobileCards" class="block md:hidden space-y-3">
-          @forelse($skus as $index => $sku)
-            @php
-              $isCustomReg = $sku->regular_price !== null && abs((float) $sku->regular_price - (float) $product->regular_price) > 0.01;
-              $isCustomSale = $sku->sale_price !== null && abs((float) $sku->sale_price - (float) ($product->sale_price ?? $product->regular_price)) > 0.01;
-            @endphp
-            <div class="sku-mobile-card bg-stone-50/80 p-3 rounded-2xl border border-stone-200 space-y-2.5 shadow-2xs">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-1 flex-wrap">
-                  @foreach($sku->getAttributesData() as $k => $v)
-                    <span class="bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded-md text-[11px] font-extrabold border border-emerald-200">{{ $k }}: {{ $v }}</span>
-                  @endforeach
-                </div>
-                <div class="flex items-center gap-2">
-                  <label class="flex items-center gap-1 text-[11px] font-bold text-stone-600 cursor-pointer">
-                    <input type="checkbox" name="sku_matrix[{{ $index }}][is_active]" value="1" @checked($sku->is_active) class="accent-emerald-600 h-3.5 w-3.5" />
-                    <span>Active</span>
-                  </label>
-                  <button type="button" onclick="this.closest('.sku-mobile-card').remove(); updateMatrixCalculations();" class="text-rose-500 hover:text-rose-700 font-black text-sm px-1">✕</button>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="text-[10px] font-bold text-stone-500 block">Reg Price (৳)</label>
-                  <input name="sku_matrix[{{ $index }}][regular_price]" type="number" step="0.01" value="{{ $isCustomReg ? $sku->regular_price : '' }}" class="w-full px-2.5 py-1.5 text-xs text-center font-bold rounded-lg border border-stone-200 bg-white" placeholder="Auto Base" />
-                </div>
-                <div>
-                  <label class="text-[10px] font-bold text-emerald-800 block">Sale Price (৳)</label>
-                  <input name="sku_matrix[{{ $index }}][sale_price]" type="number" step="0.01" value="{{ $isCustomSale ? $sku->sale_price : '' }}" class="w-full px-2.5 py-1.5 text-xs text-center font-black text-emerald-700 bg-emerald-50 rounded-lg border border-emerald-200" placeholder="Auto Base" />
-                </div>
-              </div>
-
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="text-[10px] font-bold text-stone-500 block">Stock Qty</label>
-                  <input name="sku_matrix[{{ $index }}][stock]" type="number" min="0" value="{{ $sku->stock_quantity }}" class="w-full px-2.5 py-1.5 text-xs text-center font-bold rounded-lg border border-stone-200 bg-white" required />
-                </div>
-                <div>
-                  <label class="text-[10px] font-bold text-stone-500 block">Custom SKU</label>
-                  <input name="sku_matrix[{{ $index }}][sku]" value="{{ $sku->sku }}" placeholder="Auto SKU" class="w-full px-2 py-1.5 text-xs font-mono rounded-lg border border-stone-200 bg-white" />
-                </div>
-              </div>
-            </div>
-          @empty
-            <div id="emptyMatrixMobile" class="py-6 text-center text-stone-400 italic bg-stone-50 rounded-xl border border-stone-200 text-xs">
-              🌿 No variations generated yet. Tap <strong>"⚡ Generate"</strong> above.
-            </div>
-          @endforelse
         </div>
       </div>
 
@@ -654,8 +748,876 @@
   @endforeach
 @endif
 
+{{-- Rich Description Insert Image Modal --}}
+<div id="descImageModal" class="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden transition-opacity" aria-hidden="true">
+  <div class="relative max-w-lg w-full bg-white rounded-2xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="flex items-center justify-between p-4 border-b border-stone-100 bg-stone-50/50">
+      <div class="flex items-center gap-2">
+        <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm">🖼</span>
+        <div>
+          <h3 class="text-sm font-extrabold text-stone-900">Insert Image in Description</h3>
+          <p class="text-[11px] text-stone-500">Upload an image file or paste a web image link</p>
+        </div>
+      </div>
+      <button type="button" id="descCloseImageModal" class="w-8 h-8 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold flex items-center justify-center text-sm cursor-pointer">✕</button>
+    </div>
+
+    {{-- Tabs --}}
+    <div class="flex border-b border-stone-200 bg-stone-50 px-4 pt-2 gap-2 text-xs font-bold">
+      <button type="button" id="descImgTabUploadBtn" class="px-3 py-2 border-b-2 border-emerald-600 text-emerald-800 transition-colors cursor-pointer">Upload File</button>
+      <button type="button" id="descImgTabUrlBtn" class="px-3 py-2 border-b-2 border-transparent text-stone-500 hover:text-stone-800 transition-colors cursor-pointer">Image URL</button>
+    </div>
+
+    <div class="p-5 overflow-y-auto space-y-4">
+      {{-- Tab 1: Upload File --}}
+      <div id="descImgUploadPanel" class="space-y-3">
+        <label class="block border-2 border-dashed border-stone-300 hover:border-emerald-500 rounded-2xl p-6 text-center cursor-pointer transition-colors bg-stone-50/50 hover:bg-emerald-50/20">
+          <input type="file" id="descImgFileInput" accept="image/*" class="hidden" />
+          <div class="space-y-1.5">
+            <div class="w-10 h-10 mx-auto rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-lg">↑</div>
+            <p class="text-xs font-bold text-stone-800">Click to choose image or drag &amp; drop</p>
+            <p class="text-[11px] text-stone-400">JPG, PNG, WebP, GIF, SVG (up to 50MB)</p>
+          </div>
+        </label>
+        <div id="descImgUploadStatus" class="hidden text-xs text-stone-600 flex items-center gap-2 p-2.5 rounded-xl bg-stone-100">
+          <span class="animate-spin text-emerald-600 font-bold">⟳</span>
+          <span id="descImgUploadStatusText">Uploading image...</span>
+        </div>
+      </div>
+
+      {{-- Tab 2: URL --}}
+      <div id="descImgUrlPanel" class="hidden space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-stone-800 mb-1">Image URL (https://...)</label>
+          <input type="url" id="descImgUrlInput" placeholder="https://example.com/photo.jpg" class="w-full px-3.5 py-2.5 text-xs font-medium rounded-xl border border-stone-200 focus:outline-none focus:border-emerald-500" />
+        </div>
+      </div>
+
+      {{-- Common Image Options --}}
+      <div class="pt-2 border-t border-stone-100 space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-stone-800 mb-1">Alt Text / Caption (Optional)</label>
+          <input type="text" id="descImgAltInput" placeholder="Describe the image for customers &amp; SEO..." class="w-full px-3.5 py-2 text-xs font-medium rounded-xl border border-stone-200 focus:outline-none focus:border-emerald-500" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-stone-800 mb-1">Width / Layout</label>
+            <select id="descImgWidthSelect" class="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-stone-200 focus:outline-none bg-white">
+              <option value="100%">100% Full Width</option>
+              <option value="75%">75% Large</option>
+              <option value="50%">50% Medium</option>
+              <option value="auto">Original Size</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-stone-800 mb-1">Alignment</label>
+            <select id="descImgAlignSelect" class="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-stone-200 focus:outline-none bg-white">
+              <option value="center">Centered</option>
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="descImgPreviewBox" class="hidden p-2 bg-stone-50 rounded-xl border border-stone-200 text-center">
+          <p class="text-[10px] text-stone-400 font-bold mb-1">Preview</p>
+          <img id="descImgPreview" src="" class="max-h-40 mx-auto rounded-lg object-contain shadow-2xs" alt="Preview" />
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 border-t border-stone-100 bg-stone-50/50 flex items-center justify-end gap-2">
+      <button type="button" id="descCancelImgBtn" class="px-4 py-2 rounded-xl text-xs font-bold text-stone-600 hover:bg-stone-200 transition-colors cursor-pointer">Cancel</button>
+      <button type="button" id="descConfirmImgBtn" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-xs transition-all cursor-pointer">Insert Image</button>
+    </div>
+  </div>
+</div>
+
+{{-- Rich Description Insert Video Modal --}}
+<div id="descVideoModal" class="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden transition-opacity" aria-hidden="true">
+  <div class="relative max-w-lg w-full bg-white rounded-2xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="flex items-center justify-between p-4 border-b border-stone-100 bg-stone-50/50">
+      <div class="flex items-center gap-2">
+        <span class="w-8 h-8 rounded-xl bg-red-100 text-red-700 flex items-center justify-center font-bold text-sm">🎬</span>
+        <div>
+          <h3 class="text-sm font-extrabold text-stone-900">Insert Video / Video Link</h3>
+          <p class="text-[11px] text-stone-500">Embed YouTube, Vimeo or direct MP4 video files</p>
+        </div>
+      </div>
+      <button type="button" id="descCloseVideoModal" class="w-8 h-8 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold flex items-center justify-center text-sm cursor-pointer">✕</button>
+    </div>
+
+    {{-- Tabs --}}
+    <div class="flex border-b border-stone-200 bg-stone-50 px-4 pt-2 gap-2 text-xs font-bold">
+      <button type="button" id="descVidTabLinkBtn" class="px-3 py-2 border-b-2 border-red-600 text-red-800 transition-colors cursor-pointer">YouTube / Vimeo Link</button>
+      <button type="button" id="descVidTabDirectBtn" class="px-3 py-2 border-b-2 border-transparent text-stone-500 hover:text-stone-800 transition-colors cursor-pointer">Direct MP4 / Upload</button>
+    </div>
+
+    <div class="p-5 overflow-y-auto space-y-4">
+      {{-- Tab 1: Video Link --}}
+      <div id="descVidLinkPanel" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-stone-800 mb-1">YouTube or Vimeo Video URL</label>
+          <input type="url" id="descVidUrlInput" placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ or https://youtu.be/..." class="w-full px-3.5 py-2.5 text-xs font-medium rounded-xl border border-stone-200 focus:outline-none focus:border-red-500" />
+          <p class="text-[11px] text-stone-400 mt-1">Supports standard YouTube, Shorts, youtu.be, and Vimeo URLs. Responsive 16:9 player generated automatically.</p>
+        </div>
+      </div>
+
+      {{-- Tab 2: Direct MP4 --}}
+      <div id="descVidDirectPanel" class="hidden space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-stone-800 mb-1">Direct Video URL (.mp4 / .webm)</label>
+          <input type="url" id="descVidDirectUrlInput" placeholder="https://example.com/video.mp4" class="w-full px-3.5 py-2.5 text-xs font-medium rounded-xl border border-stone-200 focus:outline-none focus:border-red-500" />
+        </div>
+        <div class="text-center text-stone-400 text-xs font-bold">OR</div>
+        <label class="block border-2 border-dashed border-stone-300 hover:border-red-500 rounded-2xl p-4 text-center cursor-pointer transition-colors bg-stone-50/50 hover:bg-red-50/20">
+          <input type="file" id="descVidFileInput" accept="video/mp4,video/webm,video/ogg" class="hidden" />
+          <div class="space-y-1">
+            <span class="text-base">📹</span>
+            <p class="text-xs font-bold text-stone-800">Upload MP4 Video File</p>
+            <p class="text-[10px] text-stone-400">MP4, WebM (up to 50MB)</p>
+          </div>
+        </label>
+        <div id="descVidUploadStatus" class="hidden text-xs text-stone-600 flex items-center gap-2 p-2.5 rounded-xl bg-stone-100">
+          <span class="animate-spin text-red-600 font-bold">⟳</span>
+          <span id="descVidUploadStatusText">Uploading video...</span>
+        </div>
+      </div>
+
+      {{-- Common Video Options --}}
+      <div class="pt-2 border-t border-stone-100 space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-stone-800 mb-1">Optional Caption or Title</label>
+          <input type="text" id="descVidCaptionInput" placeholder="e.g. Official Product Showcase Video" class="w-full px-3.5 py-2 text-xs font-medium rounded-xl border border-stone-200 focus:outline-none focus:border-red-500" />
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 border-t border-stone-100 bg-stone-50/50 flex items-center justify-end gap-2">
+      <button type="button" id="descCancelVidBtn" class="px-4 py-2 rounded-xl text-xs font-bold text-stone-600 hover:bg-stone-200 transition-colors cursor-pointer">Cancel</button>
+      <button type="button" id="descConfirmVidBtn" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-red-600 hover:bg-red-700 active:scale-95 text-white shadow-xs transition-all cursor-pointer">Insert Video</button>
+    </div>
+  </div>
+</div>
+
 @push('scripts')
 <script>
+// ==========================================
+// Rich Product Description Editor Controller
+// ==========================================
+(function() {
+  const visualEl = document.getElementById('descVisualEditor');
+  const htmlEl = document.getElementById('descHtmlEditor');
+  const previewEl = document.getElementById('descPreviewEditor');
+  const toolbarEl = document.getElementById('descEditorToolbar');
+
+  const modeVisualBtn = document.getElementById('descModeVisualBtn');
+  const modeHtmlBtn = document.getElementById('descModeHtmlBtn');
+  const modePreviewBtn = document.getElementById('descModePreviewBtn');
+  const wordCountEl = document.getElementById('descWordCount');
+  const headingSelect = document.getElementById('descHeadingSelect');
+
+  let currentMode = 'visual'; // 'visual' | 'html' | 'preview'
+  let savedRange = null;
+
+  if (!visualEl || !htmlEl) return;
+
+  function saveSelection() {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      savedRange = sel.getRangeAt(0).cloneRange();
+    }
+  }
+
+  function restoreSelection() {
+    if (savedRange) {
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(savedRange);
+    } else {
+      visualEl.focus();
+    }
+  }
+
+  function getCleanHtmlFromVisual() {
+    const clone = visualEl.cloneNode(true);
+    clone.querySelectorAll('.desc-media-toolbar').forEach(el => el.remove());
+    clone.querySelectorAll('.desc-media-block').forEach(el => {
+      el.removeAttribute('contenteditable');
+      el.removeAttribute('tabindex');
+      el.classList.remove('border-2', 'border-dashed', 'border-stone-300', 'hover:border-red-400', 'p-2', 'rounded-2xl', 'transition-all');
+    });
+    // Remove any ghost media blocks or empty aspect-video containers without iframe or video
+    clone.querySelectorAll('.aspect-video, [data-media-type="video"]').forEach(el => {
+      if (!el.querySelector('iframe, video')) {
+        const block = el.closest('.desc-media-block') || el;
+        block.remove();
+      }
+    });
+    return clone.innerHTML;
+  }
+
+  function removeMediaBlock(mediaBlock) {
+    if (!mediaBlock || mediaBlock === visualEl) return;
+    const nextEl = mediaBlock.nextElementSibling;
+    if (nextEl && nextEl.tagName === 'P' && (!nextEl.textContent.trim() || nextEl.innerHTML === '<br>')) {
+      nextEl.remove();
+    }
+    mediaBlock.remove();
+    syncContent('visual');
+    visualEl.focus();
+  }
+
+  function enhanceVisualMediaBlocks() {
+    // Wrap and attach removal toolbar to any iframe or video
+    visualEl.querySelectorAll('iframe, video').forEach(media => {
+      let block = media.closest('.desc-media-block');
+      if (block === visualEl) block = null;
+
+      if (!block) {
+        let curr = media;
+        while (curr.parentElement && curr.parentElement !== visualEl && !curr.parentElement.classList.contains('desc-media-block')) {
+          curr = curr.parentElement;
+        }
+
+        if (curr && curr !== visualEl && curr.nodeType === 1 && (curr.classList.contains('aspect-video') || curr.querySelector('iframe, video'))) {
+          block = curr;
+        } else {
+          block = document.createElement('div');
+          media.parentNode.insertBefore(block, media);
+          block.appendChild(media);
+        }
+      }
+
+      if (block && block !== visualEl) {
+        block.classList.add('desc-media-block', 'relative', 'group', 'my-6', 'w-full', 'max-w-3xl', 'mx-auto', 'border-2', 'border-dashed', 'border-stone-300', 'hover:border-red-400', 'p-2', 'rounded-2xl', 'transition-all');
+        block.setAttribute('contenteditable', 'false');
+        block.setAttribute('tabindex', '0');
+
+        if (!block.querySelector('.desc-media-toolbar')) {
+          const isIframe = !!block.querySelector('iframe');
+          const toolbar = document.createElement('div');
+          toolbar.className = 'desc-media-toolbar flex items-center justify-between bg-stone-900 text-white px-3 py-1.5 rounded-xl text-xs font-bold mb-2 shadow-sm select-none';
+          toolbar.innerHTML = `
+            <span class="flex items-center gap-1.5 text-stone-300">
+              <span>🎬</span>
+              <span>${isIframe ? 'Embedded Video (YouTube/Vimeo)' : 'HTML5 Video Player'}</span>
+            </span>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-stone-400 hidden sm:inline">Click to delete</span>
+              <button type="button" class="desc-remove-media-btn bg-red-600 hover:bg-red-700 active:scale-95 text-white px-2.5 py-1 rounded-lg text-xs font-black flex items-center gap-1 transition-all cursor-pointer" title="Delete this video completely">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                <span>✕ Remove Video</span>
+              </button>
+            </div>
+          `;
+          block.insertBefore(toolbar, block.firstChild);
+        }
+      }
+    });
+
+    // Also wrap images with quick removal bar
+    visualEl.querySelectorAll('figure').forEach(figure => {
+      if (figure === visualEl) return;
+      figure.classList.add('desc-media-block', 'relative');
+      figure.setAttribute('contenteditable', 'false');
+      figure.setAttribute('tabindex', '0');
+
+      if (!figure.querySelector('.desc-media-toolbar')) {
+        const toolbar = document.createElement('div');
+        toolbar.className = 'desc-media-toolbar flex items-center justify-between bg-stone-900/85 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold mb-1 shadow-2xs select-none';
+        toolbar.innerHTML = `
+          <span class="text-stone-300">🖼 Image</span>
+          <button type="button" class="desc-remove-media-btn bg-red-600 hover:bg-red-700 active:scale-95 text-white px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer" title="Delete image">✕ Remove Image</button>
+        `;
+        figure.insertBefore(toolbar, figure.firstChild);
+      }
+    });
+  }
+
+  function syncContent(from) {
+    if (from === 'visual') {
+      htmlEl.value = getCleanHtmlFromVisual();
+    } else if (from === 'html') {
+      visualEl.innerHTML = htmlEl.value;
+      enhanceVisualMediaBlocks();
+    }
+    updateWordCount();
+  }
+
+  function updateWordCount() {
+    if (!wordCountEl) return;
+    const text = visualEl.innerText || '';
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const chars = text.length;
+    wordCountEl.textContent = `${words} words · ${chars} chars`;
+  }
+
+  visualEl.addEventListener('input', () => syncContent('visual'));
+  visualEl.addEventListener('blur', () => syncContent('visual'));
+  visualEl.addEventListener('keyup', saveSelection);
+  visualEl.addEventListener('mouseup', saveSelection);
+  htmlEl.addEventListener('input', () => syncContent('html'));
+
+  // Click delegation for instant media removal
+  visualEl.addEventListener('click', (e) => {
+    const removeBtn = e.target.closest('.desc-remove-media-btn');
+    if (removeBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const mediaBlock = removeBtn.closest('.desc-media-block');
+      if (mediaBlock) {
+        removeMediaBlock(mediaBlock);
+      }
+    }
+  });
+
+  // Keydown delegation: delete focused media block on Backspace or Delete
+  visualEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      const activeEl = document.activeElement;
+      if (activeEl && activeEl.classList.contains('desc-media-block') && visualEl.contains(activeEl)) {
+        e.preventDefault();
+        removeMediaBlock(activeEl);
+      }
+    }
+  });
+
+  enhanceVisualMediaBlocks();
+
+  updateWordCount();
+
+  // Mode switching
+  function switchMode(newMode) {
+    if (newMode === currentMode) return;
+
+    if (currentMode === 'visual') {
+      syncContent('visual');
+    } else if (currentMode === 'html') {
+      syncContent('html');
+    }
+
+    [modeVisualBtn, modeHtmlBtn, modePreviewBtn].forEach(btn => {
+      btn?.classList.remove('bg-white', 'text-stone-900', 'shadow-2xs');
+      btn?.classList.add('text-stone-600');
+    });
+
+    visualEl.classList.add('hidden');
+    htmlEl.classList.add('hidden');
+    previewEl.classList.add('hidden');
+
+    if (newMode === 'visual') {
+      visualEl.classList.remove('hidden');
+      toolbarEl?.classList.remove('opacity-40', 'pointer-events-none');
+      modeVisualBtn?.classList.add('bg-white', 'text-stone-900', 'shadow-2xs');
+      modeVisualBtn?.classList.remove('text-stone-600');
+      visualEl.focus();
+    } else if (newMode === 'html') {
+      htmlEl.classList.remove('hidden');
+      toolbarEl?.classList.add('opacity-40', 'pointer-events-none');
+      modeHtmlBtn?.classList.add('bg-white', 'text-stone-900', 'shadow-2xs');
+      modeHtmlBtn?.classList.remove('text-stone-600');
+      htmlEl.focus();
+    } else if (newMode === 'preview') {
+      previewEl.innerHTML = htmlEl.value;
+      previewEl.classList.remove('hidden');
+      toolbarEl?.classList.add('opacity-40', 'pointer-events-none');
+      modePreviewBtn?.classList.add('bg-white', 'text-stone-900', 'shadow-2xs');
+      modePreviewBtn?.classList.remove('text-stone-600');
+    }
+
+    currentMode = newMode;
+  }
+
+  modeVisualBtn?.addEventListener('click', () => switchMode('visual'));
+  modeHtmlBtn?.addEventListener('click', () => switchMode('html'));
+  modePreviewBtn?.addEventListener('click', () => switchMode('preview'));
+
+  // Form submission: ensure htmlEl always has latest content
+  const productForm = document.getElementById('productForm');
+  if (productForm) {
+    productForm.addEventListener('submit', () => {
+      if (currentMode === 'visual') {
+        htmlEl.value = getCleanHtmlFromVisual();
+      }
+    });
+  }
+
+  // Toolbar action buttons
+  document.querySelectorAll('.desc-tool-btn[data-cmd]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (currentMode !== 'visual') switchMode('visual');
+      visualEl.focus();
+      restoreSelection();
+      document.execCommand(btn.dataset.cmd, false, null);
+      saveSelection();
+      syncContent('visual');
+    });
+  });
+
+  headingSelect?.addEventListener('change', (e) => {
+    if (currentMode !== 'visual') switchMode('visual');
+    visualEl.focus();
+    restoreSelection();
+    document.execCommand('formatBlock', false, e.target.value);
+    saveSelection();
+    syncContent('visual');
+  });
+
+  // Link button
+  document.getElementById('descInsertLinkBtn')?.addEventListener('click', () => {
+    if (currentMode !== 'visual') switchMode('visual');
+    const url = prompt('Enter destination link URL (https://...):', 'https://');
+    if (url && url.trim()) {
+      visualEl.focus();
+      restoreSelection();
+      document.execCommand('createLink', false, url.trim());
+      saveSelection();
+      syncContent('visual');
+    }
+  });
+
+  // Blockquote button
+  document.getElementById('descInsertQuoteBtn')?.addEventListener('click', () => {
+    if (currentMode !== 'visual') switchMode('visual');
+    visualEl.focus();
+    restoreSelection();
+    document.execCommand('formatBlock', false, 'blockquote');
+    saveSelection();
+    syncContent('visual');
+  });
+
+  // Spec Table button
+  document.getElementById('descInsertTableBtn')?.addEventListener('click', () => {
+    if (currentMode !== 'visual') switchMode('visual');
+    const tableHtml = `
+      <table class="w-full text-xs my-4 border border-stone-200 rounded-xl overflow-hidden">
+        <thead>
+          <tr class="bg-stone-100 text-stone-800">
+            <th class="p-2.5 text-left font-bold border-b border-stone-200">Specification</th>
+            <th class="p-2.5 text-left font-bold border-b border-stone-200">Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-stone-100"><td class="p-2.5 text-stone-600 font-semibold">Feature</td><td class="p-2.5 text-stone-800">High Quality</td></tr>
+          <tr class="border-b border-stone-100"><td class="p-2.5 text-stone-600 font-semibold">Warranty</td><td class="p-2.5 text-stone-800">100% Guaranteed</td></tr>
+          <tr><td class="p-2.5 text-stone-600 font-semibold">Origin</td><td class="p-2.5 text-stone-800">Authentic</td></tr>
+        </tbody>
+      </table>
+      <p><br></p>
+    `;
+    insertHtmlAtCursor(tableHtml);
+  });
+
+  function insertHtmlAtCursor(html) {
+    if (currentMode !== 'visual') {
+      const start = htmlEl.selectionStart || htmlEl.value.length;
+      const end = htmlEl.selectionEnd || htmlEl.value.length;
+      htmlEl.value = htmlEl.value.substring(0, start) + html + htmlEl.value.substring(end);
+      syncContent('html');
+      return;
+    }
+
+    visualEl.focus();
+    restoreSelection();
+
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+
+      const el = document.createElement('div');
+      el.innerHTML = html;
+      const frag = document.createDocumentFragment();
+      let node, lastNode;
+      while ((node = el.firstChild)) {
+        lastNode = frag.appendChild(node);
+      }
+      range.insertNode(frag);
+
+      if (lastNode) {
+        range.setStartAfter(lastNode);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    } else {
+      visualEl.innerHTML += html;
+    }
+    enhanceVisualMediaBlocks();
+    saveSelection();
+    syncContent('visual');
+  }
+
+  // -------------------------------------------------------------
+  // Image Modal Controller
+  // -------------------------------------------------------------
+  const imageModal = document.getElementById('descImageModal');
+  const openImgBtn = document.getElementById('descOpenImageModalBtn');
+  const closeImgBtn = document.getElementById('descCloseImageModal');
+  const cancelImgBtn = document.getElementById('descCancelImgBtn');
+  const confirmImgBtn = document.getElementById('descConfirmImgBtn');
+
+  const imgTabUploadBtn = document.getElementById('descImgTabUploadBtn');
+  const imgTabUrlBtn = document.getElementById('descImgTabUrlBtn');
+  const imgUploadPanel = document.getElementById('descImgUploadPanel');
+  const imgUrlPanel = document.getElementById('descImgUrlPanel');
+
+  const imgFileInput = document.getElementById('descImgFileInput');
+  const imgUploadStatus = document.getElementById('descImgUploadStatus');
+  const imgUploadStatusText = document.getElementById('descImgUploadStatusText');
+  const imgUrlInput = document.getElementById('descImgUrlInput');
+  const imgAltInput = document.getElementById('descImgAltInput');
+  const imgWidthSelect = document.getElementById('descImgWidthSelect');
+  const imgAlignSelect = document.getElementById('descImgAlignSelect');
+  const imgPreviewBox = document.getElementById('descImgPreviewBox');
+  const imgPreview = document.getElementById('descImgPreview');
+
+  let activeImgUrl = '';
+
+  function openImageModal() {
+    saveSelection();
+    imageModal?.classList.remove('hidden');
+    activeImgUrl = '';
+    if (imgUrlInput) imgUrlInput.value = '';
+    if (imgAltInput) imgAltInput.value = '';
+    imgPreviewBox?.classList.add('hidden');
+    if (imgPreview) imgPreview.src = '';
+    switchImgTab('upload');
+  }
+
+  function closeImageModal() {
+    imageModal?.classList.add('hidden');
+  }
+
+  function switchImgTab(tab) {
+    if (tab === 'upload') {
+      imgUploadPanel?.classList.remove('hidden');
+      imgUrlPanel?.classList.add('hidden');
+      imgTabUploadBtn?.classList.add('border-emerald-600', 'text-emerald-800');
+      imgTabUploadBtn?.classList.remove('border-transparent', 'text-stone-500');
+      imgTabUrlBtn?.classList.remove('border-emerald-600', 'text-emerald-800');
+      imgTabUrlBtn?.classList.add('border-transparent', 'text-stone-500');
+    } else {
+      imgUploadPanel?.classList.add('hidden');
+      imgUrlPanel?.classList.remove('hidden');
+      imgTabUrlBtn?.classList.add('border-emerald-600', 'text-emerald-800');
+      imgTabUrlBtn?.classList.remove('border-transparent', 'text-stone-500');
+      imgTabUploadBtn?.classList.remove('border-emerald-600', 'text-emerald-800');
+      imgTabUploadBtn?.classList.add('border-transparent', 'text-stone-500');
+      imgUrlInput?.focus();
+    }
+  }
+
+  openImgBtn?.addEventListener('click', openImageModal);
+  closeImgBtn?.addEventListener('click', closeImageModal);
+  cancelImgBtn?.addEventListener('click', closeImageModal);
+  imgTabUploadBtn?.addEventListener('click', () => switchImgTab('upload'));
+  imgTabUrlBtn?.addEventListener('click', () => switchImgTab('url'));
+
+  imgUrlInput?.addEventListener('input', (e) => {
+    activeImgUrl = e.target.value.trim();
+    if (activeImgUrl && imgPreview) {
+      imgPreview.src = activeImgUrl;
+      imgPreviewBox?.classList.remove('hidden');
+    } else {
+      imgPreviewBox?.classList.add('hidden');
+    }
+  });
+
+  // AJAX Image Upload
+  imgFileInput?.addEventListener('change', async () => {
+    const file = imgFileInput.files && imgFileInput.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    imgUploadStatus?.classList.remove('hidden');
+    if (imgUploadStatusText) imgUploadStatusText.textContent = `Uploading ${file.name}...`;
+
+    try {
+      const res = await fetch('{{ route('admin.products.upload-description-media') }}', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': csrf,
+          'Accept': 'application/json',
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.url) {
+        activeImgUrl = data.url;
+        if (imgPreview) imgPreview.src = data.url;
+        imgPreviewBox?.classList.remove('hidden');
+        if (imgUploadStatusText) imgUploadStatusText.textContent = '✓ Upload complete!';
+        setTimeout(() => imgUploadStatus?.classList.add('hidden'), 1500);
+      } else {
+        alert(data.message || 'Upload failed. Please try again.');
+        imgUploadStatus?.classList.add('hidden');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Upload error. Please check your network and try again.');
+      imgUploadStatus?.classList.add('hidden');
+    }
+  });
+
+  confirmImgBtn?.addEventListener('click', () => {
+    const url = activeImgUrl || (imgUrlInput ? imgUrlInput.value.trim() : '');
+    if (!url) {
+      alert('Please select an image file or enter an image URL.');
+      return;
+    }
+
+    const alt = (imgAltInput ? imgAltInput.value : '').trim();
+    const width = imgWidthSelect ? imgWidthSelect.value : '100%';
+    const align = imgAlignSelect ? imgAlignSelect.value : 'center';
+
+    let alignClass = 'text-center my-4';
+    let floatStyle = '';
+    if (align === 'left') {
+      alignClass = 'float-left mr-4 mb-4 my-2';
+      floatStyle = 'float: left; margin: 0 1rem 1rem 0;';
+    } else if (align === 'right') {
+      alignClass = 'float-right ml-4 mb-4 my-2';
+      floatStyle = 'float: right; margin: 0 0 1rem 1rem;';
+    }
+
+    const widthStyle = width === 'auto' ? 'max-width: 100%;' : `width: ${width}; max-width: 100%;`;
+
+    const imgTag = `
+      <figure class="${alignClass}" style="${floatStyle}">
+        <img src="${url}" alt="${alt.replace(/"/g, '&quot;')}" class="rounded-none shadow-xs" style="${widthStyle} height: auto; display: inline-block; border-radius: 0 !important;" />
+        ${alt ? `<figcaption class="text-xs text-stone-500 mt-1 text-center font-medium">${alt}</figcaption>` : ''}
+      </figure>
+      <p><br></p>
+    `;
+
+    closeImageModal();
+    insertHtmlAtCursor(imgTag);
+  });
+
+  // -------------------------------------------------------------
+  // Video Modal Controller
+  // -------------------------------------------------------------
+  const videoModal = document.getElementById('descVideoModal');
+  const openVidBtn = document.getElementById('descOpenVideoModalBtn');
+  const closeVidBtn = document.getElementById('descCloseVideoModal');
+  const cancelVidBtn = document.getElementById('descCancelVidBtn');
+  const confirmVidBtn = document.getElementById('descConfirmVidBtn');
+
+  const vidTabLinkBtn = document.getElementById('descVidTabLinkBtn');
+  const vidTabDirectBtn = document.getElementById('descVidTabDirectBtn');
+  const vidLinkPanel = document.getElementById('descVidLinkPanel');
+  const vidDirectPanel = document.getElementById('descVidDirectPanel');
+
+  const vidUrlInput = document.getElementById('descVidUrlInput');
+  const vidDirectUrlInput = document.getElementById('descVidDirectUrlInput');
+  const vidFileInput = document.getElementById('descVidFileInput');
+  const vidUploadStatus = document.getElementById('descVidUploadStatus');
+  const vidUploadStatusText = document.getElementById('descVidUploadStatusText');
+  const vidCaptionInput = document.getElementById('descVidCaptionInput');
+
+  let activeVideoType = 'link'; // 'link' | 'direct'
+  let uploadedVideoUrl = '';
+
+  function openVideoModal() {
+    saveSelection();
+    videoModal?.classList.remove('hidden');
+    if (vidUrlInput) vidUrlInput.value = '';
+    if (vidDirectUrlInput) vidDirectUrlInput.value = '';
+    if (vidCaptionInput) vidCaptionInput.value = '';
+    uploadedVideoUrl = '';
+    switchVidTab('link');
+  }
+
+  function closeVideoModal() {
+    videoModal?.classList.add('hidden');
+  }
+
+  function switchVidTab(tab) {
+    activeVideoType = tab;
+    if (tab === 'link') {
+      vidLinkPanel?.classList.remove('hidden');
+      vidDirectPanel?.classList.add('hidden');
+      vidTabLinkBtn?.classList.add('border-red-600', 'text-red-800');
+      vidTabLinkBtn?.classList.remove('border-transparent', 'text-stone-500');
+      vidTabDirectBtn?.classList.remove('border-red-600', 'text-red-800');
+      vidTabDirectBtn?.classList.add('border-transparent', 'text-stone-500');
+      vidUrlInput?.focus();
+    } else {
+      vidLinkPanel?.classList.add('hidden');
+      vidDirectPanel?.classList.remove('hidden');
+      vidTabDirectBtn?.classList.add('border-red-600', 'text-red-800');
+      vidTabDirectBtn?.classList.remove('border-transparent', 'text-stone-500');
+      vidTabLinkBtn?.classList.remove('border-red-600', 'text-red-800');
+      vidTabLinkBtn?.classList.add('border-transparent', 'text-stone-500');
+      vidDirectUrlInput?.focus();
+    }
+  }
+
+  openVidBtn?.addEventListener('click', openVideoModal);
+  closeVidBtn?.addEventListener('click', closeVideoModal);
+  cancelVidBtn?.addEventListener('click', closeVideoModal);
+  vidTabLinkBtn?.addEventListener('click', () => switchVidTab('link'));
+  vidTabDirectBtn?.addEventListener('click', () => switchVidTab('direct'));
+
+  // Video Upload
+  vidFileInput?.addEventListener('change', async () => {
+    const file = vidFileInput.files && vidFileInput.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    vidUploadStatus?.classList.remove('hidden');
+    if (vidUploadStatusText) vidUploadStatusText.textContent = `Uploading ${file.name}...`;
+
+    try {
+      const res = await fetch('{{ route('admin.products.upload-description-media') }}', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': csrf,
+          'Accept': 'application/json',
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success && data.url) {
+        uploadedVideoUrl = data.url;
+        if (vidDirectUrlInput) vidDirectUrlInput.value = data.url;
+        if (vidUploadStatusText) vidUploadStatusText.textContent = '✓ Video uploaded successfully!';
+        setTimeout(() => vidUploadStatus?.classList.add('hidden'), 2000);
+      } else {
+        alert(data.message || 'Video upload failed. Check file size (max 50MB).');
+        vidUploadStatus?.classList.add('hidden');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Upload error. Please try again.');
+      vidUploadStatus?.classList.add('hidden');
+    }
+  });
+
+  // Parse YouTube & Vimeo URLs into embed codes
+  function parseVideoEmbed(url) {
+    if (!url) return null;
+    const cleanUrl = url.trim();
+
+    // YouTube: youtube.com/watch?v=ID, youtu.be/ID, youtube.com/shorts/ID, youtube.com/embed/ID
+    const ytMatch = cleanUrl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (ytMatch && ytMatch[1]) {
+      return `https://www.youtube-nocookie.com/embed/${ytMatch[1]}`;
+    }
+
+    // Vimeo: vimeo.com/ID
+    const vimeoMatch = cleanUrl.match(/vimeo\.com\/(?:video\/)?([0-9]+)/);
+    if (vimeoMatch && vimeoMatch[1]) {
+      return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+    }
+
+    return null;
+  }
+
+  confirmVidBtn?.addEventListener('click', () => {
+    const caption = (vidCaptionInput ? vidCaptionInput.value : '').trim();
+
+    if (activeVideoType === 'link') {
+      const inputUrl = vidUrlInput ? vidUrlInput.value.trim() : '';
+      if (!inputUrl) {
+        alert('Please enter a YouTube or Vimeo link.');
+        return;
+      }
+      const embedUrl = parseVideoEmbed(inputUrl);
+      if (!embedUrl) {
+        alert('Could not detect a valid YouTube or Vimeo video ID from that link. Please check the URL.');
+        return;
+      }
+
+      const videoSnippet = `
+        <div class="desc-media-block relative group my-6 w-full max-w-3xl mx-auto border-2 border-dashed border-stone-300 hover:border-red-400 p-2 rounded-2xl transition-all" contenteditable="false" data-media-type="video">
+          <div class="desc-media-toolbar flex items-center justify-between bg-stone-900 text-white px-3 py-1.5 rounded-xl text-xs font-bold mb-2 shadow-sm select-none">
+            <span class="flex items-center gap-1.5 text-stone-300">
+              <span>🎬</span>
+              <span>Embedded Video (YouTube/Vimeo)</span>
+            </span>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-stone-400 hidden sm:inline">Click to delete</span>
+              <button type="button" class="desc-remove-media-btn bg-red-600 hover:bg-red-700 active:scale-95 text-white px-2.5 py-1 rounded-lg text-xs font-black flex items-center gap-1 transition-all cursor-pointer" title="Delete this video completely">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                <span>✕ Remove Video</span>
+              </button>
+            </div>
+          </div>
+          <div class="relative w-full aspect-video rounded-none overflow-hidden shadow-md bg-stone-900 border border-stone-200" style="border-radius: 0 !important;">
+            <iframe src="${embedUrl}" class="absolute inset-0 w-full h-full border-0" style="border-radius: 0 !important;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+          </div>
+          ${caption ? `<p class="text-xs text-stone-500 mt-2 text-center font-medium">${caption}</p>` : ''}
+        </div>
+        <p><br></p>
+      `;
+
+      closeVideoModal();
+      insertHtmlAtCursor(videoSnippet);
+    } else {
+      const videoSrc = uploadedVideoUrl || (vidDirectUrlInput ? vidDirectUrlInput.value.trim() : '');
+      if (!videoSrc) {
+        alert('Please select an MP4 video to upload or paste a direct video link.');
+        return;
+      }
+
+      const videoSnippet = `
+        <div class="desc-media-block relative group my-6 w-full max-w-3xl mx-auto border-2 border-dashed border-stone-300 hover:border-red-400 p-2 rounded-2xl transition-all" contenteditable="false" data-media-type="video">
+          <div class="desc-media-toolbar flex items-center justify-between bg-stone-900 text-white px-3 py-1.5 rounded-xl text-xs font-bold mb-2 shadow-sm select-none">
+            <span class="flex items-center gap-1.5 text-stone-300">
+              <span>🎬</span>
+              <span>HTML5 Video Player</span>
+            </span>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-stone-400 hidden sm:inline">Click to delete</span>
+              <button type="button" class="desc-remove-media-btn bg-red-600 hover:bg-red-700 active:scale-95 text-white px-2.5 py-1 rounded-lg text-xs font-black flex items-center gap-1 transition-all cursor-pointer" title="Delete this video completely">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                <span>✕ Remove Video</span>
+              </button>
+            </div>
+          </div>
+          <video controls playsinline preload="metadata" class="w-full rounded-none shadow-md border border-stone-200 bg-black" style="border-radius: 0 !important;">
+            <source src="${videoSrc}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          ${caption ? `<p class="text-xs text-stone-500 mt-2 text-center font-medium">${caption}</p>` : ''}
+        </div>
+        <p><br></p>
+      `;
+
+      closeVideoModal();
+      insertHtmlAtCursor(videoSnippet);
+    }
+  });
+
+  // Close modals on backdrop click
+  [imageModal, videoModal].forEach(modal => {
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.add('hidden');
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (!imageModal?.classList.contains('hidden')) closeImageModal();
+      if (!videoModal?.classList.contains('hidden')) closeVideoModal();
+    }
+  });
+})();
+
 (function () {
   // Live Name & Slug & SEO Binding
   const nameInput = document.getElementById('productNameInput');
@@ -823,7 +1785,6 @@
 
   const genBtn = document.getElementById('generateMatrixBtn');
   const body = document.getElementById('skuMatrixBody');
-  const mobileCardsContainer = document.getElementById('skuMatrixMobileCards');
   const sizesInput = document.getElementById('sizesInput');
   const colorsInput = document.getElementById('colorsInput');
 
@@ -864,14 +1825,13 @@
     const combinations = cartesianProduct(attrKeys);
 
     if (body) body.innerHTML = '';
-    if (mobileCardsContainer) mobileCardsContainer.innerHTML = '';
 
     combinations.forEach((combo, idx) => {
       let attrBadgesHtml = '';
       let attrInputsHtml = '';
       Object.keys(combo).forEach(k => {
         const v = combo[k];
-        attrBadgesHtml += `<span class="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded text-[11px] font-extrabold border border-emerald-200">${k}: ${v}</span> `;
+        attrBadgesHtml += `<span class="bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold border border-emerald-200/80">${k}: ${v}</span> `;
         attrInputsHtml += `<input type="hidden" name="sku_matrix[${idx}][attributes][${k}]" value="${v}" />`;
       });
 
@@ -879,31 +1839,30 @@
       let colorVal = (combo.Packaging || combo.Color || combo.Flavor || '').split(' ')[0].replace(/[^A-Za-z0-9]/g, '');
       let autoSkuHint = (colorVal || sizeVal) ? (colorVal + sizeVal) : 'VAR';
 
-      // Desktop Table Row
       if (body) {
         const row = document.createElement('tr');
-        row.className = 'sku-row hover:bg-stone-50/80';
+        row.className = 'sku-row hover:bg-stone-50/80 transition-colors';
         row.innerHTML = `
-          <td class="py-2.5 px-3">
+          <td class="py-3 px-4">
             ${attrInputsHtml}
-            <div class="flex items-center gap-1 flex-wrap">${attrBadgesHtml}</div>
+            <div class="flex items-center gap-1.5 flex-wrap">${attrBadgesHtml}</div>
           </td>
-          <td class="py-2.5 px-3">
-            <input name="sku_matrix[${idx}][sku]" value="" placeholder="Auto: [SKU]-${autoSkuHint}" class="w-full px-2 py-1 text-xs font-mono rounded-lg border border-stone-200" />
+          <td class="py-3 px-4">
+            <input name="sku_matrix[${idx}][sku]" value="" placeholder="Auto: [SKU]-${autoSkuHint}" class="w-full px-2.5 py-1.5 text-xs font-mono rounded-lg border border-stone-200 focus:outline-none focus:border-brand-500" />
           </td>
-          <td class="py-2.5 px-3">
-            <input name="sku_matrix[${idx}][regular_price]" type="number" step="0.01" value="" class="w-full px-2 py-1 text-xs text-center font-bold rounded-lg border border-stone-200 sku-regular-price-input" placeholder="Auto Base" />
+          <td class="py-3 px-4">
+            <input name="sku_matrix[${idx}][regular_price]" type="number" step="0.01" value="" class="w-full px-2.5 py-1.5 text-xs text-center font-bold rounded-lg border border-stone-200 sku-regular-price-input focus:outline-none focus:border-brand-500" placeholder="Auto Base" />
           </td>
-          <td class="py-2.5 px-3">
-            <input name="sku_matrix[${idx}][sale_price]" type="number" step="0.01" value="" class="w-full px-2 py-1 text-xs text-center font-black text-emerald-700 bg-emerald-50/40 rounded-lg border border-emerald-200 sku-sale-price-input" placeholder="Auto Base" />
+          <td class="py-3 px-4">
+            <input name="sku_matrix[${idx}][sale_price]" type="number" step="0.01" value="" class="w-full px-2.5 py-1.5 text-xs text-center font-black text-emerald-700 bg-emerald-50/40 rounded-lg border border-emerald-200 sku-sale-price-input focus:outline-none focus:border-emerald-500" placeholder="Auto Base" />
           </td>
-          <td class="py-2.5 px-3">
-            <input name="sku_matrix[${idx}][stock]" type="number" min="0" value="10" class="w-full px-2 py-1 text-xs text-center font-bold rounded-lg border border-stone-200 sku-stock-input" required />
+          <td class="py-3 px-4 bg-emerald-50/30 border-x border-emerald-100">
+            <input name="sku_matrix[${idx}][stock]" type="number" min="0" value="10" class="w-full px-2.5 py-1.5 text-xs text-center font-black text-stone-900 rounded-lg border border-emerald-300 bg-white sku-stock-input focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" required />
           </td>
-          <td class="py-2.5 px-3 text-center">
+          <td class="py-3 px-4 text-center">
             <input type="checkbox" name="sku_matrix[${idx}][is_active]" value="1" checked class="accent-emerald-600 h-4 w-4 cursor-pointer sku-active-check" />
           </td>
-          <td class="py-2.5 px-2 text-center">
+          <td class="py-3 px-3 text-center">
             <button type="button" onclick="this.closest('tr').remove(); updateMatrixCalculations();" class="text-rose-400 hover:text-rose-600 font-bold text-base cursor-pointer">×</button>
           </td>
         `;
@@ -921,8 +1880,11 @@
   function updateMatrixCalculations() {
     const regInput = document.getElementById('regPriceInput');
     const saleInput = document.getElementById('salePriceInput');
-    const stockInput = document.querySelector('input[name="stock_quantity"]');
+    const stockInput = document.getElementById('mainStockInput') || document.querySelector('input[name="stock_quantity"]');
     const autoStockBadge = document.getElementById('autoStockNotice');
+    const autoStockHeader = document.getElementById('autoStockNoticeHeader');
+    const variantStockLinkHint = document.getElementById('variantStockLinkHint');
+    const matrixCountBadge = document.getElementById('matrixActiveCountBadge');
 
     const regPrice = parseFloat(regInput ? regInput.value : 0) || 0;
     const salePrice = parseFloat(saleInput ? saleInput.value : 0) || 0;
@@ -930,8 +1892,10 @@
 
     let totalStockSum = 0;
     let activeSkusCount = 0;
+    let totalRowsCount = 0;
 
     document.querySelectorAll('.sku-row').forEach(row => {
+      totalRowsCount++;
       const activeCheck = row.querySelector('.sku-active-check');
       const isActive = !activeCheck || activeCheck.checked;
 
@@ -946,21 +1910,98 @@
         salePriceInput.placeholder = baseSale > 0 ? '৳' + baseSale.toFixed(2) : 'Auto Base';
       }
 
-      if (isActive && stockItemInput) {
-        totalStockSum += Math.max(0, parseInt(stockItemInput.value, 10) || 0);
-        activeSkusCount++;
+      if (stockItemInput) {
+        if (isActive) {
+          totalStockSum += Math.max(0, parseInt(stockItemInput.value, 10) || 0);
+          activeSkusCount++;
+        }
       }
     });
 
-    if (activeSkusCount > 0 && stockInput) {
+    if (matrixCountBadge) {
+      matrixCountBadge.textContent = `${totalRowsCount} Variations (${activeSkusCount} Active)`;
+    }
+
+    if (totalRowsCount > 0 && stockInput) {
       stockInput.value = totalStockSum;
+      stockInput.readOnly = true;
+      stockInput.classList.add('bg-stone-50', 'text-stone-700', 'cursor-pointer');
+      stockInput.title = 'Total stock is auto-calculated from variations below. Click to jump to variations.';
       if (autoStockBadge) {
-        autoStockBadge.textContent = `⚡ Total Stock: ${totalStockSum} units (${activeSkusCount} variations)`;
+        autoStockBadge.textContent = `⚡ Auto: ${totalStockSum} Units`;
         autoStockBadge.classList.remove('hidden');
       }
-    } else if (autoStockBadge) {
-      autoStockBadge.classList.add('hidden');
+      if (autoStockHeader) {
+        autoStockHeader.textContent = `⚡ Total Stock: ${totalStockSum} units (${activeSkusCount} variations)`;
+        autoStockHeader.classList.remove('hidden');
+      }
+      if (variantStockLinkHint) {
+        variantStockLinkHint.classList.remove('hidden');
+      }
+    } else if (stockInput) {
+      stockInput.readOnly = false;
+      stockInput.classList.remove('bg-stone-50', 'text-stone-700', 'cursor-pointer');
+      stockInput.removeAttribute('title');
+      if (autoStockBadge) autoStockBadge.classList.add('hidden');
+      if (autoStockHeader) autoStockHeader.classList.add('hidden');
+      if (variantStockLinkHint) variantStockLinkHint.classList.add('hidden');
     }
+  }
+
+  // Real-time listener for stock inputs, prices, and checkboxes
+  if (body) {
+    body.addEventListener('input', (e) => {
+      if (e.target && (e.target.classList.contains('sku-stock-input') || e.target.classList.contains('sku-regular-price-input') || e.target.classList.contains('sku-sale-price-input'))) {
+        updateMatrixCalculations();
+      }
+    });
+    body.addEventListener('change', (e) => {
+      if (e.target && e.target.classList.contains('sku-active-check')) {
+        updateMatrixCalculations();
+      }
+    });
+  }
+
+  // Smooth scroll to matrix when user clicks readonly Total Stock
+  const mainStockInp = document.getElementById('mainStockInput');
+  if (mainStockInp) {
+    mainStockInp.addEventListener('click', () => {
+      if (mainStockInp.readOnly) {
+        const matrixSec = document.getElementById('skuMatrixSection');
+        if (matrixSec) {
+          matrixSec.scrollIntoView({ behavior: 'smooth' });
+          const firstStockInp = matrixSec.querySelector('.sku-stock-input');
+          if (firstStockInp) {
+            firstStockInp.focus();
+            firstStockInp.classList.add('ring-4', 'ring-emerald-400');
+            setTimeout(() => firstStockInp.classList.remove('ring-4', 'ring-emerald-400'), 1200);
+          }
+        }
+      }
+    });
+  }
+
+  // Quick Bulk Stock Setter
+  const applyBulkBtn = document.getElementById('applyBulkStockBtn');
+  const bulkStockInput = document.getElementById('bulkStockQtyInput');
+  if (applyBulkBtn && bulkStockInput) {
+    applyBulkBtn.addEventListener('click', () => {
+      const val = parseInt(bulkStockInput.value, 10);
+      if (isNaN(val) || val < 0) {
+        alert('Please enter a valid stock number (0 or higher).');
+        bulkStockInput.focus();
+        return;
+      }
+      let updated = 0;
+      document.querySelectorAll('.sku-stock-input').forEach(inp => {
+        inp.value = val;
+        updated++;
+      });
+      updateMatrixCalculations();
+      const origText = applyBulkBtn.textContent;
+      applyBulkBtn.textContent = '✓ Updated!';
+      setTimeout(() => { applyBulkBtn.textContent = origText; }, 1500);
+    });
   }
 
   window.updateMatrixCalculations = updateMatrixCalculations;

@@ -282,6 +282,10 @@ class CheckoutController extends Controller
                         'quantity'       => $item->qty,
                         'line_total'     => $item->line_total,
                     ]);
+
+                    if ($product) {
+                        $product->syncFlashSaleProgress();
+                    }
                 }
 
                 if ($coupon) {

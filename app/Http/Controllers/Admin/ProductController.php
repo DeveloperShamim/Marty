@@ -476,6 +476,47 @@ class ProductController extends Controller
         return back()->with('status', 'Image removed.');
     }
 
+    public function uploadDescriptionMedia(Request $request)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'max:51200'], // max 50MB
+        ]);
+
+        $file = $request->file('file');
+        $ext = strtolower($file->getClientOriginalExtension() ?: 'bin');
+        $mime = strtolower($file->getMimeType() ?: '');
+
+        $allowedImageExts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'];
+        $allowedVideoExts = ['mp4', 'webm', 'mov', 'ogg', 'mkv'];
+
+        $isImage = in_array($ext, $allowedImageExts, true) || str_starts_with($mime, 'image/');
+        $isVideo = in_array($ext, $allowedVideoExts, true) || str_starts_with($mime, 'video/');
+
+        if (! $isImage && ! $isVideo) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid file format. Please upload an image (JPG, PNG, WebP, GIF, SVG) or video (MP4, WebM, MOV).',
+            ], 422);
+        }
+
+        $dir = public_path('uploads/products/description');
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $filename = Str::uuid()->toString() . '.' . $ext;
+        $file->move($dir, $filename);
+        $url = asset('uploads/products/description/' . $filename);
+
+        return response()->json([
+            'success' => true,
+            'url'     => $url,
+            'path'    => 'uploads/products/description/' . $filename,
+            'type'    => $isImage ? 'image' : 'video',
+            'name'    => $file->getClientOriginalName(),
+        ]);
+    }
+
     /* ------------------------------------------------------------------ */
     private function validateData(Request $request, ?Product $product = null): array
     {

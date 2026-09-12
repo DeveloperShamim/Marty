@@ -91,24 +91,24 @@ Route::get('/google{code}.html', function (string $code) {
 */
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
-    Route::post('/login', [LoginController::class, 'login'])->name('login.store');
+    Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:login')->name('login.store');
     Route::get('/register', [RegisterController::class, 'show'])->name('register');
-    Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
+    Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:login')->name('register.store');
 
     // Google 1-Click Social Auth
     Route::get('/auth/google', [SocialAuthController::class, 'redirectToGoogle'])->name('auth.google');
     Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
     Route::get('/forgot-password', [PasswordResetController::class, 'showRequest'])->name('password.request');
-    Route::post('/forgot-password', [PasswordResetController::class, 'sendCode'])->name('password.email');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendCode'])->middleware('throttle:otp')->name('password.email');
     Route::get('/reset-password', [PasswordResetController::class, 'showReset'])->name('password.reset');
-    Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:otp')->name('password.update');
 });
 
 // Email OTP verification (accessible mid-flow)
 Route::get('/verify', [OtpController::class, 'show'])->name('verify');
-Route::post('/verify', [OtpController::class, 'verify'])->name('verify.store');
-Route::post('/verify/resend', [OtpController::class, 'resend'])->name('verify.resend');
+Route::post('/verify', [OtpController::class, 'verify'])->middleware('throttle:otp')->name('verify.store');
+Route::post('/verify/resend', [OtpController::class, 'resend'])->middleware('throttle:otp')->name('verify.resend');
 
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
@@ -127,7 +127,7 @@ Route::middleware('auth')->group(function () {
 Route::prefix('admin')->name('admin.')->group(function () {
     // Guest (login)
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('login', [AuthController::class, 'login'])->name('login.attempt');
+    Route::post('login', [AuthController::class, 'login'])->middleware('throttle:admin-login')->name('login.attempt');
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
     // Protected (testing.readonly blocks save/delete/verify while TESTING_MODE=true)
@@ -156,12 +156,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('abandoned-carts/{cart}/mark-recovered', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'markRecovered'])->name('abandoned-carts.mark-recovered');
             Route::delete('abandoned-carts/{cart}', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'destroy'])->name('abandoned-carts.destroy');
 
-            // Fraud Blacklist, Visitors & Customers
+            // Fraud Blacklist & Customers
             Route::get('blacklist', [\App\Http\Controllers\Admin\BlacklistController::class, 'index'])->name('blacklist.index');
             Route::post('blacklist', [\App\Http\Controllers\Admin\BlacklistController::class, 'store'])->name('blacklist.store');
             Route::delete('blacklist/{blacklist}', [\App\Http\Controllers\Admin\BlacklistController::class, 'destroy'])->name('blacklist.destroy');
-            Route::get('visitors', [\App\Http\Controllers\Admin\VisitorController::class, 'index'])->name('visitors.index');
-            Route::post('visitors/prune', [\App\Http\Controllers\Admin\VisitorController::class, 'prune'])->name('visitors.prune');
             Route::get('customers/export', [AdminCustomerController::class, 'export'])->name('customers.export');
             Route::get('customers', [AdminCustomerController::class, 'index'])->name('customers.index');
             Route::get('customers/{phone}', [AdminCustomerController::class, 'show'])->name('customers.show');
@@ -193,6 +191,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('products/sample-csv', [AdminProductController::class, 'sampleCsv'])->name('products.sample-csv');
             Route::post('products/import', [AdminProductController::class, 'import'])->name('products.import');
             Route::post('products/bulk-delete', [AdminProductController::class, 'bulkDelete'])->name('products.bulk-delete');
+            Route::post('products/upload-description-media', [AdminProductController::class, 'uploadDescriptionMedia'])->name('products.upload-description-media');
             Route::resource('products', AdminProductController::class)->except('show');
             Route::patch('categories/{category}/toggle-featured', [AdminCategoryController::class, 'toggleFeatured'])->name('categories.toggle-featured');
             Route::resource('categories', AdminCategoryController::class)->except('show');

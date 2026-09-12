@@ -127,14 +127,17 @@
                 @endif
               </div>
               <div>
-                <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">Total Stock</span>
-                <span class="font-bold text-stone-800 font-mono">{{ $product->stock_quantity }} units</span>
+                <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">Stock / Sold</span>
+                <span class="font-bold text-stone-800 font-mono">{{ $product->stock_quantity }} left · {{ $product->sold_units }} sold</span>
               </div>
             </div>
 
             <div class="space-y-1.5">
               <div class="flex items-center justify-between text-xs">
-                <label class="text-[11px] font-extrabold text-stone-700">Stock Progress %</label>
+                <div>
+                  <label class="text-[11px] font-extrabold text-stone-700 block">Stock Progress %</label>
+                  <span class="text-[10px] text-emerald-700 font-bold">Auto: {{ $product->calculatedFlashSaleProgress() }}% Claimed</span>
+                </div>
                 <div class="flex items-center gap-1">
                   <input
                     type="number"
@@ -208,7 +211,10 @@
                     <span class="text-[11px] text-stone-400 line-through ml-1 font-mono">{{ money($product->regular_price) }}</span>
                   @endif
                 </td>
-                <td class="px-5 py-3.5 text-center font-black text-stone-800 font-mono">{{ $product->stock_quantity }}</td>
+                <td class="px-5 py-3.5 text-center">
+                  <div class="font-black text-stone-800 font-mono text-xs">{{ $product->stock_quantity }} left</div>
+                  <div class="text-[10px] text-stone-400 font-mono mt-0.5">{{ $product->sold_units }} sold</div>
+                </td>
                 <td class="px-5 py-3.5">
                   <div class="flex items-center gap-2">
                     <input
@@ -221,6 +227,7 @@
                       data-progress-url="{{ route('admin.flash-sale.progress', $product) }}"
                     />
                     <span class="text-xs font-bold text-stone-400">%</span>
+                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Auto: {{ $product->calculatedFlashSaleProgress() }}%</span>
                   </div>
                   <div class="mt-1.5 h-1.5 w-full rounded-full bg-stone-100 overflow-hidden border border-stone-200/60">
                     <div class="flash-progress-bar h-full rounded-full bg-amber-500" style="width: {{ (int) ($product->flash_sale_progress ?? 50) }}%"></div>

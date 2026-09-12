@@ -19,7 +19,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->web(append: [
-            \App\Http\Middleware\TrackVisitor::class,
             \App\Http\Middleware\TrackUtmSource::class,
         ]);
 

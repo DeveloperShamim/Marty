@@ -832,6 +832,45 @@
     addToCart(productId, 1, null, btn.dataset.title, false);
   }));
 
+  function scrollToMissingVariant(missing) {
+    if (!missing || !missing.length) return false;
+    let targetGroup = null;
+    for (const m of missing) {
+      const clean = String(m).trim();
+      targetGroup = document.querySelector(`[data-variant-group="${clean}"]`) ||
+                    document.querySelector(`[data-variant-group="${clean.toLowerCase()}"]`);
+      if (targetGroup) break;
+    }
+    if (!targetGroup) {
+      targetGroup = document.querySelector("[data-variant-group]");
+    }
+    if (targetGroup) {
+      const headerOffset = 90;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = targetGroup.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - headerOffset;
+
+      window.scrollTo({
+        top: Math.max(0, offsetPosition),
+        behavior: "smooth"
+      });
+
+      targetGroup.classList.add("ring-2", "ring-rose-500", "bg-rose-50/60", "p-2.5", "rounded-2xl", "transition-all", "duration-300");
+      const firstBtn = targetGroup.querySelector(".variant-btn:not([disabled])");
+      if (firstBtn) {
+        setTimeout(() => {
+          try { firstBtn.focus({ preventScroll: true }); } catch (e) { firstBtn.focus(); }
+        }, 300);
+      }
+      setTimeout(() => {
+        targetGroup.classList.remove("ring-2", "ring-rose-500", "bg-rose-50/60", "p-2.5", "rounded-2xl");
+      }, 2500);
+      return true;
+    }
+    return false;
+  }
+
   const pdBtn = $("#pdAddToCart");
   if (pdBtn) {
     pdBtn.addEventListener("click", (e) => {
@@ -840,12 +879,13 @@
       const pdpAlert = $("#pdpErrorAlert");
       const pdpMsg = $("#pdpErrorMessage");
       if (missing.length > 0) {
-        const msgText = "Please select a " + missing.join(" and ") + " before adding to cart.";
+        const msgText = "Please select a " + missing.join(" and ") + " first.";
         if (pdpAlert && pdpMsg) {
           pdpMsg.textContent = msgText;
           pdpAlert.classList.remove("hidden");
         }
         toast(msgText);
+        scrollToMissingVariant(missing);
         return;
       }
       if (pdpAlert) pdpAlert.classList.add("hidden");
@@ -865,12 +905,13 @@
       const pdpAlert = $("#pdpErrorAlert");
       const pdpMsg = $("#pdpErrorMessage");
       if (missing.length > 0) {
-        const msgText = "Please select a " + missing.join(" and ") + " before proceeding to checkout.";
+        const msgText = "Please select a " + missing.join(" and ") + " first.";
         if (pdpAlert && pdpMsg) {
           pdpMsg.textContent = msgText;
           pdpAlert.classList.remove("hidden");
         }
         toast(msgText);
+        scrollToMissingVariant(missing);
         return;
       }
       if (pdpAlert) pdpAlert.classList.add("hidden");
@@ -878,6 +919,22 @@
       const checkoutUrl = pdBuyNow.dataset.checkoutUrl || "/checkout";
       const skuId = source.dataset.skuId || null;
       addToCart(source.dataset.productId || pdBuyNow.dataset.productId, qty, variant, source.dataset.title || pdBuyNow.dataset.title, false, checkoutUrl, skuId);
+    });
+  }
+
+  const stickyAdd = $("#stickyBarAddToCart");
+  if (stickyAdd) {
+    stickyAdd.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (pdBtn) pdBtn.click();
+    });
+  }
+
+  const stickyBuy = $("#stickyBarBuyNow");
+  if (stickyBuy) {
+    stickyBuy.addEventListener("click", (e) => {
+      e.preventDefault();
+      if (pdBuyNow) pdBuyNow.click();
     });
   }
 

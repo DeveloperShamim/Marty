@@ -31,7 +31,6 @@
             ['key' => 'customers', 'label' => 'Customers', 'route' => 'admin.customers.index', 'pattern' => 'admin.customers.*', 'icon' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'],
             ['key' => 'staff', 'label' => 'Staff & Roles', 'route' => 'admin.staff.index', 'pattern' => 'admin.staff.*', 'icon' => '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'],
             ['key' => 'activity-logs', 'label' => 'Staff Audit Logs', 'route' => 'admin.activity-logs.index', 'pattern' => 'admin.activity-logs.*', 'icon' => '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/>'],
-            ['key' => 'visitors', 'label' => 'Visitor Traffic', 'route' => 'admin.visitors.index', 'pattern' => 'admin.visitors.*', 'icon' => '<path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/>'],
             ['key' => 'blacklist', 'label' => 'Fraud Blacklist', 'route' => 'admin.blacklist.index', 'pattern' => 'admin.blacklist.*', 'icon' => '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="9.5" y1="9.5" x2="14.5" y2="14.5"/>'],
         ],
         'System Settings' => [
@@ -46,11 +45,11 @@
     if ($user && !$user->isAdmin()) {
         if ($user->role === 'store_manager') {
             unset($nav['System Settings']);
-            $nav['People & Security'] = array_filter($nav['People & Security'], fn($i) => in_array($i['key'], ['customers', 'visitors', 'blacklist'], true));
+            $nav['People & Security'] = array_filter($nav['People & Security'], fn($i) => in_array($i['key'], ['customers', 'blacklist'], true));
         } elseif ($user->role === 'order_manager') {
             unset($nav['Products & Catalog'], $nav['Marketing'], $nav['System Settings']);
             $nav['Operations'] = array_filter($nav['Operations'], fn($i) => in_array($i['key'], ['orders', 'abandoned-carts', 'reviews'], true));
-            $nav['People & Security'] = array_filter($nav['People & Security'], fn($i) => in_array($i['key'], ['customers', 'visitors', 'blacklist'], true));
+            $nav['People & Security'] = array_filter($nav['People & Security'], fn($i) => in_array($i['key'], ['customers', 'blacklist'], true));
         } elseif ($user->role === 'inventory_manager') {
             unset($nav['Marketing'], $nav['System Settings'], $nav['People & Security']);
             $nav['Operations'] = array_filter($nav['Operations'], fn($i) => in_array($i['key'], ['dashboard', 'reviews'], true));

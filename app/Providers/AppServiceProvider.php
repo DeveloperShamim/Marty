@@ -6,7 +6,10 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\CartService;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,6 +23,21 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useTailwind();
+
+        // Rate Limiters for Authentication & Security
+        RateLimiter::for('login', function (Request $request) {
+            $key = strtolower(trim((string) $request->input('email', ''))) . '|' . $request->ip();
+            return Limit::perMinute(5)->by($key);
+        });
+
+        RateLimiter::for('admin-login', function (Request $request) {
+            $key = strtolower(trim((string) $request->input('email', ''))) . '|' . $request->ip();
+            return Limit::perMinute(5)->by($key);
+        });
+
+        RateLimiter::for('otp', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
 
         // Shared chrome data for storefront views (header nav + cart drawer + brand).
         // Memoized in request memory so queries run at most once per request without serialization issues.

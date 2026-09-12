@@ -42,7 +42,7 @@
   @endif
 
   {{-- Media / Image Container --}}
-  <a href="{{ route('product.show', $product) }}" class="fk-card-media relative overflow-hidden block aspect-square bg-gradient-to-b from-stone-50/80 to-stone-100/40 p-3 group/img">
+  <a href="{{ route('product.show', $product) }}" class="fk-card-media relative overflow-hidden block aspect-square bg-gradient-to-b from-stone-50/80 to-stone-100/40 p-2 sm:p-3 group/img">
     <img src="{{ $img }}" alt="{{ $product->name }}" loading="lazy" decoding="async" class="w-full h-full object-contain mix-blend-multiply transition-all duration-500 ease-out group-hover/img:scale-108 {{ $secondaryImg ? 'group-hover/img:opacity-0' : '' }} {{ $isOutOfStock ? 'opacity-60 grayscale-[40%]' : '' }}" />
     @if($secondaryImg)
       <img src="{{ $secondaryImg }}" alt="{{ $product->name }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-contain mix-blend-multiply transition-all duration-500 ease-out opacity-0 group-hover/img:opacity-100 group-hover/img:scale-108 {{ $isOutOfStock ? 'grayscale-[40%]' : '' }}" />
@@ -50,36 +50,36 @@
   </a>
 
   {{-- Card Content --}}
-  <div class="fk-card-body p-3 sm:p-4 flex flex-col flex-1 text-left">
+  <div class="fk-card-body p-2.5 sm:p-4 flex flex-col flex-1 text-left">
     {{-- Brand Label or Category --}}
     @if($brandName)
-      <span class="text-[10px] font-extrabold uppercase tracking-wider text-stone-400 truncate block mb-0.5">
+      <span class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-stone-400 truncate block mb-0.5">
         {{ $brandName }}
       </span>
     @elseif($product->category)
-      <span class="text-[10px] font-bold uppercase tracking-wider text-stone-400 truncate block mb-0.5">
+      <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-stone-400 truncate block mb-0.5">
         {{ $product->category->name }}
       </span>
     @endif
 
     {{-- Product Title --}}
-    <a href="{{ route('product.show', $product) }}" class="fk-card-title text-left font-bold text-xs sm:text-sm text-stone-900 hover:text-brand-600 line-clamp-2 leading-snug min-h-[2.6em] transition-colors mb-1.5" title="{{ $product->name }}">
+    <a href="{{ route('product.show', $product) }}" class="fk-card-title text-left font-bold text-xs sm:text-sm text-stone-900 hover:text-brand-600 line-clamp-2 leading-snug min-h-[2.5em] transition-colors mb-1.5" title="{{ $product->name }}">
       {{ $product->name }}
     </a>
 
     {{-- Price Row --}}
-    <div class="fk-card-price product-card-price flex items-baseline gap-2 flex-wrap mb-2">
-      <span class="fk-price text-sm sm:text-base font-extrabold text-stone-900 tracking-tight">{{ money($product->price) }}</span>
+    <div class="fk-card-price product-card-price flex items-baseline gap-1.5 sm:gap-2 flex-wrap mb-2">
+      <span class="fk-price text-xs sm:text-base font-extrabold text-stone-900 tracking-tight">{{ money($product->price) }}</span>
       @if($product->on_sale)
-        <span class="fk-price-was text-xs text-stone-400 line-through font-medium">{{ money($product->regular_price) }}</span>
+        <span class="fk-price-was text-[10px] sm:text-xs text-stone-400 line-through font-medium">{{ money($product->regular_price) }}</span>
       @endif
     </div>
 
     {{-- Flash Sale Sold Urgency Bar --}}
-    @if($flashCard && $product->flash_sale_progress !== null)
-      @php $progress = max(0, min(100, (int) $product->flash_sale_progress)); @endphp
-      <div class="sold-container my-1.5">
-        <div class="flex items-center justify-between text-[10px] font-bold text-stone-600 mb-1">
+    @if($flashCard)
+      @php $progress = $product->calculatedFlashSaleProgress(); @endphp
+      <div class="sold-container my-1 sm:my-1.5">
+        <div class="flex items-center justify-between text-[9px] sm:text-[10px] font-bold text-stone-600 mb-1">
           <span class="flex items-center gap-1 text-amber-600 font-extrabold">
             <span>🔥</span> <span>Flash Deal</span>
           </span>
@@ -93,11 +93,11 @@
 
     {{-- Add to Cart Action --}}
     @if($isOutOfStock)
-      <button type="button" disabled class="w-full mt-auto py-2.5 px-3 rounded-xl bg-stone-100 text-stone-400 font-bold text-xs cursor-not-allowed border border-stone-200 text-center" aria-disabled="true">
+      <button type="button" disabled class="w-full mt-auto py-2 px-2 sm:py-2.5 sm:px-3 rounded-xl bg-stone-100 text-stone-400 font-bold text-[11px] sm:text-xs cursor-not-allowed border border-stone-200 text-center" aria-disabled="true">
         Out of Stock
       </button>
     @else
-      <button type="button" class="fk-add-btn add-to-cart w-full mt-auto py-2.5 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-2xs hover:shadow-md active:scale-95 transition-all cursor-pointer" 
+      <button type="button" class="fk-add-btn add-to-cart w-full mt-auto py-2 px-2 sm:py-2.5 sm:px-3 rounded-xl font-extrabold text-[11px] sm:text-xs flex items-center justify-center gap-1 sm:gap-1.5 shadow-2xs hover:shadow-md active:scale-95 transition-all cursor-pointer" 
               data-product-id="{{ $product->id }}" 
               data-title="{{ $product->name }}" 
               data-price="{{ money($product->price) }}"

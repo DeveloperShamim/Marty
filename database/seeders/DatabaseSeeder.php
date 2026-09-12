@@ -33,7 +33,6 @@ class DatabaseSeeder extends Seeder
         $this->seedProducts($categories, $brands);
         $this->seedReviews();
         $this->seedOrders();
-        $this->seedVisitorLogs();
         $this->seedStaffActivityLogs();
     }
 
@@ -1095,27 +1094,6 @@ class DatabaseSeeder extends Seeder
                 'tax' => 0,
                 'total' => $subtotal + $order->shipping_charge,
             ]);
-        }
-    }
-
-    private function seedVisitorLogs(): void
-    {
-        for ($daysAgo = 13; $daysAgo >= 0; $daysAgo--) {
-            $date = \Illuminate\Support\Carbon::today()->subDays($daysAgo)->toDateString();
-            $visitorCount = random_int(12, 48);
-
-            for ($i = 0; $i < $visitorCount; $i++) {
-                $ip = '103.' . random_int(10, 99) . '.' . random_int(100, 255) . '.' . random_int(1, 254);
-                $isMobile = (bool) random_int(0, 1);
-                $ua = $isMobile
-                    ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148'
-                    : 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-
-                \App\Models\VisitorLog::updateOrCreate(
-                    ['ip_address' => $ip, 'visit_date' => $date],
-                    ['user_agent' => $ua, 'created_at' => now()->subDays($daysAgo), 'updated_at' => now()->subDays($daysAgo)]
-                );
-            }
         }
     }
 

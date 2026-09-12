@@ -118,7 +118,7 @@
   {{-- 2. TRUST & GUARANTEE BAR (Managed dynamically via https://marty.test/admin/features) --}}
   @if(isset($features) && $features->isNotEmpty())
     <section class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 mt-3 sm:mt-4" data-reveal>
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 bg-white border border-stone-200/80 rounded-2xl p-3 sm:p-4 shadow-2xs">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 bg-white border border-stone-200/80 rounded-2xl p-2.5 sm:p-4 shadow-2xs">
         @foreach($features as $index => $feature)
           @php
             $palettes = [
@@ -129,14 +129,14 @@
             ];
             $palette = $palettes[$index % count($palettes)];
           @endphp
-          <div class="flex items-center gap-3 p-1.5 sm:p-2 min-w-0">
-            <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl {{ $palette['bg'] }} {{ $palette['text'] }} flex items-center justify-center shrink-0 border {{ $palette['border'] }} shadow-2xs">
-              {!! $feature->renderIconHtml('w-5 h-5', $palette['text']) !!}
+          <div class="flex items-center gap-2 sm:gap-3 p-1 sm:p-2 min-w-0">
+            <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl {{ $palette['bg'] }} {{ $palette['text'] }} flex items-center justify-center shrink-0 border {{ $palette['border'] }} shadow-2xs">
+              {!! $feature->renderIconHtml('w-4 h-4 sm:w-5 sm:h-5', $palette['text']) !!}
             </div>
             <div class="min-w-0 flex-1">
-              <h4 class="text-xs sm:text-sm font-extrabold text-stone-900 truncate leading-snug">{{ $feature->title }}</h4>
+              <h4 class="text-[11px] sm:text-sm font-extrabold text-stone-900 truncate leading-snug">{{ $feature->title }}</h4>
               @if($feature->subtitle)
-                <p class="text-[11px] text-stone-500 truncate mt-0.5">{{ $feature->subtitle }}</p>
+                <p class="text-[9px] sm:text-[11px] text-stone-500 truncate mt-0.5">{{ $feature->subtitle }}</p>
               @endif
             </div>
           </div>
@@ -145,7 +145,7 @@
     </section>
   @endif
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-5">
+  <main class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
 
     {{-- 3. SHOP BY CATEGORY --}}
     @if($categories->isNotEmpty())
@@ -200,22 +200,23 @@
     {{-- 4. FLASH SALE & LIMITED DROPS (Elevated here for high-converting urgency) --}}
     @if($flashProducts->isNotEmpty())
       <section class="mt-10 sm:mt-14" data-reveal>
-        <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-6 gap-3 flex-wrap">
+        <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-4 sm:mb-6 gap-3 flex-wrap">
           <div>
-            <div class="flex items-center gap-2 mb-1.5">
+            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
               <span class="inline-flex items-center gap-1 bg-red-50 text-red-700 font-extrabold text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-red-200">
                 ⚡ LIMITED TIME DROPS
               </span>
               @if($flashEndsIso)
                 <div data-countdown-end="{{ $flashEndsIso }}" class="flex items-center gap-1 font-mono font-bold text-stone-600 text-xs">
-                  <span class="text-stone-400 font-sans">Ends in:</span>
-                  <span class="bg-stone-900 text-white px-1.5 py-0.5 rounded font-mono font-black text-xs" data-h>00</span>:
-                  <span class="bg-stone-900 text-white px-1.5 py-0.5 rounded font-mono font-black text-xs" data-m>00</span>:
-                  <span class="bg-stone-900 text-white px-1.5 py-0.5 rounded font-mono font-black text-xs" data-s>00</span>
+                  <span class="text-stone-400 font-sans text-[11px] mr-0.5">Ends in:</span>
+                  <span class="bg-stone-900 text-white px-1.5 py-0.5 rounded font-mono font-black text-xs" data-d>00</span><span class="text-stone-500 font-bold text-[10px]">d</span> :
+                  <span class="bg-stone-900 text-white px-1.5 py-0.5 rounded font-mono font-black text-xs" data-h>00</span><span class="text-stone-500 font-bold text-[10px]">h</span> :
+                  <span class="bg-stone-900 text-white px-1.5 py-0.5 rounded font-mono font-black text-xs" data-m>00</span><span class="text-stone-500 font-bold text-[10px]">m</span> :
+                  <span class="bg-stone-900 text-white px-1.5 py-0.5 rounded font-mono font-black text-xs" data-s>00</span><span class="text-stone-500 font-bold text-[10px]">s</span>
                 </div>
               @endif
             </div>
-            <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">
+            <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">
               {{ setting('home_hot_deal_title', 'Special Flash Discounts') }}
             </h2>
           </div>
@@ -225,7 +226,7 @@
           </a>
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
           @foreach($flashProducts->take(8) as $product)
             @include('storefront.partials.product-card', ['product' => $product, 'flashCard' => true])
           @endforeach
@@ -235,23 +236,23 @@
 
     {{-- 5. CURATED PRODUCT SHOWCASE WITH INTERACTIVE SEGMENTED TABS (Solves product repetition) --}}
     <section class="mt-12 sm:mt-16" data-reveal>
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between border-b border-stone-200/80 pb-4 mb-6 gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between border-b border-stone-200/80 pb-3 sm:pb-4 mb-4 sm:mb-6 gap-3 sm:gap-4">
         <div>
-          <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">
+          <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">
             Curated Collection
           </h2>
           <p class="text-xs text-stone-500 mt-1">Handpicked for authenticity, build quality, and trending demand</p>
         </div>
 
         {{-- Segmented Tab Switcher --}}
-        <div class="inline-flex p-1 rounded-xl bg-stone-100 border border-stone-200/70 text-xs font-bold shrink-0 self-start sm:self-auto" id="homeProductTabs" role="tablist">
-          <button type="button" data-home-tab="best-sellers" class="home-tab-btn active px-3.5 py-1.5 rounded-lg bg-white text-stone-900 shadow-2xs transition-all">
+        <div class="w-full sm:w-auto flex sm:inline-flex p-1 rounded-xl bg-stone-100 border border-stone-200/70 text-xs font-bold" id="homeProductTabs" role="tablist">
+          <button type="button" data-home-tab="best-sellers" class="home-tab-btn active flex-1 sm:flex-initial text-center justify-center px-2.5 sm:px-3.5 py-2 sm:py-1.5 rounded-lg bg-white text-stone-900 shadow-2xs transition-all text-[11px] sm:text-xs">
             🔥 Best Sellers
           </button>
-          <button type="button" data-home-tab="new-arrivals" class="home-tab-btn px-3.5 py-1.5 rounded-lg text-stone-500 hover:text-stone-900 transition-all">
+          <button type="button" data-home-tab="new-arrivals" class="home-tab-btn flex-1 sm:flex-initial text-center justify-center px-2.5 sm:px-3.5 py-2 sm:py-1.5 rounded-lg text-stone-500 hover:text-stone-900 transition-all text-[11px] sm:text-xs">
             ✨ New Arrivals
           </button>
-          <button type="button" data-home-tab="trending" class="home-tab-btn px-3.5 py-1.5 rounded-lg text-stone-500 hover:text-stone-900 transition-all">
+          <button type="button" data-home-tab="trending" class="home-tab-btn flex-1 sm:flex-initial text-center justify-center px-2.5 sm:px-3.5 py-2 sm:py-1.5 rounded-lg text-stone-500 hover:text-stone-900 transition-all text-[11px] sm:text-xs">
             ⭐ Trending
           </button>
         </div>
@@ -261,7 +262,7 @@
       <div id="homeTabPanes">
         {{-- Pane 1: Best Sellers --}}
         <div id="homePane-best-sellers" class="home-tab-pane">
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
             @foreach($bestSellers->take(8) as $product)
               @include('storefront.partials.product-card', ['product' => $product])
             @endforeach
@@ -278,7 +279,7 @@
 
         {{-- Pane 2: New Arrivals --}}
         <div id="homePane-new-arrivals" class="home-tab-pane hidden">
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
             @foreach($newArrivals->take(8) as $product)
               @include('storefront.partials.product-card', ['product' => $product])
             @endforeach
@@ -295,7 +296,7 @@
 
         {{-- Pane 3: Trending --}}
         <div id="homePane-trending" class="home-tab-pane hidden">
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
             @foreach($trending->take(8) as $product)
               @include('storefront.partials.product-card', ['product' => $product])
             @endforeach
@@ -375,7 +376,7 @@
               </a>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
               @foreach($featuredCat->products as $product)
                 @include('storefront.partials.product-card', ['product' => $product])
               @endforeach
@@ -414,7 +415,7 @@
               </a>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
               @foreach($featuredBrand->products as $product)
                 @include('storefront.partials.product-card', ['product' => $product])
               @endforeach
@@ -522,7 +523,7 @@
         </div>
 
         {{-- Review Cards: Mobile Horizontal Snap Carousel, Tablet/Desktop 2-Column Grid --}}
-        <div class="flex md:grid md:grid-cols-2 gap-3.5 sm:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory no-scrollbar pb-3 pt-1 -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div class="flex md:grid md:grid-cols-2 gap-3.5 sm:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory no-scrollbar pb-3 pt-1 -mx-3 px-3 sm:mx-0 sm:px-0">
           @foreach($homeReviews as $review)
             <div class="w-[85vw] max-w-[340px] sm:w-[380px] md:w-auto shrink-0 md:shrink snap-center relative overflow-hidden rounded-2xl border border-stone-200/80 bg-white p-4 sm:p-6 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between group">
               <div>

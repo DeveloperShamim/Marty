@@ -170,8 +170,8 @@ class DashboardController extends Controller
             'dispatchedCount'     => Order::whereNotNull('courier_name')->count(),
             'shippedCount'        => Order::where('status', 'shipped')->count(),
             'deliveredCount'      => Order::where('status', 'delivered')->count(),
-            'visitorsToday'       => \App\Models\VisitorLog::whereDate('visit_date', Carbon::today())->count(),
-            'visitorsYesterday'   => \App\Models\VisitorLog::whereDate('visit_date', Carbon::yesterday())->count(),
+            'todayOrdersCount'    => Order::whereDate('created_at', Carbon::today())->tap($validOrders)->count(),
+            'yesterdayOrdersCount'=> Order::whereDate('created_at', Carbon::yesterday())->tap($validOrders)->count(),
         ]);
     }
 

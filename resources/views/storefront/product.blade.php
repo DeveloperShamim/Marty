@@ -44,71 +44,78 @@
 @endphp
 
 @section('content')
-<main class="max-w-7xl mx-auto px-4 sm:px-5 py-6 pb-24 md:pb-8">
+<main class="max-w-7xl mx-auto px-3.5 sm:px-5 lg:px-6 py-4 sm:py-6 pb-28 lg:pb-8">
   {{-- Clean Breadcrumb --}}
-  <nav class="flex items-center gap-2 text-xs sm:text-sm text-stone-500 mb-6 flex-wrap">
+  <nav class="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-stone-500 mb-4 sm:mb-6 flex-wrap">
     <a href="{{ route('home') }}" class="hover:text-brand-600 transition-colors">Home</a>
     <span class="text-stone-300">/</span>
     @if($product->category)
       <a href="{{ route('shop.category', $product->category) }}" class="hover:text-brand-600 transition-colors">{{ $product->category->name }}</a>
       <span class="text-stone-300">/</span>
     @endif
-    <span class="text-stone-800 font-semibold truncate max-w-[220px] sm:max-w-xs">{{ $product->name }}</span>
+    <span class="text-stone-800 font-semibold truncate max-w-[180px] sm:max-w-xs md:max-w-md">{{ $product->name }}</span>
   </nav>
 
   {{-- Main Product Card Container --}}
-  <div class="bg-white rounded-2xl border border-stone-200/80 p-5 sm:p-8 flex flex-col md:flex-row gap-8 lg:gap-12 items-start shadow-xs">
-    {{-- Left: Vertical Thumbnails + Main Image Frame --}}
-    <div class="flex flex-col-reverse sm:flex-row gap-4 items-start w-full md:w-1/2 shrink-0">
+  <div class="bg-white rounded-2xl sm:rounded-3xl border border-stone-200/80 p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-6 md:gap-8 lg:gap-12 items-start shadow-xs">
+    {{-- Left: Gallery (Horizontal Thumbnails on Mobile/Tablet, Vertical on Desktop) --}}
+    <div class="flex flex-col-reverse lg:flex-row gap-3 sm:gap-4 items-start w-full lg:w-1/2 shrink-0">
       @if($product->images->count() > 0)
-        <div class="flex sm:flex-col gap-2.5 overflow-x-auto sm:overflow-y-auto w-full sm:w-20 shrink-0 pb-1 sm:pb-0 max-h-[480px] no-scrollbar">
+        <div class="flex lg:flex-col gap-2 sm:gap-2.5 overflow-x-auto lg:overflow-y-auto w-full lg:w-20 shrink-0 pb-1.5 lg:pb-0 max-h-[480px] no-scrollbar">
           @foreach($product->images as $img)
-            <button type="button" data-thumb="{{ $img->url() }}" data-color="{{ strtolower(trim($img->color ?? '')) }}" data-variation-tag="{{ strtolower(trim($img->color ?? '')) }}" data-alt="{{ strtolower(trim($img->alt ?? '')) }}" class="gallery-thumb-btn w-16 h-16 sm:w-20 sm:h-20 rounded-xl border {{ $loop->first ? 'border-stone-900 ring-1 ring-stone-900/10' : 'border-stone-200 opacity-70 hover:opacity-100 hover:border-stone-400' }} shrink-0 bg-white overflow-hidden p-1 transition-all focus:outline-none cursor-pointer">
+            <button type="button" data-thumb="{{ $img->url() }}" data-color="{{ strtolower(trim($img->color ?? '')) }}" data-variation-tag="{{ strtolower(trim($img->color ?? '')) }}" data-alt="{{ strtolower(trim($img->alt ?? '')) }}" class="gallery-thumb-btn w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl border {{ $loop->first ? 'border-stone-900 ring-2 ring-stone-900/10' : 'border-stone-200 opacity-75 hover:opacity-100 hover:border-stone-400' }} shrink-0 bg-white overflow-hidden p-1 transition-all focus:outline-none cursor-pointer">
               <img src="{{ $img->url() }}" loading="lazy" decoding="async" class="w-full h-full object-contain" alt="{{ $img->alt }}">
             </button>
           @endforeach
         </div>
       @endif
 
-      <div class="flex-1 relative border border-stone-200/80 rounded-2xl aspect-square w-full bg-white overflow-hidden shadow-xs flex items-center justify-center group p-4">
+      <div class="flex-1 relative border border-stone-200/80 rounded-2xl sm:rounded-3xl aspect-square w-full bg-white overflow-hidden shadow-xs flex items-center justify-center group p-3 sm:p-5">
         {{-- Minimal Floating Badge --}}
-        <div class="absolute top-3.5 left-3.5 z-10 pointer-events-none">
+        <div class="absolute top-3 sm:top-3.5 left-3 sm:left-3.5 z-10 pointer-events-none">
           @if($isOutOfStock)
-            <span class="bg-stone-900 text-white font-bold text-[11px] px-2.5 py-1 rounded-md tracking-tight uppercase">
+            <span class="bg-stone-900 text-white font-bold text-[10px] sm:text-[11px] px-2.5 py-1 rounded-md tracking-tight uppercase">
               Out of Stock
             </span>
           @elseif($product->on_sale)
-            <span id="pdImageDiscountBadge" class="bg-stone-900 text-white font-bold text-[11px] px-2.5 py-1 rounded-md tracking-tight">
+            <span id="pdImageDiscountBadge" class="bg-stone-900 text-white font-bold text-[10px] sm:text-[11px] px-2.5 py-1 rounded-md tracking-tight">
               {{ $product->discount_percent }}% OFF
             </span>
           @else
-            <span id="pdImageDiscountBadge" class="hidden bg-stone-900 text-white font-bold text-[11px] px-2.5 py-1 rounded-md tracking-tight">
+            <span id="pdImageDiscountBadge" class="hidden bg-stone-900 text-white font-bold text-[10px] sm:text-[11px] px-2.5 py-1 rounded-md tracking-tight">
               0% OFF
             </span>
           @endif
         </div>
 
+        {{-- Mobile & Tablet Image Counter Pill --}}
         @if($product->images->count() > 1)
-          <button type="button" id="pdPrevImg" class="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white shadow border border-stone-200 text-stone-700 hover:text-stone-900 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none" aria-label="Previous Image">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          <div id="galleryCounterPill" class="absolute bottom-3 left-3 z-10 bg-stone-900/75 backdrop-blur-xs text-white px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider font-mono pointer-events-none shadow-xs">
+            <span id="galleryCurrentIdx">1</span> / {{ $product->images->count() }}
+          </div>
+        @endif
+
+        @if($product->images->count() > 1)
+          <button type="button" id="pdPrevImg" class="absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/95 hover:bg-white shadow-md border border-stone-200 text-stone-700 hover:text-stone-900 flex items-center justify-center transition-all opacity-85 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer" aria-label="Previous Image">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
           </button>
-          <button type="button" id="pdNextImg" class="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white shadow border border-stone-200 text-stone-700 hover:text-stone-900 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none" aria-label="Next Image">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <button type="button" id="pdNextImg" class="absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/95 hover:bg-white shadow-md border border-stone-200 text-stone-700 hover:text-stone-900 flex items-center justify-center transition-all opacity-85 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer" aria-label="Next Image">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
           </button>
         @endif
 
-        {{-- Zoom Hint --}}
-        <div class="absolute bottom-3 right-3 z-10 bg-white/90 backdrop-blur-xs text-stone-500 px-2 py-1 rounded-lg border border-stone-200/80 pointer-events-none flex items-center gap-1 text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+        {{-- Zoom Hint (Desktop only) --}}
+        <div class="hidden sm:flex absolute bottom-3 right-3 z-10 bg-white/90 backdrop-blur-xs text-stone-500 px-2 py-1 rounded-lg border border-stone-200/80 pointer-events-none items-center gap-1 text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
           <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
           <span>Zoom</span>
         </div>
 
-        <img id="galleryMain" data-gallery-main src="{{ $product->imageUrl() }}" loading="lazy" decoding="async" class="w-full h-full object-contain {{ $isOutOfStock ? 'opacity-70 grayscale-[30%]' : '' }}" alt="{{ $product->name }}" />
+        <img id="galleryMain" data-gallery-main src="{{ $product->imageUrl() }}" loading="lazy" decoding="async" class="w-full h-full object-contain select-none {{ $isOutOfStock ? 'opacity-70 grayscale-[30%]' : '' }}" alt="{{ $product->name }}" />
       </div>
     </div>
 
     {{-- Right: Modern Clean Product Info Panel --}}
-    <div class="w-full md:w-1/2 space-y-4">
+    <div class="w-full lg:w-1/2 space-y-4">
       <div>
         {{-- Clean Category & Stock Line --}}
         <div class="flex items-center justify-between gap-3 text-xs text-stone-500 font-medium pb-1.5">
@@ -143,25 +150,14 @@
         </div>
 
         {{-- Product Title --}}
-        <h1 class="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight leading-snug">{{ $product->name }}</h1>
+        <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-stone-900 tracking-tight leading-snug">{{ $product->name }}</h1>
 
-        {{-- Rating & Authentic Row --}}
-        <div class="flex items-center gap-2.5 mt-2 text-xs text-stone-500 flex-wrap">
-          @php
-            $revTotal = method_exists($reviews, 'total') ? $reviews->total() : $reviews->count();
-            $avgRating = $revTotal > 0 ? number_format($reviews->avg('rating') ?: 5.0, 1) : '5.0';
-            $displayRevCount = $revTotal > 0 ? $revTotal : 2;
-          @endphp
-          <a href="#reviews" class="inline-flex items-center gap-1 text-amber-500 hover:text-amber-600 transition-colors group">
-            <span class="text-sm leading-none">★</span>
-            <span class="font-bold text-stone-800 group-hover:text-brand-600">{{ $avgRating }}</span>
-            <span class="text-stone-400 group-hover:text-stone-600">({{ $displayRevCount }} {{ Str::plural('Review', $displayRevCount) }})</span>
-          </a>
-          <span class="text-stone-300">·</span>
+        {{-- Authentic & SKU Row --}}
+        <div class="flex items-center gap-2 sm:gap-2.5 mt-1.5 sm:mt-2 text-xs text-stone-500 flex-wrap">
           <span class="text-emerald-700 font-medium">✓ Verified Authentic</span>
           @if($product->sku)
-            <span class="text-stone-300 hidden sm:inline">·</span>
-            <span class="text-stone-400 hidden sm:inline">SKU: <span class="font-mono text-stone-600">{{ $product->sku }}</span></span>
+            <span class="text-stone-300">·</span>
+            <span class="text-stone-400">SKU: <span class="font-mono text-stone-600">{{ $product->sku }}</span></span>
           @endif
         </div>
 
@@ -177,15 +173,15 @@
           ])->values();
         @endphp
 
-        <div id="pdpPriceContainer" class="flex items-baseline gap-3 flex-wrap pt-3 pb-1" data-skus="{{ json_encode($skusPayload) }}">
-          <span id="pdPrice" class="text-3xl sm:text-4xl font-extrabold text-stone-900 tracking-tight" data-base-price="{{ (float) $product->price }}">{{ money($product->price) }}</span>
-          <span id="pdRegularPrice" class="text-stone-400 line-through text-base font-normal {{ $product->on_sale ? '' : 'hidden' }}" data-base-regular="{{ (float) ($product->regular_price ?? 0) }}">{{ money($product->regular_price) }}</span>
+        <div id="pdpPriceContainer" class="flex items-baseline gap-2.5 sm:gap-3 flex-wrap pt-2.5 sm:pt-3 pb-1" data-skus="{{ json_encode($skusPayload) }}">
+          <span id="pdPrice" class="text-2xl sm:text-3xl lg:text-4xl font-black text-stone-900 tracking-tight" data-base-price="{{ (float) $product->price }}">{{ money($product->price) }}</span>
+          <span id="pdRegularPrice" class="text-stone-400 line-through text-sm sm:text-base font-normal {{ $product->on_sale ? '' : 'hidden' }}" data-base-regular="{{ (float) ($product->regular_price ?? 0) }}">{{ money($product->regular_price) }}</span>
           @if($product->on_sale)
-            <span id="pdDiscountBadge" class="inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2.5 py-0.5 rounded-full">
+            <span id="pdDiscountBadge" class="inline-flex items-center text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2.5 py-0.5 rounded-full">
               Save {{ money($savings) }} ({{ $product->discount_percent }}% OFF)
             </span>
           @else
-            <span id="pdDiscountBadge" class="hidden inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2.5 py-0.5 rounded-full"></span>
+            <span id="pdDiscountBadge" class="hidden inline-flex items-center text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2.5 py-0.5 rounded-full"></span>
           @endif
         </div>
       </div>
@@ -195,7 +191,7 @@
         @php
           $flashEndsAt = setting('flash_sale_ends_at');
           $flashEndsIso = $flashEndsAt ? \Illuminate\Support\Carbon::parse($flashEndsAt)->toIso8601String() : null;
-          $progress = (int) $product->flash_sale_progress;
+          $progress = $product->calculatedFlashSaleProgress();
           $flashStock = $product->skus()->exists() ? (int) $product->skus()->sum('stock_quantity') : (int) $product->stock_quantity;
           $diffDays = $flashEndsAt ? now()->diffInDays(\Illuminate\Support\Carbon::parse($flashEndsAt), false) : -1;
           $showLiveTimer = $diffDays >= 0 && $diffDays <= 14;
@@ -243,21 +239,23 @@
         @foreach($variantGroups as $groupType => $group)
           @php
             $groupLower = strtolower($groupType);
-            $catLower = strtolower($product->category->name ?? '');
-            $isSizeRelated = str_contains($groupLower, 'size') || str_contains($catLower, 'shoe') || str_contains($catLower, 'belt') || str_contains($catLower, 'watch') || str_contains($catLower, 'apparel') || str_contains($catLower, 'footwear');
+            $isSizeRelated = (str_contains($groupLower, 'size') || str_contains($groupLower, 'dimension') || str_contains($groupLower, 'fitting') || str_contains($groupLower, 'length') || str_contains($groupLower, 'waist') || str_contains($groupLower, 'chest')) && !str_contains($groupLower, 'color') && !str_contains($groupLower, 'colour');
           @endphp
           <div data-variant-group="{{ $groupType }}" class="mb-3.5">
             <div class="flex items-center justify-between mb-2">
-              <p class="text-xs font-bold uppercase tracking-wider text-stone-600">{{ $groupType }}</p>
+              <div class="text-xs font-bold uppercase tracking-wider text-stone-500 flex items-center gap-1">
+                <span>{{ $groupType }}:</span>
+                <span class="text-stone-900 font-extrabold normal-case text-xs tracking-normal" data-selected-val-hint></span>
+              </div>
               @if(setting('size_guide_enabled', '1') === '1' && $isSizeRelated)
-                <button type="button" data-open-size-guide data-category-hint="{{ $product->category->name ?? $groupType }}" class="text-xs font-semibold text-stone-500 hover:text-stone-900 underline transition-colors cursor-pointer" title="Open Size Guide">
+                <button type="button" data-open-size-guide data-category-hint="{{ $product->category->name ?? $groupType }}" class="text-[11px] font-semibold text-stone-500 hover:text-stone-950 underline underline-offset-2 transition-colors cursor-pointer" title="Open Size Guide">
                   Size Guide
                 </button>
               @endif
             </div>
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2 sm:gap-2.5">
               @foreach($group->options as $optValue)
-                <button type="button" class="variant-btn px-4 py-2 rounded-lg text-xs font-medium transition-all border border-stone-200 bg-white text-stone-800 hover:border-stone-900 cursor-pointer" data-type="{{ $groupType }}" data-value="{{ $optValue }}">{{ $optValue }}</button>
+                <button type="button" class="variant-btn min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all border border-stone-200 bg-stone-50/60 hover:bg-white text-stone-800 hover:border-stone-400 active:scale-95 cursor-pointer shadow-2xs flex items-center justify-center select-none" data-type="{{ $groupType }}" data-value="{{ $optValue }}">{{ $optValue }}</button>
               @endforeach
             </div>
           </div>
@@ -272,29 +270,32 @@
 
       {{-- Unified Action Bar: Quantity + Add to Cart + Buy Now --}}
       <div class="space-y-2.5 pt-1">
-        <div class="flex items-stretch gap-2.5 sm:gap-3 flex-wrap sm:flex-nowrap">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
           {{-- Quantity Stepper --}}
-          <div data-qty data-stepper class="inline-flex items-center border border-stone-300 rounded-xl bg-white overflow-hidden shrink-0">
-            <button type="button" data-dec class="px-3.5 py-3 text-stone-500 hover:text-stone-900 font-bold text-sm hover:bg-stone-50 transition-colors focus:outline-none" aria-label="Decrease quantity">−</button>
+          <div data-qty data-stepper class="inline-flex items-center justify-between border border-stone-200 rounded-xl bg-stone-50/50 hover:bg-white overflow-hidden shrink-0 h-11 sm:h-12 shadow-2xs self-start sm:self-auto w-32 sm:w-auto">
+            <button type="button" data-dec class="w-9 sm:w-10 h-full text-stone-600 hover:text-stone-950 font-extrabold text-base hover:bg-stone-100 transition-colors focus:outline-none cursor-pointer flex items-center justify-center select-none" aria-label="Decrease quantity">−</button>
             <input id="pdQty" value="1" min="1" max="3" class="w-8 text-center border-0 font-bold text-stone-900 focus:outline-none text-sm bg-transparent" readonly />
-            <button type="button" data-inc class="px-3.5 py-3 text-stone-500 hover:text-stone-900 font-bold text-sm hover:bg-stone-50 transition-colors" aria-label="Increase quantity">+</button>
+            <button type="button" data-inc class="w-9 sm:w-10 h-full text-stone-600 hover:text-stone-950 font-extrabold text-base hover:bg-stone-100 transition-colors cursor-pointer flex items-center justify-center select-none" aria-label="Increase quantity">+</button>
           </div>
 
-          {{-- Add to Cart (Brand Colored) --}}
-          <button type="button" id="pdAddToCart" data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" class="flex-1 bg-brand-600 hover:bg-brand-700 active:scale-[0.99] text-white font-bold py-3.5 px-5 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wide cursor-pointer disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed" @disabled($isOutOfStock)>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-            <span id="pdAddToCartText">{{ $isOutOfStock ? 'OUT OF STOCK' : setting('default_cta_text', 'ADD TO CART') }}</span>
-          </button>
+          {{-- Balanced 50/50 CTA Buttons Grid --}}
+          <div class="flex items-center gap-2.5 sm:gap-3 flex-1">
+            {{-- Add to Cart (Brand Colored) --}}
+            <button type="button" id="pdAddToCart" data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" class="flex-1 h-11 sm:h-12 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider cursor-pointer disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed" @disabled($isOutOfStock)>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+              <span id="pdAddToCartText">{{ $isOutOfStock ? 'OUT OF STOCK' : setting('default_cta_text', 'ADD TO CART') }}</span>
+            </button>
 
-          {{-- Buy Now (Solid Black) --}}
-          <button type="button" id="pdBuyNow" data-buy-now data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" data-checkout-url="{{ route('checkout.show') }}" class="flex-1 bg-stone-900 hover:bg-black active:scale-[0.99] text-white font-bold py-3.5 px-5 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer" @disabled($isOutOfStock)>
-            <span>BUY NOW</span>
-          </button>
+            {{-- Buy Now (Solid Black with Eye-Catching Motion) --}}
+            <button type="button" id="pdBuyNow" data-buy-now data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" data-checkout-url="{{ route('checkout.show') }}" class="buy-now-cta-effect flex-1 h-11 sm:h-12 bg-stone-950 hover:bg-black text-white font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer select-none" @disabled($isOutOfStock)>
+              <span>BUY NOW</span>
+            </button>
+          </div>
         </div>
 
         @if($whatsapp)
-          <a href="https://wa.me/{{ $whatsapp }}?text={{ urlencode('Hi, I want to inquire about: '.$product->name.' - '.url()->current()) }}" target="_blank" rel="noopener" class="w-full bg-white hover:bg-emerald-50/40 border border-stone-200 hover:border-emerald-500 text-stone-700 hover:text-emerald-700 font-medium py-2.5 px-4 rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm">
-            <svg class="w-4 h-4 text-emerald-600 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-1.147 4.19 4.18-1.096z"/></svg>
+          <a href="https://wa.me/{{ $whatsapp }}?text={{ urlencode('Hi, I want to inquire about: '.$product->name.' - '.url()->current()) }}" target="_blank" rel="noopener" class="w-full h-10 sm:h-11 bg-emerald-50/60 hover:bg-emerald-100/70 border border-emerald-200/80 hover:border-emerald-300 text-emerald-900 font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-xs shadow-2xs">
+            <svg class="w-4 h-4 text-emerald-600 fill-current shrink-0" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-1.147 4.19 4.18-1.096z"/></svg>
             <span>Order or Inquire on WhatsApp</span>
           </a>
         @endif
@@ -302,36 +303,36 @@
 
       {{-- Clean Trust Guarantee Strip --}}
       <div class="pt-4 border-t border-stone-100">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-stone-600">
-          <div class="flex items-center gap-2">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5">
+          <div class="flex items-center gap-2 sm:gap-2.5 bg-stone-50/70 p-2.5 rounded-xl border border-stone-100/90">
             <svg class="w-4 h-4 text-stone-800 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            <div>
-              <p class="text-xs font-bold text-stone-900 leading-none">100% Genuine</p>
-              <p class="text-[10px] text-stone-400 mt-0.5">Authentic Item</p>
+            <div class="min-w-0">
+              <p class="text-xs font-bold text-stone-900 leading-tight truncate">100% Genuine</p>
+              <p class="text-[10px] text-stone-400 mt-0.5 truncate">Authentic Item</p>
             </div>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 sm:gap-2.5 bg-stone-50/70 p-2.5 rounded-xl border border-stone-100/90">
             <svg class="w-4 h-4 text-stone-800 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            <div>
-              <p class="text-xs font-bold text-stone-900 leading-none">Fast Delivery</p>
-              <p class="text-[10px] text-stone-400 mt-0.5">24–48h Nationwide</p>
+            <div class="min-w-0">
+              <p class="text-xs font-bold text-stone-900 leading-tight truncate">Fast Delivery</p>
+              <p class="text-[10px] text-stone-400 mt-0.5 truncate">24–48h Nationwide</p>
             </div>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 sm:gap-2.5 bg-stone-50/70 p-2.5 rounded-xl border border-stone-100/90">
             <svg class="w-4 h-4 text-stone-800 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            <div>
-              <p class="text-xs font-bold text-stone-900 leading-none">7 Days Return</p>
-              <p class="text-[10px] text-stone-400 mt-0.5">Easy Replacement</p>
+            <div class="min-w-0">
+              <p class="text-xs font-bold text-stone-900 leading-tight truncate">7 Days Return</p>
+              <p class="text-[10px] text-stone-400 mt-0.5 truncate">Easy Replacement</p>
             </div>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 sm:gap-2.5 bg-stone-50/70 p-2.5 rounded-xl border border-stone-100/90">
             <svg class="w-4 h-4 text-stone-800 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-            <div>
-              <p class="text-xs font-bold text-stone-900 leading-none">Cash on Delivery</p>
-              <p class="text-[10px] text-stone-400 mt-0.5">Pay on Arrival</p>
+            <div class="min-w-0">
+              <p class="text-xs font-bold text-stone-900 leading-tight truncate">Cash on Delivery</p>
+              <p class="text-[10px] text-stone-400 mt-0.5 truncate">Pay on Arrival</p>
             </div>
           </div>
         </div>
@@ -354,28 +355,95 @@
     </div>
   </div>
 
-  {{-- Description & Specifications --}}
-  <div class="bg-white rounded-2xl border border-stone-200/80 p-6 sm:p-8 mt-8 shadow-sm space-y-6">
-    <div class="border-b border-stone-200 pb-4">
-      <h2 class="font-extrabold text-xl text-stone-900">Product Details &amp; Specifications</h2>
+  {{-- Luxury Product Information & Specifications Section --}}
+  <section id="productDetailsSection" class="bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 p-5 sm:p-7 lg:p-9 mt-6 sm:mt-8 shadow-xs space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-5">
+      <div>
+        <h2 class="text-lg sm:text-xl md:text-2xl font-black text-stone-950 tracking-tight flex items-center gap-2.5">
+          <span class="w-1.5 h-5 bg-stone-900 rounded-full"></span>
+          <span>Product Overview &amp; Specifications</span>
+        </h2>
+        <p class="text-xs sm:text-sm text-stone-500 mt-1">Full breakdown of features, technical specs, authenticity and delivery coverage</p>
+      </div>
+
+      {{-- Modern Pill Tabs --}}
+      <div class="inline-flex p-1 bg-stone-100/90 rounded-2xl border border-stone-200/70 text-xs font-bold gap-1 self-start sm:self-auto flex-wrap" data-pdp-tabs>
+        <button type="button" data-pdp-tab="description" class="pdp-tab-btn active px-3.5 sm:px-4 py-2 rounded-xl bg-white text-stone-950 shadow-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5">
+          <span>📝</span>
+          <span>Overview</span>
+        </button>
+        @if(! empty($specRows))
+          <button type="button" data-pdp-tab="specs" class="pdp-tab-btn px-3.5 sm:px-4 py-2 rounded-xl text-stone-600 hover:text-stone-950 font-bold transition-all cursor-pointer flex items-center gap-1.5">
+            <span>⚙️</span>
+            <span>Specifications</span>
+            <span class="ml-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-stone-200 text-stone-700">{{ count($specRows) }}</span>
+          </button>
+        @endif
+        <button type="button" data-pdp-tab="delivery" class="pdp-tab-btn px-3.5 sm:px-4 py-2 rounded-xl text-stone-600 hover:text-stone-950 font-bold transition-all cursor-pointer flex items-center gap-1.5">
+          <span>🛡️</span>
+          <span>Shipping &amp; Warranty</span>
+        </button>
+      </div>
     </div>
 
+    {{-- Tab 1: Description & Overview --}}
+    <div id="pdpTabPaneDescription" class="pdp-tab-pane space-y-5">
+      @if($product->description)
+        @if(strip_tags($product->description) !== $product->description)
+          <div class="product-rich-description prose prose-stone max-w-none text-stone-700 leading-relaxed text-xs sm:text-sm md:text-base space-y-4">
+            {!! $product->description !!}
+          </div>
+        @else
+          <div class="text-stone-700 leading-relaxed max-w-4xl space-y-3.5 text-xs sm:text-sm md:text-base">
+            @foreach(preg_split('/\n\n+/', (string) $product->description) as $para)
+              @if(trim($para))<p>{{ $para }}</p>@endif
+            @endforeach
+          </div>
+        @endif
+      @else
+        <p class="text-stone-400 italic text-sm">No detailed description provided for this item yet.</p>
+      @endif
+    </div>
+
+    {{-- Tab 2: Specifications --}}
     @if(! empty($specRows))
-      <div>
-        <h3 class="font-extrabold text-base text-stone-900 mb-3">Specifications</h3>
-        <div class="overflow-x-auto rounded-xl border border-stone-200/80">
-          <table class="w-full text-sm text-left">
+      <div id="pdpTabPaneSpecs" class="pdp-tab-pane hidden space-y-4">
+        <div class="overflow-x-auto rounded-2xl border border-stone-200/90 shadow-2xs bg-white">
+          <table class="w-full text-xs sm:text-sm text-left border-collapse">
             <tbody>
-              <tr class="bg-stone-50 border-b border-stone-200/80"><td colspan="2" class="px-4 py-2.5 font-bold text-stone-700">Basic Information</td></tr>
-              <tr class="border-b border-stone-100"><td class="px-4 py-2.5 w-60 font-semibold text-stone-500">Brand</td><td class="px-4 py-2.5 text-stone-800">{{ $product->brand ?: "—" }}</td></tr>
-              <tr class="border-b border-stone-100"><td class="px-4 py-2.5 font-semibold text-stone-500">Category</td><td class="px-4 py-2.5 text-stone-800">{{ $product->category?->name }}</td></tr>
-              <tr class="border-b border-stone-100"><td class="px-4 py-2.5 font-semibold text-stone-500">Unit</td><td class="px-4 py-2.5 text-stone-800">{{ $product->unit ?: "—" }}</td></tr>
-              <tr class="border-b border-stone-100"><td class="px-4 py-2.5 font-semibold text-stone-500">SKU</td><td class="px-4 py-2.5 text-stone-800">{{ $product->sku ?: 'N/A' }}</td></tr>
-              <tr class="bg-stone-50 border-b border-stone-200/80"><td colspan="2" class="px-4 py-2.5 font-bold text-stone-700">Product Specifications</td></tr>
+              <tr class="bg-stone-50/80 border-b border-stone-200/90">
+                <th colspan="2" class="px-4 py-2.5 font-extrabold text-stone-800 uppercase tracking-wider text-[11px]">Key Information</th>
+              </tr>
+              @if($product->brand)
+                <tr class="border-b border-stone-100 hover:bg-stone-50/40 transition-colors">
+                  <td class="px-4 py-3 w-36 sm:w-52 font-semibold text-stone-500">Brand / Manufacturer</td>
+                  <td class="px-4 py-3 font-bold text-stone-900">{{ $product->brand }}</td>
+                </tr>
+              @endif
+              <tr class="border-b border-stone-100 hover:bg-stone-50/40 transition-colors">
+                <td class="px-4 py-3 w-36 sm:w-52 font-semibold text-stone-500">Category</td>
+                <td class="px-4 py-3 font-bold text-stone-900">{{ $product->category?->name ?: 'General' }}</td>
+              </tr>
+              @if($product->sku)
+                <tr class="border-b border-stone-100 hover:bg-stone-50/40 transition-colors">
+                  <td class="px-4 py-3 w-36 sm:w-52 font-semibold text-stone-500">Product SKU</td>
+                  <td class="px-4 py-3 font-mono font-bold text-xs text-stone-800">{{ $product->sku }}</td>
+                </tr>
+              @endif
+              @if($product->unit)
+                <tr class="border-b border-stone-100 hover:bg-stone-50/40 transition-colors">
+                  <td class="px-4 py-3 w-36 sm:w-52 font-semibold text-stone-500">Unit / Packing</td>
+                  <td class="px-4 py-3 font-bold text-stone-900">{{ $product->unit }}</td>
+                </tr>
+              @endif
+
+              <tr class="bg-stone-50/80 border-b border-stone-200/90">
+                <th colspan="2" class="px-4 py-2.5 font-extrabold text-stone-800 uppercase tracking-wider text-[11px]">Technical Specifications</th>
+              </tr>
               @foreach($specRows as $row)
-                <tr class="border-b border-stone-100">
-                  <td class="px-4 py-2.5 font-semibold text-stone-500">{{ $row['label'] !== '' ? $row['label'] : 'Detail' }}</td>
-                  <td class="px-4 py-2.5 text-stone-800">{{ $row['value'] !== '' ? $row['value'] : "—" }}</td>
+                <tr class="border-b border-stone-100 hover:bg-stone-50/40 transition-colors">
+                  <td class="px-4 py-3 font-semibold text-stone-500">{{ $row['label'] ?: 'Detail' }}</td>
+                  <td class="px-4 py-3 font-bold text-stone-900">{{ $row['value'] ?: '—' }}</td>
                 </tr>
               @endforeach
             </tbody>
@@ -384,17 +452,166 @@
       </div>
     @endif
 
-    @if($product->description)
-      <div>
-        <h3 class="font-extrabold text-base text-stone-900 mb-3">Description</h3>
-        <div class="text-stone-600 leading-relaxed max-w-4xl space-y-3 text-sm sm:text-base">
-          @foreach(preg_split('/\n\n+/', (string) $product->description) as $para)
-            @if(trim($para))<p>{{ $para }}</p>@endif
-          @endforeach
+    {{-- Tab 3: Shipping & Warranty --}}
+    <div id="pdpTabPaneDelivery" class="pdp-tab-pane hidden space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
+        <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-extrabold text-sm">✓</div>
+          <div>
+            <h4 class="text-sm font-bold text-stone-900 mb-0.5">100% Verified Authentic</h4>
+            <p class="text-xs text-stone-500 leading-relaxed">Direct genuine source with complete packaging, serial verification and official standards.</p>
+          </div>
+        </div>
+        <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 font-extrabold text-sm">🚚</div>
+          <div>
+            <h4 class="text-sm font-bold text-stone-900 mb-0.5">Fast Nationwide Delivery</h4>
+            <p class="text-xs text-stone-500 leading-relaxed">24–48 hours inside Dhaka Metro and 48–72 hours across all 64 districts with live tracking updates.</p>
+          </div>
+        </div>
+        <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 font-extrabold text-sm">💳</div>
+          <div>
+            <h4 class="text-sm font-bold text-stone-900 mb-0.5">Cash on Delivery &amp; Mobile Pay</h4>
+            <p class="text-xs text-stone-500 leading-relaxed">Inspect your package upon arrival. Pay cash on delivery or instant bKash, Nagad, or Cards.</p>
+          </div>
+        </div>
+        <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 font-extrabold text-sm">🔄</div>
+          <div>
+            <h4 class="text-sm font-bold text-stone-900 mb-0.5">7-Day Replacement Support</h4>
+            <p class="text-xs text-stone-500 leading-relaxed">In the rare event of transit damage or manufacturing defect, our support team replaces it immediately.</p>
+          </div>
         </div>
       </div>
-    @endif
-  </div>
+    </div>
+
+    {{-- Clean Scoped CSS for Rich Content --}}
+    <style>
+      .product-rich-description img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 0 !important;
+        margin: 1.25rem 0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+      }
+      .product-rich-description iframe {
+        max-width: 100%;
+        border-radius: 0 !important;
+      }
+      .product-rich-description video {
+        max-width: 100%;
+        border-radius: 0 !important;
+        margin: 1.25rem 0;
+      }
+      .product-rich-description .aspect-video {
+        border-radius: 0 !important;
+      }
+      .product-rich-description figure {
+        border-radius: 0 !important;
+      }
+      .product-rich-description table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.25rem 0;
+        border-radius: 1rem;
+        overflow: hidden;
+        border: 1px solid #e7e5e4;
+      }
+      .product-rich-description table th,
+      .product-rich-description table td {
+        padding: 0.625rem 0.875rem;
+        border: 1px solid #e7e5e4;
+      }
+      .product-rich-description blockquote {
+        border-left: 3px solid #0f766e;
+        padding-left: 1rem;
+        font-style: italic;
+        color: #44403c;
+        margin: 1rem 0;
+      }
+      .product-rich-description ul {
+        list-style-type: disc;
+        padding-left: 1.5rem;
+        margin: 0.75rem 0;
+      }
+      .product-rich-description ol {
+        list-style-type: decimal;
+        padding-left: 1.5rem;
+        margin: 0.75rem 0;
+      }
+      .product-rich-description h2,
+      .product-rich-description h3,
+      .product-rich-description h4 {
+        font-weight: 800;
+        color: #0c0a09;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .product-rich-description a {
+        color: #0f766e;
+        text-decoration: underline;
+        font-weight: 600;
+      }
+      .product-rich-description .desc-media-toolbar {
+        display: none !important;
+      }
+
+      /* Eye-Catching Shimmer & Breathing Motion on BUY NOW Button */
+      @keyframes buyNowShimmer {
+        0% {
+          transform: translateX(-160%) skewX(-20deg);
+        }
+        26%, 100% {
+          transform: translateX(260%) skewX(-20deg);
+        }
+      }
+
+      @keyframes buyNowPulseMotion {
+        0%, 100% {
+          box-shadow: 0 4px 14px -1px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(24, 24, 27, 0.25);
+          transform: scale(1);
+        }
+        50% {
+          box-shadow: 0 8px 24px -1px rgba(0, 0, 0, 0.55), 0 0 0 4px rgba(24, 24, 27, 0.09);
+          transform: scale(1.02);
+        }
+      }
+
+      .buy-now-cta-effect {
+        position: relative !important;
+        overflow: hidden !important;
+        animation: buyNowPulseMotion 3.2s ease-in-out infinite;
+      }
+
+      .buy-now-cta-effect::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.32) 50%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        animation: buyNowShimmer 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        pointer-events: none;
+      }
+
+      .buy-now-cta-effect:hover {
+        animation-play-state: paused;
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 10px 28px -2px rgba(0, 0, 0, 0.65) !important;
+      }
+
+      .buy-now-cta-effect:active {
+        transform: scale(0.97) !important;
+      }
+    </style>
+  </section>
 
   {{-- Customer Reviews & Feedback Section --}}
   <section id="reviews" class="mt-10 rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-8 shadow-2xs space-y-6">
@@ -590,32 +807,35 @@
     </div>
   </div>
 
-  {{-- Mobile Sticky Bottom Action Bar --}}
-  <div class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-stone-200 px-4 py-2.5 shadow-xl flex items-center justify-between gap-3">
+  {{-- Mobile & Tablet Sticky Bottom Action Bar (`lg:hidden`) --}}
+  <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-stone-200/90 px-3.5 sm:px-5 py-2.5 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] flex items-center justify-between gap-3" style="padding-bottom: max(0.625rem, env(safe-area-inset-bottom, 0.625rem));">
     <div class="min-w-0 flex-1">
-      <div class="flex items-baseline gap-1.5">
-        <span class="text-lg font-black text-brand-600 leading-tight" data-mobile-price>{{ money($product->price) }}</span>
+      <div class="flex items-baseline gap-1.5 flex-wrap">
+        <span class="text-base sm:text-lg font-black text-stone-950 leading-tight tracking-tight" data-mobile-price>{{ money($product->price) }}</span>
         @if($product->on_sale)
           <span class="text-stone-400 line-through text-xs font-normal" data-mobile-reg>{{ money($product->regular_price) }}</span>
         @else
           <span class="text-stone-400 line-through text-xs font-normal hidden" data-mobile-reg></span>
         @endif
       </div>
-      <p class="text-[11px] font-bold truncate">
+      <div class="flex items-center gap-1.5 mt-0.5" data-mobile-stock>
         @if($isOutOfStock)
-          <span class="text-rose-600">🔴 Out of Stock</span>
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+          <span class="text-[11px] font-semibold text-rose-600 truncate">Out of Stock</span>
         @else
-          <span class="text-emerald-700">🟢 In Stock · Ready to Ship</span>
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span class="text-[11px] font-semibold text-emerald-700 truncate">In Stock · Ready to Ship</span>
         @endif
-      </p>
+      </div>
     </div>
 
     <div class="flex items-center gap-2 shrink-0">
-      <button type="button" onclick="document.getElementById('pdAddToCart')?.click()" class="bg-brand-50 text-brand-700 border border-brand-200 font-extrabold px-3.5 py-2.5 rounded-xl text-xs uppercase tracking-wide active:scale-95 transition-transform" @disabled($isOutOfStock)>
-        + Cart
+      <button type="button" id="stickyBarAddToCart" class="h-10 px-3.5 sm:px-4 bg-stone-100 hover:bg-stone-200 active:scale-95 text-stone-900 border border-stone-200/80 font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" @disabled($isOutOfStock)>
+        <svg class="w-3.5 h-3.5 text-stone-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        <span>+ Cart</span>
       </button>
-      <button type="button" onclick="document.getElementById('pdBuyNow')?.click()" class="bg-stone-900 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs uppercase tracking-wide shadow-md active:scale-95 transition-transform flex items-center gap-1" @disabled($isOutOfStock)>
-        <span>⚡ Buy Now</span>
+      <button type="button" id="stickyBarBuyNow" class="buy-now-cta-effect h-10 px-4 sm:px-5 bg-stone-950 hover:bg-black text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed select-none" @disabled($isOutOfStock)>
+        <span>BUY NOW</span>
       </button>
     </div>
   </div>
@@ -646,15 +866,18 @@
     const src = btn.getAttribute('data-thumb');
     if (src) mainImg.src = src;
 
+    const counterEl = document.getElementById('galleryCurrentIdx');
+    if (counterEl) counterEl.textContent = currentIndex + 1;
+
     thumbBtns.forEach((x, i) => {
       const check = x.querySelector('[data-active-check]');
       if (check) check.remove();
       if (i === currentIndex) {
-        x.classList.add('border-stone-900', 'ring-1', 'ring-stone-900/10');
-        x.classList.remove('border-stone-200', 'opacity-70');
+        x.classList.add('border-stone-900', 'ring-2', 'ring-stone-900/10');
+        x.classList.remove('border-stone-200', 'opacity-75');
       } else {
-        x.classList.remove('border-stone-900', 'ring-1', 'ring-stone-900/10');
-        x.classList.add('border-stone-200', 'opacity-70');
+        x.classList.remove('border-stone-900', 'ring-2', 'ring-stone-900/10');
+        x.classList.add('border-stone-200', 'opacity-75');
       }
     });
   }
@@ -665,6 +888,38 @@
 
   if (prevBtn) prevBtn.addEventListener('click', () => setActiveImage(currentIndex - 1));
   if (nextBtn) nextBtn.addEventListener('click', () => setActiveImage(currentIndex + 1));
+
+  // Touch Swipe Gesture for Mobile & Tablet
+  const galleryFrame = mainImg.closest('.aspect-square') || mainImg.parentElement;
+  if (galleryFrame) {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    galleryFrame.addEventListener('touchstart', (e) => {
+      if (e.touches && e.touches[0]) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    galleryFrame.addEventListener('touchend', (e) => {
+      if (e.changedTouches && e.changedTouches[0]) {
+        touchEndX = e.changedTouches[0].clientX;
+        touchEndY = e.changedTouches[0].clientY;
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
+        if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY)) {
+          if (diffX < 0) {
+            setActiveImage(currentIndex + 1);
+          } else {
+            setActiveImage(currentIndex - 1);
+          }
+        }
+      }
+    }, { passive: true });
+  }
 
   if (mainImg && modal && lightboxImg) {
     mainImg.classList.add('cursor-pointer');
@@ -912,7 +1167,30 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
   if (buyBtn) {
     buyBtn.disabled = !isAvailable;
   }
+
+  const mobStock = document.querySelector('[data-mobile-stock]');
+  if (mobStock) {
+    if (!isAvailable) {
+      mobStock.innerHTML = '<span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500"></span><span class="text-[11px] font-semibold text-rose-600 truncate">Out of Stock</span>';
+    } else {
+      mobStock.innerHTML = '<span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span class="text-[11px] font-semibold text-emerald-700 truncate">In Stock · Ready to Ship</span>';
+    }
+  }
+
+  const stickyAddBtn = document.getElementById('stickyBarAddToCart');
+  const stickyBuyBtn = document.getElementById('stickyBarBuyNow');
+  if (stickyAddBtn) stickyAddBtn.disabled = !isAvailable;
+  if (stickyBuyBtn) stickyBuyBtn.disabled = !isAvailable;
 }
+
+document.getElementById('stickyBarAddToCart')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('pdAddToCart')?.click();
+});
+document.getElementById('stickyBarBuyNow')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('pdBuyNow')?.click();
+});
 
 document.querySelectorAll('[data-variant-group] .variant-btn').forEach((b) => b.addEventListener('click', (e) => {
   if (b.disabled) {
@@ -922,12 +1200,16 @@ document.querySelectorAll('[data-variant-group] .variant-btn').forEach((b) => b.
   const group = b.closest('[data-variant-group]');
   const wasSelected = b.classList.contains('is-selected');
   group.querySelectorAll('.variant-btn').forEach((x) => {
-    x.classList.remove('is-selected', 'border-stone-900', 'bg-stone-900', 'text-white');
-    x.classList.add('border-stone-200', 'bg-white', 'text-stone-800');
+    x.classList.remove('is-selected', 'border-stone-950', 'bg-stone-950', 'text-white', 'shadow-xs', 'border-stone-900', 'bg-stone-900');
+    x.classList.add('border-stone-200', 'bg-stone-50/60', 'text-stone-800');
   });
+  const hintEl = group.querySelector('[data-selected-val-hint]');
   if (!wasSelected) {
-    b.classList.add('is-selected', 'border-stone-900', 'bg-stone-900', 'text-white');
-    b.classList.remove('border-stone-200', 'bg-white', 'text-stone-800');
+    b.classList.add('is-selected', 'border-stone-950', 'bg-stone-950', 'text-white', 'shadow-xs');
+    b.classList.remove('border-stone-200', 'bg-stone-50/60', 'text-stone-800');
+    if (hintEl) hintEl.textContent = b.getAttribute('data-value');
+  } else {
+    if (hintEl) hintEl.textContent = '';
   }
 
   const pdpAlert = document.getElementById('pdpErrorAlert');
@@ -1036,6 +1318,31 @@ if (starRatingContainer && starRatingInput) {
   starRatingContainer.addEventListener('mouseleave', () => {
     const currentVal = parseInt(starRatingInput.value, 10) || 5;
     renderStars(currentVal);
+  });
+}
+
+// PDP Description, Specs & Shipping Tab Switcher
+const pdpTabBtns = document.querySelectorAll('[data-pdp-tab]');
+const pdpTabPanes = document.querySelectorAll('.pdp-tab-pane');
+
+if (pdpTabBtns.length > 0) {
+  pdpTabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.pdpTab;
+      pdpTabBtns.forEach(b => {
+        b.classList.remove('active', 'bg-white', 'text-stone-950', 'shadow-xs', 'font-extrabold');
+        b.classList.add('text-stone-600', 'font-bold');
+      });
+      btn.classList.add('active', 'bg-white', 'text-stone-950', 'shadow-xs', 'font-extrabold');
+      btn.classList.remove('text-stone-600', 'font-bold');
+
+      pdpTabPanes.forEach(pane => pane.classList.add('hidden'));
+      const paneName = 'pdpTabPane' + target.charAt(0).toUpperCase() + target.slice(1);
+      const targetPane = document.getElementById(paneName);
+      if (targetPane) {
+        targetPane.classList.remove('hidden');
+      }
+    });
   });
 }
 

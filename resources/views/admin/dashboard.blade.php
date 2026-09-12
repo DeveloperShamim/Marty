@@ -132,10 +132,10 @@
       <p class="text-base sm:text-lg font-bold text-gray-900 font-mono mt-1 truncate">{{ money($avgOrderValue) }}</p>
     </div>
     <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
-      <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Traffic Today</span>
+      <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Orders Today</span>
       <div class="flex items-center justify-between mt-1">
-        <p class="text-base sm:text-lg font-bold text-gray-900 font-mono">{{ number_format($visitorsToday) }}</p>
-        <span class="text-[11px] text-gray-400">Yest: {{ number_format($visitorsYesterday) }}</span>
+        <p class="text-base sm:text-lg font-bold text-gray-900 font-mono">{{ number_format($todayOrdersCount) }}</p>
+        <span class="text-[11px] text-gray-400">Yest: {{ number_format($yesterdayOrdersCount) }}</span>
       </div>
     </div>
     <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">

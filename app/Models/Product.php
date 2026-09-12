@@ -53,12 +53,72 @@ class Product extends Model
         return $this->hasMany(ProductSku::class)->where('is_active', true)->orderBy('id');
     }
 
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function getSoldUnitsAttribute(): int
+    {
+        return (int) OrderItem::where('product_id', $this->id)
+            ->whereHas('order', function ($q) {
+                $q->whereNotIn('status', ['cancelled', 'rejected']);
+            })
+            ->sum('quantity');
+    }
+
+    /**
+     * Calculate live Flash Sale progress (% claimed/sold).
+     * High-converting Smart Scaling: Starts at a realistic organic baseline (74%–82%)
+     * and dynamically fills up to 100% as actual customer orders are placed.
+     */
+    public function calculatedFlashSaleProgress(): int
+    {
+        $currentStock = $this->relationLoaded('skus') && $this->skus->isNotEmpty()
+            ? (int) $this->skus->where('is_active', true)->sum('stock_quantity')
+            : (int) $this->stock_quantity;
+
+        // Completely sold out always hits 100%
+        if ($currentStock <= 0) {
+            return 100;
+        }
+
+        // Natural starting baseline between 74% and 82% per product, or admin custom progress if >= 50
+        $baseline = ($this->flash_sale_progress && $this->flash_sale_progress >= 50)
+            ? (int) $this->flash_sale_progress
+            : (74 + ($this->id % 9));
+
+        $baseline = max(60, min(92, $baseline));
+
+        $soldUnits = $this->sold_units;
+
+        if ($soldUnits <= 0) {
+            return $baseline;
+        }
+
+        $totalPool = $soldUnits + $currentStock;
+        $soldRatio = $totalPool > 0 ? ($soldUnits / $totalPool) : 1;
+        $remainingRoom = 100 - $baseline;
+
+        $progress = (int) round($baseline + ($soldRatio * $remainingRoom));
+
+        return min(99, max($baseline, $progress));
+    }
+
+    public function syncFlashSaleProgress(): int
+    {
+        $progress = $this->calculatedFlashSaleProgress();
+        $this->updateQuietly(['flash_sale_progress' => $progress]);
+        return $progress;
+    }
+
     public function syncTotalStock(): void
     {
         if ($this->skus()->exists()) {
             $totalStock = (int) $this->activeSkus()->sum('stock_quantity');
             $this->update(['stock_quantity' => $totalStock]);
         }
+        $this->syncFlashSaleProgress();
     }
 
     public function isLowStock(int $threshold = 3): bool
