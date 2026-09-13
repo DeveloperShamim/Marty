@@ -455,7 +455,29 @@
       if (openAfter === true) openCart();
       return true;
     } catch (err) {
-      toast(err.message || "Could not add to cart. Please try again.");
+      const errorMsg = err.message || "Could not add to cart. Please try again.";
+      const pdpAlert = $("#pdpErrorAlert");
+      const pdpMsg = $("#pdpErrorMessage");
+      const qmAlert = $("#qmErrorAlert");
+      const qmMsg = $("#qmErrorMessage");
+      const isQmOpen = $("#quickSelectModal") && !$("#quickSelectModal").classList.contains("hidden") && !$("#quickSelectModal").classList.contains("opacity-0");
+
+      if (isQmOpen && qmAlert && qmMsg) {
+        qmMsg.textContent = errorMsg;
+        qmAlert.classList.remove("hidden");
+        return false;
+      }
+
+      if (pdpAlert && pdpMsg) {
+        pdpMsg.textContent = errorMsg;
+        pdpAlert.classList.remove("hidden");
+        try {
+          pdpAlert.scrollIntoView({ behavior: "smooth", block: "center" });
+        } catch (e) {}
+        return false;
+      }
+
+      toast(errorMsg);
       return false;
     }
   }
@@ -1147,12 +1169,23 @@
 
   if (qmQtyInc && qmQtyInput) {
     qmQtyInc.addEventListener("click", () => {
-      qmQtyInput.value = Math.min(3, Math.max(1, (+qmQtyInput.value || 1) + 1));
+      const cur = (+qmQtyInput.value || 1);
+      if (cur >= 3) {
+        if (qmErrorAlert && qmErrorMessage) {
+          qmErrorMessage.textContent = "Maximum 3 items allowed per product variant.";
+          qmErrorAlert.classList.remove("hidden");
+        }
+        return;
+      }
+      qmQtyInput.value = Math.min(3, cur + 1);
     });
   }
   if (qmQtyDec && qmQtyInput) {
     qmQtyDec.addEventListener("click", () => {
       qmQtyInput.value = Math.min(3, Math.max(1, (+qmQtyInput.value || 1) - 1));
+      if (qmErrorAlert && qmErrorMessage && qmErrorMessage.textContent.includes("Maximum 3")) {
+        qmErrorAlert.classList.add("hidden");
+      }
     });
   }
 
@@ -1347,6 +1380,18 @@
       const rawMax = parseInt(input.getAttribute("max") || "3", 10) || 3;
       const maxVal = Math.min(3, rawMax);
       const curVal = parseInt(input.value, 10) || 1;
+      if (curVal >= maxVal) {
+        const pdpAlert = $("#pdpErrorAlert");
+        const pdpMsg = $("#pdpErrorMessage");
+        if (pdpAlert && pdpMsg) {
+          pdpMsg.textContent = "Maximum 3 items allowed per product variant.";
+          pdpAlert.classList.remove("hidden");
+          try {
+            pdpAlert.scrollIntoView({ behavior: "smooth", block: "center" });
+          } catch (err) {}
+        }
+        return;
+      }
       input.value = Math.min(maxVal, curVal + 1);
     });
 
@@ -1355,6 +1400,10 @@
       const minVal = parseInt(input.getAttribute("min") || "1", 10) || 1;
       const curVal = parseInt(input.value, 10) || 1;
       input.value = Math.max(minVal, curVal - 1);
+      const pdpAlert = $("#pdpErrorAlert");
+      if (pdpAlert && pdpAlert.textContent.includes("Maximum 3")) {
+        pdpAlert.classList.add("hidden");
+      }
     });
   });
 
