@@ -204,10 +204,14 @@
         <p class="text-xs text-stone-500 mt-0.5">Phone, email, address, opening hours, and social media channels</p>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
           <label class="text-xs font-bold text-stone-700 block mb-1">Contact Phone</label>
           <input name="contact_phone" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none" value="{{ $settings['contact_phone'] ?? '' }}" placeholder="+8801700000000" />
+        </div>
+        <div>
+          <label class="text-xs font-bold text-stone-700 block mb-1">WhatsApp Number (For Chat Widget)</label>
+          <input name="whatsapp_number" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none" value="{{ $settings['whatsapp_number'] ?? '' }}" placeholder="e.g. 01700000000" />
         </div>
         <div>
           <label class="text-xs font-bold text-stone-700 block mb-1">Contact Email</label>
@@ -235,9 +239,10 @@
       </div>
 
       <div class="pt-3 border-t border-stone-100 space-y-3">
-        <h4 class="text-xs font-extrabold text-stone-500 uppercase tracking-wider">Social Media Links</h4>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <h4 class="text-xs font-extrabold text-stone-500 uppercase tracking-wider">Social Media &amp; Chat Links</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div><label class="text-xs font-bold text-stone-700 block mb-1">Facebook URL</label><input name="facebook_url" class="w-full text-xs font-bold px-3.5 py-2 bg-white border border-stone-200 rounded-xl" value="{{ $settings['facebook_url'] ?? '' }}" placeholder="https://facebook.com/..." /></div>
+          <div><label class="text-xs font-bold text-stone-700 block mb-1">Messenger Username / Link</label><input name="messenger_url" class="w-full text-xs font-bold px-3.5 py-2 bg-white border border-stone-200 rounded-xl" value="{{ $settings['messenger_url'] ?? '' }}" placeholder="e.g. solebd or https://m.me/..." /></div>
           <div><label class="text-xs font-bold text-stone-700 block mb-1">Instagram URL</label><input name="instagram_url" class="w-full text-xs font-bold px-3.5 py-2 bg-white border border-stone-200 rounded-xl" value="{{ $settings['instagram_url'] ?? '' }}" placeholder="https://instagram.com/..." /></div>
           <div><label class="text-xs font-bold text-stone-700 block mb-1">Twitter URL</label><input name="twitter_url" class="w-full text-xs font-bold px-3.5 py-2 bg-white border border-stone-200 rounded-xl" value="{{ $settings['twitter_url'] ?? '' }}" placeholder="https://twitter.com/..." /></div>
         </div>
