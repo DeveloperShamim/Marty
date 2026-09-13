@@ -28,9 +28,9 @@
       <span>Subtotal</span>
       <span id="cartSubtotal" class="cart-total">{{ money($cartSubtotal) }}</span>
     </div>
-    <a href="{{ route('checkout.show') }}" id="cartDrawerCheckoutBtn" class="btn-shine w-full flex items-center justify-center gap-2 text-center bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold py-3.5 px-4 rounded-xl transition cursor-pointer select-none shadow-md shadow-brand-600/20" style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
-      <span class="pointer-events-none select-none text-sm tracking-wide">Checkout</span>
-      <svg class="w-4 h-4 pointer-events-none text-white shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+    <a href="{{ route('checkout.show') }}" id="cartDrawerCheckoutBtn" class="relative z-10 w-full flex items-center justify-center gap-2 text-center bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold py-3.5 px-4 rounded-xl transition cursor-pointer shadow-md shadow-brand-600/20" style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
+      <span class="text-sm tracking-wide">Checkout</span>
+      <svg class="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
     </a>
   </div>
 </aside>

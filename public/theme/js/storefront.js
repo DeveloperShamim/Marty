@@ -196,16 +196,26 @@
   async function changeQty(key, qty) { applyCart(await api("/cart/update", { key, qty: Math.max(0, qty) })); }
   bindDrawer();
 
-  // Instant mobile touch navigation for Cart Drawer Checkout button
-  const drawerCheckoutBtn = document.getElementById("cartDrawerCheckoutBtn");
-  if (drawerCheckoutBtn) {
-    drawerCheckoutBtn.addEventListener("touchend", function (e) {
-      const href = drawerCheckoutBtn.getAttribute("href");
-      if (href && !e.defaultPrevented) {
+  // Instant, fail-safe navigation for Cart Drawer Checkout button (Click & Touch)
+  document.addEventListener("click", function (e) {
+    const btn = e.target.closest("#cartDrawerCheckoutBtn");
+    if (btn) {
+      const href = btn.getAttribute("href");
+      if (href) {
         window.location.href = href;
       }
-    }, { passive: true });
-  }
+    }
+  });
+
+  document.addEventListener("touchend", function (e) {
+    const btn = e.target.closest("#cartDrawerCheckoutBtn");
+    if (btn && !e.defaultPrevented) {
+      const href = btn.getAttribute("href");
+      if (href) {
+        window.location.href = href;
+      }
+    }
+  }, { passive: true });
 
   /* ---------------- Add to cart ---------------- */
   async function addToCart(productId, qty, variant, title, openAfter, redirectUrl, skuId) {
