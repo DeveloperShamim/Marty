@@ -699,7 +699,13 @@ document.addEventListener('DOMContentLoaded', function () {
     new Swiper('.categoriesSwiper', {
       slidesPerView: 3.25,
       spaceBetween: 8,
-      loop: false,
+      rewind: true,
+      speed: 600,
+      autoplay: {
+        delay: 2800,
+        disableOnInteraction: false,
+        pauseOnMouseEnter: true,
+      },
       watchSlidesProgress: true,
       navigation: {
         nextEl: '#catNext',
@@ -720,7 +726,13 @@ document.addEventListener('DOMContentLoaded', function () {
     new Swiper('.brandsSwiper', {
       slidesPerView: 3.25,
       spaceBetween: 8,
-      loop: false,
+      rewind: true,
+      speed: 600,
+      autoplay: {
+        delay: 3200,
+        disableOnInteraction: false,
+        pauseOnMouseEnter: true,
+      },
       watchSlidesProgress: true,
       navigation: {
         nextEl: '#brandNext',
