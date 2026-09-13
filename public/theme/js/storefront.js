@@ -184,6 +184,8 @@
     if (list) list.classList.toggle("hidden", !hasItems);
     if (empty) empty.classList.toggle("hidden", hasItems);
     if (sub) sub.textContent = money(subtotal);
+    const footer = $("#cartDrawerFooter");
+    if (footer) footer.classList.toggle("hidden", !hasItems);
   }
 
   function bindDrawer() {
@@ -193,6 +195,17 @@
   }
   async function changeQty(key, qty) { applyCart(await api("/cart/update", { key, qty: Math.max(0, qty) })); }
   bindDrawer();
+
+  // Instant mobile touch navigation for Cart Drawer Checkout button
+  const drawerCheckoutBtn = document.getElementById("cartDrawerCheckoutBtn");
+  if (drawerCheckoutBtn) {
+    drawerCheckoutBtn.addEventListener("touchend", function (e) {
+      const href = drawerCheckoutBtn.getAttribute("href");
+      if (href && !e.defaultPrevented) {
+        window.location.href = href;
+      }
+    }, { passive: true });
+  }
 
   /* ---------------- Add to cart ---------------- */
   async function addToCart(productId, qty, variant, title, openAfter, redirectUrl, skuId) {

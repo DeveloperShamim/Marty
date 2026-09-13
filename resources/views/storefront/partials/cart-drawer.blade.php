@@ -23,11 +23,14 @@
     </div>
   </div>
 
-  <div class="p-5 border-t border-stone-100 space-y-2 shrink-0">
+  <div id="cartDrawerFooter" class="p-4 sm:p-5 border-t border-stone-100 space-y-3 shrink-0 bg-white {{ $cartItems->isEmpty() ? 'hidden' : '' }}" style="padding-bottom: max(1.25rem, calc(env(safe-area-inset-bottom, 0px) + 1rem));">
     <div class="flex justify-between font-bold text-ink">
       <span>Subtotal</span>
       <span id="cartSubtotal" class="cart-total">{{ money($cartSubtotal) }}</span>
     </div>
-    <a href="{{ route('checkout.show') }}" class="block text-center bg-brand-600 hover:bg-brand-700 text-white font-bold py-2.5 rounded-lg transition">Checkout</a>
+    <a href="{{ route('checkout.show') }}" id="cartDrawerCheckoutBtn" class="btn-shine w-full flex items-center justify-center gap-2 text-center bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold py-3.5 px-4 rounded-xl transition cursor-pointer select-none shadow-md shadow-brand-600/20" style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
+      <span class="pointer-events-none select-none text-sm tracking-wide">Checkout</span>
+      <svg class="w-4 h-4 pointer-events-none text-white shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+    </a>
   </div>
 </aside>
