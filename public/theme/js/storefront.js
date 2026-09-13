@@ -972,23 +972,32 @@
       targetGroup = document.querySelector("[data-variant-group]");
     }
     if (targetGroup) {
-      const headerOffset = 90;
-      const bodyRect = document.body.getBoundingClientRect().top;
-      const elementRect = targetGroup.getBoundingClientRect().top;
-      const elementPosition = elementRect - bodyRect;
-      const offsetPosition = elementPosition - headerOffset;
-
-      window.scrollTo({
-        top: Math.max(0, offsetPosition),
-        behavior: "smooth"
-      });
+      // Smoothly center the target option group in the middle of the viewport
+      // so the visitor can easily see the product name, price, and images above it
+      try {
+        targetGroup.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "nearest"
+        });
+      } catch (e) {
+        const targetRect = targetGroup.getBoundingClientRect();
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+        const middlePosition = scrollY + targetRect.top - (window.innerHeight / 2) + (targetRect.height / 2);
+        window.scrollTo({
+          top: Math.max(0, middlePosition),
+          behavior: "smooth"
+        });
+      }
 
       targetGroup.classList.add("ring-2", "ring-rose-500", "bg-rose-50/60", "p-2.5", "rounded-2xl", "transition-all", "duration-300");
       const firstBtn = targetGroup.querySelector(".variant-btn:not([disabled])");
       if (firstBtn) {
         setTimeout(() => {
-          try { firstBtn.focus({ preventScroll: true }); } catch (e) { firstBtn.focus(); }
-        }, 300);
+          try {
+            firstBtn.focus({ preventScroll: true });
+          } catch (e) {}
+        }, 350);
       }
       setTimeout(() => {
         targetGroup.classList.remove("ring-2", "ring-rose-500", "bg-rose-50/60", "p-2.5", "rounded-2xl");
