@@ -371,9 +371,6 @@
                 </h2>
                 <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
               </div>
-              <a href="{{ route('shop.category', $featuredCat) }}" class="text-xs sm:text-sm font-extrabold text-brand-500 hover:text-brand-600 tracking-wider uppercase inline-flex items-center gap-1 transition-colors shrink-0">
-                VIEW ALL ITEMS <span class="text-base font-normal">&rarr;</span>
-              </a>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
@@ -410,9 +407,6 @@
                   <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
                 </div>
               </div>
-              <a href="{{ route('shop.brand', $featuredBrand) }}" class="text-xs sm:text-sm font-extrabold text-brand-500 hover:text-brand-600 tracking-wider uppercase inline-flex items-center gap-1 transition-colors shrink-0">
-                EXPLORE BRAND PAGE <span class="text-base font-normal">&rarr;</span>
-              </a>
             </div>
 
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
