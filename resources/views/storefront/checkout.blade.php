@@ -23,25 +23,25 @@
 @endsection
 
 @section('content')
-  {{-- Progress Stepper (Responsive) --}}
-  <div class="mx-auto w-full max-w-6xl px-3.5 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8">
-    <div class="bg-white rounded-2xl border border-stone-200/90 shadow-2xs py-2.5 px-3 sm:py-3 sm:px-6 overflow-hidden">
-      <div class="w-full flex items-center justify-between sm:justify-start gap-1.5 sm:gap-6">
+  {{-- Progress Stepper (100% Mobile Responsive) --}}
+  <div class="mx-auto w-full max-w-6xl px-3.5 sm:px-6 lg:px-8 pt-3 sm:pt-6">
+    <div class="bg-white rounded-2xl border border-stone-200/90 shadow-sm py-2.5 px-3 sm:py-3.5 sm:px-6">
+      <div class="w-full flex items-center justify-center sm:justify-start gap-2 sm:gap-6 text-xs sm:text-sm">
         
         {{-- Step 1: Cart (Completed) --}}
-        <a href="{{ route('cart.index') }}" class="group flex items-center gap-1 sm:gap-2 text-[11px] sm:text-sm font-extrabold text-stone-600 hover:text-brand-700 transition shrink-0">
-          <span class="h-4.5 w-4.5 sm:h-6 sm:w-6 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] sm:text-xs flex items-center justify-center font-bold shadow-2xs">
+        <a href="{{ route('cart.index') }}" class="group flex items-center gap-1.5 sm:gap-2 font-bold text-stone-600 hover:text-brand-700 transition shrink-0">
+          <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-300 text-[10px] sm:text-xs flex items-center justify-center font-bold shrink-0 aspect-square">
             ✓
           </span>
           <span class="group-hover:underline">Cart</span>
         </a>
 
         {{-- Divider 1 --}}
-        <svg class="h-3 w-3 sm:h-4 sm:w-4 text-stone-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-stone-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
 
         {{-- Step 2: Shipping & Delivery (Active) --}}
-        <div class="flex items-center gap-1 sm:gap-2 text-[11px] sm:text-sm font-black text-brand-700 shrink-0">
-          <span class="h-4.5 w-4.5 sm:h-6 sm:w-6 rounded-full bg-brand-600 text-white text-[9px] sm:text-xs flex items-center justify-center font-black shadow-xs">
+        <div class="flex items-center gap-1.5 sm:gap-2 font-black text-brand-700 shrink-0">
+          <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-brand-600 text-white text-[10px] sm:text-xs flex items-center justify-center font-black shrink-0 aspect-square shadow-xs ring-2 ring-brand-100">
             2
           </span>
           <span class="hidden sm:inline">Delivery &amp; Details</span>
@@ -49,11 +49,11 @@
         </div>
 
         {{-- Divider 2 --}}
-        <svg class="h-3 w-3 sm:h-4 sm:w-4 text-stone-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-stone-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
 
         {{-- Step 3: Payment Confirmation (Upcoming) --}}
-        <div class="flex items-center gap-1 sm:gap-2 text-[11px] sm:text-sm font-semibold text-stone-400 shrink-0">
-          <span class="h-4.5 w-4.5 sm:h-6 sm:w-6 rounded-full bg-stone-100 text-stone-500 border border-stone-200 text-[9px] sm:text-xs flex items-center justify-center font-bold">
+        <div class="flex items-center gap-1.5 sm:gap-2 font-semibold text-stone-400 shrink-0">
+          <span class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-stone-100 text-stone-500 border border-stone-200 text-[10px] sm:text-xs flex items-center justify-center font-bold shrink-0 aspect-square">
             3
           </span>
           <span class="hidden sm:inline">Confirmation</span>
