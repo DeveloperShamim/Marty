@@ -144,6 +144,83 @@
       border-color: #a8a29e !important;
       color: #0c0a09 !important;
     }
+
+    /* Shimmer / Flash Beam Effect for CTA Buttons */
+    @keyframes btnShimmerSweep {
+      0% {
+        transform: translateX(-160%) skewX(-20deg);
+      }
+      26%, 100% {
+        transform: translateX(260%) skewX(-20deg);
+      }
+    }
+
+    .btn-shine {
+      position: relative !important;
+      overflow: hidden !important;
+    }
+
+    .btn-shine::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.42) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: btnShimmerSweep 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      pointer-events: none;
+    }
+
+    /* Eye-Catching Place Order Attention & Flash Effect */
+    @keyframes placeOrderPulseMotion {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.18), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      }
+      50% {
+        transform: scale(1.02);
+        box-shadow: 0 8px 18px -2px rgba(0, 0, 0, 0.22), 0 0 0 3px rgba(255, 255, 255, 0.35);
+      }
+    }
+
+    .place-order-cta-effect {
+      position: relative !important;
+      overflow: hidden !important;
+      animation: placeOrderPulseMotion 3.2s ease-in-out infinite;
+    }
+
+    .place-order-cta-effect::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.5) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: btnShimmerSweep 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      pointer-events: none;
+    }
+
+    .place-order-cta-effect:hover {
+      animation-play-state: paused;
+      transform: translateY(-1px) scale(1.01);
+      box-shadow: 0 8px 20px -2px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    .place-order-cta-effect:active {
+      transform: scale(0.98) !important;
+    }
   </style>
 
   <link rel="stylesheet" href="{{ asset('theme/css/style.css') . '?v=' . (file_exists(public_path('theme/css/style.css')) ? filemtime(public_path('theme/css/style.css')) : '1') }}" />
