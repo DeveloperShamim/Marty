@@ -243,7 +243,7 @@
   @include('storefront.partials.cart-drawer')
   @include('storefront.partials.mobile-menu')
   @include('storefront.partials.quick-select-modal')
-  @if(setting('size_guide_enabled', '1') === '1')
+  @if(setting('size_guide_enabled', '0') === '1')
     @include('storefront.partials.size-guide-modal')
   @endif
   @include('storefront.partials.whatsapp-widget')

@@ -165,34 +165,10 @@ class ChatController extends Controller
 
     public function pollMessages(Request $request)
     {
-        [$conversation] = $this->resolveConversation($request);
-
-        $lastId = (int) $request->query('last_id', 0);
-
-        $newMessages = $conversation->messages()
-            ->where('id', '>', $lastId)
-            ->get();
-
-        if ($newMessages->isNotEmpty()) {
-            $conversation->markAsReadForCustomer();
-        }
-
-        $formatted = $newMessages->map(function ($msg) {
-            return [
-                'id'             => $msg->id,
-                'sender_type'    => $msg->sender_type,
-                'type'           => $msg->type ?? 'text',
-                'message'        => $msg->message,
-                'attachment_url' => $msg->attachment_url,
-                'metadata'       => $msg->metadata,
-                'time'           => $msg->created_at->timezone('Asia/Dhaka')->format('g:i a'),
-                'created_at'     => $msg->created_at->toIso8601String(),
-            ];
-        });
-
+        // Internal chat database polling disabled in favor of WhatsApp & Messenger live chat
         return response()->json([
             'success'  => true,
-            'messages' => $formatted,
+            'messages' => [],
         ]);
     }
 

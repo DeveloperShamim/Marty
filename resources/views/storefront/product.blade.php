@@ -247,7 +247,7 @@
                 <span>{{ $groupType }}:</span>
                 <span class="text-stone-900 font-extrabold normal-case text-xs tracking-normal" data-selected-val-hint></span>
               </div>
-              @if(setting('size_guide_enabled', '1') === '1' && $isSizeRelated)
+              @if(setting('size_guide_enabled', '0') === '1' && $isSizeRelated)
                 <button type="button" data-open-size-guide data-category-hint="{{ $product->category->name ?? $groupType }}" class="text-[11px] font-semibold text-stone-500 hover:text-stone-950 underline underline-offset-2 transition-colors cursor-pointer" title="Open Size Guide">
                   Size Guide
                 </button>

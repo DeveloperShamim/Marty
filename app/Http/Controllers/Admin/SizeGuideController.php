@@ -45,7 +45,7 @@ class SizeGuideController extends Controller
     public function index()
     {
         $settings = [
-            'size_guide_enabled'      => setting('size_guide_enabled', '1'),
+            'size_guide_enabled'      => setting('size_guide_enabled', '0'),
             'size_guide_default_unit' => setting('size_guide_default_unit', 'cm'),
             'size_guide_custom_tip'   => setting('size_guide_custom_tip', ''),
         ];

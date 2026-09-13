@@ -629,7 +629,7 @@
 
   function startPolling() {
     stopPolling();
-    pollTimer = setInterval(fetchMessages, 4000);
+    // Polling disabled: WhatsApp & Messenger handle live messaging without DB polling overhead
   }
 
   function stopPolling() {
