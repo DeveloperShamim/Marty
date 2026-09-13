@@ -207,8 +207,183 @@
     }
   });
 
+  /* ---------------- Audio Chime for Add To Cart ---------------- */
+  let audioCtx = null;
+  function playAddToCartSound() {
+    try {
+      const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtxClass) return;
+      if (!audioCtx) {
+        audioCtx = new AudioCtxClass();
+      }
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      const now = audioCtx.currentTime;
+
+      // Tone 1: Warm ascending bell
+      const osc1 = audioCtx.createOscillator();
+      const gain1 = audioCtx.createGain();
+      osc1.type = "sine";
+      osc1.frequency.setValueAtTime(523.25, now); // C5
+      osc1.frequency.exponentialRampToValueAtTime(783.99, now + 0.08); // G5
+      gain1.gain.setValueAtTime(0.2, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+      osc1.connect(gain1);
+      gain1.connect(audioCtx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.28);
+
+      // Tone 2: Sweet crystal sparkle ping
+      const osc2 = audioCtx.createOscillator();
+      const gain2 = audioCtx.createGain();
+      osc2.type = "triangle";
+      osc2.frequency.setValueAtTime(1046.5, now + 0.07); // C6
+      osc2.frequency.exponentialRampToValueAtTime(1318.51, now + 0.15); // E6
+      gain2.gain.setValueAtTime(0.001, now);
+      gain2.gain.setValueAtTime(0.25, now + 0.07);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+      osc2.connect(gain2);
+      gain2.connect(audioCtx.destination);
+      osc2.start(now + 0.07);
+      osc2.stop(now + 0.42);
+    } catch (e) {
+      // Audio autoplay policy or device mute gracefully handled
+    }
+  }
+
+  /* ---------------- Fly-to-Cart Animation ---------------- */
+  function getCartTarget() {
+    // 1. Floating side cart (visible in viewport)
+    const floating = document.querySelector('button[data-open-cart].fixed, [data-open-cart].fixed');
+    if (floating) {
+      const r = floating.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0 && r.top < window.innerHeight && r.bottom > 0) {
+        return floating;
+      }
+    }
+    // 2. Header cart button
+    const headerCart = document.querySelector('.site-header [data-open-cart]') || document.querySelector('[data-open-cart]');
+    if (headerCart) {
+      const r = headerCart.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) {
+        return headerCart;
+      }
+    }
+    return document.querySelector('.cart-count') || floating || headerCart;
+  }
+
+  function triggerFlyToCart(source) {
+    const target = getCartTarget();
+    if (!target) {
+      playAddToCartSound();
+      return;
+    }
+
+    let sourceEl = null;
+    let imgSrc = "";
+
+    if (source instanceof HTMLElement) {
+      if (source.tagName === "IMG") {
+        sourceEl = source;
+        imgSrc = source.currentSrc || source.src;
+      } else {
+        const cardImg = source.closest(".product-card, [data-product-card], article, #quickSelectModal, #pdpContainer, main")?.querySelector("img") ||
+                        source.querySelector("img");
+        if (cardImg) {
+          sourceEl = cardImg;
+          imgSrc = cardImg.currentSrc || cardImg.src;
+        } else {
+          sourceEl = source;
+          imgSrc = source.dataset.image || "";
+        }
+      }
+    } else if (typeof source === "string" && source.startsWith("http")) {
+      imgSrc = source;
+      sourceEl = document.activeElement || document.body;
+    }
+
+    if (!sourceEl) {
+      sourceEl = $("#pdMainImage") || $(".pdp-main-swiper .swiper-slide-active img") || document.activeElement || document.body;
+    }
+
+    const startRect = sourceEl ? sourceEl.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 60, height: 60 };
+    const targetRect = target.getBoundingClientRect();
+
+    const fly = document.createElement("div");
+    fly.className = "fly-cart-item";
+    const startW = Math.min(Math.max(startRect.width || 60, 50), 90);
+    const startH = Math.min(Math.max(startRect.height || 60, 50), 90);
+    const startX = (startRect.left || (window.innerWidth / 2 - 30)) + ((startRect.width || 60) / 2) - (startW / 2);
+    const startY = (startRect.top || (window.innerHeight / 2 - 30)) + ((startRect.height || 60) / 2) - (startH / 2);
+
+    Object.assign(fly.style, {
+      position: "fixed",
+      zIndex: "999999",
+      left: startX + "px",
+      top: startY + "px",
+      width: startW + "px",
+      height: startH + "px",
+      borderRadius: "9999px",
+      backgroundColor: "#ffffff",
+      backgroundImage: imgSrc ? `url("${imgSrc}")` : "none",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      boxShadow: "0 10px 25px -4px rgba(0,0,0,0.35), 0 0 0 3px #ffffff, 0 0 15px rgba(37, 99, 235, 0.4)",
+      pointerEvents: "none",
+      transform: "scale(1) rotate(0deg)",
+      opacity: "1",
+      transition: "left 0.65s cubic-bezier(0.2, 0.8, 0.25, 1), top 0.65s cubic-bezier(0.55, 0.055, 0.675, 0.19), transform 0.65s cubic-bezier(0.2, 0.8, 0.25, 1), opacity 0.65s ease-in, width 0.65s ease, height 0.65s ease",
+    });
+
+    if (!imgSrc) {
+      fly.innerHTML = '<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:24px;">🛍️</span>';
+    }
+
+    document.body.appendChild(fly);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const destX = targetRect.left + (targetRect.width / 2) - 16;
+        const destY = targetRect.top + (targetRect.height / 2) - 16;
+
+        Object.assign(fly.style, {
+          left: destX + "px",
+          top: destY + "px",
+          width: "32px",
+          height: "32px",
+          transform: "scale(0.3) rotate(360deg)",
+          opacity: "0.3",
+        });
+      });
+    });
+
+    setTimeout(() => {
+      fly.remove();
+
+      // Play audio chime
+      playAddToCartSound();
+
+      // Pop & bounce the target cart button
+      target.classList.remove("cart-pop-bounce");
+      void target.offsetWidth;
+      target.classList.add("cart-pop-bounce");
+
+      // Bump count badge
+      $$(".cart-count").forEach((el) => {
+        el.classList.remove("bump");
+        void el.offsetWidth;
+        el.classList.add("bump");
+      });
+
+      setTimeout(() => {
+        target.classList.remove("cart-pop-bounce");
+      }, 700);
+    }, 650);
+  }
+
   /* ---------------- Add to cart ---------------- */
-  async function addToCart(productId, qty, variant, title, openAfter, redirectUrl, skuId) {
+  async function addToCart(productId, qty, variant, title, openAfter, redirectUrl, skuId, sourceElOrImg) {
     try {
       const payload = { product_id: productId, qty: qty || 1, variant: variant || null };
       if (skuId) payload.sku_id = skuId;
@@ -218,7 +393,8 @@
         window.location.href = redirectUrl;
         return true;
       }
-      toast((data && data.message) || `Added “${title || "item"}” to cart`);
+      // Trigger smooth fly-to-cart animation, cart badge bounce and chime sound
+      triggerFlyToCart(sourceElOrImg);
       if (openAfter === true) openCart();
       return true;
     } catch (err) {
@@ -857,7 +1033,8 @@
     const variantStr = parts.join(", ") || null;
     const skuId = currentQmProduct.selectedSkuId || null;
 
-    const ok = await addToCart(currentQmProduct.productId, qty, variantStr, currentQmProduct.title, false, null, skuId);
+    const qmImg = $("#qmImage") || (currentQmProduct ? currentQmProduct.image : null);
+    const ok = await addToCart(currentQmProduct.productId, qty, variantStr, currentQmProduct.title, false, null, skuId, qmImg);
     if (ok) {
       closeQuickModal();
     }
@@ -968,7 +1145,7 @@
       return;
     }
 
-    addToCart(productId, 1, null, btn.dataset.title, false);
+    addToCart(productId, 1, null, btn.dataset.title, false, null, null, btn);
   }
 
   document.addEventListener("click", (e) => {
@@ -1054,7 +1231,8 @@
     if (pdpAlert) pdpAlert.classList.add("hidden");
     const qty = Math.max(1, +($("#pdQty") ? $("#pdQty").value : 1) || 1);
     const skuId = pdBtn.dataset.skuId || null;
-    addToCart(pdBtn.dataset.productId, qty, variant, pdBtn.dataset.title, false, null, skuId);
+    const pdImg = $("#pdMainImage") || $(".pdp-main-swiper .swiper-slide-active img") || $("#pdpMainSwiper img") || (pdBtn ? pdBtn.dataset.image : null);
+    addToCart(pdBtn.dataset.productId, qty, variant, pdBtn.dataset.title, false, null, skuId, pdImg || pdBtn);
   }
   window.executePdpAddToCart = executePdpAddToCart;
 

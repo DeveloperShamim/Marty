@@ -225,6 +225,43 @@
     .place-order-cta-effect:active {
       transform: scale(0.98) !important;
     }
+
+    /* Dynamic Cart Bounce & Pulse Animations */
+    @keyframes cartPopBounce {
+      0% { transform: scale(1); }
+      25% { transform: scale(1.32) rotate(-9deg); }
+      50% { transform: scale(0.9) rotate(4deg); }
+      75% { transform: scale(1.1) rotate(-2deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    @keyframes cartPopBounceFixed {
+      0% { transform: translateY(-50%) scale(1); }
+      25% { transform: translateY(-50%) scale(1.32) rotate(-9deg); }
+      50% { transform: translateY(-50%) scale(0.9) rotate(4deg); }
+      75% { transform: translateY(-50%) scale(1.1) rotate(-2deg); }
+      100% { transform: translateY(-50%) scale(1) rotate(0deg); }
+    }
+    @keyframes cartPulseRing {
+      0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+      70% { box-shadow: 0 0 0 16px rgba(37, 99, 235, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+    }
+    .cart-pop-bounce {
+      animation: cartPopBounce 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+      transform-origin: center center !important;
+    }
+    button[data-open-cart].fixed.cart-pop-bounce {
+      animation: cartPopBounceFixed 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+      transform-origin: right center !important;
+    }
+    .cart-pop-bounce::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      animation: cartPulseRing 0.7s ease-out;
+      pointer-events: none;
+    }
   </style>
 
   <link rel="stylesheet" href="{{ asset('theme/css/style.css') . '?v=' . (file_exists(public_path('theme/css/style.css')) ? filemtime(public_path('theme/css/style.css')) : '1') }}" />
