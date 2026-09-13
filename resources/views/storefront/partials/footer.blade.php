@@ -27,7 +27,7 @@
   }
 @endphp
 
-<footer class="bg-white text-stone-700 mt-16 sm:mt-20 border-t border-stone-200/90 font-sans">
+<footer class="bg-white text-stone-700 mt-16 sm:mt-20 border-t border-stone-200/90 font-sans overflow-hidden">
   {{-- Main Footer Body --}}
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12 lg:py-16">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 sm:gap-10 lg:gap-8">

@@ -24,35 +24,36 @@
 
 @section('content')
   {{-- Progress Stepper (Responsive) --}}
-  <div class="mx-auto max-w-6xl px-3.5 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8">
-    <div class="bg-white rounded-2xl border border-stone-200/90 shadow-2xs py-2.5 px-3.5 sm:py-3 sm:px-6 overflow-x-auto no-scrollbar">
-      <div class="flex items-center justify-between sm:justify-start gap-2 sm:gap-6 min-w-max">
+  <div class="mx-auto w-full max-w-6xl px-3.5 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8">
+    <div class="bg-white rounded-2xl border border-stone-200/90 shadow-2xs py-2.5 px-3 sm:py-3 sm:px-6 overflow-hidden">
+      <div class="w-full flex items-center justify-between sm:justify-start gap-1.5 sm:gap-6">
         
         {{-- Step 1: Cart (Completed) --}}
-        <a href="{{ route('cart.index') }}" class="group flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-extrabold text-stone-600 hover:text-brand-700 transition shrink-0">
-          <span class="h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] sm:text-xs flex items-center justify-center font-bold shadow-2xs">
+        <a href="{{ route('cart.index') }}" class="group flex items-center gap-1 sm:gap-2 text-[11px] sm:text-sm font-extrabold text-stone-600 hover:text-brand-700 transition shrink-0">
+          <span class="h-4.5 w-4.5 sm:h-6 sm:w-6 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] sm:text-xs flex items-center justify-center font-bold shadow-2xs">
             ✓
           </span>
           <span class="group-hover:underline">Cart</span>
         </a>
 
         {{-- Divider 1 --}}
-        <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-stone-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        <svg class="h-3 w-3 sm:h-4 sm:w-4 text-stone-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
 
         {{-- Step 2: Shipping & Delivery (Active) --}}
-        <div class="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-black text-brand-700 shrink-0">
-          <span class="h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-brand-600 text-white text-[10px] sm:text-xs flex items-center justify-center font-black shadow-xs">
+        <div class="flex items-center gap-1 sm:gap-2 text-[11px] sm:text-sm font-black text-brand-700 shrink-0">
+          <span class="h-4.5 w-4.5 sm:h-6 sm:w-6 rounded-full bg-brand-600 text-white text-[9px] sm:text-xs flex items-center justify-center font-black shadow-xs">
             2
           </span>
-          <span>Delivery &amp; Details</span>
+          <span class="hidden sm:inline">Delivery &amp; Details</span>
+          <span class="sm:hidden">Delivery</span>
         </div>
 
         {{-- Divider 2 --}}
-        <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-stone-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        <svg class="h-3 w-3 sm:h-4 sm:w-4 text-stone-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
 
         {{-- Step 3: Payment Confirmation (Upcoming) --}}
-        <div class="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-stone-400 shrink-0">
-          <span class="h-5 w-5 sm:h-6 sm:w-6 rounded-full bg-stone-100 text-stone-500 border border-stone-200 text-[10px] sm:text-xs flex items-center justify-center font-bold">
+        <div class="flex items-center gap-1 sm:gap-2 text-[11px] sm:text-sm font-semibold text-stone-400 shrink-0">
+          <span class="h-4.5 w-4.5 sm:h-6 sm:w-6 rounded-full bg-stone-100 text-stone-500 border border-stone-200 text-[9px] sm:text-xs flex items-center justify-center font-bold">
             3
           </span>
           <span class="hidden sm:inline">Confirmation</span>
@@ -63,7 +64,7 @@
     </div>
   </div>
 
-  <section class="mx-auto max-w-6xl px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-28 lg:pb-8">
+  <section class="mx-auto w-full max-w-6xl px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-28 lg:pb-8 overflow-hidden">
     @if($errors->any())
       <div class="mb-4 sm:mb-6 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm px-4 py-3 shadow-2xs">
         <p class="font-semibold">Please fix the following:</p>
@@ -71,10 +72,10 @@
       </div>
     @endif
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 lg:gap-8 items-start">
+    <div class="w-full max-w-full grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 lg:gap-8 items-start">
       
       {{-- Mobile-only TOP: Your order (Items List with cross icons) --}}
-      <div class="lg:hidden order-1 rounded-2xl bg-white p-4 border border-slate-200/80 shadow-2xs space-y-3.5">
+      <div class="w-full max-w-full overflow-hidden lg:hidden order-1 rounded-2xl bg-white p-3.5 sm:p-4 border border-slate-200/80 shadow-2xs space-y-3.5">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="w-1.5 h-4 bg-brand-600 rounded-full"></span>
@@ -99,7 +100,7 @@
                   <div class="flex items-start justify-between gap-2">
                     <div class="min-w-0 flex-1 pr-1">
                       <p class="text-xs font-semibold truncate text-slate-900">{{ $item->name }}</p>
-                      <p class="text-[11px] text-slate-500">{{ $item->variant ?: $item->product->unit }}</p>
+                      <p class="text-[11px] text-slate-500 truncate">{{ $item->variant ?: $item->product->unit }}</p>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
                       <span class="text-xs font-bold text-slate-900">{{ money($item->line_total) }}</span>
@@ -141,7 +142,7 @@
       </div>
 
       {{-- Left Side: Checkout Form (7 Cols on desktop, order-2 on mobile) --}}
-      <form method="POST" action="{{ route('checkout.store') }}" id="checkoutForm" class="order-2 lg:order-1 lg:col-span-7">
+      <form method="POST" action="{{ route('checkout.store') }}" id="checkoutForm" class="w-full min-w-0 max-w-full order-2 lg:order-1 lg:col-span-7">
         @csrf
 
         <div class="space-y-3.5 sm:space-y-4">
@@ -350,7 +351,7 @@
       </form>
 
       {{-- Mobile-only BOTTOM: Subtotal, Delivery, Tax, Total Payable, ETA & Coupon (Appears at the bottom on mobile) --}}
-      <div class="lg:hidden order-3 space-y-4">
+      <div class="w-full max-w-full lg:hidden order-3 space-y-4">
         
         {{-- Card: Subtotal, Delivery, Tax, Total Payable & ETA --}}
         <div class="rounded-2xl bg-white p-4 border border-slate-200/80 shadow-2xs space-y-3">
@@ -442,7 +443,7 @@
                       <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0 flex-1 pr-1">
                           <p class="text-xs sm:text-sm font-semibold truncate text-slate-900">{{ $item->name }}</p>
-                          <p class="text-[11px] sm:text-xs text-slate-500">{{ $item->variant ?: $item->product->unit }}</p>
+                          <p class="text-[11px] sm:text-xs text-slate-500 truncate">{{ $item->variant ?: $item->product->unit }}</p>
                         </div>
                         <div class="flex items-center gap-2 shrink-0">
                           <span class="text-xs sm:text-sm font-bold text-slate-900">{{ money($item->line_total) }}</span>
@@ -543,7 +544,7 @@
   </section>
 
   {{-- Floating "Place Order" Button for Mobile View (No background container below, floating up) --}}
-  <div id="stickyMobilePlaceBar" class="lg:hidden fixed bottom-5 sm:bottom-6 left-4 right-4 z-40 pointer-events-none" style="bottom: max(1.25rem, env(safe-area-inset-bottom, 1.25rem));">
+  <div id="stickyMobilePlaceBar" class="lg:hidden fixed bottom-5 sm:bottom-6 left-3.5 right-3.5 sm:left-4 sm:right-4 z-40 pointer-events-none" style="bottom: max(1.25rem, env(safe-area-inset-bottom, 1.25rem));">
     <div class="max-w-md mx-auto pointer-events-auto">
       <button type="button" id="stickyMobilePlaceBtn" class="place-order-cta-effect w-full flex items-center justify-center gap-2 rounded-2xl bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold py-3.5 px-6 transition-all duration-200 cursor-pointer text-sm sm:text-base tracking-wide border border-white/20">
         <svg class="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>

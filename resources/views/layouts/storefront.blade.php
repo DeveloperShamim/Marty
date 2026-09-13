@@ -2,7 +2,7 @@
 <html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no, viewport-fit=cover" />
   <meta name="csrf-token" content="{{ csrf_token() }}" />
 
   @include('partials.seo')
@@ -60,6 +60,14 @@
       --brand-border: {{ $theme['primary_border'] }};
       --brand-dark: {{ $theme['dark'] }};
       --brand-surface: {{ $theme['surface'] }};
+    }
+
+    /* Ensure clean viewport scaling across all mobile devices without horizontal overflow shrink */
+    html, body {
+      overflow-x: hidden !important;
+      max-width: 100% !important;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
     }
 
     /* Hide scrollbar for Chrome, Safari, Opera, Edge, and Firefox */
