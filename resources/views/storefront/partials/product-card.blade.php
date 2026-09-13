@@ -97,7 +97,7 @@
         Out of Stock
       </button>
     @else
-      <button type="button" class="fk-add-btn add-to-cart w-full mt-auto py-2 px-2 sm:py-2.5 sm:px-3 rounded-xl font-extrabold text-[11px] sm:text-xs flex items-center justify-center gap-1 sm:gap-1.5 shadow-2xs hover:shadow-md active:scale-95 transition-all cursor-pointer" 
+      <button type="button" class="fk-add-btn add-to-cart w-full mt-auto py-2 px-2 sm:py-2.5 sm:px-3 rounded-xl font-extrabold text-[11px] sm:text-xs flex items-center justify-center gap-1 sm:gap-1.5 shadow-2xs hover:shadow-md active:scale-95 transition-all cursor-pointer select-none touch-manipulation" 
               data-product-id="{{ $product->id }}" 
               data-title="{{ $product->name }}" 
               data-stock="{{ $product->stock_quantity }}"
@@ -111,8 +111,8 @@
               data-has-variants="{{ $hasVariants ? 'true' : 'false' }}"
               data-variants="{{ json_encode($variantsGrouped) }}"
               data-skus="{{ json_encode($product->skus ? $product->skus->map(fn($s) => ['id' => $s->id, 'attributes' => $s->getAttributesData(), 'stock' => (int) $s->stock_quantity, 'price_adjustment' => (float) $s->price_adjustment, 'regular_price' => $s->getCalculatedRegularPrice(), 'sale_price' => $s->getCalculatedSalePrice()])->values() : []) }}">
-        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-        <span>{{ $cta }}</span>
+        <svg class="w-4 h-4 shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        <span class="relative z-10 pointer-events-auto select-none">{{ $cta }}</span>
       </button>
     @endif
   </div>

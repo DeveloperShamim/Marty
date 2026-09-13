@@ -281,14 +281,14 @@
           {{-- Balanced 50/50 CTA Buttons Grid --}}
           <div id="mainProductActions" class="flex items-center gap-2.5 sm:gap-3 flex-1">
             {{-- Add to Cart (Brand Colored) --}}
-            <button type="button" id="pdAddToCart" data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" class="flex-1 h-11 sm:h-12 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider cursor-pointer disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-              <span id="pdAddToCartText">{{ $isOutOfStock ? 'OUT OF STOCK' : setting('default_cta_text', 'ADD TO CART') }}</span>
+            <button type="button" id="pdAddToCart" data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" class="flex-1 h-11 sm:h-12 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider cursor-pointer select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
+              <svg class="w-4 h-4 shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+              <span id="pdAddToCartText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : setting('default_cta_text', 'ADD TO CART') }}</span>
             </button>
 
             {{-- Buy Now (Solid Black with Eye-Catching Motion) --}}
-            <button type="button" id="pdBuyNow" data-buy-now data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" data-checkout-url="{{ route('checkout.show') }}" class="buy-now-cta-effect flex-1 h-11 sm:h-12 bg-stone-950 hover:bg-black text-white font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none cursor-pointer select-none" @disabled($isOutOfStock)>
-              <span id="pdBuyNowText">{{ $isOutOfStock ? 'OUT OF STOCK' : 'BUY NOW' }}</span>
+            <button type="button" id="pdBuyNow" data-buy-now data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" data-checkout-url="{{ route('checkout.show') }}" class="buy-now-cta-effect flex-1 h-11 sm:h-12 bg-stone-950 hover:bg-black text-white font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider cursor-pointer select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
+              <span id="pdBuyNowText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : 'BUY NOW' }}</span>
             </button>
           </div>
         </div>
@@ -601,6 +601,13 @@
         );
         animation: buyNowShimmer 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
         pointer-events: none;
+        z-index: 1;
+      }
+
+      .buy-now-cta-effect > * {
+        position: relative;
+        z-index: 2;
+        pointer-events: auto;
       }
 
       .buy-now-cta-effect:disabled {
@@ -828,14 +835,14 @@
   <div id="stickyMobileBar" class="lg:hidden fixed bottom-6 sm:bottom-7 left-4 right-4 sm:left-6 sm:right-6 z-50 pointer-events-none transition-all duration-300 ease-out transform translate-y-28 opacity-0" style="bottom: max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1.25rem));">
     <div class="max-w-md mx-auto grid grid-cols-2 gap-2.5 sm:gap-3 w-full pointer-events-auto">
       {{-- Add to Cart (Brand Orange Floating Pill Button) --}}
-      <button type="button" id="stickyBarAddToCart" class="h-12 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-white/10 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
-        <svg class="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-        <span id="stickyBarAddToCartText">{{ $isOutOfStock ? 'OUT OF STOCK' : 'ADD TO CART' }}</span>
+      <button type="button" id="stickyBarAddToCart" class="h-12 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-white/10 select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
+        <svg class="w-4 h-4 text-white shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        <span id="stickyBarAddToCartText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : 'ADD TO CART' }}</span>
       </button>
 
       {{-- Buy Now (Solid Black Floating Pill Button) --}}
-      <button type="button" id="stickyBarBuyNow" class="buy-now-cta-effect h-12 bg-stone-950 hover:bg-black active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-white/10 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none select-none" @disabled($isOutOfStock)>
-        <span id="stickyBarBuyNowText">{{ $isOutOfStock ? 'OUT OF STOCK' : 'BUY NOW' }}</span>
+      <button type="button" id="stickyBarBuyNow" class="buy-now-cta-effect h-12 bg-stone-950 hover:bg-black active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-white/10 select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
+        <span id="stickyBarBuyNowText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : 'BUY NOW' }}</span>
       </button>
     </div>
   </div>
@@ -1231,15 +1238,6 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
   }
 }
 
-document.getElementById('stickyBarAddToCart')?.addEventListener('click', (e) => {
-  e.preventDefault();
-  document.getElementById('pdAddToCart')?.click();
-});
-document.getElementById('stickyBarBuyNow')?.addEventListener('click', (e) => {
-  e.preventDefault();
-  document.getElementById('pdBuyNow')?.click();
-});
-
 // Show mobile sticky bar only when visitor scrolls down past the original in-page action buttons
 (function initStickyBarScrollTrigger() {
   const stickyBar = document.getElementById('stickyMobileBar');
@@ -1252,10 +1250,10 @@ document.getElementById('stickyBarBuyNow')?.addEventListener('click', (e) => {
     // When the bottom of the original action buttons is scrolled past the top of the viewport
     if (rect.bottom < 0) {
       stickyBar.classList.remove('translate-y-28', 'opacity-0', 'pointer-events-none');
-      stickyBar.classList.add('translate-y-0', 'opacity-100');
+      stickyBar.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
     } else {
       stickyBar.classList.add('translate-y-28', 'opacity-0', 'pointer-events-none');
-      stickyBar.classList.remove('translate-y-0', 'opacity-100');
+      stickyBar.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
     }
   }
 
