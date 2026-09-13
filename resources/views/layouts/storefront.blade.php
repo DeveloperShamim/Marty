@@ -155,28 +155,6 @@
       }
     }
 
-    .btn-shine {
-      position: relative !important;
-      overflow: hidden !important;
-    }
-
-    .btn-shine::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 60%;
-      height: 100%;
-      background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.42) 50%,
-        rgba(255, 255, 255, 0) 100%
-      );
-      animation: btnShimmerSweep 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-      pointer-events: none;
-    }
-
     /* Eye-Catching Place Order Attention & Flash Effect */
     @keyframes placeOrderPulseMotion {
       0%, 100% {

@@ -649,7 +649,7 @@
             🔒 Verified Buyers Only
           </span>
         @else
-          <button type="button" id="toggleReviewFormBtn" class="btn-shine inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm px-4 py-2.5 shadow-2xs transition-all cursor-pointer">
+          <button type="button" id="toggleReviewFormBtn" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm px-4 py-2.5 shadow-2xs transition-all cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
             <span>Write a Review</span>
           </button>
@@ -739,7 +739,7 @@
             <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
             Verified purchase check enabled
           </span>
-          <button type="submit" class="btn-shine rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm px-6 py-2.5 shadow-2xs transition-all cursor-pointer">
+          <button type="submit" class="rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm px-6 py-2.5 shadow-2xs transition-all cursor-pointer">
             Submit Review
           </button>
         </div>
@@ -826,7 +826,7 @@
   <div id="stickyMobileBar" class="lg:hidden fixed bottom-6 sm:bottom-7 left-4 right-4 sm:left-6 sm:right-6 z-50 pointer-events-none transition-all duration-300 ease-out transform translate-y-28 opacity-0" style="bottom: max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1.25rem));">
     <div class="max-w-md mx-auto grid grid-cols-2 gap-2.5 sm:gap-3 w-full pointer-events-auto">
       {{-- Add to Cart (Brand Orange Floating Pill Button) --}}
-      <button type="button" id="stickyBarAddToCart" class="btn-shine h-12 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-white/10 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
+      <button type="button" id="stickyBarAddToCart" class="h-12 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-white/10 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
         <svg class="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
         <span id="stickyBarAddToCartText">{{ $isOutOfStock ? 'OUT OF STOCK' : 'ADD TO CART' }}</span>
       </button>
