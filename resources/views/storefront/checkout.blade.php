@@ -158,7 +158,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
               <div>
                 <label class="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-1">Full name <span class="text-red-500">*</span></label>
-                <input name="customer_name" value="{{ old('customer_name', $user?->name) }}" required placeholder="e.g. Marty Customer" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
+                <input name="customer_name" value="{{ old('customer_name', $user?->name) }}" required placeholder="e.g. Marty Customer" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
               </div>
               
               <div>
@@ -167,7 +167,7 @@
                   <span id="phoneValidationStatus" class="text-[10px] sm:text-[11px] font-semibold text-slate-400">11 digits (017XXXXXXXX)</span>
                 </div>
                 <div class="relative">
-                  <input type="tel" id="customerPhone" name="customer_phone" value="{{ old('customer_phone', $user?->phone) }}" required placeholder="017XXXXXXXX" maxlength="15" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white pr-8" />
+                  <input type="tel" id="customerPhone" name="customer_phone" value="{{ old('customer_phone', $user?->phone) }}" required placeholder="017XXXXXXXX" maxlength="15" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white pr-8" />
                   <span id="phoneValidIcon" class="absolute right-2.5 top-2.5 text-xs hidden font-bold text-emerald-600">✓</span>
                 </div>
                 <p id="phoneErrorHint" class="hidden text-[10px] font-semibold text-red-600 mt-0.5">Please enter a valid 11-digit Bangladeshi mobile number.</p>
@@ -175,7 +175,7 @@
 
               <div class="sm:col-span-2">
                 <label class="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-1">Email <span class="text-slate-400 font-normal">(optional)</span></label>
-                <input type="email" name="customer_email" value="{{ old('customer_email', $user?->email) }}" placeholder="you@example.com (for order updates & receipt)" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
+                <input type="email" name="customer_email" value="{{ old('customer_email', $user?->email) }}" placeholder="you@example.com (for order updates & receipt)" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
               </div>
             </div>
           </div>
@@ -193,17 +193,17 @@
             <div class="space-y-2 sm:space-y-2.5">
               <div>
                 <label class="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-1">Address <span class="text-red-500">*</span></label>
-                <input name="shipping_address" value="{{ old('shipping_address', $user?->address) }}" required placeholder="House, road, area details" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
+                <input name="shipping_address" value="{{ old('shipping_address', $user?->address) }}" required placeholder="House, road, area details" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
               </div>
 
               <div class="grid grid-cols-2 gap-2 sm:gap-2.5">
                 <div>
                   <label class="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-1">City <span class="text-red-500">*</span></label>
-                  <input name="city" value="{{ old('city', $user?->city ?? 'Dhaka') }}" required placeholder="e.g. Dhaka" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
+                  <input name="city" value="{{ old('city', $user?->city ?? 'Dhaka') }}" required placeholder="e.g. Dhaka" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
                 </div>
                 <div>
                   <label class="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-1">Postal code <span class="text-slate-400 font-normal">(optional)</span></label>
-                  <input name="postal_code" value="{{ old('postal_code', $user?->postal_code) }}" placeholder="e.g. 1205" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
+                  <input name="postal_code" value="{{ old('postal_code', $user?->postal_code) }}" placeholder="e.g. 1205" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
                 </div>
               </div>
 
@@ -329,11 +329,11 @@
               <div class="grid grid-cols-2 gap-2">
                 <div>
                   <label class="block text-[10px] sm:text-[11px] font-semibold text-slate-700 mb-0.5">Sender mobile <span class="text-rose-500">*</span></label>
-                  <input name="payment_sender_number" value="{{ old('payment_sender_number') }}" placeholder="017XXXXXXXX" class="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500" />
+                  <input name="payment_sender_number" value="{{ old('payment_sender_number') }}" placeholder="017XXXXXXXX" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base sm:text-xs focus:outline-none focus:ring-1 focus:ring-brand-500" />
                 </div>
                 <div>
                   <label class="block text-[10px] sm:text-[11px] font-semibold text-slate-700 mb-0.5">TrxID <span class="text-rose-500">*</span></label>
-                  <input name="payment_txn_id" value="{{ old('payment_txn_id') }}" placeholder="e.g. 9J82K3L4P" class="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-mono uppercase focus:outline-none focus:ring-1 focus:ring-brand-500" />
+                  <input name="payment_txn_id" value="{{ old('payment_txn_id') }}" placeholder="e.g. 9J82K3L4P" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base sm:text-xs font-mono uppercase focus:outline-none focus:ring-1 focus:ring-brand-500" />
                 </div>
               </div>
             </div>
@@ -400,7 +400,7 @@
               @else
                 <form method="POST" action="{{ route('checkout.coupon.apply') }}" class="flex gap-2">
                   @csrf
-                  <input name="code" value="{{ old('code') }}" placeholder="Promo code" required class="flex-1 rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-300 uppercase" />
+                  <input name="code" value="{{ old('code') }}" placeholder="Promo code" required class="flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-xs focus:outline-none focus:ring-2 focus:ring-brand-300 uppercase" />
                   <button type="submit" class="rounded-xl bg-brand-600 text-white text-xs font-bold px-4 py-2 hover:bg-brand-700 transition cursor-pointer shrink-0">Apply</button>
                 </form>
                 @error('coupon')<p class="text-[11px] text-red-600 font-semibold mt-1.5">⚠️ {{ $message }}</p>@enderror
@@ -529,7 +529,7 @@
               @else
                 <form method="POST" action="{{ route('checkout.coupon.apply') }}" class="flex gap-2">
                   @csrf
-                  <input name="code" value="{{ old('code') }}" placeholder="Promo code" required class="flex-1 rounded-xl border border-slate-200 px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-300 uppercase" />
+                  <input name="code" value="{{ old('code') }}" placeholder="Promo code" required class="flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-xs focus:outline-none focus:ring-2 focus:ring-brand-300 uppercase" />
                   <button type="submit" class="rounded-xl bg-brand-600 text-white text-xs font-bold px-4 py-2 hover:bg-brand-700 transition cursor-pointer shrink-0">Apply</button>
                 </form>
                 @error('coupon')<p class="text-[11px] text-red-600 font-semibold mt-1.5">⚠️ {{ $message }}</p>@enderror

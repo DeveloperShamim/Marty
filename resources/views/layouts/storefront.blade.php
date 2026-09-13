@@ -73,6 +73,20 @@
       scrollbar-width: none !important;  /* Firefox */
     }
 
+    /* Prevent mobile auto-zoom on input focus (iOS Safari/Chrome zooms in if font-size < 16px) */
+    @media screen and (max-width: 768px) {
+      input[type="text"],
+      input[type="tel"],
+      input[type="email"],
+      input[type="number"],
+      input[type="password"],
+      input[type="search"],
+      select,
+      textarea {
+        font-size: 16px !important;
+      }
+    }
+
     /* Primary Text Color Utilities */
     .text-brand-600,
     .text-brand-500 {
