@@ -356,33 +356,35 @@
   </div>
 
   {{-- Luxury Product Information & Specifications Section --}}
-  <section id="productDetailsSection" class="bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 p-5 sm:p-7 lg:p-9 mt-6 sm:mt-8 shadow-xs space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-5">
+  <section id="productDetailsSection" class="bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 p-4 sm:p-7 lg:p-9 mt-6 sm:mt-8 shadow-xs space-y-5 sm:space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4 border-b border-stone-100 pb-4 sm:pb-5">
       <div>
-        <h2 class="text-lg sm:text-xl md:text-2xl font-black text-stone-950 tracking-tight flex items-center gap-2.5">
-          <span class="w-1.5 h-5 bg-stone-900 rounded-full"></span>
+        <h2 class="text-base sm:text-xl md:text-2xl font-black text-stone-950 tracking-tight flex items-center gap-2 sm:gap-2.5">
+          <span class="w-1.5 h-4 sm:h-5 bg-stone-900 rounded-full shrink-0"></span>
           <span>Product Overview &amp; Specifications</span>
         </h2>
-        <p class="text-xs sm:text-sm text-stone-500 mt-1">Full breakdown of features, technical specs, authenticity and delivery coverage</p>
+        <p class="text-[11px] sm:text-xs md:text-sm text-stone-500 mt-1">Full breakdown of features, technical specs, authenticity and delivery coverage</p>
       </div>
 
-      {{-- Modern Pill Tabs --}}
-      <div class="inline-flex p-1 bg-stone-100/90 rounded-2xl border border-stone-200/70 text-xs font-bold gap-1 self-start sm:self-auto flex-wrap" data-pdp-tabs>
-        <button type="button" data-pdp-tab="description" class="pdp-tab-btn active px-3.5 sm:px-4 py-2 rounded-xl bg-white text-stone-950 shadow-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5">
-          <span>📝</span>
-          <span>Overview</span>
-        </button>
-        @if(! empty($specRows))
-          <button type="button" data-pdp-tab="specs" class="pdp-tab-btn px-3.5 sm:px-4 py-2 rounded-xl text-stone-600 hover:text-stone-950 font-bold transition-all cursor-pointer flex items-center gap-1.5">
-            <span>⚙️</span>
-            <span>Specifications</span>
-            <span class="ml-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-stone-200 text-stone-700">{{ count($specRows) }}</span>
+      {{-- Modern Pill Tabs (Mobile Responsive: Single-row horizontal scroll / flex-nowrap) --}}
+      <div class="w-full sm:w-auto overflow-x-auto scrollbar-none -mx-1 px-1 py-0.5">
+        <div class="inline-flex p-1 bg-stone-100/90 rounded-2xl border border-stone-200/70 text-xs font-bold gap-1 min-w-full sm:min-w-0" data-pdp-tabs>
+          <button type="button" data-pdp-tab="description" class="pdp-tab-btn active flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-xl bg-white text-stone-950 shadow-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap text-xs">
+            <span>📝</span>
+            <span>Overview</span>
           </button>
-        @endif
-        <button type="button" data-pdp-tab="delivery" class="pdp-tab-btn px-3.5 sm:px-4 py-2 rounded-xl text-stone-600 hover:text-stone-950 font-bold transition-all cursor-pointer flex items-center gap-1.5">
-          <span>🛡️</span>
-          <span>Shipping &amp; Warranty</span>
-        </button>
+          @if(! empty($specRows))
+            <button type="button" data-pdp-tab="specs" class="pdp-tab-btn flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-xl text-stone-600 hover:text-stone-950 font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap text-xs">
+              <span>⚙️</span>
+              <span>Specifications</span>
+              <span class="ml-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-stone-200 text-stone-700">{{ count($specRows) }}</span>
+            </button>
+          @endif
+          <button type="button" data-pdp-tab="delivery" class="pdp-tab-btn flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-xl text-stone-600 hover:text-stone-950 font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap text-xs">
+            <span>🛡️</span>
+            <span>Shipping &amp; Warranty</span>
+          </button>
+        </div>
       </div>
     </div>
 
