@@ -1281,7 +1281,6 @@
         pdpMsg.textContent = msgText;
         pdpAlert.classList.remove("hidden");
       }
-      toast(msgText);
       scrollToMissingVariant(missing);
       return;
     }
@@ -1312,7 +1311,6 @@
         pdpMsg.textContent = msgText;
         pdpAlert.classList.remove("hidden");
       }
-      toast(msgText);
       scrollToMissingVariant(missing);
       return;
     }

@@ -262,6 +262,12 @@
         @endforeach
       @endif
 
+      {{-- Maximum 3 Items Allowed Notice --}}
+      <div class="flex items-center gap-1.5 text-xs text-stone-500 font-medium py-1">
+        <svg class="w-3.5 h-3.5 text-brand-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>Maximum 3 items allowed per product variant.</span>
+      </div>
+
       {{-- Validation Error Alert Box --}}
       <div id="pdpErrorAlert" class="hidden bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold p-3 rounded-xl flex items-center gap-2 my-1">
         <svg class="w-4 h-4 text-rose-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
