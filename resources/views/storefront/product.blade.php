@@ -255,7 +255,7 @@
             </div>
             <div class="flex flex-wrap gap-2 sm:gap-2.5">
               @foreach($group->options as $optValue)
-                <button type="button" class="variant-btn min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all border border-stone-200 bg-stone-50/60 hover:bg-white text-stone-800 hover:border-stone-400 active:scale-95 cursor-pointer shadow-2xs flex items-center justify-center select-none" data-type="{{ $groupType }}" data-value="{{ $optValue }}">{{ $optValue }}</button>
+                <button type="button" class="variant-btn min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all border border-stone-200 bg-stone-50/60 hover:bg-stone-100 text-stone-800 hover:text-stone-950 hover:border-stone-400 active:scale-95 cursor-pointer shadow-2xs flex items-center justify-center select-none" data-type="{{ $groupType }}" data-value="{{ $optValue }}">{{ $optValue }}</button>
               @endforeach
             </div>
           </div>

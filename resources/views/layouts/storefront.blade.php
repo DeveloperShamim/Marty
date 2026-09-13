@@ -129,6 +129,21 @@
       background-color: transparent !important;
       border-color: transparent !important;
     }
+
+    /* Selected Variant Button Styling & Hover Fix */
+    .variant-btn.is-selected,
+    .variant-btn.is-selected:hover,
+    .variant-btn.is-selected:focus,
+    .variant-btn.is-selected:active {
+      background-color: #0c0a09 !important;
+      border-color: #0c0a09 !important;
+      color: #ffffff !important;
+    }
+    .variant-btn:not(.is-selected):hover {
+      background-color: #f5f5f4 !important;
+      border-color: #a8a29e !important;
+      color: #0c0a09 !important;
+    }
   </style>
 
   <link rel="stylesheet" href="{{ asset('theme/css/style.css') . '?v=' . (file_exists(public_path('theme/css/style.css')) ? filemtime(public_path('theme/css/style.css')) : '1') }}" />
