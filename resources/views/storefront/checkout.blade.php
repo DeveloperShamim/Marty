@@ -545,7 +545,7 @@
   {{-- Floating "Place Order" Button for Mobile View (No background container below, floating up) --}}
   <div id="stickyMobilePlaceBar" class="lg:hidden fixed bottom-5 sm:bottom-6 left-4 right-4 z-40 pointer-events-none" style="bottom: max(1.25rem, env(safe-area-inset-bottom, 1.25rem));">
     <div class="max-w-md mx-auto pointer-events-auto">
-      <button type="button" id="stickyMobilePlaceBtn" class="btn-shine w-full flex items-center justify-center rounded-2xl bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold py-3.5 px-6 shadow-[0_10px_25px_rgba(234,88,12,0.38)] hover:shadow-[0_12px_30px_rgba(234,88,12,0.45)] transition-all duration-200 cursor-pointer text-sm sm:text-base tracking-wide border border-white/20">
+      <button type="button" id="stickyMobilePlaceBtn" class="btn-shine w-full flex items-center justify-center rounded-2xl bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold py-3.5 px-6 shadow-md transition-all duration-200 cursor-pointer text-sm sm:text-base tracking-wide border border-white/10">
         <span>Place Order · <span id="stickyMobilePlaceTotal" class="sumTotal">{{ money($totals['total']) }}</span></span>
       </button>
     </div>
