@@ -196,7 +196,7 @@
   async function changeQty(key, qty) { applyCart(await api("/cart/update", { key, qty: Math.max(0, qty) })); }
   bindDrawer();
 
-  // Instant, fail-safe navigation for Cart Drawer Checkout button (Click & Touch)
+  // Instant, fail-safe navigation for Cart Drawer Checkout button
   document.addEventListener("click", function (e) {
     const btn = e.target.closest("#cartDrawerCheckoutBtn");
     if (btn) {
@@ -206,16 +206,6 @@
       }
     }
   });
-
-  document.addEventListener("touchend", function (e) {
-    const btn = e.target.closest("#cartDrawerCheckoutBtn");
-    if (btn && !e.defaultPrevented) {
-      const href = btn.getAttribute("href");
-      if (href) {
-        window.location.href = href;
-      }
-    }
-  }, { passive: true });
 
   /* ---------------- Add to cart ---------------- */
   async function addToCart(productId, qty, variant, title, openAfter, redirectUrl, skuId) {
@@ -921,21 +911,6 @@
     }
   });
 
-  document.addEventListener("touchend", (e) => {
-    const qmAdd = e.target.closest("#qmAddToCartBtn");
-    if (qmAdd) {
-      e.preventDefault();
-      executeQmAddToCart();
-      return;
-    }
-    const qmBuy = e.target.closest("#qmBuyNowBtn");
-    if (qmBuy) {
-      e.preventDefault();
-      executeQmBuyNow();
-      return;
-    }
-  }, { passive: false });
-
   if (qmQtyInc && qmQtyInput) {
     qmQtyInc.addEventListener("click", () => {
       qmQtyInput.value = Math.min(3, Math.max(1, (+qmQtyInput.value || 1) + 1));
@@ -1003,14 +978,6 @@
       handleCardAddToCart(btn);
     }
   });
-
-  document.addEventListener("touchend", (e) => {
-    const btn = e.target.closest(".add-to-cart, [data-add-cart]");
-    if (btn && !btn.closest("#quickSelectModal")) {
-      e.preventDefault();
-      handleCardAddToCart(btn);
-    }
-  }, { passive: false });
 
   function scrollToMissingVariant(missing) {
     if (!missing || !missing.length) return false;
@@ -1122,7 +1089,7 @@
   }
   window.executePdpBuyNow = executePdpBuyNow;
 
-  // Delegated click and touch listeners for PDP buttons (#pdAddToCart, #pdBuyNow, #stickyBarAddToCart, #stickyBarBuyNow)
+  // Delegated click listener for PDP buttons (#pdAddToCart, #pdBuyNow, #stickyBarAddToCart, #stickyBarBuyNow)
   document.addEventListener("click", (e) => {
     const addBtn = e.target.closest("#pdAddToCart, #stickyBarAddToCart");
     if (addBtn) {
@@ -1137,21 +1104,6 @@
       return;
     }
   });
-
-  document.addEventListener("touchend", (e) => {
-    const addBtn = e.target.closest("#pdAddToCart, #stickyBarAddToCart");
-    if (addBtn) {
-      e.preventDefault();
-      executePdpAddToCart(addBtn);
-      return;
-    }
-    const buyBtn = e.target.closest("#pdBuyNow, #stickyBarBuyNow");
-    if (buyBtn) {
-      e.preventDefault();
-      executePdpBuyNow(buyBtn);
-      return;
-    }
-  }, { passive: false });
 
   $$("[data-stepper]").forEach((wrap) => {
     const input = $("input", wrap);

@@ -62,10 +62,14 @@
       --brand-surface: {{ $theme['surface'] }};
     }
 
-    /* Ensure clean viewport scaling across all mobile devices without horizontal overflow shrink */
-    html, body {
-      overflow-x: hidden !important;
-      max-width: 100% !important;
+    /* Ensure clean viewport scaling without breaking position: sticky */
+    html {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+    body {
+      overflow-x: clip;
+      max-width: 100%;
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
     }
