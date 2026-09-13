@@ -569,12 +569,12 @@
 
       @keyframes buyNowPulseMotion {
         0%, 100% {
-          box-shadow: 0 4px 14px -1px rgba(0, 0, 0, 0.35), 0 0 0 0 rgba(24, 24, 27, 0.25);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.16), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
           transform: scale(1);
         }
         50% {
-          box-shadow: 0 8px 24px -1px rgba(0, 0, 0, 0.55), 0 0 0 4px rgba(24, 24, 27, 0.09);
-          transform: scale(1.02);
+          box-shadow: 0 6px 10px -2px rgba(0, 0, 0, 0.2), 0 3px 6px -2px rgba(0, 0, 0, 0.1);
+          transform: scale(1.015);
         }
       }
 
@@ -594,7 +594,7 @@
         background: linear-gradient(
           90deg,
           rgba(255, 255, 255, 0) 0%,
-          rgba(255, 255, 255, 0.32) 50%,
+          rgba(255, 255, 255, 0.35) 50%,
           rgba(255, 255, 255, 0) 100%
         );
         animation: buyNowShimmer 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
@@ -618,8 +618,8 @@
 
       .buy-now-cta-effect:hover {
         animation-play-state: paused;
-        transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 10px 28px -2px rgba(0, 0, 0, 0.65) !important;
+        transform: translateY(-1px) scale(1.01);
+        box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.25) !important;
       }
 
       .buy-now-cta-effect:active {
@@ -832,7 +832,7 @@
       </button>
 
       {{-- Buy Now (Solid Black Floating Pill Button) --}}
-      <button type="button" id="stickyBarBuyNow" class="h-12 bg-stone-950 hover:bg-black active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-white/10 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none select-none" @disabled($isOutOfStock)>
+      <button type="button" id="stickyBarBuyNow" class="buy-now-cta-effect h-12 bg-stone-950 hover:bg-black active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-white/10 disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none select-none" @disabled($isOutOfStock)>
         <span id="stickyBarBuyNowText">{{ $isOutOfStock ? 'OUT OF STOCK' : 'BUY NOW' }}</span>
       </button>
     </div>
