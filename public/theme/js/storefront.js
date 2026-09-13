@@ -307,64 +307,121 @@
       sourceEl = $("#pdMainImage") || $(".pdp-main-swiper .swiper-slide-active img") || document.activeElement || document.body;
     }
 
-    const startRect = sourceEl ? sourceEl.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 60, height: 60 };
+    const startRect = sourceEl ? sourceEl.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 80, height: 80 };
     const targetRect = target.getBoundingClientRect();
+
+    const isMobile = window.innerWidth < 640;
+    // Prominent, clearly visible image size
+    const size = isMobile ? 120 : 155;
+
+    const startX = (startRect.left || (window.innerWidth / 2 - size / 2)) + ((startRect.width || size) / 2) - (size / 2);
+    const startY = (startRect.top || (window.innerHeight / 2 - size / 2)) + ((startRect.height || size) / 2) - (size / 2);
+
+    const destX = targetRect.left + (targetRect.width / 2) - 18;
+    const destY = targetRect.top + (targetRect.height / 2) - 18;
+
+    // Peak arc height for natural curve
+    const arcPeakY = Math.min(startY, destY) - (isMobile ? 60 : 95);
+    const midX = startX * 0.45 + destX * 0.55;
 
     const fly = document.createElement("div");
     fly.className = "fly-cart-item";
-    const startW = Math.min(Math.max(startRect.width || 60, 50), 90);
-    const startH = Math.min(Math.max(startRect.height || 60, 50), 90);
-    const startX = (startRect.left || (window.innerWidth / 2 - 30)) + ((startRect.width || 60) / 2) - (startW / 2);
-    const startY = (startRect.top || (window.innerHeight / 2 - 30)) + ((startRect.height || 60) / 2) - (startH / 2);
 
-    Object.assign(fly.style, {
-      position: "fixed",
-      zIndex: "999999",
-      left: startX + "px",
-      top: startY + "px",
-      width: startW + "px",
-      height: startH + "px",
-      borderRadius: "9999px",
-      backgroundColor: "#ffffff",
-      backgroundImage: imgSrc ? `url("${imgSrc}")` : "none",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      boxShadow: "0 10px 25px -4px rgba(0,0,0,0.35), 0 0 0 3px #ffffff, 0 0 15px rgba(37, 99, 235, 0.4)",
-      pointerEvents: "none",
-      transform: "scale(1) rotate(0deg)",
-      opacity: "1",
-      transition: "left 0.65s cubic-bezier(0.2, 0.8, 0.25, 1), top 0.65s cubic-bezier(0.55, 0.055, 0.675, 0.19), transform 0.65s cubic-bezier(0.2, 0.8, 0.25, 1), opacity 0.65s ease-in, width 0.65s ease, height 0.65s ease",
-    });
+    fly.style.cssText = `
+      position: fixed;
+      z-index: 999999;
+      left: ${startX}px;
+      top: ${startY}px;
+      width: ${size}px;
+      height: ${size}px;
+      border-radius: 24px;
+      background-color: #ffffff;
+      background-image: ${imgSrc ? `url("${imgSrc}")` : "none"};
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      box-shadow: 0 20px 45px -8px rgba(0, 0, 0, 0.45), 0 0 0 3.5px #ffffff, 0 10px 25px rgba(37, 99, 235, 0.3);
+      pointer-events: none;
+      will-change: transform, left, top, opacity, width, height;
+    `;
 
-    if (!imgSrc) {
-      fly.innerHTML = '<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:24px;">🛍️</span>';
-    }
+    // Add a checkmark badge on the top right
+    fly.innerHTML = `
+      <div style="position: absolute; top: -8px; right: -8px; background: #10b981; color: white; border-radius: 9999px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 900; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5); border: 2.5px solid #ffffff;">✓</div>
+      ${!imgSrc ? '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:40px;">🛍️</div>' : ''}
+    `;
 
     document.body.appendChild(fly);
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const destX = targetRect.left + (targetRect.width / 2) - 16;
-        const destY = targetRect.top + (targetRect.height / 2) - 16;
-
-        Object.assign(fly.style, {
+    // Modern Web Animations API for smooth 800ms arched trajectory
+    if (typeof fly.animate === "function") {
+      const anim = fly.animate([
+        {
+          left: startX + "px",
+          top: startY + "px",
+          width: size + "px",
+          height: size + "px",
+          transform: "scale(0.85) rotate(0deg)",
+          opacity: 0.95,
+          offset: 0
+        },
+        {
+          left: (startX * 0.75 + midX * 0.25) + "px",
+          top: (startY * 0.6 + arcPeakY * 0.4) + "px",
+          width: (size * 1.08) + "px",
+          height: (size * 1.08) + "px",
+          transform: "scale(1.1) rotate(-4deg)",
+          opacity: 1,
+          offset: 0.25
+        },
+        {
+          left: midX + "px",
+          top: arcPeakY + "px",
+          width: size + "px",
+          height: size + "px",
+          transform: "scale(1.02) rotate(3deg)",
+          opacity: 1,
+          offset: 0.55
+        },
+        {
+          left: (midX * 0.4 + destX * 0.6) + "px",
+          top: (arcPeakY * 0.3 + destY * 0.7) + "px",
+          width: (size * 0.8) + "px",
+          height: (size * 0.8) + "px",
+          transform: "scale(0.85) rotate(-2deg)",
+          opacity: 0.95,
+          offset: 0.75
+        },
+        {
           left: destX + "px",
           top: destY + "px",
-          width: "32px",
-          height: "32px",
-          transform: "scale(0.3) rotate(360deg)",
-          opacity: "0.3",
-        });
+          width: "36px",
+          height: "36px",
+          transform: "scale(0.3) rotate(15deg)",
+          opacity: 0.2,
+          offset: 1
+        }
+      ], {
+        duration: 820,
+        easing: "cubic-bezier(0.25, 1, 0.5, 1)",
+        fill: "forwards"
       });
-    });
 
-    setTimeout(() => {
-      fly.remove();
+      anim.onfinish = onLanding;
+    } else {
+      // Graceful fallback for older browsers
+      setTimeout(onLanding, 700);
+    }
+
+    function onLanding() {
+      if (fly && fly.parentNode) {
+        fly.parentNode.removeChild(fly);
+      }
 
       // Play audio chime
       playAddToCartSound();
 
-      // Pop & bounce the target cart button
+      // Pop & bounce target cart button
       target.classList.remove("cart-pop-bounce");
       void target.offsetWidth;
       target.classList.add("cart-pop-bounce");
@@ -379,7 +436,7 @@
       setTimeout(() => {
         target.classList.remove("cart-pop-bounce");
       }, 700);
-    }, 650);
+    }
   }
 
   /* ---------------- Add to cart ---------------- */
