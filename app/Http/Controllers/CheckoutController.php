@@ -271,6 +271,8 @@ class CheckoutController extends Controller
                         Product::where('id', $product->id)->decrement('stock_quantity', $item->qty);
                     }
 
+                    $itemCostPrice = $sku ? $sku->getEffectiveCostPrice() : (float) ($product?->cost_price ?: 0);
+
                     OrderItem::create([
                         'order_id'       => $order->id,
                         'product_id'     => $item->product_id,
@@ -279,6 +281,7 @@ class CheckoutController extends Controller
                         'image'          => $item->product->primaryImage()?->path,
                         'variant'        => $item->variant ?: $sku?->attributeLabel(),
                         'unit_price'     => $item->price,
+                        'cost_price'     => $itemCostPrice,
                         'quantity'       => $item->qty,
                         'line_total'     => $item->line_total,
                     ]);
