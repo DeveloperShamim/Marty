@@ -68,7 +68,7 @@
         <p class="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 font-mono tracking-tight truncate">{{ money($revenue) }}</p>
         <p class="text-[10px] sm:text-xs text-gray-500 flex items-center justify-between pt-0.5">
           <span>Orders:</span>
-          <span class="font-semibold text-gray-700 font-mono">{{ number_format($ordersCount) }}</span>
+          <span class="font-semibold text-gray-700 font-mono">{{ number_format($totalSalesOrdersCount ?? $ordersCount) }}</span>
         </p>
       </div>
     </div>
@@ -101,7 +101,7 @@
       <div class="mt-2 sm:mt-3 space-y-0.5 sm:space-y-1">
         <p class="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 font-mono tracking-tight">{{ number_format($ordersCount) }}</p>
         <p class="text-[10px] sm:text-xs text-gray-400 truncate pt-0.5">
-          {{ number_format($cancelledOrdersCount ?? 0) }} cancelled
+          {{ number_format($deliveredCount ?? 0) }} delivered &middot; {{ number_format(($cancelledOrdersCount ?? 0) + ($returnedOrdersCount ?? 0)) }} closed
         </p>
       </div>
     </div>

@@ -21,12 +21,9 @@ class DashboardController extends Controller
 
         $request = $request ?? request();
 
-        // Scope to only count realized revenue from valid, non-cancelled orders
-        $validOrders = fn ($query) => $query->where('status', '!=', 'cancelled')
-            ->where(function ($q) {
-                $q->where('payment_status', 'verified')
-                  ->orWhere('status', 'delivered');
-            });
+        // Scope to count sales revenue from valid, non-cancelled, non-returned orders
+        $validOrders = fn ($query) => $query->whereNotIn('status', ['cancelled', 'returned'])
+            ->where('payment_status', '!=', 'rejected');
 
         $revenue = (float) Order::query()
             ->tap($validOrders)
@@ -55,7 +52,7 @@ class DashboardController extends Controller
         // Average Order Value (AOV)
         $avgOrderValue = $verifiedOrdersCount > 0 ? ($revenue / $verifiedOrdersCount) : 0;
 
-        // Top 5 Revenue-Generating Products (strictly excluding cancelled and unverified orders)
+        // Top 5 Revenue-Generating Products (strictly excluding cancelled and returned orders)
         $topProducts = OrderItem::query()
             ->select(
                 'product_id',
@@ -65,11 +62,8 @@ class DashboardController extends Controller
                 DB::raw('SUM(line_total) as total_revenue')
             )
             ->whereHas('order', function ($query) {
-                $query->where('status', '!=', 'cancelled')
-                    ->where(function ($q) {
-                        $q->where('payment_status', 'verified')
-                          ->orWhere('status', 'delivered');
-                    });
+                $query->whereNotIn('status', ['cancelled', 'returned'])
+                    ->where('payment_status', '!=', 'rejected');
             })
             ->groupBy('product_id', 'product_name', 'image')
             ->orderByDesc('total_revenue')
@@ -118,7 +112,6 @@ class DashboardController extends Controller
 
             $total = (float) Order::whereYear('created_at', $year)
                 ->whereMonth('created_at', $monthNumber)
-                ->where('payment_status', 'verified')
                 ->tap($validOrders)
                 ->sum(DB::raw('subtotal - discount_amount'));
 
@@ -141,10 +134,18 @@ class DashboardController extends Controller
         $lowStockCount = Product::where('stock_quantity', '<=', 3)->count();
         $outOfStockCount = Product::where('stock_quantity', '<=', 0)->count();
 
+        $activeOrdersCount = Order::whereIn('status', ['pending', 'confirmed', 'processing', 'shipped'])->count();
+        $cancelledOrdersCount = Order::where('status', 'cancelled')->count();
+        $returnedOrdersCount = Order::where('status', 'returned')->count();
+        $deliveredOrdersCount = Order::where('status', 'delivered')->count();
+
         return view('admin.dashboard', [
-            'ordersCount'         => Order::where('status', '!=', 'cancelled')->count(),
-            'cancelledOrdersCount'=> Order::where('status', 'cancelled')->count(),
-            'pendingCount'        => Order::where('payment_status', 'pending')->where('status', '!=', 'cancelled')->count(),
+            'ordersCount'          => $activeOrdersCount,
+            'totalSalesOrdersCount'=> $verifiedOrdersCount,
+            'cancelledOrdersCount' => $cancelledOrdersCount,
+            'returnedOrdersCount'  => $returnedOrdersCount,
+            'deliveredCount'       => $deliveredOrdersCount,
+            'pendingCount'         => Order::where('payment_status', 'pending')->whereNotIn('status', ['cancelled', 'returned'])->count(),
             'revenue'             => $revenue,
             'todayRevenue'        => $todayRevenue,
             'yesterdayRevenue'    => $yesterdayRevenue,
