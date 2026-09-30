@@ -61,6 +61,30 @@ class AnalyticsController extends Controller
         $netProfit = $grossProfit - $courierLoss;
         $profitMargin = $grossRevenue > 0 ? (($netProfit / $grossRevenue) * 100) : 0;
 
+        // 4. Operating Expenses & Facebook Ads
+        $expenseQuery = \App\Models\Expense::whereBetween('expense_date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')]);
+        $totalExpenses    = (float) (clone $expenseQuery)->sum('amount');
+        $marketingExpense = (float) (clone $expenseQuery)->where('category', 'marketing')->sum('amount');
+        $sourcingExpense  = (float) (clone $expenseQuery)->where('category', 'sourcing_travel')->sum('amount');
+        $packagingExpense = (float) (clone $expenseQuery)->where('category', 'packaging')->sum('amount');
+        $operationsExpense = max(0, $totalExpenses - ($marketingExpense + $sourcingExpense + $packagingExpense));
+
+        // True In-Pocket Net Profit (Gross Profit - Courier Loss - Operating Expenses)
+        $trueNetProfit = $netProfit - $totalExpenses;
+        $trueProfitMargin = $grossRevenue > 0 ? (($trueNetProfit / $grossRevenue) * 100) : 0;
+
+        // Facebook Ads ROAS & CPA
+        $fbOrders = (clone $deliveredOrVerified)->where(function ($q) {
+            $q->where('utm_source', 'like', '%facebook%')
+              ->orWhere('utm_source', 'like', '%fb%')
+              ->orWhere('utm_source', 'like', '%meta%')
+              ->orWhere('utm_source', 'like', '%ig%');
+        });
+        $fbOrdersCount = (clone $fbOrders)->count();
+        $fbRevenue = (float) (clone $fbOrders)->sum('total');
+        $fbRoas = $marketingExpense > 0 ? ($fbRevenue / $marketingExpense) : 0;
+        $fbCpa = $fbOrdersCount > 0 ? ($marketingExpense / $fbOrdersCount) : 0;
+
         // 4. Sales Channel Breakdown (Online vs POS)
         $onlineRevenue = (float) Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('order_type', '!=', 'pos')
@@ -198,6 +222,9 @@ class AnalyticsController extends Controller
             'grossRevenue', 'netRevenue', 'totalDiscounts', 'cogs',
             'grossProfit', 'netProfit', 'profitMargin', 'aov', 'totalOrdersCount',
             'returnedCount', 'courierLoss', 'paidReturnsCount', 'unpaidReturnsCount',
+            'totalExpenses', 'marketingExpense', 'sourcingExpense', 'packagingExpense', 'operationsExpense',
+            'trueNetProfit', 'trueProfitMargin',
+            'fbRevenue', 'fbOrdersCount', 'fbRoas', 'fbCpa',
             'onlineRevenue', 'onlineOrdersCount', 'onlineAov',
             'posRevenue', 'posOrdersCount', 'posAov',
             'trendData', 'topProfitable'

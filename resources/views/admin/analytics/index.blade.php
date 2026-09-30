@@ -121,6 +121,80 @@
 
   </div>
 
+  {{-- TRUE IN-POCKET NET PROFIT & EXPENSE / ADS BANNER --}}
+  <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 rounded-2xl p-5 sm:p-6 text-white shadow-md">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-700/60 pb-5">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider border border-emerald-500/30">True P&amp;L</span>
+          <span class="text-xs text-slate-400">All Expenses &amp; Ad Spend Deducted</span>
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-white mt-1">Real In-Pocket Net Profit</h2>
+      </div>
+
+      <div class="flex items-baseline gap-3">
+        <div class="text-2xl sm:text-4xl font-black tracking-tight {{ $trueNetProfit >= 0 ? 'text-emerald-400' : 'text-rose-400' }}">
+          ৳{{ number_format($trueNetProfit, 2) }}
+        </div>
+        <span class="px-2.5 py-1 rounded-full text-xs font-bold {{ $trueProfitMargin >= 15 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300' }} border border-white/10">
+          {{ number_format($trueProfitMargin, 1) }}% Real Margin
+        </span>
+      </div>
+    </div>
+
+    {{-- Expense & Ad ROAS Breakdown Grid --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-5">
+      
+      {{-- Facebook Ads & ROAS --}}
+      <div class="bg-white/5 rounded-xl p-3.5 border border-white/10">
+        <div class="text-[11px] text-blue-300 font-bold uppercase tracking-wider flex items-center justify-between">
+          <span>📣 Meta / Facebook Ads</span>
+          @if($marketingExpense > 0)
+            <span class="px-1.5 py-0.2 rounded text-[10px] font-black {{ $fbRoas >= 3 ? 'bg-emerald-500/20 text-emerald-300' : ($fbRoas >= 1.5 ? 'bg-amber-500/20 text-amber-300' : 'bg-rose-500/20 text-rose-300') }}">
+              {{ number_format($fbRoas, 1) }}x ROAS
+            </span>
+          @endif
+        </div>
+        <div class="text-lg font-black text-white mt-1">৳{{ number_format($marketingExpense, 2) }}</div>
+        <div class="text-[11px] text-slate-400 mt-0.5">
+          @if($fbOrdersCount > 0)
+            CPA: <strong>৳{{ number_format($fbCpa, 0) }}</strong> / order ({{ $fbOrdersCount }} orders)
+          @else
+            No Facebook tagged orders yet
+          @endif
+        </div>
+      </div>
+
+      {{-- Sourcing & Travel Trips --}}
+      <div class="bg-white/5 rounded-xl p-3.5 border border-white/10">
+        <div class="text-[11px] text-amber-300 font-bold uppercase tracking-wider">🚗 Sourcing &amp; Travel</div>
+        <div class="text-lg font-black text-white mt-1">৳{{ number_format($sourcingExpense, 2) }}</div>
+        <div class="text-[11px] text-slate-400 mt-0.5">Market visits, fares &amp; sundries</div>
+      </div>
+
+      {{-- Packaging Supplies --}}
+      <div class="bg-white/5 rounded-xl p-3.5 border border-white/10">
+        <div class="text-[11px] text-purple-300 font-bold uppercase tracking-wider">📦 Packaging Materials</div>
+        <div class="text-lg font-black text-white mt-1">৳{{ number_format($packagingExpense, 2) }}</div>
+        <div class="text-[11px] text-slate-400 mt-0.5">Poly bags, stickers &amp; boxes</div>
+      </div>
+
+      {{-- Total Operating Deductions --}}
+      <div class="bg-white/5 rounded-xl p-3.5 border border-white/10 flex flex-col justify-between">
+        <div>
+          <div class="text-[11px] text-rose-300 font-bold uppercase tracking-wider">Total Operating Costs</div>
+          <div class="text-lg font-black text-rose-300 mt-1">-৳{{ number_format($totalExpenses, 2) }}</div>
+        </div>
+        <div class="mt-2">
+          <a href="{{ route('admin.expenses.index') }}" class="text-[11px] text-brand-300 hover:text-white underline font-bold flex items-center gap-1">
+            Manage Expenses &amp; Ads &rarr;
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   {{-- Secondary Insight Breakdown Grid --}}
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
     

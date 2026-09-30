@@ -158,6 +158,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
         Route::get('analytics/export', [\App\Http\Controllers\Admin\AnalyticsController::class, 'exportCsv'])->name('analytics.export');
 
+        // Expense & Marketing Ad Spend Tracking
+        Route::get('expenses', [\App\Http\Controllers\Admin\ExpenseController::class, 'index'])->name('expenses.index');
+        Route::post('expenses', [\App\Http\Controllers\Admin\ExpenseController::class, 'store'])->name('expenses.store');
+        Route::put('expenses/{expense}', [\App\Http\Controllers\Admin\ExpenseController::class, 'update'])->name('expenses.update');
+        Route::delete('expenses/{expense}', [\App\Http\Controllers\Admin\ExpenseController::class, 'destroy'])->name('expenses.destroy');
+        Route::get('expenses/export', [\App\Http\Controllers\Admin\ExpenseController::class, 'exportCsv'])->name('expenses.export');
+
         // Order & Customer Management Routes (Order Managers & Admins)
         Route::middleware(['role:order_manager'])->group(function () {
             Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
