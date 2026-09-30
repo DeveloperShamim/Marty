@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Coupon;
+use App\Models\Expense;
 use App\Models\Feature;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -33,6 +34,7 @@ class DatabaseSeeder extends Seeder
         $this->seedProducts($categories, $brands);
         $this->seedReviews();
         $this->seedOrders();
+        $this->seedExpenses();
         $this->seedStaffActivityLogs();
     }
 
@@ -1025,8 +1027,8 @@ class DatabaseSeeder extends Seeder
 
     private function seedOrders(): void
     {
-        Order::query()->delete();
         OrderItem::query()->delete();
+        Order::query()->delete();
 
         $products = Product::with(['images', 'skus'])->get();
         if ($products->isEmpty()) {
@@ -1068,8 +1070,8 @@ class DatabaseSeeder extends Seeder
             ['pending', 'cod', 'pending', 0, null, 0, null, null],
 
             // RETURN TYPE 1: Buyer Paid Delivery Charge at doorstep (Store Loss = ৳0)
-            ['returned', 'cod', 'verified', 6, 'paid_delivery', 0, 'steadfast', 'ST-881667'],
-            ['returned', 'bkash', 'verified', 9, 'paid_delivery', 0, 'pathao', 'PT-442444'],
+            ['returned', 'cod', 'rejected', 6, 'paid_delivery', 0, 'steadfast', 'ST-881667'],
+            ['returned', 'bkash', 'rejected', 9, 'paid_delivery', 0, 'pathao', 'PT-442444'],
 
             // RETURN TYPE 2: Failed Delivery / Customer Ghosted (Store Loss = Courier shipping charge)
             ['returned', 'cod', 'rejected', 7, 'unpaid_delivery', 130, 'steadfast', 'ST-881555'],
@@ -1252,6 +1254,51 @@ class DatabaseSeeder extends Seeder
 
         foreach ($logs as $log) {
             \App\Models\StaffActivityLog::create($log);
+        }
+    }
+
+    private function seedExpenses(): void
+    {
+        Expense::query()->delete();
+
+        $admin = User::where('role', 'admin')->first();
+        $expenses = [
+            [
+                'title'        => 'Facebook Ad Campaign - Smartwatch & Gadgets Boost',
+                'category'     => 'marketing',
+                'amount'       => 2500.00,
+                'expense_date' => now()->subDays(5)->format('Y-m-d'),
+                'notes'        => 'Targeted boost for Apple Watch and Earbuds campaign',
+                'created_by'   => $admin?->id,
+            ],
+            [
+                'title'        => 'Facebook Ad Campaign - Flash Sale Promo',
+                'category'     => 'marketing',
+                'amount'       => 1800.00,
+                'expense_date' => now()->subDays(2)->format('Y-m-d'),
+                'notes'        => 'Weekend conversions boost',
+                'created_by'   => $admin?->id,
+            ],
+            [
+                'title'        => 'Custom Poly Packaging Bags & Bubble Wraps',
+                'category'     => 'packaging',
+                'amount'       => 1200.00,
+                'expense_date' => now()->subDays(8)->format('Y-m-d'),
+                'notes'        => 'Purchased 500 pcs branded packaging',
+                'created_by'   => $admin?->id,
+            ],
+            [
+                'title'        => 'Local Sourcing & Transportation',
+                'category'     => 'sourcing_travel',
+                'amount'       => 950.00,
+                'expense_date' => now()->subDays(12)->format('Y-m-d'),
+                'notes'        => 'Courier pickup and warehouse delivery transport',
+                'created_by'   => $admin?->id,
+            ],
+        ];
+
+        foreach ($expenses as $exp) {
+            Expense::create($exp);
         }
     }
 
