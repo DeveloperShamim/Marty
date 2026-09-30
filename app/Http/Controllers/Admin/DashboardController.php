@@ -29,6 +29,18 @@ class DashboardController extends Controller
             ->tap($validOrders)
             ->sum(DB::raw('subtotal - discount_amount'));
 
+        // Cost of Goods Sold (Buying Cost) for valid orders
+        $totalCogs = (float) OrderItem::whereHas('order', function ($query) {
+                $query->whereNotIn('status', ['cancelled', 'returned'])
+                    ->where('payment_status', '!=', 'rejected');
+            })
+            ->leftJoin('products', 'order_items.product_id', '=', 'products.id')
+            ->sum(DB::raw('COALESCE(NULLIF(order_items.cost_price, 0), products.cost_price, 0) * order_items.quantity'));
+
+        $courierLoss = (float) Order::where('status', 'returned')->sum('courier_loss_amount');
+        $netProfit = max(0, $revenue - $totalCogs - $courierLoss);
+        $profitMargin = $revenue > 0 ? (($netProfit / $revenue) * 100) : 0;
+
         $verifiedOrdersCount = Order::query()
             ->tap($validOrders)
             ->count();
@@ -146,8 +158,11 @@ class DashboardController extends Controller
             'returnedOrdersCount'  => $returnedOrdersCount,
             'deliveredCount'       => $deliveredOrdersCount,
             'pendingCount'         => Order::where('payment_status', 'pending')->whereNotIn('status', ['cancelled', 'returned'])->count(),
-            'revenue'             => $revenue,
-            'todayRevenue'        => $todayRevenue,
+            'revenue'              => $revenue,
+            'totalCogs'            => $totalCogs,
+            'netProfit'            => $netProfit,
+            'profitMargin'         => $profitMargin,
+            'todayRevenue'         => $todayRevenue,
             'yesterdayRevenue'    => $yesterdayRevenue,
             'thisMonthRevenue'    => $thisMonthRevenue,
             'avgOrderValue'       => $avgOrderValue,

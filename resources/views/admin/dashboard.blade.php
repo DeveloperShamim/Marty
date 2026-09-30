@@ -56,36 +56,36 @@
   {{-- Primary Financial & Order KPIs (2-col on mobile, 4-col on desktop) --}}
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 sm:gap-5">
 
-    {{-- 1. Total Revenue --}}
+    {{-- 1. Total Sales Amount --}}
     <div class="bg-white rounded-2xl border border-gray-200/90 p-3 sm:p-4 md:p-5 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between">
       <div class="flex items-center justify-between gap-1.5">
-        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider truncate">Total Revenue</span>
-        <div class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0">
-          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider truncate">Total Sales</span>
+        <div class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
+          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
         </div>
       </div>
       <div class="mt-2 sm:mt-3 space-y-0.5 sm:space-y-1">
         <p class="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 font-mono tracking-tight truncate">{{ money($revenue) }}</p>
-        <p class="text-[10px] sm:text-xs text-gray-500 flex items-center justify-between pt-0.5">
-          <span>Orders:</span>
-          <span class="font-semibold text-gray-700 font-mono">{{ number_format($totalSalesOrdersCount ?? $ordersCount) }}</span>
+        <p class="text-[10px] sm:text-xs text-gray-500 flex items-center justify-between pt-0.5 truncate">
+          <span>Cost: <span class="font-semibold text-gray-700 font-mono">{{ money($totalCogs) }}</span></span>
+          <span class="text-gray-400 font-mono">{{ number_format($totalSalesOrdersCount ?? $ordersCount) }} ord</span>
         </p>
       </div>
     </div>
 
-    {{-- 2. Today's Revenue --}}
-    <div class="bg-white rounded-2xl border border-gray-200/90 p-3 sm:p-4 md:p-5 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between">
+    {{-- 2. Net Profit --}}
+    <div class="bg-white rounded-2xl border border-emerald-300/80 bg-emerald-50/15 p-3 sm:p-4 md:p-5 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between">
       <div class="flex items-center justify-between gap-1.5">
-        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider truncate">Today's Sales</span>
-        <div class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
-          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+        <span class="text-[10px] sm:text-xs font-bold text-emerald-800 uppercase tracking-wider truncate">Net Profit</span>
+        <div class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center shrink-0">
+          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
       </div>
       <div class="mt-2 sm:mt-3 space-y-0.5 sm:space-y-1">
-        <p class="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 font-mono tracking-tight truncate">{{ money($todayRevenue) }}</p>
-        <p class="text-[10px] sm:text-xs text-gray-500 flex items-center justify-between pt-0.5 truncate">
-          <span>Yest:</span>
-          <span class="font-semibold text-gray-700 font-mono">{{ money($yesterdayRevenue) }}</span>
+        <p class="text-base sm:text-xl lg:text-2xl font-bold text-emerald-700 font-mono tracking-tight truncate">{{ money($netProfit) }}</p>
+        <p class="text-[10px] sm:text-xs text-emerald-700 font-semibold flex items-center justify-between pt-0.5 truncate">
+          <span>Profit Margin:</span>
+          <span class="font-mono">{{ round($profitMargin, 1) }}%</span>
         </p>
       </div>
     </div>
@@ -135,6 +135,13 @@
 
   {{-- Secondary Quick Stats (Compact 2-col or 4-col strip) --}}
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
+      <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Today's Sales</span>
+      <div class="flex items-center justify-between mt-1">
+        <p class="text-base sm:text-lg font-bold text-gray-900 font-mono truncate">{{ money($todayRevenue) }}</p>
+        <span class="text-[11px] text-gray-400 truncate">Yest: {{ money($yesterdayRevenue) }}</span>
+      </div>
+    </div>
     <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
       <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">This Month ({{ date('M Y') }})</span>
       <p class="text-base sm:text-lg font-bold text-gray-900 font-mono mt-1 truncate">{{ money($thisMonthRevenue) }}</p>
