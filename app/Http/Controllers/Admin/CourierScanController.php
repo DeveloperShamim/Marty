@@ -26,6 +26,12 @@ class CourierScanController extends Controller
             ->latest('courier_returned_at')
             ->get();
 
+        // Orders ready for dispatch (confirmed, processing, pending)
+        $awaitingDispatch = Order::whereIn('status', ['confirmed', 'processing', 'pending'])
+            ->latest()
+            ->take(12)
+            ->get();
+
         $courierOptions = [
             'steadfast' => 'Steadfast Courier',
             'pathao'    => 'Pathao Courier',
@@ -44,7 +50,66 @@ class CourierScanController extends Controller
         }
         $lastCourier = strtolower((string) ($lastCourier ?: 'steadfast'));
 
-        return view('admin.courier-scan.index', compact('dispatchedToday', 'returnedToday', 'courierOptions', 'lastCourier'));
+        return view('admin.courier-scan.index', compact('dispatchedToday', 'returnedToday', 'awaitingDispatch', 'courierOptions', 'lastCourier'));
+    }
+
+    /**
+     * Resilient order resolution for barcode guns and keyboard input.
+     * Supports:
+     * - Full order numbers: ORD-260930-DZS5
+     * - Order numbers with hashes or scanner asterisks: #ORD-260930-DZS5, *ORD-260930-DZS5*
+     * - Number only: 260930-DZS5
+     * - Numeric Order ID: 1, #1
+     * - Courier Tracking Codes: CID12345, 20A316MOG0DI
+     * - Customer Phone: 017XXXXXXXX
+     */
+    protected function resolveOrder(string $rawCode): ?Order
+    {
+        $raw = trim($rawCode);
+        if ($raw === '') {
+            return null;
+        }
+
+        // Clean barcode scanner wrappers (*, #, quotes, whitespaces)
+        $clean = trim($raw, " *#'\"\t\n\r\0\x0B");
+
+        // 1. Direct match on order_number or courier_tracking_code
+        $order = Order::with('items')
+            ->where('order_number', $clean)
+            ->orWhere('courier_tracking_code', $clean)
+            ->first();
+
+        // 2. Case-insensitive order_number
+        if (!$order) {
+            $order = Order::with('items')
+                ->whereRaw('LOWER(order_number) = ?', [strtolower($clean)])
+                ->orWhereRaw('LOWER(courier_tracking_code) = ?', [strtolower($clean)])
+                ->first();
+        }
+
+        // 3. Try prepending 'ORD-' if not present
+        if (!$order && !str_starts_with(strtoupper($clean), 'ORD-')) {
+            $order = Order::with('items')
+                ->where('order_number', 'ORD-' . $clean)
+                ->orWhereRaw('LOWER(order_number) = ?', ['ord-' . strtolower($clean)])
+                ->first();
+        }
+
+        // 4. Try matching by numeric ID (e.g. typing "1" for Order #1)
+        if (!$order && is_numeric($clean)) {
+            $order = Order::with('items')->find((int) $clean);
+        }
+
+        // 5. Try matching by customer phone (10+ digits)
+        if (!$order && strlen(preg_replace('/[^0-9]/', '', $clean)) >= 10) {
+            $phone = preg_replace('/[^0-9]/', '', $clean);
+            $order = Order::with('items')
+                ->where('customer_phone', 'like', "%{$phone}%")
+                ->latest()
+                ->first();
+        }
+
+        return $order;
     }
 
     public function dispatchScan(Request $request)
@@ -56,15 +121,7 @@ class CourierScanController extends Controller
             return response()->json(['success' => false, 'message' => 'Please scan or enter a barcode.']);
         }
 
-        // Match by order_number or courier_tracking_code
-        $order = Order::where('order_number', $code)
-            ->orWhere('courier_tracking_code', $code)
-            ->first();
-
-        if (!$order) {
-            // Also check if prefix is missing
-            $order = Order::where('order_number', 'ORD-' . $code)->first();
-        }
+        $order = $this->resolveOrder($code);
 
         if (!$order) {
             return response()->json(['success' => false, 'message' => "Order not found for code: {$code}"]);
@@ -72,14 +129,24 @@ class CourierScanController extends Controller
 
         // Safety checks
         if ($order->status === 'cancelled') {
-            return response()->json(['success' => false, 'message' => "Order {$order->order_number} is CANCELLED! Do not dispatch."]);
+            return response()->json([
+                'success' => false,
+                'message' => "⚠️ Order #{$order->order_number} is CANCELLED! Cancelled orders cannot be dispatched."
+            ]);
+        }
+
+        if ($order->status === 'delivered') {
+            return response()->json([
+                'success' => false,
+                'message' => "ℹ️ Order #{$order->order_number} has already been DELIVERED to customer."
+            ]);
         }
 
         if ($order->status === 'shipped' && $order->courier_sent_at && $order->courier_sent_at->isToday()) {
             return response()->json([
                 'success' => false,
                 'already_dispatched' => true,
-                'message' => "⚠️ Alert: {$order->order_number} was ALREADY scanned for dispatch at " . $order->courier_sent_at->format('h:i A') . "!"
+                'message' => "⚠️ Alert: Order #{$order->order_number} was ALREADY scanned for dispatch today at " . $order->courier_sent_at->format('h:i A') . "!"
             ]);
         }
 
@@ -91,9 +158,14 @@ class CourierScanController extends Controller
             'scanned_by'      => auth()->id(),
         ]);
 
+        \App\Services\ActivityLogger::log(
+            'Courier Dispatch Scan',
+            "Dispatched order #{$order->order_number} via " . ucfirst($courierName)
+        );
+
         return response()->json([
             'success' => true,
-            'message' => "✓ Dispatched: {$order->order_number}",
+            'message' => "✓ Dispatched: #{$order->order_number} to " . ucfirst($courierName),
             'order'   => [
                 'id'            => $order->id,
                 'order_number'  => $order->order_number,
@@ -112,17 +184,10 @@ class CourierScanController extends Controller
     {
         $code = trim((string) $request->input('code', ''));
         if ($code === '') {
-            return response()->json(['success' => false, 'message' => 'Please enter a code.']);
+            return response()->json(['success' => false, 'message' => 'Please enter or scan a barcode.']);
         }
 
-        $order = Order::with('items.product')
-            ->where('order_number', $code)
-            ->orWhere('courier_tracking_code', $code)
-            ->first();
-
-        if (!$order) {
-            $order = Order::with('items.product')->where('order_number', 'ORD-' . $code)->first();
-        }
+        $order = $this->resolveOrder($code);
 
         if (!$order) {
             return response()->json(['success' => false, 'message' => "Order not found for code: {$code}"]);

@@ -76,6 +76,33 @@
 
       </div>
 
+      {{-- Quick Pick / Awaiting Dispatch Helper --}}
+      @if($awaitingDispatch->isNotEmpty())
+        <div id="awaitingDispatchWrapper" class="pt-3 border-t border-gray-100 space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-1">
+            <span class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+              <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Awaiting Dispatch Handover (<span id="awaitingDispatchCount">{{ $awaitingDispatch->count() }}</span>):
+            </span>
+            <span class="text-[11px] text-gray-400">Click any order to dispatch instantly or scan with barcode gun</span>
+          </div>
+          <div class="flex flex-wrap gap-2" id="awaitingDispatchList">
+            @foreach($awaitingDispatch as $o)
+              <button type="button" 
+                onclick="quickDispatchOrder('{{ $o->order_number }}')" 
+                id="awaiting-order-{{ $o->id }}"
+                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-gray-50 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-300 border border-gray-200 transition-all text-gray-700 shadow-2xs group cursor-pointer"
+                title="Click to dispatch #{{ $o->order_number }} ({{ $o->customer_name }} - ৳{{ number_format($o->total) }})">
+                <span class="text-emerald-600 group-hover:scale-110 transition-transform">🚚</span>
+                <span>#{{ $o->order_number }}</span>
+                <span class="font-sans font-medium text-gray-500 text-[11px]">৳{{ number_format($o->total) }}</span>
+                <span class="px-1.5 py-0.5 rounded text-[10px] uppercase font-sans font-extrabold {{ $o->status === 'confirmed' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800' }}">{{ $o->status }}</span>
+              </button>
+            @endforeach
+          </div>
+        </div>
+      @endif
+
       {{-- Audio & Live Status Banner --}}
       <div id="dispatchAlertBox" class="hidden p-3 rounded-xl text-xs font-bold transition-all"></div>
     </div>
@@ -417,28 +444,50 @@
   });
 
   // DISPATCH SCAN LOGIC
-  function triggerDispatchScan() {
+  async function triggerDispatchScan(forcedCode = null) {
     const input = document.getElementById('dispatchScanInput');
-    const code = input.value.trim();
-    if (!code) return;
+    const code = (forcedCode || input.value || '').trim();
+    if (!code) {
+      input.focus();
+      return;
+    }
 
     const courier = document.getElementById('dispatchCourierSelect').value;
     onCourierChange(courier);
     const alertBox = document.getElementById('dispatchAlertBox');
 
-    fetch("{{ route('admin.courier-scan.dispatch') }}", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-      },
-      body: JSON.stringify({ code: code, courier_name: courier })
-    })
-    .then(res => res.json())
-    .then(data => {
+    // Show processing indicator
+    alertBox.className = "p-3 rounded-xl text-xs font-bold bg-blue-50 text-blue-800 border border-blue-200 block";
+    alertBox.innerText = `⏳ Processing dispatch scan for: "${code}"...`;
+
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+
+    try {
+      const res = await fetch("{{ route('admin.courier-scan.dispatch') }}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': token
+        },
+        body: JSON.stringify({
+          _token: token,
+          code: code,
+          courier_name: courier
+        })
+      });
+
+      const data = await res.json().catch(() => null);
+
       input.value = '';
       input.focus();
+
+      if (!res.ok || !data) {
+        playSound('error');
+        alertBox.className = "p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200 block";
+        alertBox.innerText = (data && data.message) ? data.message : `HTTP ${res.status}: Failed to communicate with dispatch server.`;
+        return;
+      }
 
       if (data.success) {
         playSound('success');
@@ -446,16 +495,39 @@
         alertBox.innerText = data.message;
 
         addDispatchTableRow(data.order);
+
+        // Remove from awaiting dispatch list if present
+        if (data.order && data.order.id) {
+          const pill = document.getElementById(`awaiting-order-${data.order.id}`);
+          if (pill) {
+            pill.remove();
+            const countEl = document.getElementById('awaitingDispatchCount');
+            if (countEl) {
+              const remaining = parseInt(countEl.innerText) - 1;
+              countEl.innerText = Math.max(0, remaining);
+              if (remaining <= 0) {
+                document.getElementById('awaitingDispatchWrapper')?.remove();
+              }
+            }
+          }
+        }
       } else {
         playSound('error');
         alertBox.className = "p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200 block";
-        alertBox.innerText = data.message;
+        alertBox.innerText = data.message || 'Dispatch scan rejected.';
       }
-    })
-    .catch(err => {
+    } catch (err) {
       playSound('error');
+      alertBox.className = "p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200 block";
+      alertBox.innerText = "Network or script error: " + (err.message || 'Unknown error');
       console.error(err);
-    });
+    }
+  }
+
+  function quickDispatchOrder(orderNum) {
+    const input = document.getElementById('dispatchScanInput');
+    input.value = orderNum;
+    triggerDispatchScan(orderNum);
   }
 
   function addDispatchTableRow(ord) {
