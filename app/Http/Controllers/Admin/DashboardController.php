@@ -21,18 +21,24 @@ class DashboardController extends Controller
 
         $request = $request ?? request();
 
-        // Scope to count sales revenue from valid, non-cancelled, non-returned orders
+        // Scope to count realized sales and profit strictly from delivered orders or verified payment (POS/prepaid)
         $validOrders = fn ($query) => $query->whereNotIn('status', ['cancelled', 'returned'])
-            ->where('payment_status', '!=', 'rejected');
+            ->where(function ($q) {
+                $q->where('status', 'delivered')
+                  ->orWhere('payment_status', 'verified');
+            });
 
         $revenue = (float) Order::query()
             ->tap($validOrders)
             ->sum(DB::raw('subtotal - discount_amount'));
 
-        // Cost of Goods Sold (Buying Cost) for valid orders
+        // Cost of Goods Sold (Buying Cost) for delivered / verified orders
         $totalCogs = (float) OrderItem::whereHas('order', function ($query) {
                 $query->whereNotIn('status', ['cancelled', 'returned'])
-                    ->where('payment_status', '!=', 'rejected');
+                    ->where(function ($q) {
+                        $q->where('status', 'delivered')
+                          ->orWhere('payment_status', 'verified');
+                    });
             })
             ->leftJoin('products', 'order_items.product_id', '=', 'products.id')
             ->sum(DB::raw('COALESCE(NULLIF(order_items.cost_price, 0), products.cost_price, 0) * order_items.quantity'));
@@ -75,7 +81,10 @@ class DashboardController extends Controller
             )
             ->whereHas('order', function ($query) {
                 $query->whereNotIn('status', ['cancelled', 'returned'])
-                    ->where('payment_status', '!=', 'rejected');
+                    ->where(function ($q) {
+                        $q->where('status', 'delivered')
+                          ->orWhere('payment_status', 'verified');
+                    });
             })
             ->groupBy('product_id', 'product_name', 'image')
             ->orderByDesc('total_revenue')
