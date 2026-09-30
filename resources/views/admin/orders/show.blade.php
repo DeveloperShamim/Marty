@@ -457,6 +457,7 @@
               </div>
             @endif
           </div>
+        @endif
       </div>
 
       <!-- Return & Restock Module -->
