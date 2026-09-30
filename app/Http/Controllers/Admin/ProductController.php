@@ -531,6 +531,8 @@ class ProductController extends Controller
             'description'      => ['nullable', 'string'],
             'regular_price'    => ['required', 'numeric', 'min:0'],
             'sale_price'       => ['nullable', 'numeric', 'min:0'],
+            'cost_price'       => ['nullable', 'numeric', 'min:0'],
+            'barcode'          => ['nullable', 'string', 'max:100'],
             'stock_quantity'   => ['required', 'integer', 'min:0'],
             'unit'             => ['nullable', 'string', 'max:40'],
             'flash_sale_progress' => ['nullable', 'integer', 'min:0', 'max:100'],
@@ -658,9 +660,14 @@ class ProductController extends Controller
 
                     $skuRecord = $existingId ? ProductSku::where('product_id', $product->id)->find($existingId) : null;
 
+                    $costPrice = (isset($item['cost_price']) && $item['cost_price'] !== '') ? (float)$item['cost_price'] : (float)($product->cost_price ?? 0);
+                    $skuBarcode = !empty($item['barcode']) ? trim((string)$item['barcode']) : null;
+
                     if ($skuRecord) {
                         $skuRecord->update([
                             'sku'              => $skuCode,
+                            'barcode'          => $skuBarcode,
+                            'cost_price'       => $costPrice,
                             'attributes'       => $attributes,
                             'price_adjustment' => $priceAdj,
                             'regular_price'    => $regularPrice,
@@ -673,6 +680,8 @@ class ProductController extends Controller
                         $newSku = ProductSku::create([
                             'product_id'       => $product->id,
                             'sku'              => $skuCode,
+                            'barcode'          => $skuBarcode,
+                            'cost_price'       => $costPrice,
                             'attributes'       => $attributes,
                             'price_adjustment' => $priceAdj,
                             'regular_price'    => $regularPrice,

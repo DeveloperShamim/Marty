@@ -141,6 +141,10 @@
               <label class="text-xs font-bold text-stone-800 block mb-1.5">Base SKU Code</label>
               <input type="text" name="sku" class="w-full px-3.5 py-2.5 text-xs font-mono font-bold text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" value="{{ old('sku', $product->sku) }}" placeholder="e.g. MARTY-OIL-01" />
             </div>
+            <div>
+              <label class="text-xs font-bold text-stone-800 block mb-1.5">Barcode / EAN (Optional)</label>
+              <input type="text" name="barcode" class="w-full px-3.5 py-2.5 text-xs font-mono font-bold text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" value="{{ old('barcode', $product->barcode) }}" placeholder="Auto-generated if blank" />
+            </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -309,7 +313,7 @@
           <span id="autoStockNoticeHeader" class="hidden px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300"></span>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           <div>
             <label class="text-xs font-bold text-stone-800 block mb-1.5">Regular Price (৳) <span class="text-rose-500">*</span></label>
             <input type="number" step="0.01" id="regPriceInput" name="regular_price" class="w-full px-3.5 py-2.5 text-xs sm:text-sm font-black text-stone-900 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" value="{{ old('regular_price', $product->regular_price) }}" placeholder="e.g. 850" required />
@@ -318,6 +322,11 @@
           <div>
             <label class="text-xs font-bold text-emerald-800 block mb-1.5">Sale Price (৳)</label>
             <input type="number" step="0.01" id="salePriceInput" name="sale_price" class="w-full px-3.5 py-2.5 text-xs sm:text-sm font-black text-emerald-700 bg-emerald-50/40 rounded-xl border border-emerald-200 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" value="{{ old('sale_price', $product->sale_price) }}" placeholder="e.g. 750 (optional)" />
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-indigo-800 block mb-1.5">Buying Cost (৳)</label>
+            <input type="number" step="0.01" id="costPriceInput" name="cost_price" class="w-full px-3.5 py-2.5 text-xs sm:text-sm font-black text-indigo-700 bg-indigo-50/50 rounded-xl border border-indigo-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20" value="{{ old('cost_price', $product->cost_price) }}" placeholder="e.g. 550 (for profit reports)" />
           </div>
 
           <div id="stockQuantityFieldGroup">

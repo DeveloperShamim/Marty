@@ -11,6 +11,7 @@ class OrderItem extends Model
 
     protected $casts = [
         'unit_price' => 'decimal:2',
+        'cost_price' => 'decimal:2',
         'line_total' => 'decimal:2',
     ];
 
@@ -32,5 +33,12 @@ class OrderItem extends Model
     public function imageUrl(): string
     {
         return image_url($this->image, $this->product_name);
+    }
+
+    public function getProfit(): float
+    {
+        $revenue = (float) $this->line_total;
+        $cost = (float) ($this->cost_price ?: 0) * (int) $this->quantity;
+        return $revenue - $cost;
     }
 }

@@ -17,6 +17,7 @@ class ProductSku extends Model
         'sale_price'       => 'decimal:2',
         'stock_quantity'   => 'integer',
         'is_active'        => 'boolean',
+        'cost_price'       => 'decimal:2',
     ];
 
     public function getCalculatedRegularPrice(): float
@@ -88,5 +89,17 @@ class ProductSku extends Model
         }
 
         return true;
+    }
+    public function getEffectiveCostPrice(): float
+    {
+        if ($this->cost_price !== null && (float) $this->cost_price > 0) {
+            return (float) $this->cost_price;
+        }
+        return (float) ($this->product?->cost_price ?: 0);
+    }
+
+    public function getBarcode(): string
+    {
+        return (string) ($this->barcode ?: $this->sku ?: ("SKU" . str_pad((string) $this->id, 6, "0", STR_PAD_LEFT)));
     }
 }

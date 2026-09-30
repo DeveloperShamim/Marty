@@ -14,6 +14,7 @@ class Product extends Model
     protected $casts = [
         'regular_price'   => 'decimal:2',
         'sale_price'      => 'decimal:2',
+        'cost_price'      => 'decimal:2',
         'rating'          => 'decimal:2',
         'is_published'    => 'boolean',
         'is_featured'     => 'boolean',
@@ -293,5 +294,15 @@ class Product extends Model
         $addedProgress = (int) round($realRatio * max(10, 100 - $baseline));
 
         return min(99, $baseline + $addedProgress);
+    }
+
+    public function getEffectiveCostPrice(): float
+    {
+        return (float) ($this->cost_price ?: 0);
+    }
+
+    public function getBarcode(): string
+    {
+        return (string) ($this->barcode ?: $this->sku ?: ("PRD" . str_pad((string) $this->id, 6, "0", STR_PAD_LEFT)));
     }
 }

@@ -11,19 +11,24 @@ class Order extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'subtotal'        => 'decimal:2',
-        'discount_amount' => 'decimal:2',
-        'shipping_charge' => 'decimal:2',
-        'tax'             => 'decimal:2',
-        'total'           => 'decimal:2',
-        'fraud_score'     => 'integer',
-        'fraud_flags'     => 'array',
-        'courier_sent_at' => 'datetime',
+        'subtotal'            => 'decimal:2',
+        'discount_amount'     => 'decimal:2',
+        'shipping_charge'     => 'decimal:2',
+        'tax'                 => 'decimal:2',
+        'total'               => 'decimal:2',
+        'pos_cash_tendered'   => 'decimal:2',
+        'pos_change_amount'   => 'decimal:2',
+        'courier_loss_amount' => 'decimal:2',
+        'fraud_score'         => 'integer',
+        'fraud_flags'         => 'array',
+        'courier_sent_at'     => 'datetime',
+        'courier_returned_at' => 'datetime',
+        'return_restocked'    => 'boolean',
     ];
 
-    public const STATUSES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+    public const STATUSES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'];
     public const PAYMENT_STATUSES = ['pending', 'verified', 'rejected'];
-    public const PAYMENT_METHODS = ['cod', 'bkash', 'nagad', 'rocket'];
+    public const PAYMENT_METHODS = ['cod', 'bkash', 'nagad', 'rocket', 'cash', 'card', 'split'];
 
     public function items(): HasMany
     {
@@ -33,6 +38,11 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function scannedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'scanned_by');
     }
 
     public function coupon(): BelongsTo
@@ -50,6 +60,11 @@ class Order extends Model
         return substr(hash_hmac('sha256', $this->id . '|' . $this->customer_phone . '|' . $this->created_at, config('app.key')), 0, 20);
     }
 
+    public function isPos(): bool
+    {
+        return $this->order_type === 'pos';
+    }
+
     public function paymentMethodLabel(): string
     {
         return match ($this->payment_method) {
@@ -57,6 +72,9 @@ class Order extends Model
             'bkash'  => 'bKash',
             'nagad'  => 'Nagad',
             'rocket' => 'Rocket',
+            'cash'   => 'Cash (POS)',
+            'card'   => 'Card (POS)',
+            'split'  => 'Split / Multi-Pay',
             default  => ucfirst($this->payment_method),
         };
     }
@@ -76,6 +94,7 @@ class Order extends Model
             'shipped'    => 'bg-blue-100 text-blue-700',
             'delivered'  => 'bg-green-100 text-green-700',
             'cancelled'  => 'bg-red-100 text-red-700',
+            'returned'   => 'bg-amber-100 text-amber-800 border border-amber-300',
             default      => 'bg-gray-100 text-gray-600',
         };
     }

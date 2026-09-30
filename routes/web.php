@@ -135,6 +135,29 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('cache/clear', [DashboardController::class, 'clearCache'])->name('cache.clear');
 
+        // POS (Point of Sale) & Cash Register
+        Route::get('pos', [\App\Http\Controllers\Admin\PosController::class, 'index'])->name('pos.index');
+        Route::get('pos/search', [\App\Http\Controllers\Admin\PosController::class, 'searchProducts'])->name('pos.search');
+        Route::get('pos/scan', [\App\Http\Controllers\Admin\PosController::class, 'scanBarcode'])->name('pos.scan');
+        Route::get('pos/customer', [\App\Http\Controllers\Admin\PosController::class, 'customerLookup'])->name('pos.customer');
+        Route::post('pos/order', [\App\Http\Controllers\Admin\PosController::class, 'storeOrder'])->name('pos.order');
+        Route::get('pos/receipt/{order}', [\App\Http\Controllers\Admin\PosController::class, 'receipt'])->name('pos.receipt');
+
+        // Barcode Generator & Print Labels
+        Route::get('barcodes', [\App\Http\Controllers\Admin\BarcodeController::class, 'index'])->name('barcodes.index');
+        Route::post('barcodes/print', [\App\Http\Controllers\Admin\BarcodeController::class, 'print'])->name('barcodes.print');
+
+        // Courier In/Out Scan Station & Returns
+        Route::get('courier-scan', [\App\Http\Controllers\Admin\CourierScanController::class, 'index'])->name('courier-scan.index');
+        Route::post('courier-scan/dispatch', [\App\Http\Controllers\Admin\CourierScanController::class, 'dispatchScan'])->name('courier-scan.dispatch');
+        Route::get('courier-scan/return-lookup', [\App\Http\Controllers\Admin\CourierScanController::class, 'returnScanLookup'])->name('courier-scan.return-lookup');
+        Route::post('courier-scan/return-confirm', [\App\Http\Controllers\Admin\CourierScanController::class, 'returnScanConfirm'])->name('courier-scan.return-confirm');
+        Route::get('courier-scan/manifest', [\App\Http\Controllers\Admin\CourierScanController::class, 'printManifest'])->name('courier-scan.manifest');
+
+        // Sales, Profit & AOV Analytics
+        Route::get('analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
+        Route::get('analytics/export', [\App\Http\Controllers\Admin\AnalyticsController::class, 'exportCsv'])->name('analytics.export');
+
         // Order & Customer Management Routes (Order Managers & Admins)
         Route::middleware(['role:order_manager'])->group(function () {
             Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');

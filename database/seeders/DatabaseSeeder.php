@@ -883,6 +883,8 @@ class DatabaseSeeder extends Seeder
                     'description' => "Experience the original {$pData['name']} by {$pData['brand']}. Crafted with premium grade materials and certified authenticity. Backed by fast nationwide delivery and dedicated customer support across Bangladesh.",
                     'regular_price' => $pData['regular_price'],
                     'sale_price' => $pData['sale_price'],
+                    'cost_price' => round(($pData['sale_price'] ?: $pData['regular_price']) * 0.65, 2),
+                    'barcode' => 'PRD-' . strtoupper(Str::substr(md5($pData['slug']), 0, 8)),
                     'stock_quantity' => random_int(25, 80),
                     'unit' => $pData['unit'],
                     'is_published' => true,
@@ -965,6 +967,8 @@ class DatabaseSeeder extends Seeder
                 \App\Models\ProductSku::create([
                     'product_id'       => $product->id,
                     'sku'              => "{$productSkuBase}-{$skuSuffix}",
+                    'barcode'          => 'SKU-' . strtoupper(Str::random(8)),
+                    'cost_price'       => round(($skuSale ?: $skuReg) * 0.65, 2),
                     'attributes'       => $combo,
                     'price_adjustment' => $priceAdj,
                     'regular_price'    => $skuReg,
@@ -1024,78 +1028,188 @@ class DatabaseSeeder extends Seeder
         Order::query()->delete();
         OrderItem::query()->delete();
 
-        $products = Product::with('images', 'variants')->get();
+        $products = Product::with(['images', 'skus'])->get();
         if ($products->isEmpty()) {
             return;
         }
 
-        $customers = [
-            ['Nusrat Jahan', '01700-111111', 'customer@marty.com', 'House 24, Road 7, Dhanmondi', 'Dhaka', 'inside_dhaka'],
-            ['Rafi Ahmed', '01822-222222', 'rafi@example.com', 'Flat 5A, GEC Circle', 'Chattogram', 'outside_dhaka'],
-            ['Mim Islam', '01933-333333', 'mim@example.com', 'House 8, Uttara Sector 11', 'Dhaka', 'inside_dhaka'],
-            ['Sakib Hasan', '01644-444444', 'sakib@example.com', 'Zindabazar Main Road', 'Sylhet', 'outside_dhaka'],
-        ];
-
-        $scenarios = [
-            ['pending', 'bkash', 'pending', 60, ['Duplicate TrxID', 'Invalid TrxID Format']],
-            ['confirmed', 'nagad', 'verified', 30, ['Multiple recent orders']],
-            ['shipped', 'cod', 'verified', 0, []],
-            ['delivered', 'rocket', 'verified', 10, ['First time buyer']],
-        ];
-
         $insideFee = (float) setting('shipping_inside_dhaka', 70);
         $outsideFee = (float) setting('shipping_outside_dhaka', 130);
         $customerUser = User::where('email', 'customer@marty.com')->first();
+        $adminUser = User::where('role', 'admin')->first();
 
-        foreach ($scenarios as $index => [$status, $method, $paymentStatus, $fraudScore, $fraudFlags]) {
-            [$name, $phone, $email, $address, $city, $zone] = $customers[$index];
-            $order = new Order([
-                'user_id' => $email === 'customer@marty.com' ? $customerUser?->id : null,
-                'order_number' => 'MARTY-' . now()->subDays($index)->format('ymd') . '-' . strtoupper(Str::random(4)),
-                'customer_name' => $name,
-                'customer_phone' => $phone,
-                'customer_email' => $email,
-                'shipping_address' => $address,
-                'city' => $city,
-                'postal_code' => (string) random_int(1000, 9999),
-                'shipping_zone' => $zone,
-                'payment_method' => $method,
-                'payment_status' => $paymentStatus,
-                'status' => $status,
-                'payment_sender_number' => $method === 'cod' ? null : $phone,
-                'payment_txn_id' => $method === 'cod' ? null : strtoupper(Str::random(10)),
-                'shipping_charge' => $zone === 'inside_dhaka' ? $insideFee : $outsideFee,
-                'fraud_score' => $fraudScore,
-                'fraud_flags' => $fraudFlags,
+        $customerPool = [
+            ['Nusrat Jahan', '01711-223344', 'nusrat@gmail.com', 'House 24, Road 7, Dhanmondi', 'Dhaka', 'inside_dhaka'],
+            ['Tanvir Ahmed', '01822-334455', 'tanvir@gmail.com', 'Flat 5A, GEC Circle', 'Chattogram', 'outside_dhaka'],
+            ['Mim Islam', '01933-445566', 'customer@marty.com', 'House 8, Sector 11, Uttara', 'Dhaka', 'inside_dhaka'],
+            ['Sakib Hasan', '01644-556677', 'sakib@gmail.com', 'Zindabazar Main Road', 'Sylhet', 'outside_dhaka'],
+            ['Farhana Akter', '01755-667788', 'farhana@yahoo.com', 'College Road', 'Rajshahi', 'outside_dhaka'],
+            ['Kazi Mahmud', '01866-778899', 'mahmud@gmail.com', 'Shibbari More', 'Khulna', 'outside_dhaka'],
+            ['Shuvo Roy', '01977-889900', 'shuvo@gmail.com', 'Chawkbazar', 'Barishal', 'outside_dhaka'],
+            ['Tania Sultana', '01588-990011', 'tania@gmail.com', 'CDA Avenue', 'Chattogram', 'outside_dhaka'],
+        ];
+
+        // --- A. SEED ONLINE E-COMMERCE ORDERS (Past 25 days) ---
+        $onlineScenarios = [
+            // Status, PaymentMethod, PaymentStatus, DaysAgo, ReturnType, CourierLoss, CourierName, TrackingCode
+            ['delivered', 'bkash', 'verified', 24, null, 0, 'steadfast', 'ST-881201'],
+            ['delivered', 'nagad', 'verified', 22, null, 0, 'pathao', 'PT-442190'],
+            ['delivered', 'cod', 'verified', 20, null, 0, 'steadfast', 'ST-881345'],
+            ['delivered', 'rocket', 'verified', 18, null, 0, 'steadfast', 'ST-881456'],
+            ['delivered', 'cod', 'verified', 15, null, 0, 'pathao', 'PT-442301'],
+            ['delivered', 'bkash', 'verified', 12, null, 0, 'redx', 'RX-990123'],
+            ['delivered', 'nagad', 'verified', 10, null, 0, 'steadfast', 'ST-881789'],
+            ['delivered', 'cod', 'verified', 8, null, 0, 'pathao', 'PT-442567'],
+            ['shipped', 'cod', 'verified', 4, null, 0, 'steadfast', 'ST-882001'],
+            ['shipped', 'bkash', 'verified', 3, null, 0, 'pathao', 'PT-442890'],
+            ['shipped', 'cod', 'verified', 2, null, 0, 'steadfast', 'ST-882100'],
+            ['processing', 'nagad', 'verified', 1, null, 0, null, null],
+            ['confirmed', 'bkash', 'pending', 1, null, 0, null, null],
+            ['pending', 'cod', 'pending', 0, null, 0, null, null],
+
+            // RETURN TYPE 1: Buyer Paid Delivery Charge at doorstep (Store Loss = ৳0)
+            ['returned', 'cod', 'verified', 6, 'paid_delivery', 0, 'steadfast', 'ST-881667'],
+            ['returned', 'bkash', 'verified', 9, 'paid_delivery', 0, 'pathao', 'PT-442444'],
+
+            // RETURN TYPE 2: Failed Delivery / Customer Ghosted (Store Loss = Courier shipping charge)
+            ['returned', 'cod', 'rejected', 7, 'unpaid_delivery', 130, 'steadfast', 'ST-881555'],
+            ['returned', 'cod', 'rejected', 14, 'unpaid_delivery', 130, 'pathao', 'PT-442222'],
+        ];
+
+        foreach ($onlineScenarios as $idx => [$status, $method, $payStatus, $daysAgo, $returnType, $courierLoss, $courier, $tracking]) {
+            $cust = $customerPool[$idx % count($customerPool)];
+            [$cName, $cPhone, $cEmail, $cAddr, $cCity, $cZone] = $cust;
+
+            $shippingFee = $cZone === 'inside_dhaka' ? $insideFee : $outsideFee;
+            $orderDate = now()->subDays($daysAgo)->subHours(random_int(1, 8));
+
+            $order = Order::create([
+                'user_id'               => $cEmail === 'customer@marty.com' ? $customerUser?->id : null,
+                'order_number'          => 'MARTY-' . $orderDate->format('ymd') . '-' . strtoupper(Str::random(4)),
+                'order_type'            => 'online',
+                'customer_name'         => $cName,
+                'customer_phone'        => $cPhone,
+                'customer_email'        => $cEmail,
+                'shipping_address'      => $cAddr,
+                'city'                  => $cCity,
+                'postal_code'           => (string) random_int(1000, 9999),
+                'shipping_zone'         => $cZone,
+                'payment_method'        => $method,
+                'payment_status'        => $payStatus,
+                'status'                => $status,
+                'payment_sender_number' => $method === 'cod' ? null : $cPhone,
+                'payment_txn_id'        => $method === 'cod' ? null : strtoupper(Str::random(10)),
+                'shipping_charge'       => $shippingFee,
+                'courier_name'          => $courier,
+                'courier_tracking_code' => $tracking,
+                'courier_sent_at'       => $courier ? $orderDate->copy()->addHours(3) : null,
+                'courier_returned_at'   => $returnType ? $orderDate->copy()->addDays(3) : null,
+                'return_type'           => $returnType,
+                'courier_loss_amount'   => $courierLoss,
+                'return_reason'         => $returnType === 'paid_delivery' ? 'Doorstep refusal (delivery charge paid)' : ($returnType ? 'Customer phone unreachable / failed delivery' : null),
+                'return_restocked'      => (bool) $returnType,
+                'created_at'            => $orderDate,
+                'updated_at'            => $orderDate,
             ]);
-            $order->created_at = now()->subDays($index)->subHours(random_int(1, 10));
-            $order->updated_at = $order->created_at;
-            $order->save();
 
             $subtotal = 0;
-            foreach ($products->random(random_int(1, 2)) as $product) {
-                $quantity = random_int(1, 2);
-                $unitPrice = (float) ($product->sale_price ?: $product->regular_price);
-                $lineTotal = $unitPrice * $quantity;
+            $pickedProducts = $products->random(random_int(1, 2));
+
+            foreach ($pickedProducts as $prod) {
+                $qty = random_int(1, 2);
+                $sku = $prod->skus->first();
+                $unitPrice = $sku ? ($sku->getCalculatedSalePrice() ?: $sku->getCalculatedRegularPrice()) : (float)($prod->sale_price ?: $prod->regular_price);
+                $costPrice = $sku ? (float)$sku->getEffectiveCostPrice() : (float)($prod->cost_price ?: round($unitPrice * 0.65, 2));
+                $lineTotal = $unitPrice * $qty;
                 $subtotal += $lineTotal;
-                $variant = $product->variants->first();
 
                 OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'image' => $product->primaryImage()?->path,
-                    'variant' => $variant ? "{$variant->type}: {$variant->value}" : 'Standard',
-                    'unit_price' => $unitPrice,
-                    'quantity' => $quantity,
-                    'line_total' => $lineTotal,
+                    'order_id'       => $order->id,
+                    'product_id'     => $prod->id,
+                    'product_sku_id' => $sku?->id,
+                    'product_name'   => $prod->name,
+                    'image'          => $prod->primaryImage()?->path,
+                    'variant'        => $sku?->attributeLabel() ?: 'Standard',
+                    'unit_price'     => $unitPrice,
+                    'cost_price'     => $costPrice,
+                    'quantity'       => $qty,
+                    'line_total'     => $lineTotal,
+                    'created_at'     => $orderDate,
+                    'updated_at'     => $orderDate,
                 ]);
             }
 
             $order->update([
                 'subtotal' => $subtotal,
-                'tax' => 0,
-                'total' => $subtotal + $order->shipping_charge,
+                'total'    => $subtotal + $shippingFee,
+            ]);
+        }
+
+        // --- B. SEED POS CASH REGISTER SALES (Past 14 days) ---
+        $posDays = [13, 11, 10, 8, 7, 5, 4, 3, 1, 0];
+        $posPayMethods = ['cash', 'cash', 'bkash', 'card', 'cash', 'nagad', 'cash', 'cash', 'card', 'cash'];
+
+        foreach ($posDays as $pIdx => $daysAgo) {
+            $orderDate = now()->subDays($daysAgo)->subHours(random_int(2, 6));
+            $method = $posPayMethods[$pIdx];
+            $orderNum = 'POS-' . $orderDate->format('ymd') . '-' . strtoupper(Str::random(4));
+
+            $order = Order::create([
+                'user_id'            => $adminUser?->id,
+                'order_number'       => $orderNum,
+                'order_type'         => 'pos',
+                'customer_name'      => $pIdx % 3 === 0 ? 'Tanvir Ahmed' : 'Walk-in Customer',
+                'customer_phone'     => $pIdx % 3 === 0 ? '01711-223344' : 'N/A',
+                'shipping_address'   => 'POS Counter Sale',
+                'city'               => 'In-Store',
+                'shipping_zone'      => 'inside_dhaka',
+                'payment_method'     => $method,
+                'payment_status'     => 'verified',
+                'status'             => 'delivered',
+                'shipping_charge'    => 0,
+                'discount_amount'    => $pIdx % 4 === 0 ? 100 : 0,
+                'internal_note'      => 'In-store POS counter sale',
+                'created_at'         => $orderDate,
+                'updated_at'         => $orderDate,
+            ]);
+
+            $subtotal = 0;
+            $pickedProducts = $products->random(random_int(1, 2));
+
+            foreach ($pickedProducts as $prod) {
+                $qty = random_int(1, 2);
+                $sku = $prod->skus->first();
+                $unitPrice = $sku ? ($sku->getCalculatedSalePrice() ?: $sku->getCalculatedRegularPrice()) : (float)($prod->sale_price ?: $prod->regular_price);
+                $costPrice = $sku ? (float)$sku->getEffectiveCostPrice() : (float)($prod->cost_price ?: round($unitPrice * 0.65, 2));
+                $lineTotal = $unitPrice * $qty;
+                $subtotal += $lineTotal;
+
+                OrderItem::create([
+                    'order_id'       => $order->id,
+                    'product_id'     => $prod->id,
+                    'product_sku_id' => $sku?->id,
+                    'product_name'   => $prod->name,
+                    'image'          => $prod->primaryImage()?->path,
+                    'variant'        => $sku?->attributeLabel() ?: 'Standard',
+                    'unit_price'     => $unitPrice,
+                    'cost_price'     => $costPrice,
+                    'quantity'       => $qty,
+                    'line_total'     => $lineTotal,
+                    'created_at'     => $orderDate,
+                    'updated_at'     => $orderDate,
+                ]);
+            }
+
+            $discount = (float) $order->discount_amount;
+            $netTotal = max(0, $subtotal - $discount);
+            $cashTendered = $method === 'cash' ? ceil($netTotal / 500) * 500 : $netTotal;
+            $changeAmount = max(0, $cashTendered - $netTotal);
+
+            $order->update([
+                'subtotal'          => $subtotal,
+                'total'             => $netTotal,
+                'pos_cash_tendered' => $cashTendered,
+                'pos_change_amount' => $changeAmount,
             ]);
         }
     }
