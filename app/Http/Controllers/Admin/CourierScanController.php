@@ -34,7 +34,17 @@ class CourierScanController extends Controller
             'in_house'  => 'In-House Rider',
         ];
 
-        return view('admin.courier-scan.index', compact('dispatchedToday', 'returnedToday', 'courierOptions'));
+        // Determine last used pickup courier (today's latest or most recent in history)
+        $lastCourier = $dispatchedToday->first()?->courier_name;
+        if (! $lastCourier) {
+            $lastCourier = Order::whereNotNull('courier_name')
+                ->where('courier_name', '!=', '')
+                ->latest('courier_sent_at')
+                ->value('courier_name');
+        }
+        $lastCourier = strtolower((string) ($lastCourier ?: 'steadfast'));
+
+        return view('admin.courier-scan.index', compact('dispatchedToday', 'returnedToday', 'courierOptions', 'lastCourier'));
     }
 
     public function dispatchScan(Request $request)

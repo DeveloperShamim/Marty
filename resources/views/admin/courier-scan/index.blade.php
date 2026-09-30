@@ -53,9 +53,9 @@
         {{-- Courier Provider Selector --}}
         <div class="md:col-span-4">
           <label class="block text-xs font-bold text-gray-700 mb-1">Select Pickup Courier</label>
-          <select id="dispatchCourierSelect" class="w-full text-xs font-bold px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:border-brand-500">
+          <select id="dispatchCourierSelect" onchange="onCourierChange(this.value)" class="w-full text-xs font-bold px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:border-brand-500">
             @foreach($courierOptions as $key => $name)
-              <option value="{{ $key }}">{{ $name }}</option>
+              <option value="{{ $key }}" @selected($key === $lastCourier)>{{ $name }}</option>
             @endforeach
           </select>
         </div>
@@ -376,8 +376,27 @@
     }
   }
 
+  function onCourierChange(val) {
+    try {
+      if (val) {
+        localStorage.setItem('marty_last_pickup_courier', val);
+      }
+    } catch(e) {}
+  }
+
   // Initial
   document.addEventListener('DOMContentLoaded', function() {
+    // Restore last selected pickup courier if saved in browser
+    try {
+      const savedCourier = localStorage.getItem('marty_last_pickup_courier');
+      if (savedCourier) {
+        const select = document.getElementById('dispatchCourierSelect');
+        if (select && select.querySelector(`option[value="${savedCourier}"]`)) {
+          select.value = savedCourier;
+        }
+      }
+    } catch(e) {}
+
     const dispatchInput = document.getElementById('dispatchScanInput');
     dispatchInput.focus();
 
@@ -404,6 +423,7 @@
     if (!code) return;
 
     const courier = document.getElementById('dispatchCourierSelect').value;
+    onCourierChange(courier);
     const alertBox = document.getElementById('dispatchAlertBox');
 
     fetch("{{ route('admin.courier-scan.dispatch') }}", {
