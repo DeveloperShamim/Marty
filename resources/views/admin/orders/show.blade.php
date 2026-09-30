@@ -410,7 +410,7 @@
             </div>
             <div class="flex items-center justify-between">
               <span class="font-bold text-gray-700">Consignment Code:</span>
-              <span class="font-mono font-bold text-gray-900 bg-white px-2 py-0.5 rounded-lg border border-gray-200">{{ $order->courier_tracking_code }}</span>
+              <span class="font-mono font-bold text-gray-900 bg-white px-2 py-0.5 rounded-lg border border-gray-200">{{ $order->courier_tracking_code ?: 'Handed over via Scan Station' }}</span>
             </div>
             @if($order->courier_sent_at)
               <div class="flex items-center justify-between text-[11px] text-gray-500">
@@ -457,8 +457,46 @@
               </div>
             @endif
           </div>
-        @endif
       </div>
+
+      <!-- Return & Restock Module -->
+      @if($order->status === 'returned' || $order->courier_returned_at)
+        <div class="card p-5 space-y-3 border-2 border-amber-300/80 bg-amber-50/20">
+          <div class="flex items-center justify-between border-b border-amber-200/60 pb-2">
+            <h3 class="font-extrabold text-sm flex items-center gap-1.5 text-amber-900">
+              <span>🔄</span> Return &amp; Restock Details
+            </h3>
+            <span class="px-2.5 py-0.5 text-[11px] font-extrabold rounded-full {{ $order->return_restocked ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200' }}">
+              {{ $order->return_restocked ? '✓ Restocked' : 'Not Restocked' }}
+            </span>
+          </div>
+
+          <div class="space-y-2 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-gray-600 font-bold">Returned Date:</span>
+              <span class="font-bold text-gray-900">{{ $order->courier_returned_at ? $order->courier_returned_at->format('d M Y, g:i A') : 'Recorded' }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-600 font-bold">Return Type:</span>
+              <span class="font-extrabold {{ $order->return_type === 'paid_delivery' ? 'text-emerald-700' : 'text-rose-700' }}">
+                {{ $order->return_type === 'paid_delivery' ? 'Buyer Paid Delivery Charge' : 'Unpaid Delivery (Business Loss)' }}
+              </span>
+            </div>
+            @if($order->courier_loss_amount > 0)
+              <div class="flex items-center justify-between">
+                <span class="text-gray-600 font-bold">Courier Loss:</span>
+                <span class="font-mono font-extrabold text-rose-700">-৳{{ number_format($order->courier_loss_amount, 2) }}</span>
+              </div>
+            @endif
+            @if($order->return_reason)
+              <div class="pt-1.5 border-t border-amber-200/50">
+                <span class="text-gray-500 font-semibold block text-[11px]">Reason:</span>
+                <p class="text-gray-800 font-medium text-xs mt-0.5 italic">"{{ $order->return_reason }}"</p>
+              </div>
+            @endif
+          </div>
+        </div>
+      @endif
 
       <!-- Customer Address Card -->
       <div class="card p-5 space-y-3 text-xs">

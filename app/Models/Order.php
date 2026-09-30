@@ -166,7 +166,7 @@ class Order extends Model
 
     public function isDispatchedToCourier(): bool
     {
-        return ! empty($this->courier_name) && ! empty($this->courier_tracking_code);
+        return ! empty($this->courier_sent_at) || ! empty($this->courier_tracking_code) || ($this->status === 'shipped' && ! empty($this->courier_name));
     }
 
     public function courierLabel(): string

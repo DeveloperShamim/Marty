@@ -44,6 +44,7 @@
           'processing'           => 'Processing',
           'shipped'              => 'Shipped',
           'delivered'            => 'Delivered',
+          'returned'             => 'Returned',
           'cancelled'            => 'Cancelled',
         ];
       @endphp

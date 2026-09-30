@@ -44,8 +44,10 @@ class OrderController extends Controller
             'all'                  => Order::count(),
             'pending_verification' => Order::where('payment_status', 'pending')->count(),
             'confirmed'            => Order::where('status', 'confirmed')->count(),
+            'processing'           => Order::where('status', 'processing')->count(),
             'shipped'              => Order::where('status', 'shipped')->count(),
             'delivered'            => Order::where('status', 'delivered')->count(),
+            'returned'             => Order::where('status', 'returned')->count(),
             'cancelled'            => Order::where('status', 'cancelled')->count(),
         ];
 
@@ -121,6 +123,31 @@ class OrderController extends Controller
         if ($becomingCancelled) {
             $order->restoreStock();
             $order->releaseCoupon();
+        }
+
+        // Synchronize returning behavior with Courier Scan Station
+        $becomingReturned = $data['status'] === 'returned' && $order->status !== 'returned';
+        if ($becomingReturned) {
+            if (!$order->return_restocked) {
+                $order->restoreStock();
+                $data['return_restocked'] = true;
+            }
+            if (!$order->courier_returned_at) {
+                $data['courier_returned_at'] = now();
+            }
+            if (!$order->return_type) {
+                $data['return_type'] = 'unpaid_delivery';
+                $data['courier_loss_amount'] = (float) ($order->shipping_charge > 0 ? $order->shipping_charge : 130);
+            }
+        }
+
+        // Synchronize shipping behavior with Courier Scan Station
+        $becomingShipped = $data['status'] === 'shipped' && $order->status !== 'shipped';
+        if ($becomingShipped && !$order->courier_sent_at) {
+            $data['courier_sent_at'] = now();
+            if (empty($order->courier_name)) {
+                $data['courier_name'] = 'in_house';
+            }
         }
 
         if ($data['status'] === 'delivered' && $order->payment_method === 'cod' && $data['payment_status'] === 'pending') {
