@@ -121,44 +121,47 @@
 
   </div>
 
-  {{-- TRUE IN-POCKET NET PROFIT & EXPENSE / ADS BANNER --}}
-  <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 rounded-2xl p-5 sm:p-6 text-white shadow-md">
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-700/60 pb-5">
+  {{-- TRUE IN-POCKET NET PROFIT & EXPENSE / ADS CARD (CLEAN LIGHT DESIGN) --}}
+  <div class="bg-white rounded-2xl border border-gray-200/90 shadow-2xs p-5 sm:p-6 space-y-5">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-gray-100 pb-4">
       <div>
         <div class="flex items-center gap-2">
-          <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase tracking-wider border border-emerald-500/30">True P&amp;L</span>
-          <span class="text-xs text-slate-400">All Expenses &amp; Ad Spend Deducted</span>
+          <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-extrabold uppercase tracking-wider border border-emerald-200">
+            True P&amp;L
+          </span>
+          <span class="text-xs text-gray-400">All Expenses &amp; Ad Spend Deducted</span>
         </div>
-        <h2 class="text-xl sm:text-2xl font-black text-white mt-1">Real In-Pocket Net Profit</h2>
+        <h2 class="text-xl sm:text-2xl font-black text-gray-900 mt-1">Real In-Pocket Net Profit</h2>
+        <p class="text-xs text-gray-500 mt-0.5">Calculated after Cost of Goods Sold (COGS), courier return losses, and logged operational costs</p>
       </div>
 
       <div class="flex items-baseline gap-3">
-        <div class="text-2xl sm:text-4xl font-black tracking-tight {{ $trueNetProfit >= 0 ? 'text-emerald-400' : 'text-rose-400' }}">
+        <div class="text-2xl sm:text-3xl font-black tracking-tight {{ $trueNetProfit >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
           ৳{{ number_format($trueNetProfit, 2) }}
         </div>
-        <span class="px-2.5 py-1 rounded-full text-xs font-bold {{ $trueProfitMargin >= 15 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300' }} border border-white/10">
+        <span class="px-2.5 py-1 rounded-full text-xs font-bold {{ $trueProfitMargin >= 15 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
           {{ number_format($trueProfitMargin, 1) }}% Real Margin
         </span>
       </div>
     </div>
 
-    {{-- Expense & Ad ROAS Breakdown Grid --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-5">
+    {{-- Expense & Ad ROAS Breakdown Grid (Light & Clean) --}}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
       
       {{-- Facebook Ads & ROAS --}}
-      <div class="bg-white/5 rounded-xl p-3.5 border border-white/10">
-        <div class="text-[11px] text-blue-300 font-bold uppercase tracking-wider flex items-center justify-between">
+      <div class="bg-blue-50/40 rounded-xl p-3.5 border border-blue-100/90 space-y-1">
+        <div class="text-[11px] text-blue-700 font-bold uppercase tracking-wider flex items-center justify-between">
           <span>📣 Meta / Facebook Ads</span>
           @if($marketingExpense > 0)
-            <span class="px-1.5 py-0.2 rounded text-[10px] font-black {{ $fbRoas >= 3 ? 'bg-emerald-500/20 text-emerald-300' : ($fbRoas >= 1.5 ? 'bg-amber-500/20 text-amber-300' : 'bg-rose-500/20 text-rose-300') }}">
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-black {{ $fbRoas >= 3 ? 'bg-emerald-100 text-emerald-800' : ($fbRoas >= 1.5 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800') }}">
               {{ number_format($fbRoas, 1) }}x ROAS
             </span>
           @endif
         </div>
-        <div class="text-lg font-black text-white mt-1">৳{{ number_format($marketingExpense, 2) }}</div>
-        <div class="text-[11px] text-slate-400 mt-0.5">
+        <div class="text-xl font-black text-blue-950">৳{{ number_format($marketingExpense, 2) }}</div>
+        <div class="text-[11px] text-gray-500">
           @if($fbOrdersCount > 0)
-            CPA: <strong>৳{{ number_format($fbCpa, 0) }}</strong> / order ({{ $fbOrdersCount }} orders)
+            CPA: <strong class="text-gray-800">৳{{ number_format($fbCpa, 0) }}</strong> / order ({{ $fbOrdersCount }} orders)
           @else
             No Facebook tagged orders yet
           @endif
@@ -166,27 +169,27 @@
       </div>
 
       {{-- Sourcing & Travel Trips --}}
-      <div class="bg-white/5 rounded-xl p-3.5 border border-white/10">
-        <div class="text-[11px] text-amber-300 font-bold uppercase tracking-wider">🚗 Sourcing &amp; Travel</div>
-        <div class="text-lg font-black text-white mt-1">৳{{ number_format($sourcingExpense, 2) }}</div>
-        <div class="text-[11px] text-slate-400 mt-0.5">Market visits, fares &amp; sundries</div>
+      <div class="bg-amber-50/40 rounded-xl p-3.5 border border-amber-100/90 space-y-1">
+        <div class="text-[11px] text-amber-700 font-bold uppercase tracking-wider">🚗 Sourcing &amp; Travel</div>
+        <div class="text-xl font-black text-amber-950">৳{{ number_format($sourcingExpense, 2) }}</div>
+        <div class="text-[11px] text-gray-500">Market visits, fares &amp; sundries</div>
       </div>
 
       {{-- Packaging Supplies --}}
-      <div class="bg-white/5 rounded-xl p-3.5 border border-white/10">
-        <div class="text-[11px] text-purple-300 font-bold uppercase tracking-wider">📦 Packaging Materials</div>
-        <div class="text-lg font-black text-white mt-1">৳{{ number_format($packagingExpense, 2) }}</div>
-        <div class="text-[11px] text-slate-400 mt-0.5">Poly bags, stickers &amp; boxes</div>
+      <div class="bg-purple-50/40 rounded-xl p-3.5 border border-purple-100/90 space-y-1">
+        <div class="text-[11px] text-purple-700 font-bold uppercase tracking-wider">📦 Packaging Materials</div>
+        <div class="text-xl font-black text-purple-950">৳{{ number_format($packagingExpense, 2) }}</div>
+        <div class="text-[11px] text-gray-500">Poly bags, stickers &amp; boxes</div>
       </div>
 
       {{-- Total Operating Deductions --}}
-      <div class="bg-white/5 rounded-xl p-3.5 border border-white/10 flex flex-col justify-between">
+      <div class="bg-rose-50/40 rounded-xl p-3.5 border border-rose-100/90 flex flex-col justify-between space-y-2">
         <div>
-          <div class="text-[11px] text-rose-300 font-bold uppercase tracking-wider">Total Operating Costs</div>
-          <div class="text-lg font-black text-rose-300 mt-1">-৳{{ number_format($totalExpenses, 2) }}</div>
+          <div class="text-[11px] text-rose-700 font-bold uppercase tracking-wider">Total Operating Costs</div>
+          <div class="text-xl font-black text-rose-700 mt-1">-৳{{ number_format($totalExpenses, 2) }}</div>
         </div>
-        <div class="mt-2">
-          <a href="{{ route('admin.expenses.index') }}" class="text-[11px] text-brand-300 hover:text-white underline font-bold flex items-center gap-1">
+        <div>
+          <a href="{{ route('admin.expenses.index') }}" class="text-[11px] text-brand-700 hover:text-brand-900 underline font-bold flex items-center gap-1">
             Manage Expenses &amp; Ads &rarr;
           </a>
         </div>
