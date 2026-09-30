@@ -121,17 +121,18 @@ class CourierScanController extends Controller
         return response()->json([
             'success' => true,
             'order'   => [
-                'id'              => $order->id,
-                'order_number'    => $order->order_number,
-                'customer_name'   => $order->customer_name,
-                'phone'           => $order->customer_phone,
-                'shipping_charge' => (float) ($order->shipping_charge ?: 130),
-                'total'           => (float) $order->total,
-                'current_status'  => ucfirst($order->status),
-                'courier_name'    => $order->courierLabel(),
-                'items_count'     => $order->items->count(),
-                'items_summary'   => $order->items->pluck('product_name')->implode(', '),
-                'already_returned'=> $order->status === 'returned',
+                'id'               => $order->id,
+                'order_number'     => $order->order_number,
+                'customer_name'    => $order->customer_name,
+                'phone'            => $order->customer_phone,
+                'shipping_charge'  => (float) ($order->shipping_charge ?: 130),
+                'total'            => (float) $order->total,
+                'current_status'   => ucfirst($order->status),
+                'courier_name'     => $order->courierLabel(),
+                'items_count'      => $order->items->count(),
+                'items_summary'    => $order->items->pluck('product_name')->filter()->implode(', ') ?: 'Order Items',
+                'already_returned' => $order->status === 'returned',
+                'return_restocked' => (bool) $order->return_restocked,
             ],
         ]);
     }
@@ -153,19 +154,28 @@ class CourierScanController extends Controller
             $courierLoss = (float) ($order->shipping_charge > 0 ? $order->shipping_charge : 130);
         }
 
-        // Restock inventory if checked and not already restocked
-        if ($validated['restock'] && ! $order->return_restocked) {
-            $order->restoreStock();
-            $order->return_restocked = true;
-        }
+        $defaultReason = $validated['return_type'] === 'paid_delivery'
+            ? 'Customer returned (delivery charge paid)'
+            : 'Failed delivery / Unreachable phone';
+        $reason = !empty($validated['return_reason']) ? $validated['return_reason'] : $defaultReason;
 
-        $order->status = 'returned';
-        $order->courier_returned_at = now();
-        $order->return_type = $validated['return_type'];
-        $order->courier_loss_amount = $courierLoss;
-        $order->return_reason = $validated['return_reason'] ?: ($validated['return_type'] === 'paid_delivery' ? 'Customer returned (delivery charge paid)' : 'Failed delivery / Unreachable phone');
-        $order->scanned_by = auth()->id();
-        $order->save();
+        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $validated, $courierLoss, $reason) {
+            // Restock inventory if checked and not already restocked
+            if (!empty($validated['restock']) && ! $order->return_restocked) {
+                $order->restoreStock();
+                $order->return_restocked = true;
+            }
+
+            $order->status = 'returned';
+            $order->courier_returned_at = now();
+            $order->return_type = $validated['return_type'];
+            $order->courier_loss_amount = $courierLoss;
+            $order->return_reason = $reason;
+            $order->scanned_by = auth()->id();
+            $order->save();
+        });
+
+        $order->refresh();
 
         return response()->json([
             'success' => true,
@@ -177,7 +187,7 @@ class CourierScanController extends Controller
                 'return_type'         => $order->return_type,
                 'courier_loss_amount' => (float) $order->courier_loss_amount,
                 'return_restocked'    => (bool) $order->return_restocked,
-                'returned_at'         => $order->courier_returned_at->format('h:i A'),
+                'returned_at'         => $order->courier_returned_at ? $order->courier_returned_at->format('h:i A') : now()->format('h:i A'),
             ],
         ]);
     }

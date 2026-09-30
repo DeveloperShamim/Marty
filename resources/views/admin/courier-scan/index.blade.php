@@ -234,11 +234,16 @@
 
     <input type="hidden" id="returnModalOrderId">
 
+    {{-- Already Returned Warning Banner --}}
+    <div id="returnModalAlreadyReturnedAlert" class="hidden p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-xs font-bold">
+      ⚠️ Notice: This order is already marked as RETURNED. Confirming will update the return details.
+    </div>
+
     {{-- Order Items Snapshot --}}
     <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 text-xs text-gray-700 space-y-1">
       <div class="flex justify-between">
         <span class="text-gray-500">Items:</span>
-        <span class="font-semibold" id="returnModalItemsSummary">Mustard Oil 1L</span>
+        <span class="font-semibold text-right max-w-[280px] truncate" id="returnModalItemsSummary">Mustard Oil 1L</span>
       </div>
       <div class="flex justify-between">
         <span class="text-gray-500">Order Total:</span>
@@ -277,13 +282,27 @@
       </label>
     </div>
 
+    {{-- Return Reason / Note --}}
+    <div>
+      <label class="block text-xs font-bold text-gray-700 mb-1">Return Reason / Note (Optional)</label>
+      <input type="text" id="modalReturnReason" list="commonReturnReasons" placeholder="e.g. Unreachable phone, refused package, wrong size..." class="w-full text-xs px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:border-amber-500">
+      <datalist id="commonReturnReasons">
+        <option value="Customer unreachable / phone switched off">
+        <option value="Customer refused delivery at doorstep">
+        <option value="Wrong product or size requested exchange">
+        <option value="Damaged in transit / courier delay">
+        <option value="Customer cancelled order on arrival">
+        <option value="Customer returned item (delivery charge paid)">
+      </datalist>
+    </div>
+
     {{-- Restock Checkbox --}}
     <div class="pt-1">
       <label class="flex items-center gap-2.5 p-3 rounded-xl bg-gray-50 border border-gray-200 cursor-pointer">
         <input type="checkbox" id="modalRestockCheck" checked class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500">
         <div>
           <span class="text-xs font-bold text-gray-800">Restock Product(s) into Inventory</span>
-          <span class="text-[11px] text-gray-500 block">Increments available product/SKU quantity</span>
+          <span class="text-[11px] text-gray-500 block" id="modalRestockSubtext">Increments available product/SKU quantity</span>
         </div>
       </label>
     </div>
@@ -464,12 +483,19 @@
     const alertBox = document.getElementById('returnAlertBox');
 
     fetch(`{{ route('admin.courier-scan.return-lookup') }}?code=${encodeURIComponent(code)}`)
-      .then(res => res.json())
+      .then(async res => {
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data) {
+          throw new Error((data && data.message) || 'Error looking up parcel (HTTP ' + res.status + ')');
+        }
+        return data;
+      })
       .then(data => {
         if (!data.success) {
           playSound('error');
           alertBox.className = "p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200 block";
           alertBox.innerText = data.message;
+          input.select();
           return;
         }
 
@@ -486,10 +512,32 @@
         document.getElementById('returnModalOrderTotal').innerText = `৳${ord.total.toFixed(2)}`;
         document.getElementById('returnModalShippingFee').innerText = `৳${ord.shipping_charge.toFixed(2)}`;
 
+        // Warning if already returned
+        const alreadyAlert = document.getElementById('returnModalAlreadyReturnedAlert');
+        if (ord.already_returned) {
+          alreadyAlert.classList.remove('hidden');
+        } else {
+          alreadyAlert.classList.add('hidden');
+        }
+
+        // Restock checkbox configuration
+        const restockCheck = document.getElementById('modalRestockCheck');
+        const restockSubtext = document.getElementById('modalRestockSubtext');
+        if (ord.return_restocked) {
+          restockCheck.checked = false;
+          restockSubtext.innerText = "✓ Items were already restocked previously (uncheck to avoid duplicate)";
+        } else {
+          restockCheck.checked = true;
+          restockSubtext.innerText = "Increments available product/SKU quantity";
+        }
+
+        document.getElementById('modalReturnReason').value = '';
         document.getElementById('returnDecisionModal').classList.remove('hidden');
       })
       .catch(err => {
         playSound('error');
+        alertBox.className = "p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200 block";
+        alertBox.innerText = err.message || 'Error looking up parcel.';
         console.error(err);
       });
   }
@@ -503,6 +551,7 @@
     const orderId = document.getElementById('returnModalOrderId').value;
     const returnType = document.querySelector('input[name="modal_return_type"]:checked').value;
     const restock = document.getElementById('modalRestockCheck').checked;
+    const returnReason = document.getElementById('modalReturnReason').value.trim();
 
     const btn = document.getElementById('confirmReturnBtn');
     btn.disabled = true;
@@ -518,10 +567,17 @@
       body: JSON.stringify({
         order_id: orderId,
         return_type: returnType,
-        restock: restock ? 1 : 0
+        restock: restock ? 1 : 0,
+        return_reason: returnReason
       })
     })
-    .then(res => res.json())
+    .then(async res => {
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data) {
+        throw new Error((data && data.message) || 'Error saving return (HTTP ' + res.status + ')');
+      }
+      return data;
+    })
     .then(data => {
       btn.disabled = false;
       btn.innerText = "Confirm Return & Save";
@@ -530,13 +586,20 @@
         playSound('success');
         closeReturnModal();
         addReturnTableRow(data.order);
+
+        const alertBox = document.getElementById('returnAlertBox');
+        alertBox.className = "p-3 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 block";
+        alertBox.innerText = data.message;
       } else {
+        playSound('error');
         alert(data.message || 'Error updating return');
       }
     })
     .catch(err => {
       btn.disabled = false;
       btn.innerText = "Confirm Return & Save";
+      playSound('error');
+      alert(err.message || 'Server error while processing return.');
       console.error(err);
     });
   }

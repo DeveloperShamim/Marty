@@ -139,13 +139,13 @@ class Order extends Model
     /** Return reserved stock to product SKUs & products (e.g. when an order is cancelled or refunded). */
     public function restoreStock(): void
     {
-        $this->loadMissing('items');
+        $this->loadMissing('items.product');
 
         foreach ($this->items as $item) {
             if ($item->product_sku_id) {
                 ProductSku::where('id', $item->product_sku_id)->increment('stock_quantity', $item->quantity);
-            }
-            if ($item->product_id) {
+                $item->product?->syncTotalStock();
+            } elseif ($item->product_id) {
                 Product::where('id', $item->product_id)->increment('stock_quantity', $item->quantity);
             }
         }
