@@ -163,8 +163,25 @@
   });
 
   function updateSelectedCount() {
-    const checked = document.querySelectorAll('.item-checkbox:checked').length;
-    document.getElementById('selectedCountDisplay').innerText = checked;
+    let checkedCount = 0;
+    const allCheckboxes = document.querySelectorAll('.item-checkbox');
+    allCheckboxes.forEach(cb => {
+      const row = cb.closest('tr');
+      if (cb.checked) {
+        checkedCount++;
+        row.classList.add('bg-indigo-50/50');
+      } else {
+        row.classList.remove('bg-indigo-50/50');
+      }
+    });
+    const countDisplay = document.getElementById('selectedCountDisplay');
+    if (countDisplay) {
+      countDisplay.innerText = checkedCount;
+    }
+    const master = document.getElementById('masterCheckbox');
+    if (master && allCheckboxes.length > 0) {
+      master.checked = (checkedCount === allCheckboxes.length);
+    }
   }
 
   function toggleSelectAll(status) {
@@ -188,11 +205,25 @@
   }
 
   document.getElementById('barcodePrintForm').addEventListener('submit', function(e) {
-    const checked = document.querySelectorAll('.item-checkbox:checked').length;
-    if (checked === 0) {
+    const checked = document.querySelectorAll('.item-checkbox:checked');
+    if (checked.length === 0) {
       e.preventDefault();
       alert('Please check at least one product to print barcodes.');
+      return false;
     }
+
+    // Disable inputs in unselected rows so only checked rows are submitted in POST payload
+    document.querySelectorAll('.barcode-row').forEach(row => {
+      const cb = row.querySelector('.item-checkbox');
+      if (!cb || !cb.checked) {
+        row.querySelectorAll('input').forEach(inp => inp.disabled = true);
+      }
+    });
+
+    // Re-enable inputs after a short delay so user can continue using the form without reloading
+    setTimeout(() => {
+      document.querySelectorAll('.barcode-row input').forEach(inp => inp.disabled = false);
+    }, 1200);
   });
 </script>
 @endpush

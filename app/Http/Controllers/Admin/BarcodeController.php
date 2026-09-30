@@ -44,6 +44,10 @@ class BarcodeController extends Controller
         $labels = [];
 
         foreach ($selected as $item) {
+            if (empty($item['selected'])) {
+                continue;
+            }
+
             $id = (int) ($item['id'] ?? 0);
             $qty = max(1, min(200, (int) ($item['qty'] ?? 1)));
             $type = $item['type'] ?? 'product';
@@ -81,6 +85,10 @@ class BarcodeController extends Controller
                     }
                 }
             }
+        }
+
+        if (empty($labels)) {
+            return redirect()->back()->with('error', 'Please select at least one product sticker to print.');
         }
 
         return view('admin.barcodes.print', compact('labels', 'sheetFormat', 'showStoreName', 'showPrice', 'storeName'));
