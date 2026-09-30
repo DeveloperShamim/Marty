@@ -365,7 +365,7 @@
         
         <div>
           <label class="lbl text-xs font-bold text-slate-700">Fulfillment Status</label>
-          <select name="status" class="inp text-xs font-bold py-2 mt-1">
+          <select name="status" id="orderFulfillmentStatusSelect" class="inp text-xs font-bold py-2 mt-1">
             @foreach(\App\Models\Order::STATUSES as $s)
               <option value="{{ $s }}" @selected($order->status === $s)>{{ ucfirst($s) }}</option>
             @endforeach
@@ -374,7 +374,7 @@
 
         <div>
           <label class="lbl text-xs font-bold text-slate-700">Payment Status</label>
-          <select name="payment_status" class="inp text-xs font-bold py-2 mt-1">
+          <select name="payment_status" id="orderPaymentStatusSelect" class="inp text-xs font-bold py-2 mt-1">
             @foreach(\App\Models\Order::PAYMENT_STATUSES as $s)
               <option value="{{ $s }}" @selected($order->payment_status === $s)>{{ ucfirst($s) }}</option>
             @endforeach
@@ -637,6 +637,19 @@
   document.getElementById('editCustomerModal')?.addEventListener('click', (e) => {
     if (e.target.id === 'editCustomerModal') closeEditCustomerModal();
   });
+
+  // Auto-sync payment status when fulfillment status changes
+  const fulfillmentSelect = document.getElementById('orderFulfillmentStatusSelect');
+  const paymentSelect = document.getElementById('orderPaymentStatusSelect');
+  if (fulfillmentSelect && paymentSelect) {
+    fulfillmentSelect.addEventListener('change', function() {
+      if (this.value === 'returned' || this.value === 'cancelled') {
+        paymentSelect.value = 'rejected';
+      } else if (this.value === 'delivered') {
+        paymentSelect.value = 'verified';
+      }
+    });
+  }
 </script>
 
 @if($errors->hasAny(['customer_name', 'customer_phone', 'customer_email', 'shipping_address', 'city', 'postal_code']))

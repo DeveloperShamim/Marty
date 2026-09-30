@@ -247,6 +247,11 @@ class CourierScanController extends Controller
             $order->courier_loss_amount = $courierLoss;
             $order->return_reason = $reason;
             $order->scanned_by = auth()->id();
+
+            if ($order->payment_status === 'pending' || $order->payment_method === 'cod') {
+                $order->payment_status = 'rejected';
+            }
+
             $order->save();
         });
 

@@ -127,6 +127,10 @@ class OrderController extends Controller
             $data['payment_status'] = 'verified';
         }
 
+        if (in_array($data['status'], ['returned', 'cancelled'], true) && $data['payment_status'] === 'pending') {
+            $data['payment_status'] = 'rejected';
+        }
+
         $order->update($data);
 
         return back()->with('status', "Order {$order->order_number} updated.");
