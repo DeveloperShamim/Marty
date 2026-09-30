@@ -60,7 +60,7 @@ class PosController extends Controller
                 'price'          => $effectivePrice,
                 'cost_price'     => (float) ($p->cost_price ?: 0),
                 'stock'          => (int) $p->stock_quantity,
-                'image'          => image_url($p->images->first()?->image, $p->name),
+                'image'          => $p->imageUrl(),
                 'has_skus'       => $hasSkus,
                 'skus'           => $p->skus->map(function ($s) use ($p) {
                     return [
@@ -108,7 +108,7 @@ class PosController extends Controller
                     'price'          => $sku->getCalculatedSalePrice() ?: $sku->getCalculatedRegularPrice(),
                     'cost_price'     => (float) $sku->getEffectiveCostPrice(),
                     'stock'          => (int) $sku->stock_quantity,
-                    'image'          => image_url($p->images->first()?->image, $p->name),
+                    'image'          => $p->imageUrl(),
                 ],
             ]);
         }
@@ -154,7 +154,7 @@ class PosController extends Controller
                     'price'          => (float) ($product->sale_price ?: $product->regular_price),
                     'cost_price'     => (float) ($product->cost_price ?: 0),
                     'stock'          => (int) $product->stock_quantity,
-                    'image'          => image_url($product->images->first()?->image, $product->name),
+                    'image'          => $product->imageUrl(),
                 ],
             ]);
         }

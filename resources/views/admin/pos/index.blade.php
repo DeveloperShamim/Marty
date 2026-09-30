@@ -439,7 +439,7 @@
           card.innerHTML = `
             <div>
               <div class="aspect-square w-full rounded-xl bg-slate-100 overflow-hidden mb-1.5 sm:mb-2 relative">
-                <img src="${p.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                <img src="${p.image}" alt="${p.name.replace(/"/g, '&quot;')}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform" onerror="this.onerror=null;this.src='data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'300\\' height=\\'300\\' viewBox=\\'0 0 300 300\\'%3E%3Crect width=\\'300\\' height=\\'300\\' fill=\\'%23f1f5f9\\'/%3E%3Ctext x=\\'150\\' y=\\'155\\' text-anchor=\\'middle\\' fill=\\'%2394a3b8\\' font-family=\\'system-ui,sans-serif\\' font-size=\\'14\\'%3ENo Image%3C/text%3E%3C/svg%3E'">
                 ${p.has_skus ? '<span class="absolute top-1 right-1 bg-indigo-600 text-white text-[8px] sm:text-[9px] font-black uppercase px-1.5 py-0.5 rounded shadow">Variants</span>' : ''}
                 <span class="absolute bottom-1 left-1 bg-slate-900/80 text-white text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded backdrop-blur-xs">Stock: ${p.stock}</span>
               </div>
@@ -578,6 +578,7 @@
         variant: item.variant,
         price: parseFloat(item.price),
         cost_price: parseFloat(item.cost_price || 0),
+        image: item.image || '',
         quantity: 1
       });
     }
@@ -633,9 +634,12 @@
       const lineTotal = item.price * item.quantity;
 
       row.innerHTML = `
-        <div class="flex-1 min-w-0">
-          <div class="text-xs font-bold text-slate-800 truncate">${item.name}</div>
-          <div class="text-[10px] sm:text-[11px] text-slate-400">৳${item.price.toFixed(0)} each</div>
+        <div class="flex items-center gap-2 flex-1 min-w-0">
+          ${item.image ? `<img src="${item.image}" alt="" class="w-8 h-8 rounded-lg object-cover shrink-0 bg-slate-100 border border-slate-200">` : ''}
+          <div class="min-w-0">
+            <div class="text-xs font-bold text-slate-800 truncate">${item.name}</div>
+            <div class="text-[10px] sm:text-[11px] text-slate-400">৳${item.price.toFixed(0)} each</div>
+          </div>
         </div>
 
         <div class="flex items-center gap-1 sm:gap-1.5">
