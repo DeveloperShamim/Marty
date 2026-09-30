@@ -123,6 +123,10 @@ class OrderController extends Controller
             $order->releaseCoupon();
         }
 
+        if ($data['status'] === 'delivered' && $order->payment_method === 'cod' && $data['payment_status'] === 'pending') {
+            $data['payment_status'] = 'verified';
+        }
+
         $order->update($data);
 
         return back()->with('status', "Order {$order->order_number} updated.");

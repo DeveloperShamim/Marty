@@ -216,6 +216,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
             Route::get('inventory', [AdminInventoryController::class, 'index'])->name('inventory.index');
             Route::post('inventory/update-stock', [AdminInventoryController::class, 'updateStock'])->name('inventory.update-stock');
+            Route::post('inventory/add-stock', [AdminInventoryController::class, 'addStock'])->name('inventory.add-stock');
             Route::delete('products/{product}/images/{image}', [AdminProductController::class, 'destroyImage'])->name('products.images.destroy');
             Route::get('products/export', [AdminProductController::class, 'export'])->name('products.export');
             Route::get('products/sample-csv', [AdminProductController::class, 'sampleCsv'])->name('products.sample-csv');

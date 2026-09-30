@@ -29,13 +29,13 @@ class AnalyticsController extends Controller
         }
 
         // 1. Overall Financials
-        $totalOrdersCount = (clone $ordersQuery)->count();
         $deliveredOrVerified = (clone $ordersQuery)->where(function ($q) {
             $q->where('payment_status', 'verified')
-              ->orWhereIn('status', ['delivered', 'shipped', 'processing']);
+              ->orWhere('status', 'delivered');
         });
 
-        $grossRevenue = (float) (clone $deliveredOrVerified)->sum('total');
+        $totalOrdersCount = (clone $deliveredOrVerified)->count();
+        $grossRevenue = (float) (clone $deliveredOrVerified)->sum(DB::raw('subtotal - discount_amount'));
         $totalDiscounts = (float) (clone $deliveredOrVerified)->sum('discount_amount');
         $netRevenue = max(0, $grossRevenue);
 
@@ -81,17 +81,23 @@ class AnalyticsController extends Controller
               ->orWhere('utm_source', 'like', '%ig%');
         });
         $fbOrdersCount = (clone $fbOrders)->count();
-        $fbRevenue = (float) (clone $fbOrders)->sum('total');
+        $fbRevenue = (float) (clone $fbOrders)->sum(DB::raw('subtotal - discount_amount'));
         $fbRoas = $marketingExpense > 0 ? ($fbRevenue / $marketingExpense) : 0;
         $fbCpa = $fbOrdersCount > 0 ? ($marketingExpense / $fbOrdersCount) : 0;
 
         // 4. Sales Channel Breakdown (Online vs POS)
         $onlineRevenue = (float) Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('order_type', '!=', 'pos')
+            ->where(function ($q) {
+                $q->where('payment_status', 'verified')->orWhere('status', 'delivered');
+            })
             ->whereNotIn('status', ['cancelled'])
-            ->sum('total');
+            ->sum(DB::raw('subtotal - discount_amount'));
         $onlineOrdersCount = Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('order_type', '!=', 'pos')
+            ->where(function ($q) {
+                $q->where('payment_status', 'verified')->orWhere('status', 'delivered');
+            })
             ->whereNotIn('status', ['cancelled'])
             ->count();
         $onlineAov = $onlineOrdersCount > 0 ? ($onlineRevenue / $onlineOrdersCount) : 0;
@@ -99,7 +105,7 @@ class AnalyticsController extends Controller
         $posRevenue = (float) Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('order_type', 'pos')
             ->whereNotIn('status', ['cancelled'])
-            ->sum('total');
+            ->sum(DB::raw('subtotal - discount_amount'));
         $posOrdersCount = Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('order_type', 'pos')
             ->whereNotIn('status', ['cancelled'])
@@ -115,15 +121,15 @@ class AnalyticsController extends Controller
             $dailyStats = (clone $ordersQuery)
                 ->select(
                     DB::raw('DATE(created_at) as date_key'),
-                    DB::raw('SUM(total) as day_revenue'),
-                    DB::raw('COUNT(*) as day_orders'),
+                    DB::raw('SUM(CASE WHEN payment_status = "verified" OR status = "delivered" THEN (subtotal - discount_amount) ELSE 0 END) as day_revenue'),
+                    DB::raw('COUNT(CASE WHEN payment_status = "verified" OR status = "delivered" THEN 1 ELSE NULL END) as day_orders'),
                     DB::raw('SUM(courier_loss_amount) as day_loss')
                 )
                 ->groupBy(DB::raw('DATE(created_at)'))
                 ->get()
                 ->keyBy('date_key');
 
-            $dailyCogs = OrderItem::whereIn('order_id', (clone $ordersQuery)->select('id'))
+            $dailyCogs = OrderItem::whereIn('order_id', (clone $deliveredOrVerified)->select('id'))
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->select(
                     DB::raw('DATE(orders.created_at) as date_key'),
@@ -158,15 +164,15 @@ class AnalyticsController extends Controller
             $monthlyStats = (clone $ordersQuery)
                 ->select(
                     DB::raw("DATE_FORMAT(created_at, '%Y-%m') as date_key"),
-                    DB::raw('SUM(total) as m_revenue'),
-                    DB::raw('COUNT(*) as m_orders'),
+                    DB::raw('SUM(CASE WHEN payment_status = "verified" OR status = "delivered" THEN (subtotal - discount_amount) ELSE 0 END) as m_revenue'),
+                    DB::raw('COUNT(CASE WHEN payment_status = "verified" OR status = "delivered" THEN 1 ELSE NULL END) as m_orders'),
                     DB::raw('SUM(courier_loss_amount) as m_loss')
                 )
                 ->groupBy(DB::raw("DATE_FORMAT(created_at, '%Y-%m')"))
                 ->get()
                 ->keyBy('date_key');
 
-            $monthlyCogs = OrderItem::whereIn('order_id', (clone $ordersQuery)->select('id'))
+            $monthlyCogs = OrderItem::whereIn('order_id', (clone $deliveredOrVerified)->select('id'))
                 ->join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->select(
                     DB::raw("DATE_FORMAT(orders.created_at, '%Y-%m') as date_key"),
@@ -260,7 +266,8 @@ class AnalyticsController extends Controller
                 ->chunk(200, function ($orders) use ($file) {
                     foreach ($orders as $ord) {
                         $cogs = (float) $ord->items->sum(fn($it) => $it->cost_price * $it->quantity);
-                        $grossProfit = (float) ($ord->total - $cogs);
+                        $netProductSales = (float) ($ord->subtotal - $ord->discount_amount);
+                        $grossProfit = (float) ($netProductSales - $cogs);
                         $courierLoss = (float) ($ord->courier_loss_amount ?: 0);
                         $netProfit = $grossProfit - $courierLoss;
 

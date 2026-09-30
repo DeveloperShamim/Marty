@@ -26,7 +26,7 @@ class DashboardController extends Controller
 
         $revenue = (float) Order::where('payment_status', 'verified')
             ->tap($validOrders)
-            ->sum('total');
+            ->sum(DB::raw('subtotal - discount_amount'));
 
         $verifiedOrdersCount = Order::where('payment_status', 'verified')
             ->tap($validOrders)
@@ -36,20 +36,20 @@ class DashboardController extends Controller
         $todayRevenue = (float) Order::whereDate('created_at', Carbon::today())
             ->where('payment_status', 'verified')
             ->tap($validOrders)
-            ->sum('total');
+            ->sum(DB::raw('subtotal - discount_amount'));
 
         // Yesterday's revenue for comparison
         $yesterdayRevenue = (float) Order::whereDate('created_at', Carbon::yesterday())
             ->where('payment_status', 'verified')
             ->tap($validOrders)
-            ->sum('total');
+            ->sum(DB::raw('subtotal - discount_amount'));
 
         // This Month's revenue
         $thisMonthRevenue = (float) Order::whereMonth('created_at', Carbon::now()->month)
             ->whereYear('created_at', Carbon::now()->year)
             ->where('payment_status', 'verified')
             ->tap($validOrders)
-            ->sum('total');
+            ->sum(DB::raw('subtotal - discount_amount'));
 
         // Average Order Value (AOV)
         $avgOrderValue = $verifiedOrdersCount > 0 ? ($revenue / $verifiedOrdersCount) : 0;
@@ -121,7 +121,7 @@ class DashboardController extends Controller
                 ->whereMonth('created_at', $monthNumber)
                 ->where('payment_status', 'verified')
                 ->tap($validOrders)
-                ->sum('total');
+                ->sum(DB::raw('subtotal - discount_amount'));
 
             return [
                 'label'      => $monthDate->format('M'),
