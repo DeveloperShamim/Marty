@@ -150,6 +150,9 @@ class CourierScanController extends Controller
             ]);
         }
 
+        // Re-sending a returned parcel: take its stock out again and clear the old return.
+        $order->prepareReactivation();
+
         // Mark as shipped & record courier details
         $order->update([
             'status'          => 'shipped',
@@ -222,6 +225,14 @@ class CourierScanController extends Controller
         ]);
 
         $order = Order::findOrFail($validated['order_id']);
+
+        // Only parcels that actually went out can come back from the courier.
+        if (! in_array($order->status, ['shipped', 'delivered', 'returned'], true)) {
+            return response()->json([
+                'success' => false,
+                'message' => "Order #{$order->order_number} is " . strtoupper($order->status) . ' and was never dispatched, so it cannot be scanned as a courier return.',
+            ], 422);
+        }
 
         $courierLoss = 0;
         if ($validated['return_type'] === 'unpaid_delivery') {

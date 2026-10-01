@@ -117,12 +117,21 @@ class OrderController extends Controller
             'internal_note'  => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $wasNotCancelled = $order->status !== 'cancelled';
-        $becomingCancelled = $data['status'] === 'cancelled' && $wasNotCancelled;
+        $becomingCancelled = $data['status'] === 'cancelled' && $order->status !== 'cancelled';
 
         if ($becomingCancelled) {
-            $order->restoreStock();
+            // A returned order already handled its stock (restocked, or kept out as damaged).
+            if ($order->status !== 'returned') {
+                $order->restoreStock();
+            }
             $order->releaseCoupon();
+        }
+
+        // Reactivating a cancelled/returned order takes its stock (and coupon use) back out.
+        $reactivating = in_array($order->status, ['cancelled', 'returned'], true)
+            && in_array($data['status'], Order::ACTIVE_STATUSES, true);
+        if ($reactivating) {
+            $order->prepareReactivation();
         }
 
         // Synchronize returning behavior with Courier Scan Station
@@ -190,7 +199,8 @@ class OrderController extends Controller
     {
         $orderNumber = $order->order_number;
 
-        if ($order->shouldRestoreStockOnCancel()) {
+        // Only put stock back for orders whose goods never left the shop.
+        if (in_array($order->status, ['pending', 'confirmed', 'processing'], true)) {
             $order->restoreStock();
             $order->releaseCoupon();
         }

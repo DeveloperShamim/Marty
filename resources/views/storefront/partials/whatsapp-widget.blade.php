@@ -32,7 +32,7 @@
 @endphp
 
 @if($hasChat)
-<aside id="chatSpeedDialRoot" aria-label="Customer Support Chat" class="fixed {{ request()->routeIs('checkout.*') ? 'bottom-24 right-4 sm:right-6' : (request()->routeIs('product.show') ? 'bottom-28 right-4 sm:right-6' : 'bottom-20 right-5 sm:right-6') }} z-50 select-none font-sans flex flex-col items-end gap-2.5">
+<aside id="chatSpeedDialRoot" aria-label="Customer Support Chat" class="fixed {{ request()->routeIs('checkout.*') ? 'bottom-24 right-4 sm:right-6' : (request()->routeIs('product.show') ? 'bottom-28 right-4 sm:right-6' : 'bottom-20 right-5 sm:right-6') }} z-50 select-none font-sans flex flex-col items-end gap-2.5 pointer-events-none">
   
   {{-- Popped Icons Container (Vertically stacked above the trigger button) --}}
   <div id="chatSpeedDialIcons" class="flex flex-col items-end gap-2.5 pointer-events-none">
@@ -69,7 +69,7 @@
   </div>
 
   {{-- Main Floating Trigger Button (Universal Customer Support Chat Theme) --}}
-  <button type="button" id="chatSpeedDialToggleBtn" class="group relative flex items-center justify-center w-12 h-12 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-white/80" aria-label="Toggle Customer Support Chat" aria-expanded="false">
+  <button type="button" id="chatSpeedDialToggleBtn" class="pointer-events-auto group relative flex items-center justify-center w-12 h-12 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-white/80" aria-label="Toggle Customer Support Chat" aria-expanded="false">
     
     <!-- Pulse ring (visible when closed) -->
     <span id="chatSpeedDialPulseRing" class="absolute -inset-0.5 rounded-full bg-brand-500 opacity-40 animate-ping pointer-events-none"></span>
@@ -123,6 +123,7 @@
   function openSpeedDial() {
     isOpen = true;
     iconsContainer.classList.remove('pointer-events-none');
+    iconsContainer.classList.add('pointer-events-auto', 'is-open');
     
     popBtns.forEach((btn, idx) => {
       setTimeout(() => {
@@ -143,6 +144,7 @@
   function closeSpeedDial() {
     isOpen = false;
     iconsContainer.classList.add('pointer-events-none');
+    iconsContainer.classList.remove('pointer-events-auto', 'is-open');
 
     popBtns.slice().reverse().forEach((btn, idx) => {
       setTimeout(() => {

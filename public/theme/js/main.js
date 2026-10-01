@@ -191,9 +191,7 @@
   /* ---------------- Product gallery ---------------- */
   const mainImg = $("#galleryMain");
   if (mainImg) $$("[data-thumb]").forEach((t) => t.addEventListener("click", () => {
-    mainImg.src = t.dataset.thumb;
-    $$("[data-thumb]").forEach((x) => x.classList.remove("ring-2", "ring-brand-500"));
-    t.classList.add("ring-2", "ring-brand-500");
+    if (t.dataset.thumb) mainImg.src = t.dataset.thumb;
   }));
 
   /* ---------------- Tabs ---------------- */

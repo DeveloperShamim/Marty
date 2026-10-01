@@ -43,6 +43,28 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($request->ip());
         });
 
+        // Public storefront endpoints. Limits are per IP and kept generous because
+        // mobile carriers often put many customers behind one shared IP.
+        RateLimiter::for('track', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip());
+        });
+
+        RateLimiter::for('checkout', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip());
+        });
+
+        RateLimiter::for('coupon', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip());
+        });
+
+        RateLimiter::for('chat', function (Request $request) {
+            return Limit::perMinute(30)->by($request->ip());
+        });
+
+        RateLimiter::for('chat-upload', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip());
+        });
+
         // Shared chrome data for storefront views (header nav + cart drawer + brand).
         // Memoized in request memory so queries run at most once per request without serialization issues.
         View::composer(['layouts.storefront', 'storefront.*'], function ($view) {

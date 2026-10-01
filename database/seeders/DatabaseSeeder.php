@@ -109,8 +109,8 @@ class DatabaseSeeder extends Seeder
         $settings = [
             'site_name' => 'Marty',
             'tagline' => 'Smartwatches, Trending Shoes & Premium Gadgets',
-            'logo' => 'uploads/logo.png',
-            'favicon' => 'uploads/favicon.png',
+            'logo' => 'uploads/logo.webp',
+            'favicon' => 'uploads/favicon.webp',
             'footer_text' => 'Marty is your premier destination for 100% authentic smartwatches, trending sneakers, handcrafted leather shoes, and cutting-edge tech gadgets in Bangladesh with fast nationwide delivery.',
             'contact_phone' => '+880 1700-000000',
             'whatsapp_number' => '+880 1700-000000',
@@ -1062,9 +1062,9 @@ class DatabaseSeeder extends Seeder
             ['delivered', 'bkash', 'verified', 12, null, 0, 'redx', 'RX-990123'],
             ['delivered', 'nagad', 'verified', 10, null, 0, 'steadfast', 'ST-881789'],
             ['delivered', 'cod', 'verified', 8, null, 0, 'pathao', 'PT-442567'],
-            ['shipped', 'cod', 'verified', 4, null, 0, 'steadfast', 'ST-882001'],
+            ['shipped', 'cod', 'pending', 4, null, 0, 'steadfast', 'ST-882001'],
             ['shipped', 'bkash', 'verified', 3, null, 0, 'pathao', 'PT-442890'],
-            ['shipped', 'cod', 'verified', 2, null, 0, 'steadfast', 'ST-882100'],
+            ['shipped', 'cod', 'pending', 2, null, 0, 'steadfast', 'ST-882100'],
             ['processing', 'nagad', 'verified', 1, null, 0, null, null],
             ['confirmed', 'bkash', 'pending', 1, null, 0, null, null],
             ['pending', 'cod', 'pending', 0, null, 0, null, null],
@@ -1073,9 +1073,9 @@ class DatabaseSeeder extends Seeder
             ['returned', 'cod', 'rejected', 6, 'paid_delivery', 0, 'steadfast', 'ST-881667'],
             ['returned', 'bkash', 'rejected', 9, 'paid_delivery', 0, 'pathao', 'PT-442444'],
 
-            // RETURN TYPE 2: Failed Delivery / Customer Ghosted (Store Loss = Courier shipping charge)
-            ['returned', 'cod', 'rejected', 7, 'unpaid_delivery', 130, 'steadfast', 'ST-881555'],
-            ['returned', 'cod', 'rejected', 14, 'unpaid_delivery', 130, 'pathao', 'PT-442222'],
+            // RETURN TYPE 2: Failed Delivery / Customer Ghosted (Store Loss = the order's delivery charge)
+            ['returned', 'cod', 'rejected', 7, 'unpaid_delivery', null, 'steadfast', 'ST-881555'],
+            ['returned', 'cod', 'rejected', 14, 'unpaid_delivery', null, 'pathao', 'PT-442222'],
         ];
 
         foreach ($onlineScenarios as $idx => [$status, $method, $payStatus, $daysAgo, $returnType, $courierLoss, $courier, $tracking]) {
@@ -1083,6 +1083,7 @@ class DatabaseSeeder extends Seeder
             [$cName, $cPhone, $cEmail, $cAddr, $cCity, $cZone] = $cust;
 
             $shippingFee = $cZone === 'inside_dhaka' ? $insideFee : $outsideFee;
+            $courierLoss = $returnType === 'unpaid_delivery' ? $shippingFee : 0;
             $orderDate = now()->subDays($daysAgo)->subHours(random_int(1, 8));
 
             $order = Order::create([
@@ -1110,6 +1111,7 @@ class DatabaseSeeder extends Seeder
                 'courier_loss_amount'   => $courierLoss,
                 'return_reason'         => $returnType === 'paid_delivery' ? 'Doorstep refusal (delivery charge paid)' : ($returnType ? 'Customer phone unreachable / failed delivery' : null),
                 'return_restocked'      => (bool) $returnType,
+                'stock_restored'        => (bool) $returnType,
                 'created_at'            => $orderDate,
                 'updated_at'            => $orderDate,
             ]);

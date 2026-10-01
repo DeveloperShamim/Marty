@@ -53,15 +53,15 @@ Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remov
 Route::get('/cart/recover/{token}', [\App\Http\Controllers\CartRecoveryController::class, 'recover'])->name('cart.recover');
 
 Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
-Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::post('/checkout', [CheckoutController::class, 'store'])->middleware('throttle:checkout')->name('checkout.store');
 Route::post('/checkout/sync-contact', [CheckoutController::class, 'syncContact'])->name('checkout.sync-contact');
-Route::post('/checkout/coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.coupon.apply');
+Route::post('/checkout/coupon', [CheckoutController::class, 'applyCoupon'])->middleware('throttle:coupon')->name('checkout.coupon.apply');
 Route::post('/checkout/coupon/remove', [CheckoutController::class, 'removeCoupon'])->name('checkout.coupon.remove');
 Route::get('/order/{order}', [CheckoutController::class, 'confirmation'])->name('order.confirmation');
 
 // Order tracking (public)
 Route::get('/track', [TrackOrderController::class, 'show'])->name('track');
-Route::post('/track', [TrackOrderController::class, 'find'])->name('track.find');
+Route::post('/track', [TrackOrderController::class, 'find'])->middleware('throttle:track')->name('track.find');
 
 // Legal & pages
 Route::get('/terms', [PageController::class, 'terms'])->name('terms');
@@ -71,9 +71,9 @@ Route::get('/page/{slug}', [PageController::class, 'show'])->name('page');
 
 // Live Support Chat (Storefront Customer)
 Route::get('/chat/conversation', [\App\Http\Controllers\ChatController::class, 'getConversation'])->name('chat.conversation');
-Route::post('/chat/send', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->name('chat.send');
-Route::post('/chat/send-attachment', [\App\Http\Controllers\ChatController::class, 'sendAttachment'])->name('chat.send-attachment');
-Route::post('/chat/send-voice', [\App\Http\Controllers\ChatController::class, 'sendVoiceNote'])->name('chat.send-voice');
+Route::post('/chat/send', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->middleware('throttle:chat')->name('chat.send');
+Route::post('/chat/send-attachment', [\App\Http\Controllers\ChatController::class, 'sendAttachment'])->middleware('throttle:chat-upload')->name('chat.send-attachment');
+Route::post('/chat/send-voice', [\App\Http\Controllers\ChatController::class, 'sendVoiceNote'])->middleware('throttle:chat-upload')->name('chat.send-voice');
 Route::get('/chat/poll', [\App\Http\Controllers\ChatController::class, 'pollMessages'])->name('chat.poll');
 
 // SEO & Google Search Console

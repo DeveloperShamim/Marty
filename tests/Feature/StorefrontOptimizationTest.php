@@ -41,6 +41,6 @@ class StorefrontOptimizationTest extends TestCase
         $response->assertDontSee('id="preloader"', false);
 
         // Renders WhatsApp floating widget
-        $response->assertSee('aria-label="WhatsApp Support"', false);
+        $response->assertSee('aria-label="Chat on WhatsApp"', false);
     }
 }

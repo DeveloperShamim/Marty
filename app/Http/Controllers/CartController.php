@@ -45,8 +45,12 @@ class CartController extends Controller
             }
         }
 
-        if ($product->skus()->exists() && empty($sku) && empty($variant)) {
-            $message = "Please select a product option before adding to cart.";
+        // Products with SKUs must resolve to a real, active SKU of this product;
+        // otherwise any made-up option text or a foreign sku_id would be accepted.
+        if ($product->skus()->exists() && empty($sku)) {
+            $message = empty($variant) && ! $skuId
+                ? "Please select a product option before adding to cart."
+                : "The selected option is not available for this product.";
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json(['ok' => false, 'message' => $message], 422);
             }

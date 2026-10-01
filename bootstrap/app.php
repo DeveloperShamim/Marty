@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*'),
+            // AJAX calls (cart, POS, chat, courier scan) need JSON errors, not a redirect to the home page.
+            fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
     })->create();

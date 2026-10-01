@@ -244,7 +244,10 @@ class CheckoutController extends Controller
 
                     $sku = null;
                     if (! empty($item->sku_id)) {
-                        $sku = ProductSku::where('id', $item->sku_id)->lockForUpdate()->first();
+                        $sku = ProductSku::where('id', $item->sku_id)
+                            ->where('product_id', $item->product_id)
+                            ->lockForUpdate()
+                            ->first();
                     } elseif (! empty($item->variant) && $product) {
                         $sku = ProductSku::where('product_id', $product->id)
                             ->lockForUpdate()
@@ -252,6 +255,10 @@ class CheckoutController extends Controller
                             ->first(function ($s) use ($item) {
                                 return $s->matchesVariantString($item->variant);
                             });
+                    }
+
+                    if (! $sku && $product && $product->skus()->exists()) {
+                        throw new \RuntimeException("The selected option for {$item->name} is no longer available. Please remove it from your cart and choose again.");
                     }
 
                     if ($sku) {

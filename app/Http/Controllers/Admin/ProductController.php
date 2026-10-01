@@ -478,26 +478,31 @@ class ProductController extends Controller
 
     public function uploadDescriptionMedia(Request $request)
     {
-        $request->validate([
-            'file' => ['required', 'file', 'max:51200'], // max 50MB
+        $allowedImageExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+        $allowedVideoExts = ['mp4', 'webm', 'mov', 'ogg', 'mkv'];
+        $allowedExts = array_merge($allowedImageExts, $allowedVideoExts);
+
+        // The saved filename keeps the client's extension, so both the name and the
+        // detected content must be on the allowlist (never let ".php" etc. through).
+        // SVG is excluded because it can carry scripts.
+        $validator = validator($request->all(), [
+            'file' => [
+                'required', 'file', 'max:51200', // max 50MB
+                'extensions:' . implode(',', $allowedExts),
+                'mimes:' . implode(',', $allowedExts),
+            ],
         ]);
 
-        $file = $request->file('file');
-        $ext = strtolower($file->getClientOriginalExtension() ?: 'bin');
-        $mime = strtolower($file->getMimeType() ?: '');
-
-        $allowedImageExts = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg'];
-        $allowedVideoExts = ['mp4', 'webm', 'mov', 'ogg', 'mkv'];
-
-        $isImage = in_array($ext, $allowedImageExts, true) || str_starts_with($mime, 'image/');
-        $isVideo = in_array($ext, $allowedVideoExts, true) || str_starts_with($mime, 'video/');
-
-        if (! $isImage && ! $isVideo) {
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid file format. Please upload an image (JPG, PNG, WebP, GIF, SVG) or video (MP4, WebM, MOV).',
+                'message' => 'Invalid file format. Please upload an image (JPG, PNG, WebP, GIF) or video (MP4, WebM, MOV).',
             ], 422);
         }
+
+        $file = $request->file('file');
+        $ext = strtolower($file->getClientOriginalExtension());
+        $isImage = in_array($ext, $allowedImageExts, true);
 
         $dir = public_path('uploads/products/description');
         if (! is_dir($dir)) {
@@ -660,8 +665,14 @@ class ProductController extends Controller
 
                     $skuRecord = $existingId ? ProductSku::where('product_id', $product->id)->find($existingId) : null;
 
-                    $costPrice = (isset($item['cost_price']) && $item['cost_price'] !== '') ? (float)$item['cost_price'] : (float)($product->cost_price ?? 0);
-                    $skuBarcode = !empty($item['barcode']) ? trim((string)$item['barcode']) : null;
+                    // The matrix form has no cost/barcode columns: keep what Inventory / labels set
+                    // on existing rows, and only default new rows to the product's cost.
+                    $costPrice = (isset($item['cost_price']) && $item['cost_price'] !== '')
+                        ? (float) $item['cost_price']
+                        : ($skuRecord ? (float) $skuRecord->cost_price : (float) ($product->cost_price ?? 0));
+                    $skuBarcode = array_key_exists('barcode', $item)
+                        ? (trim((string) $item['barcode']) ?: null)
+                        : $skuRecord?->barcode;
 
                     if ($skuRecord) {
                         $skuRecord->update([
@@ -829,8 +840,7 @@ class ProductController extends Controller
         if ($product->brand) {
             $parts[] = "by {$product->brand}";
         }
-        $parts[] = "100% Pure & Organic";
-        $parts[] = "ShodeshiFood BD";
+        $parts[] = site_name();
 
         return implode(" — ", $parts);
     }

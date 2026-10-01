@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Media Library & Image Optimizer — ShodeshiFood Admin')
+@section('title', 'Media Library & Image Optimizer — ' . site_name() . ' Admin')
 
 @section('content')
 <div class="p-4 sm:p-6 lg:p-8 space-y-6">
@@ -327,7 +327,7 @@
         <div class="space-y-2">
           <div>
             <label class="text-[10px] font-bold text-stone-600 block mb-1">SEO Alt Text (Keyword Metadata)</label>
-            <input type="text" name="alt" id="previewMetaAlt" placeholder="e.g. Pure Sundarban Wildflower Honey - 500g (Glass Jar) — ShodeshiFood" class="w-full text-xs font-semibold px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-stone-900 focus:outline-none focus:border-brand-500 shadow-2xs" />
+            <input type="text" name="alt" id="previewMetaAlt" placeholder="e.g. Running Shoe - Size 42 (Black) — {{ site_name() }}" class="w-full text-xs font-semibold px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-stone-900 focus:outline-none focus:border-brand-500 shadow-2xs" />
           </div>
 
           <div>

@@ -204,87 +204,113 @@ class PosController extends Controller
             'note'                  => ['nullable', 'string', 'max:255'],
         ]);
 
-        return DB::transaction(function () use ($validated, $request) {
-            $subtotal = 0;
-            $itemsData = [];
+        try {
+            return DB::transaction(fn () => $this->createPosOrder($validated));
+        } catch (\RuntimeException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        }
+    }
 
-            foreach ($validated['items'] as $it) {
-                $qty = (int) $it['quantity'];
-                $price = (float) $it['price'];
-                $lineTotal = $price * $qty;
-                $subtotal += $lineTotal;
+    private function createPosOrder(array $validated)
+    {
+        $subtotal = 0;
+        $itemsData = [];
+        $stockMoves = [];
 
-                $prod = Product::find($it['product_id']);
-                $sku = !empty($it['product_sku_id']) ? ProductSku::find($it['product_sku_id']) : null;
-                $costPrice = $sku ? (float)$sku->getEffectiveCostPrice() : (float)($prod?->cost_price ?: 0);
+        foreach ($validated['items'] as $it) {
+            $qty = (int) $it['quantity'];
+            $price = (float) $it['price'];
+            $lineTotal = $price * $qty;
+            $subtotal += $lineTotal;
 
-                $itemsData[] = [
-                    'product_id'     => $prod->id,
-                    'product_sku_id' => $sku?->id,
-                    'product_name'   => $prod->name,
-                    'variant'        => $sku?->attributeLabel(),
-                    'image'          => $prod->images->first()?->image,
-                    'unit_price'     => $price,
-                    'cost_price'     => $costPrice,
-                    'quantity'       => $qty,
-                    'line_total'     => $lineTotal,
-                ];
-
-                // Immediate stock deduction for POS sale
-                if ($sku) {
-                    $sku->decrement('stock_quantity', $qty);
+            $prod = Product::with('images')->lockForUpdate()->find($it['product_id']);
+            $sku = null;
+            if (! empty($it['product_sku_id'])) {
+                $sku = ProductSku::where('product_id', $prod->id)->lockForUpdate()->find($it['product_sku_id']);
+                if (! $sku) {
+                    throw new \RuntimeException("The selected option does not belong to \"{$prod->name}\".");
                 }
-                if ($prod) {
-                    $prod->decrement('stock_quantity', $qty);
-                }
+            } elseif ($prod->skus()->exists()) {
+                throw new \RuntimeException("Please choose an option (size/colour) for \"{$prod->name}\".");
             }
 
-            $discount = (float) ($validated['discount'] ?? 0);
-            $shipping = (float) ($validated['shipping_charge'] ?? 0);
-            $total = max(0, $subtotal - $discount + $shipping);
-
-            $cashTendered = (float) ($validated['cash_tendered'] ?? $total);
-            $changeAmount = max(0, $cashTendered - $total);
-
-            $orderNumber = 'POS-' . date('ymd') . '-' . strtoupper(Str::random(4));
-
-            $order = Order::create([
-                'order_number'       => $orderNumber,
-                'order_type'         => 'pos',
-                'user_id'            => auth()->id(),
-                'customer_name'      => $validated['customer_name'] ?: 'Walk-in Customer',
-                'customer_phone'     => $validated['customer_phone'] ?: 'N/A',
-                'customer_email'     => null,
-                'shipping_address'   => 'POS Counter Sale',
-                'city'               => 'In-Store',
-                'shipping_zone'      => 'inside_dhaka',
-                'subtotal'           => $subtotal,
-                'discount_amount'    => $discount,
-                'shipping_charge'    => $shipping,
-                'tax'                => 0,
-                'total'              => $total,
-                'pos_cash_tendered'  => $cashTendered,
-                'pos_change_amount'  => $changeAmount,
-                'payment_method'     => $validated['payment_method'],
-                'payment_status'     => 'verified',
-                'status'             => 'delivered',
-                'internal_note'      => $validated['note'] ?? 'POS Cash Register Sale',
-            ]);
-
-            foreach ($itemsData as $itemRow) {
-                $itemRow['order_id'] = $order->id;
-                OrderItem::create($itemRow);
+            // Several cart lines can hit the same SKU/product, so count what this sale already took.
+            $stockKey = $sku ? "sku:{$sku->id}" : "product:{$prod->id}";
+            $stockMoves[$stockKey] = ($stockMoves[$stockKey] ?? 0) + $qty;
+            $available = (int) ($sku ? $sku->stock_quantity : $prod->stock_quantity);
+            if ($stockMoves[$stockKey] > $available) {
+                $label = $sku ? "{$prod->name} ({$sku->attributeLabel()})" : $prod->name;
+                throw new \RuntimeException("Only {$available} of \"{$label}\" in stock.");
             }
 
-            return response()->json([
-                'success'      => true,
-                'order_id'     => $order->id,
-                'order_number' => $order->order_number,
-                'total'        => $order->total,
-                'change'       => $order->pos_change_amount,
-                'receipt_url'  => route('admin.pos.receipt', $order),
-            ]);
-        });
+            $costPrice = $sku ? (float)$sku->getEffectiveCostPrice() : (float)($prod->cost_price ?: 0);
+
+            $itemsData[] = [
+                'product_id'     => $prod->id,
+                'product_sku_id' => $sku?->id,
+                'product_name'   => $prod->name,
+                'variant'        => $sku?->attributeLabel(),
+                'image'          => $prod->primaryImage()?->path,
+                'unit_price'     => $price,
+                'cost_price'     => $costPrice,
+                'quantity'       => $qty,
+                'line_total'     => $lineTotal,
+            ];
+
+            // Immediate stock deduction for POS sale; product total follows its SKUs.
+            if ($sku) {
+                $sku->decrement('stock_quantity', $qty);
+                $prod->syncTotalStock();
+            } else {
+                $prod->decrement('stock_quantity', $qty);
+            }
+        }
+
+        $discount = (float) ($validated['discount'] ?? 0);
+        $shipping = (float) ($validated['shipping_charge'] ?? 0);
+        $total = max(0, $subtotal - $discount + $shipping);
+
+        $cashTendered = (float) ($validated['cash_tendered'] ?? $total);
+        $changeAmount = max(0, $cashTendered - $total);
+
+        $orderNumber = 'POS-' . date('ymd') . '-' . strtoupper(Str::random(4));
+
+        $order = Order::create([
+            'order_number'       => $orderNumber,
+            'order_type'         => 'pos',
+            'user_id'            => auth()->id(),
+            'customer_name'      => ($validated['customer_name'] ?? null) ?: 'Walk-in Customer',
+            'customer_phone'     => ($validated['customer_phone'] ?? null) ?: 'N/A',
+            'customer_email'     => null,
+            'shipping_address'   => 'POS Counter Sale',
+            'city'               => 'In-Store',
+            'shipping_zone'      => 'inside_dhaka',
+            'subtotal'           => $subtotal,
+            'discount_amount'    => $discount,
+            'shipping_charge'    => $shipping,
+            'tax'                => 0,
+            'total'              => $total,
+            'pos_cash_tendered'  => $cashTendered,
+            'pos_change_amount'  => $changeAmount,
+            'payment_method'     => $validated['payment_method'],
+            'payment_status'     => 'verified',
+            'status'             => 'delivered',
+            'internal_note'      => $validated['note'] ?? 'POS Cash Register Sale',
+        ]);
+
+        foreach ($itemsData as $itemRow) {
+            $itemRow['order_id'] = $order->id;
+            OrderItem::create($itemRow);
+        }
+
+        return response()->json([
+            'success'      => true,
+            'order_id'     => $order->id,
+            'order_number' => $order->order_number,
+            'total'        => $order->total,
+            'change'       => $order->pos_change_amount,
+            'receipt_url'  => route('admin.pos.receipt', $order),
+        ]);
     }
 
     public function receipt(Order $order)

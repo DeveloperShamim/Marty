@@ -321,9 +321,9 @@ if (! function_exists('site_name')) {
     /** Canonical storefront / admin site name (Settings → site_name). */
     function site_name(): string
     {
-        $name = trim((string) setting('site_name', config('app.name', 'ShodeshiFood')));
+        $name = trim((string) setting('site_name', config('app.name')));
 
-        return $name !== '' ? $name : 'ShodeshiFood';
+        return $name !== '' ? $name : (string) config('app.name');
     }
 }
 
@@ -342,7 +342,7 @@ if (! function_exists('favicon_url')) {
             return asset('storage/' . ltrim($f, '/'));
         }
 
-        return asset('uploads/favicon.png');
+        return asset('uploads/favicon.webp');
     }
 }
 
@@ -364,7 +364,7 @@ if (! function_exists('logo_url')) {
             return asset('storage/' . ltrim($l, '/'));
         }
 
-        return asset('uploads/logo.png');
+        return asset('uploads/logo.webp');
     }
 }
 

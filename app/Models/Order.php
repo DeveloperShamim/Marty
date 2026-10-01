@@ -24,7 +24,11 @@ class Order extends Model
         'courier_sent_at'     => 'datetime',
         'courier_returned_at' => 'datetime',
         'return_restocked'    => 'boolean',
+        'stock_restored'      => 'boolean',
     ];
+
+    /** Statuses where the order's items are still owed to (or with) the customer. */
+    public const ACTIVE_STATUSES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
 
     public const STATUSES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'];
     public const PAYMENT_STATUSES = ['pending', 'verified', 'rejected'];
@@ -139,6 +143,11 @@ class Order extends Model
     /** Return reserved stock to product SKUs & products (e.g. when an order is cancelled or refunded). */
     public function restoreStock(): void
     {
+        // Idempotent: stock is only ever put back once until it is reserved again.
+        if ($this->stock_restored) {
+            return;
+        }
+
         $this->loadMissing('items.product');
 
         foreach ($this->items as $item) {
@@ -148,6 +157,57 @@ class Order extends Model
             } elseif ($item->product_id) {
                 Product::where('id', $item->product_id)->increment('stock_quantity', $item->quantity);
             }
+        }
+
+        $this->forceFill(['stock_restored' => true])->saveQuietly();
+    }
+
+    /** Take stock out again when a cancelled/returned order is reactivated. */
+    public function reserveStock(): void
+    {
+        if (! $this->stock_restored) {
+            return;
+        }
+
+        $this->loadMissing('items.product');
+
+        foreach ($this->items as $item) {
+            if ($item->product_sku_id && ($sku = ProductSku::find($item->product_sku_id))) {
+                $sku->update(['stock_quantity' => max(0, (int) $sku->stock_quantity - $item->quantity)]);
+                $item->product?->syncTotalStock();
+            } elseif ($item->product_id && ($product = Product::find($item->product_id))) {
+                $product->update(['stock_quantity' => max(0, (int) $product->stock_quantity - $item->quantity)]);
+            }
+        }
+
+        $this->forceFill(['stock_restored' => false])->saveQuietly();
+    }
+
+    /**
+     * Put a cancelled/returned order back into play: take its stock out again,
+     * re-count its coupon use and forget the old return (and its courier loss).
+     * Attributes are filled but not saved; the caller saves.
+     */
+    public function prepareReactivation(): void
+    {
+        if (! in_array($this->status, ['cancelled', 'returned'], true)) {
+            return;
+        }
+
+        $this->reserveStock();
+
+        if ($this->status === 'cancelled' && $this->coupon_id) {
+            $this->coupon?->incrementUsage();
+        }
+
+        if ($this->status === 'returned') {
+            $this->forceFill([
+                'return_restocked'    => false,
+                'return_type'         => null,
+                'return_reason'       => null,
+                'courier_returned_at' => null,
+                'courier_loss_amount' => 0,
+            ]);
         }
     }
 
@@ -161,7 +221,8 @@ class Order extends Model
 
     public function shouldRestoreStockOnCancel(): bool
     {
-        return ! in_array($this->status, ['cancelled'], true);
+        // A return already decided whether its stock went back (it may be damaged).
+        return ! in_array($this->status, ['cancelled', 'returned'], true);
     }
 
     public function isDispatchedToCourier(): bool
