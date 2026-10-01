@@ -7,6 +7,7 @@
   <title>@yield('title', 'Admin') &mdash; {{ site_name() }} Admin</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="{{ favicon_url() }}" />
+  <script>try{if(localStorage.getItem('admin.sidebar.collapsed')==='1')document.documentElement.classList.add('sb-collapsed')}catch(e){}</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = { theme: { extend: {

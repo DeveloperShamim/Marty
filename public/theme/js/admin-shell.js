@@ -57,3 +57,112 @@
     }, { passive: false });
   }
 })();
+
+/* Sidebar: group folding, menu search, desktop icon rail */
+(function () {
+  var sb = document.getElementById('sidebar');
+  if (!sb) return;
+  var root = document.documentElement;
+  var nav = sb.querySelector('.sidebar-nav');
+  var search = document.getElementById('sidebarSearch');
+  var empty = document.getElementById('sidebarNoResults');
+  var tip = document.getElementById('sidebarTip');
+  var collapseBtn = document.getElementById('sidebarCollapse');
+  var groups = Array.prototype.slice.call(sb.querySelectorAll('.sb-group'));
+
+  function store(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+
+  // Fold / unfold a group and remember it.
+  sb.querySelectorAll('.sb-group-toggle').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var g = btn.closest('.sb-group');
+      var folded = g.classList.toggle('is-folded');
+      btn.setAttribute('aria-expanded', folded ? 'false' : 'true');
+      store('admin.sidebar.folded', JSON.stringify(groups.filter(function (x) {
+        return x.classList.contains('is-folded');
+      }).map(function (x) { return x.dataset.group; })));
+    });
+  });
+
+  // Keep the current page visible in a long menu.
+  var current = nav && nav.querySelector('[aria-current="page"]');
+  if (current && nav.scrollHeight > nav.clientHeight) {
+    var top = current.offsetTop - nav.offsetTop;
+    if (top + current.offsetHeight > nav.clientHeight) nav.scrollTop = top - nav.clientHeight / 2;
+  }
+
+  // Search filters the menu; Enter opens the first match.
+  function hits() { return Array.prototype.slice.call(nav.querySelectorAll('.sb-item:not(.hidden)')); }
+  function filter() {
+    var q = search.value.trim().toLowerCase();
+    sb.classList.toggle('is-searching', q !== '');
+    var any = false;
+    groups.forEach(function (g) {
+      var shown = 0;
+      g.querySelectorAll('.sb-item').forEach(function (a) {
+        var ok = !q || q.split(/\s+/).every(function (w) { return a.dataset.search.indexOf(w) !== -1; });
+        a.classList.toggle('hidden', !ok);
+        a.classList.remove('is-hit');
+        if (ok) shown++;
+      });
+      g.classList.toggle('hidden', shown === 0);
+      if (shown) any = true;
+    });
+    if (q && any) hits()[0].classList.add('is-hit');
+    if (empty) empty.classList.toggle('hidden', any);
+  }
+  if (search) {
+    search.addEventListener('input', filter);
+    search.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        var first = hits()[0];
+        if (search.value.trim() && first) { e.preventDefault(); window.location = first.href; }
+      } else if (e.key === 'Escape') {
+        e.stopPropagation();
+        if (search.value) { search.value = ''; filter(); } else { search.blur(); }
+      }
+    });
+  }
+
+  // "/" jumps to the menu search (desktop), unless the user is typing somewhere.
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey || !search || window.innerWidth < 1024) return;
+    var t = e.target;
+    if (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+    e.preventDefault();
+    if (root.classList.contains('sb-collapsed')) setCollapsed(false);
+    search.focus();
+  });
+
+  // Desktop icon rail.
+  function setCollapsed(on) {
+    root.classList.toggle('sb-collapsed', on);
+    store('admin.sidebar.collapsed', on ? '1' : '0');
+    if (collapseBtn) collapseBtn.setAttribute('aria-label', on ? 'Expand sidebar' : 'Collapse sidebar');
+    if (on && search && search.value) { search.value = ''; filter(); }
+    if (tip) tip.classList.add('hidden');
+  }
+  if (collapseBtn) {
+    collapseBtn.setAttribute('aria-label', root.classList.contains('sb-collapsed') ? 'Expand sidebar' : 'Collapse sidebar');
+    collapseBtn.addEventListener('click', function () { setCollapsed(!root.classList.contains('sb-collapsed')); });
+  }
+
+  // Labels as tooltips while collapsed (the nav scrolls, so CSS tooltips would be clipped).
+  if (tip) {
+    sb.addEventListener('mouseover', function (e) {
+      var a = e.target.closest('.sb-item');
+      if (!a || !root.classList.contains('sb-collapsed') || window.innerWidth < 1024) return;
+      var r = a.getBoundingClientRect();
+      var badge = a.querySelector('.sb-badge');
+      tip.textContent = a.dataset.label + (badge ? ' (' + badge.textContent.trim() + ')' : '');
+      tip.style.left = (r.right + 10) + 'px';
+      tip.style.top = (r.top + r.height / 2) + 'px';
+      tip.style.transform = 'translateY(-50%)';
+      tip.classList.remove('hidden');
+    });
+    sb.addEventListener('mouseout', function (e) {
+      if (!e.relatedTarget || !sb.contains(e.relatedTarget) || !e.relatedTarget.closest('.sb-item')) tip.classList.add('hidden');
+    });
+    if (nav) nav.addEventListener('scroll', function () { tip.classList.add('hidden'); });
+  }
+})();

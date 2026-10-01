@@ -40,3 +40,33 @@
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+
+/* ---- Sidebar ---- */
+#sidebar .sb-group.is-folded .sb-items { display: none; }
+#sidebar .sb-group.is-folded .sb-chevron { transform: rotate(-90deg); }
+#sidebar.is-searching .sb-group-toggle { pointer-events: none; }
+#sidebar.is-searching .sb-group.is-folded .sb-items { display: block; }
+#sidebar .sb-item.is-hit { background: #f3f4f6; color: #111827; }
+
+/* Desktop icon rail (toggled with the Collapse button, remembered per browser) */
+@media (min-width: 1024px) {
+  .sb-collapsed #sidebar { width: 4.25rem; }
+  .sb-collapsed #sidebar .sb-label,
+  .sb-collapsed #sidebar .sb-search,
+  .sb-collapsed #sidebar .sb-group-toggle { display: none !important; }
+  .sb-collapsed #sidebar .sb-mark,
+  .sb-collapsed #sidebar .sb-divider,
+  .sb-collapsed #sidebar .sb-dot { display: block; }
+  .sb-collapsed #sidebar .sb-group { margin-top: 0; }
+  .sb-collapsed #sidebar .sb-group.is-folded .sb-items { display: block; }
+  .sb-collapsed #sidebar .sb-head { justify-content: center; padding: 0; }
+  .sb-collapsed #sidebar .sb-item { justify-content: center; padding: 0; }
+  .sb-collapsed #sidebar .sb-user { justify-content: center; }
+  .sb-collapsed #sidebar .sb-user > a { flex: none; }
+  .sb-collapsed #sidebar .sb-collapse-icon { transform: scaleX(-1); }
+  .sb-collapsed #sidebar .sb-dot { left: auto; right: .55rem; }
+}
+#sidebar .sb-chevron { opacity: 0; transition: opacity .15s, transform .15s; }
+#sidebar .sb-group-toggle:hover .sb-chevron,
+#sidebar .sb-group-toggle:focus-visible .sb-chevron,
+#sidebar .sb-group.is-folded .sb-chevron { opacity: 1; }
