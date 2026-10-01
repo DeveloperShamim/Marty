@@ -41,11 +41,11 @@
     </div>
   @endif
 
-  {{-- Media / Image Container --}}
-  <a href="{{ route('product.show', $product) }}" class="fk-card-media relative overflow-hidden block aspect-square bg-gradient-to-b from-stone-50/80 to-stone-100/40 p-2 sm:p-3 group/img">
-    <img src="{{ $img }}" alt="{{ $product->name }}" loading="lazy" decoding="async" class="w-full h-full object-contain mix-blend-multiply transition-all duration-500 ease-out group-hover/img:scale-108 {{ $secondaryImg ? 'group-hover/img:opacity-0' : '' }} {{ $isOutOfStock ? 'opacity-60 grayscale-[40%]' : '' }}" />
+  {{-- Media / Image Container (Full-bleed, edge-to-edge, zero blank space) --}}
+  <a href="{{ route('product.show', $product) }}" class="fk-card-media relative overflow-hidden block aspect-square bg-stone-100/70 !p-0 group/img">
+    <img src="{{ $img }}" alt="{{ $product->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover transition-all duration-500 ease-out group-hover/img:scale-105 {{ $secondaryImg ? 'group-hover/img:opacity-0' : '' }} {{ $isOutOfStock ? 'opacity-60 grayscale-[40%]' : '' }}" />
     @if($secondaryImg)
-      <img src="{{ $secondaryImg }}" alt="{{ $product->name }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-contain mix-blend-multiply transition-all duration-500 ease-out opacity-0 group-hover/img:opacity-100 group-hover/img:scale-108 {{ $isOutOfStock ? 'grayscale-[40%]' : '' }}" />
+      <img src="{{ $secondaryImg }}" alt="{{ $product->name }}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-out opacity-0 group-hover/img:opacity-100 group-hover/img:scale-105 {{ $isOutOfStock ? 'grayscale-[40%]' : '' }}" />
     @endif
   </a>
 
@@ -91,29 +91,41 @@
       </div>
     @endif
 
-    {{-- Add to Cart Action --}}
+    {{-- Modern Split Action Buttons (View Details + Quick Add Bag) --}}
     @if($isOutOfStock)
-      <button type="button" disabled class="w-full mt-auto py-2 px-2 sm:py-2.5 sm:px-3 rounded-xl bg-stone-100 text-stone-400 font-bold text-[11px] sm:text-xs cursor-not-allowed border border-stone-200 text-center pointer-events-none select-none" aria-disabled="true">
-        Out of Stock
-      </button>
+      <div class="flex items-center gap-1.5 sm:gap-2 mt-auto pt-1 w-full relative z-10">
+        <a href="{{ route('product.show', $product) }}" class="flex-1 min-w-0 h-10 sm:h-11 rounded-xl sm:rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 transition-all select-none">
+          <svg class="w-4 h-4 shrink-0 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          <span class="truncate">View Details</span>
+        </a>
+        <button type="button" disabled class="w-10 sm:w-11 h-10 sm:h-11 rounded-xl sm:rounded-2xl bg-stone-100 text-stone-400 flex items-center justify-center shrink-0 cursor-not-allowed border border-stone-200" title="Out of Stock">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        </button>
+      </div>
     @else
-      <button type="button" class="fk-add-btn add-to-cart w-full mt-auto py-2 px-2 sm:py-2.5 sm:px-3 rounded-xl font-extrabold text-[11px] sm:text-xs flex items-center justify-center gap-1 sm:gap-1.5 shadow-2xs hover:shadow-md active:scale-95 transition-all cursor-pointer select-none touch-manipulation" 
-              data-product-id="{{ $product->id }}" 
-              data-title="{{ $product->name }}" 
-              data-stock="{{ $product->stock_quantity }}"
-              data-price="{{ money($product->price) }}"
-              data-raw-price="{{ (float) $product->price }}"
-              data-regular-price="{{ $product->on_sale ? money($product->regular_price) : '' }}"
-              data-raw-regular-price="{{ $product->on_sale && $product->regular_price ? (float) $product->regular_price : '' }}"
-              data-discount="{{ $discount }}"
-              data-image="{{ $img }}"
-              data-url="{{ route('product.show', $product) }}"
-              data-has-variants="{{ $hasVariants ? 'true' : 'false' }}"
-              data-variants="{{ json_encode($variantsGrouped) }}"
-              data-skus="{{ json_encode($product->skus ? $product->skus->map(fn($s) => ['id' => $s->id, 'attributes' => $s->getAttributesData(), 'stock' => (int) $s->stock_quantity, 'price_adjustment' => (float) $s->price_adjustment, 'regular_price' => $s->getCalculatedRegularPrice(), 'sale_price' => $s->getCalculatedSalePrice()])->values() : []) }}">
-        <svg class="w-4 h-4 shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-        <span class="relative z-10 pointer-events-auto select-none">{{ $cta }}</span>
-      </button>
+      <div class="flex items-center gap-1.5 sm:gap-2 mt-auto pt-1 w-full relative z-10">
+        <a href="{{ route('product.show', $product) }}" class="flex-1 min-w-0 h-10 sm:h-11 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 text-white transition-all shadow-xs hover:shadow-md active:scale-[0.98] select-none btn-view-details" style="background-color: var(--brand-primary, #1D68FE);">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          <span class="truncate">View Details</span>
+        </a>
+        <button type="button" class="fk-add-btn fk-icon-only add-to-cart w-10 sm:w-11 h-10 sm:h-11 rounded-xl sm:rounded-2xl text-white flex items-center justify-center shrink-0 shadow-xs hover:shadow-md active:scale-95 transition-all cursor-pointer select-none touch-manipulation" 
+                aria-label="Add to Cart"
+                data-product-id="{{ $product->id }}" 
+                data-title="{{ $product->name }}" 
+                data-stock="{{ $product->stock_quantity }}"
+                data-price="{{ money($product->price) }}"
+                data-raw-price="{{ (float) $product->price }}"
+                data-regular-price="{{ $product->on_sale ? money($product->regular_price) : '' }}"
+                data-raw-regular-price="{{ $product->on_sale && $product->regular_price ? (float) $product->regular_price : '' }}"
+                data-discount="{{ $discount }}"
+                data-image="{{ $img }}"
+                data-url="{{ route('product.show', $product) }}"
+                data-has-variants="{{ $hasVariants ? 'true' : 'false' }}"
+                data-variants="{{ json_encode($variantsGrouped) }}"
+                data-skus="{{ json_encode($product->skus ? $product->skus->map(fn($s) => ['id' => $s->id, 'attributes' => $s->getAttributesData(), 'stock' => (int) $s->stock_quantity, 'price_adjustment' => (float) $s->price_adjustment, 'regular_price' => $s->getCalculatedRegularPrice(), 'sale_price' => $s->getCalculatedSalePrice()])->values() : []) }}">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        </button>
+      </div>
     @endif
   </div>
 </article>

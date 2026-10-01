@@ -57,32 +57,32 @@
   </nav>
 
   {{-- Main Product Card Container --}}
-  <div class="bg-white rounded-2xl sm:rounded-3xl border border-stone-200/80 p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-6 md:gap-8 lg:gap-12 items-start shadow-xs">
+  <div class="bg-white rounded-2xl sm:rounded-3xl shadow-[0_2px_24px_-4px_rgba(0,0,0,0.04)] border border-stone-100 p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-6 md:gap-8 lg:gap-12 items-start">
     {{-- Left: Gallery (Horizontal Thumbnails on Mobile/Tablet, Vertical on Desktop) --}}
     <div class="flex flex-col-reverse lg:flex-row gap-3 sm:gap-4 items-start w-full lg:w-1/2 shrink-0">
       @if($product->images->count() > 0)
-        <div class="flex lg:flex-col gap-2 sm:gap-2.5 overflow-x-auto lg:overflow-y-auto w-full lg:w-20 shrink-0 pb-1.5 lg:pb-0 max-h-[480px] no-scrollbar">
+        <div class="flex lg:flex-col gap-2.5 sm:gap-3 overflow-x-auto lg:overflow-y-auto w-full lg:w-20 shrink-0 pb-1.5 lg:pb-0 max-h-[480px] no-scrollbar">
           @foreach($product->images as $img)
-            <button type="button" data-thumb="{{ $img->url() }}" data-color="{{ strtolower(trim($img->color ?? '')) }}" data-variation-tag="{{ strtolower(trim($img->color ?? '')) }}" data-alt="{{ strtolower(trim($img->alt ?? '')) }}" class="gallery-thumb-btn w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl border {{ $loop->first ? 'border-stone-900 ring-2 ring-stone-900/10' : 'border-stone-200 opacity-75 hover:opacity-100 hover:border-stone-400' }} shrink-0 bg-white overflow-hidden p-1 transition-all focus:outline-none cursor-pointer">
-              <img src="{{ $img->url() }}" loading="lazy" decoding="async" class="w-full h-full object-contain" alt="{{ $img->alt }}">
+            <button type="button" data-thumb="{{ $img->url() }}" data-color="{{ strtolower(trim($img->color ?? '')) }}" data-variation-tag="{{ strtolower(trim($img->color ?? '')) }}" data-alt="{{ strtolower(trim($img->alt ?? '')) }}" class="gallery-thumb-btn relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl sm:rounded-2xl {{ $loop->first ? 'opacity-100 shadow-md scale-100' : 'opacity-40 hover:opacity-80 scale-95 hover:scale-100' }} shrink-0 overflow-hidden transition-all duration-300 focus:outline-none focus:ring-0 active:outline-none border-0 outline-none cursor-pointer p-0 block bg-transparent">
+              <img src="{{ $img->url() }}" loading="lazy" decoding="async" class="w-full h-full object-cover pointer-events-none block" alt="{{ $img->alt }}">
             </button>
           @endforeach
         </div>
       @endif
 
-      <div class="flex-1 relative border border-stone-200/80 rounded-2xl sm:rounded-3xl aspect-square w-full bg-white overflow-hidden shadow-xs flex items-center justify-center group p-3 sm:p-5">
-        {{-- Minimal Floating Badge --}}
-        <div class="absolute top-3 sm:top-3.5 left-3 sm:left-3.5 z-10 pointer-events-none">
+      <div class="flex-1 relative rounded-2xl sm:rounded-3xl aspect-square w-full bg-stone-100/70 overflow-hidden shadow-[0_4px_24px_-4px_rgba(0,0,0,0.05)] flex items-center justify-center group">
+        {{-- Minimal Modern Floating Badge --}}
+        <div id="pdImageDiscountWrap" class="absolute top-3.5 left-3.5 z-10 pointer-events-none">
           @if($isOutOfStock)
-            <span class="bg-stone-900 text-white font-bold text-[10px] sm:text-[11px] px-2.5 py-1 rounded-md tracking-tight uppercase">
+            <span class="inline-flex items-center gap-1.5 bg-stone-950/85 backdrop-blur-md text-white font-bold text-[10px] sm:text-[11px] px-3 py-1.5 rounded-full tracking-wider uppercase shadow-sm">
               Out of Stock
             </span>
           @elseif($product->on_sale)
-            <span id="pdImageDiscountBadge" class="bg-stone-900 text-white font-bold text-[10px] sm:text-[11px] px-2.5 py-1 rounded-md tracking-tight">
+            <span id="pdImageDiscountBadge" class="inline-flex items-center gap-1 bg-stone-950/85 backdrop-blur-md text-white font-bold text-[10px] sm:text-[11px] px-3 py-1.5 rounded-full tracking-tight shadow-sm">
               {{ $product->discount_percent }}% OFF
             </span>
           @else
-            <span id="pdImageDiscountBadge" class="hidden bg-stone-900 text-white font-bold text-[10px] sm:text-[11px] px-2.5 py-1 rounded-md tracking-tight">
+            <span id="pdImageDiscountBadge" class="hidden inline-flex items-center gap-1 bg-stone-950/85 backdrop-blur-md text-white font-bold text-[10px] sm:text-[11px] px-3 py-1.5 rounded-full tracking-tight shadow-sm">
               0% OFF
             </span>
           @endif
@@ -90,27 +90,28 @@
 
         {{-- Mobile & Tablet Image Counter Pill --}}
         @if($product->images->count() > 1)
-          <div id="galleryCounterPill" class="absolute bottom-3 left-3 z-10 bg-stone-900/75 backdrop-blur-xs text-white px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider font-mono pointer-events-none shadow-xs">
+          <div id="galleryCounterPill" class="absolute bottom-3.5 left-3.5 z-10 bg-stone-950/60 backdrop-blur-md text-white/95 px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-wider font-mono pointer-events-none shadow-sm">
             <span id="galleryCurrentIdx">1</span> / {{ $product->images->count() }}
           </div>
         @endif
 
+        {{-- Smooth Borderless Nav Arrows --}}
         @if($product->images->count() > 1)
-          <button type="button" id="pdPrevImg" class="absolute left-2 sm:left-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/95 hover:bg-white shadow-md border border-stone-200 text-stone-700 hover:text-stone-900 flex items-center justify-center transition-all opacity-85 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer" aria-label="Previous Image">
-            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          <button type="button" id="pdPrevImg" class="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/85 hover:bg-white backdrop-blur-md shadow-md text-stone-800 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer border-0" aria-label="Previous Image">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
           </button>
-          <button type="button" id="pdNextImg" class="absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/95 hover:bg-white shadow-md border border-stone-200 text-stone-700 hover:text-stone-900 flex items-center justify-center transition-all opacity-85 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer" aria-label="Next Image">
-            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <button type="button" id="pdNextImg" class="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/85 hover:bg-white backdrop-blur-md shadow-md text-stone-800 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer border-0" aria-label="Next Image">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
           </button>
         @endif
 
-        {{-- Zoom Hint (Desktop only) --}}
-        <div class="hidden sm:flex absolute bottom-3 right-3 z-10 bg-white/90 backdrop-blur-xs text-stone-500 px-2 py-1 rounded-lg border border-stone-200/80 pointer-events-none items-center gap-1 text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+        {{-- Modern Frosted Zoom Hint (Desktop only) --}}
+        <div class="hidden sm:flex absolute bottom-3.5 right-3.5 z-10 bg-white/85 backdrop-blur-md text-stone-700 px-3 py-1.5 rounded-full shadow-sm pointer-events-none items-center gap-1.5 text-xs font-medium opacity-0 group-hover:opacity-100 transition-all duration-200 border-0">
+          <svg class="w-3.5 h-3.5 text-stone-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
           <span>Zoom</span>
         </div>
 
-        <img id="galleryMain" data-gallery-main src="{{ $product->imageUrl() }}" loading="lazy" decoding="async" class="w-full h-full object-contain select-none {{ $isOutOfStock ? 'opacity-70 grayscale-[30%]' : '' }}" alt="{{ $product->name }}" />
+        <img id="galleryMain" data-gallery-main src="{{ $product->imageUrl() }}" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 select-none {{ $isOutOfStock ? 'opacity-70 grayscale-[30%]' : '' }}" alt="{{ $product->name }}" />
       </div>
     </div>
 
@@ -824,10 +825,10 @@
   @endif
 
   {{-- Image Lightbox Modal --}}
-  <div id="imageLightboxModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 hidden transition-opacity duration-300 opacity-0" aria-hidden="true">
-    <div class="relative max-w-4xl w-full max-h-[90vh] bg-white rounded-2xl p-4 overflow-hidden flex flex-col items-center justify-center shadow-2xl">
-      <button type="button" id="closeLightbox" class="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 font-extrabold flex items-center justify-center text-base transition-colors focus:outline-none" aria-label="Close Lightbox">✕</button>
-      <img id="lightboxImg" src="" class="max-h-[82vh] w-auto h-auto object-contain rounded-xl" alt="Enlarged product image" />
+  <div id="imageLightboxModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 hidden transition-opacity duration-300 opacity-0" aria-hidden="true">
+    <div class="relative max-w-4xl w-full max-h-[92vh] bg-stone-950/80 backdrop-blur-md rounded-2xl sm:rounded-3xl p-2 sm:p-3 overflow-hidden flex flex-col items-center justify-center shadow-2xl">
+      <button type="button" id="closeLightbox" class="absolute top-3 sm:top-4 right-3 sm:right-4 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-bold flex items-center justify-center text-lg transition-all focus:outline-none cursor-pointer" aria-label="Close Lightbox">✕</button>
+      <img id="lightboxImg" src="" class="max-h-[86vh] w-auto h-auto object-contain rounded-xl sm:rounded-2xl" alt="Enlarged product image" />
     </div>
   </div>
 
@@ -877,14 +878,17 @@
     if (counterEl) counterEl.textContent = currentIndex + 1;
 
     thumbBtns.forEach((x, i) => {
+      const oldIndicator = x.querySelector('[data-thumb-indicator]');
+      if (oldIndicator) oldIndicator.remove();
       const check = x.querySelector('[data-active-check]');
       if (check) check.remove();
+
       if (i === currentIndex) {
-        x.classList.add('border-stone-900', 'ring-2', 'ring-stone-900/10');
-        x.classList.remove('border-stone-200', 'opacity-75');
+        x.classList.add('opacity-100', 'shadow-md', 'scale-100');
+        x.classList.remove('opacity-40', 'scale-95');
       } else {
-        x.classList.remove('border-stone-900', 'ring-2', 'ring-stone-900/10');
-        x.classList.add('border-stone-200', 'opacity-75');
+        x.classList.remove('opacity-100', 'shadow-md', 'scale-100');
+        x.classList.add('opacity-40', 'scale-95');
       }
     });
   }

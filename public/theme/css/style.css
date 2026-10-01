@@ -82,14 +82,14 @@ body {
   justify-content: center;
   aspect-ratio: 1;
   background: #f8f9fa;
-  padding: 12px;
+  padding: 0;
   position: relative;
   overflow: hidden;
 }
 .fk-card-media img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .fk-card:hover .fk-card-media img {
@@ -390,4 +390,83 @@ body {
   opacity: 1 !important;
   width: 22px !important;
   border-radius: 6px !important;
+}
+
+/* Modern Borderless Gallery Thumbnails — completely zero outlines & zero borders */
+.gallery-thumb-btn,
+button.gallery-thumb-btn,
+[data-thumb] {
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+.gallery-thumb-btn:focus,
+.gallery-thumb-btn:focus-visible,
+.gallery-thumb-btn:active,
+button.gallery-thumb-btn:focus,
+button.gallery-thumb-btn:focus-visible,
+button.gallery-thumb-btn:active,
+[data-thumb]:focus,
+[data-thumb]:focus-visible,
+[data-thumb]:active {
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-focus-ring-color: transparent !important;
+}
+
+/* Split Card Actions: View Details + Quick Bag Button */
+.btn-view-details {
+  background-color: var(--brand-primary, #1D68FE) !important;
+  color: #ffffff !important;
+  border-radius: 14px !important;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--brand-primary, #1D68FE) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-view-details:hover {
+  background-color: var(--brand-hover, #1558E0) !important;
+  border-color: var(--brand-hover, #1558E0) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(29, 104, 254, 0.25) !important;
+}
+
+.fk-add-btn.fk-icon-only {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  padding: 0 !important;
+  border-radius: 14px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+@media (min-width: 640px) {
+  .fk-add-btn.fk-icon-only {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+  }
+}
+
+/* Floating Customer Support Speed Dial - click-through fix */
+#chatSpeedDialRoot {
+  pointer-events: none !important;
+}
+#chatSpeedDialToggleBtn {
+  pointer-events: auto !important;
+}
+#chatSpeedDialIcons:not(.is-open) {
+  pointer-events: none !important;
+}
+#chatSpeedDialIcons.is-open {
+  pointer-events: auto !important;
+}
+#chatSpeedDialIcons.is-open a {
+  pointer-events: auto !important;
 }

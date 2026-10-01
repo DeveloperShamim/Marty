@@ -704,16 +704,11 @@
             mainImg.src = matchedThumb.dataset.thumb;
           }
           thumbBtns.forEach((b) => {
-            b.classList.remove("border-brand-500", "ring-2", "ring-brand-500");
-            b.classList.add("border-stone-200", "opacity-80");
+            b.classList.remove("border-brand-500", "ring-2", "ring-brand-500", "border-stone-200");
             const check = b.querySelector("[data-active-check]");
             if (check) check.remove();
           });
-          matchedThumb.classList.add("border-brand-500");
-          matchedThumb.classList.remove("border-stone-200", "opacity-80");
-          if (!matchedThumb.querySelector("[data-active-check]")) {
-            matchedThumb.insertAdjacentHTML("beforeend", '<span data-active-check class="absolute inset-0 flex items-center justify-center pointer-events-none"><span class="w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-xs">✓</span></span>');
-          }
+          matchedThumb.click();
         }
       }
     }

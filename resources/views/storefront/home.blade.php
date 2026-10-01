@@ -26,7 +26,7 @@
             : 'col-span-2 lg:col-span-10';
         @endphp
 
-        <div class="{{ $sliderClasses }} relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-center aspect-[15/8] w-full bg-transparent">
+        <div class="{{ $sliderClasses }} relative rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-center aspect-[15/8] w-full bg-transparent">
           @if($heroBanners->count() > 1)
             {{-- Carousel Slider --}}
             <div id="homeHeroSlider" class="relative w-full h-full aspect-[15/8] overflow-hidden select-none">
@@ -96,7 +96,7 @@
 
         {{-- Side Promo Tiles --}}
         @foreach($heroSideBanners->take(2) as $sideCard)
-          <a href="{{ $sideCard->linkHref() }}" class="col-span-1 lg:col-span-3 relative flex rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-0.5 bg-transparent aspect-[868/476] lg:aspect-auto lg:h-full min-h-0" aria-label="{{ $sideCard->title ?: 'Promo Card' }}">
+          <a href="{{ $sideCard->linkHref() }}" class="col-span-1 lg:col-span-3 relative flex rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-0.5 bg-transparent aspect-[868/476] lg:aspect-auto lg:h-full min-h-0" aria-label="{{ $sideCard->title ?: 'Promo Card' }}">
             @if($sideCard->image)
               <img src="{{ $sideCard->imageUrl() }}" alt="{{ $sideCard->title }}" class="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-500" loading="lazy">
             @else
