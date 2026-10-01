@@ -56,7 +56,10 @@
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-brand-600">
               <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
             </div>
-            <input type="text" id="barcodeScanInput" autofocus placeholder="Scan Barcode / Press F2 (Gun Ready)" class="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 text-xs sm:text-sm font-mono font-bold bg-white border-2 border-brand-500 rounded-xl shadow-xs focus:outline-none focus:ring-2 focus:ring-brand-500/30 text-slate-900 placeholder-slate-400">
+            <input type="text" id="barcodeScanInput" autofocus placeholder="Scan Barcode / Press F2 (Gun Ready)" class="w-full pl-9 sm:pl-10 pr-12 py-2 sm:py-2.5 text-xs sm:text-sm font-mono font-bold bg-white border-2 border-brand-500 rounded-xl shadow-xs focus:outline-none focus:ring-2 focus:ring-brand-500/30 text-slate-900 placeholder-slate-400">
+            <button type="button" onclick="openPosCamera()" class="absolute inset-y-1 right-1 w-10 rounded-lg text-brand-700 hover:bg-brand-50 flex items-center justify-center" title="Scan with camera" aria-label="Scan with camera">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+            </button>
           </div>
 
           {{-- Name/SKU Keyword Search --}}
@@ -289,6 +292,7 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset('theme/js/camera-scanner.js') }}?v={{ @filemtime(public_path('theme/js/camera-scanner.js')) ?: '1' }}"></script>
 <script>
   // POS State
   let cart = [];
@@ -474,28 +478,40 @@
   }
 
   // Handle Barcode Scan from Gun
-  function handleBarcodeScan(code) {
-    fetch(`{{ route('admin.pos.scan') }}?code=${encodeURIComponent(code)}`)
+  // Returns { ok, message, close } so the camera scanner can show the result.
+  function handleBarcodeScan(code, fromCamera = false) {
+    return fetch(`{{ route('admin.pos.scan') }}?code=${encodeURIComponent(code)}`)
       .then(res => res.json())
       .then(data => {
         if (!data.found) {
           playBeep('error');
-          alert(`No product found for barcode: "${code}"`);
-          return;
+          const message = `No product found for barcode: "${code}"`;
+          if (!fromCamera) alert(message);
+          return { ok: false, message };
         }
-
         playBeep('success');
 
         if (data.needs_sku) {
           showVariantModal(data.product);
-        } else {
-          addToCart(data.item);
+          // Close the camera so the size/colour picker is visible.
+          return { ok: true, close: true, message: `${data.product.name}: choose an option` };
         }
+        addToCart(data.item);
+        return { ok: true, message: `Added: ${data.item.name}` };
       })
       .catch(err => {
         playBeep('error');
         console.error(err);
+        return { ok: false, message: 'Could not reach the server. Try again.' };
       });
+  }
+
+  function openPosCamera() {
+    CameraScanner.open({
+      title: 'Scan products',
+      continuous: true,
+      onScan: code => handleBarcodeScan(code, true),
+    });
   }
 
   // Product Click Handler

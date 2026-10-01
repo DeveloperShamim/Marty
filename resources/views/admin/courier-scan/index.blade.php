@@ -63,7 +63,8 @@
         {{-- Barcode Gun Input --}}
         <div class="md:col-span-8">
           <label class="block text-xs font-bold text-gray-700 mb-1">Scan Parcel Barcode / Invoice # (Gun Ready)</label>
-          <div class="relative">
+          <div class="flex gap-2">
+          <div class="relative flex-1 min-w-0">
             <input type="text" id="dispatchScanInput" autofocus placeholder="Scan barcode with scanner gun or type order #..." class="w-full pl-10 pr-24 py-2.5 text-sm font-mono font-black bg-emerald-50/40 border-2 border-emerald-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/30 text-gray-900 placeholder-gray-400">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-emerald-600">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
@@ -71,6 +72,10 @@
             <button type="button" onclick="triggerDispatchScan()" class="absolute inset-y-1 right-1 px-4 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors">
               Enter
             </button>
+          </div>
+          <button type="button" onclick="openDispatchCamera()" class="shrink-0 w-11 rounded-xl border-2 border-emerald-500 bg-white text-emerald-700 hover:bg-emerald-50 flex items-center justify-center" title="Scan with camera" aria-label="Scan with camera">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+          </button>
           </div>
         </div>
 
@@ -164,13 +169,18 @@
     <div class="bg-white rounded-2xl border-2 border-amber-500 shadow-sm p-5 space-y-4">
       <div>
         <label class="block text-xs font-bold text-gray-700 mb-1">Scan Returned Parcel Barcode / Invoice #</label>
-        <div class="relative">
+        <div class="flex gap-2">
+        <div class="relative flex-1 min-w-0">
           <input type="text" id="returnScanInput" placeholder="Scan barcode on returned package..." class="w-full pl-10 pr-24 py-2.5 text-sm font-mono font-black bg-amber-50/40 border-2 border-amber-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/30 text-gray-900 placeholder-gray-400">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-amber-600">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           </div>
           <button type="button" onclick="triggerReturnLookup()" class="absolute inset-y-1 right-1 px-4 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors">
             Lookup
+          </button>
+        </div>
+        <button type="button" onclick="openReturnCamera()" class="shrink-0 w-11 rounded-xl border-2 border-amber-500 bg-white text-amber-700 hover:bg-amber-50 flex items-center justify-center" title="Scan with camera" aria-label="Scan with camera">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
           </button>
         </div>
       </div>
@@ -348,6 +358,7 @@
 </div>
 
 @push('scripts')
+<script src="{{ asset('theme/js/camera-scanner.js') }}?v={{ @filemtime(public_path('theme/js/camera-scanner.js')) ?: '1' }}"></script>
 <script>
   let scanAudioCtx = null;
 
@@ -444,7 +455,8 @@
   });
 
   // DISPATCH SCAN LOGIC
-  async function triggerDispatchScan(forcedCode = null) {
+  // Returns { ok, message } so the camera scanner can show the result.
+  async function triggerDispatchScan(forcedCode = null, fromCamera = false) {
     const input = document.getElementById('dispatchScanInput');
     const code = (forcedCode || input.value || '').trim();
     if (!code) {
@@ -480,13 +492,13 @@
       const data = await res.json().catch(() => null);
 
       input.value = '';
-      input.focus();
+      if (!fromCamera) input.focus();
 
       if (!res.ok || !data) {
         playSound('error');
         alertBox.className = "p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200 block";
         alertBox.innerText = (data && data.message) ? data.message : `HTTP ${res.status}: Failed to communicate with dispatch server.`;
-        return;
+        return { ok: false, message: alertBox.innerText };
       }
 
       if (data.success) {
@@ -511,17 +523,46 @@
             }
           }
         }
+        return { ok: true, message: data.message };
       } else {
         playSound('error');
         alertBox.className = "p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200 block";
         alertBox.innerText = data.message || 'Dispatch scan rejected.';
+        return { ok: false, message: alertBox.innerText };
       }
     } catch (err) {
       playSound('error');
       alertBox.className = "p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200 block";
       alertBox.innerText = "Network or script error: " + (err.message || 'Unknown error');
       console.error(err);
+      return { ok: false, message: alertBox.innerText };
     }
+  }
+
+  // Several parcels can be dispatched in a row without closing the camera.
+  function openDispatchCamera() {
+    CameraScanner.open({
+      title: 'Dispatch parcels',
+      continuous: true,
+      onScan: code => triggerDispatchScan(code, true),
+    });
+  }
+
+  // A return is looked up one parcel at a time, so the camera closes to show the details.
+  function openReturnCamera() {
+    CameraScanner.open({
+      title: 'Scan returned parcel',
+      onScan: code => {
+        document.getElementById('returnScanInput').value = code;
+        triggerReturnLookup();
+        return { ok: true, message: `Looking up ${code}` };
+      },
+    });
+  }
+
+  // Order data includes what customers typed at checkout, so it is escaped before going into HTML.
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
   }
 
   function quickDispatchOrder(orderNum) {
@@ -540,20 +581,20 @@
 
     tr.innerHTML = `
       <td class="py-2.5 px-4 font-mono font-bold text-brand-700">
-        <a href="/admin/orders/${ord.order_number}" target="_blank" class="hover:underline">${ord.order_number}</a>
+        <a href="/admin/orders/${encodeURIComponent(ord.order_number)}" target="_blank" class="hover:underline">${escapeHtml(ord.order_number)}</a>
       </td>
       <td class="py-2.5 px-4">
-        <span class="font-bold text-gray-800">${ord.customer_name}</span>
-        <span class="text-[11px] text-gray-400 block">${ord.phone}</span>
+        <span class="font-bold text-gray-800">${escapeHtml(ord.customer_name)}</span>
+        <span class="text-[11px] text-gray-400 block">${escapeHtml(ord.phone)}</span>
       </td>
-      <td class="py-2.5 px-4 text-gray-600">${ord.city || 'N/A'}</td>
+      <td class="py-2.5 px-4 text-gray-600">${escapeHtml(ord.city || 'N/A')}</td>
       <td class="py-2.5 px-4">
         <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-          ${ord.courier}
+          ${escapeHtml(ord.courier)}
         </span>
       </td>
       <td class="py-2.5 px-4 text-right font-extrabold text-gray-900">৳${parseFloat(ord.total).toFixed(2)}</td>
-      <td class="py-2.5 px-4 text-center text-gray-500">${ord.dispatched_at}</td>
+      <td class="py-2.5 px-4 text-center text-gray-500">${escapeHtml(ord.dispatched_at)}</td>
     `;
 
     tbody.insertBefore(tr, tbody.firstChild);
@@ -714,17 +755,17 @@
 
     tr.innerHTML = `
       <td class="py-2.5 px-4 font-mono font-bold text-brand-700">
-        <a href="/admin/orders/${ord.order_number}" target="_blank" class="hover:underline">${ord.order_number}</a>
+        <a href="/admin/orders/${encodeURIComponent(ord.order_number)}" target="_blank" class="hover:underline">${escapeHtml(ord.order_number)}</a>
       </td>
       <td class="py-2.5 px-4">
-        <span class="font-bold text-gray-800">${ord.customer_name}</span>
+        <span class="font-bold text-gray-800">${escapeHtml(ord.customer_name)}</span>
       </td>
       <td class="py-2.5 px-4">${typeBadge}</td>
       <td class="py-2.5 px-4 font-bold ${ord.return_restocked ? 'text-emerald-600' : 'text-gray-400'}">
         ${ord.return_restocked ? '✓ Restocked' : 'Not restocked'}
       </td>
       <td class="py-2.5 px-4 text-right font-extrabold text-rose-600">${lossDisplay}</td>
-      <td class="py-2.5 px-4 text-center text-gray-500">${ord.returned_at}</td>
+      <td class="py-2.5 px-4 text-center text-gray-500">${escapeHtml(ord.returned_at)}</td>
     `;
 
     tbody.insertBefore(tr, tbody.firstChild);
