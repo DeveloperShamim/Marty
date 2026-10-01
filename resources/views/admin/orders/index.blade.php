@@ -40,6 +40,7 @@
         $tabs = [
           'all'                  => 'All Orders',
           'pending_verification' => 'Pending Verification',
+          'not_printed'          => 'Not Printed',
           'confirmed'            => 'Confirmed',
           'processing'           => 'Processing',
           'shipped'              => 'Shipped',
@@ -106,7 +107,10 @@
         <div class="p-3.5 space-y-2.5 hover:bg-gray-50/70 transition-colors">
           {{-- Card Header: Order #, Date & Total --}}
           <div class="flex items-start justify-between gap-2">
-            <div>
+            <label class="-m-2 p-2 shrink-0 cursor-pointer" title="Select for printing">
+              <input type="checkbox" value="{{ $order->order_number }}" class="order-select h-4 w-4 rounded border-gray-300 text-teal-700 focus:ring-teal-600 cursor-pointer" aria-label="Select order {{ $order->order_number }}">
+            </label>
+            <div class="flex-1 min-w-0">
               <a href="{{ route('admin.orders.show', $order) }}" class="font-bold text-primary hover:underline text-sm font-mono block">
                 {{ $order->order_number }}
               </a>
@@ -115,6 +119,9 @@
                 <span>&middot;</span>
                 <span>{{ $order->created_at->format('d M, g:i A') }}</span>
               </div>
+              @if($order->prints->isNotEmpty())
+                <div class="flex gap-1 mt-1">@include('admin.orders.partials.print-badges')</div>
+              @endif
             </div>
             <div class="text-right shrink-0">
               <span class="text-base font-bold text-gray-900 font-mono block">
@@ -190,7 +197,10 @@
               </form>
             @endif
 
-            <a href="{{ route('admin.orders.invoice', $order) }}" target="_blank" class="py-1.5 px-3 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 font-semibold text-xs transition-colors inline-flex items-center gap-1">
+            <a href="{{ route('admin.orders.labels', ['orders' => [$order->order_number], 'print' => 1]) }}" target="_blank" data-print-link data-print-warning="{{ $order->printWarning('label') }}" class="py-1.5 px-3 rounded-xl bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 font-semibold text-xs transition-colors inline-flex items-center gap-1">
+              Label
+            </a>
+            <a href="{{ route('admin.orders.invoice', ['order' => $order, 'print' => 1]) }}" target="_blank" data-invoice-link data-print-link data-print-warning="{{ $order->printWarning('invoice') }}" class="py-1.5 px-3 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 font-semibold text-xs transition-colors inline-flex items-center gap-1">
               Invoice
             </a>
           </div>
@@ -207,6 +217,9 @@
       <table class="w-full text-left text-xs border-collapse">
         <thead>
           <tr class="bg-gray-50 text-gray-600 uppercase text-[11px] font-semibold tracking-wider border-b border-gray-200 whitespace-nowrap">
+            <th class="py-3 pl-3 lg:pl-4 pr-0 w-8">
+              <input type="checkbox" id="selectAllOrders" class="h-4 w-4 rounded border-gray-300 text-teal-700 focus:ring-teal-600 cursor-pointer" title="Select all on this page" aria-label="Select all orders on this page">
+            </th>
             <th class="py-3 px-3 lg:px-4">Order #</th>
             <th class="py-3 px-3 lg:px-4">Customer</th>
             <th class="py-3 px-3 lg:px-4 text-center">Total</th>
@@ -220,6 +233,9 @@
         <tbody class="divide-y divide-gray-100 bg-white">
           @forelse($orders as $order)
             <tr class="hover:bg-gray-50/70 transition-colors whitespace-nowrap">
+              <td class="py-3 pl-3 lg:pl-4 pr-0">
+                <input type="checkbox" value="{{ $order->order_number }}" class="order-select h-4 w-4 rounded border-gray-300 text-teal-700 focus:ring-teal-600 cursor-pointer" aria-label="Select order {{ $order->order_number }}">
+              </td>
               {{-- Order Number --}}
               <td class="py-3 px-3 lg:px-4 whitespace-nowrap">
                 <a href="{{ route('admin.orders.show', $order) }}" class="font-bold text-primary hover:underline block text-xs font-mono">
@@ -228,6 +244,9 @@
                 <span class="text-[11px] text-gray-400 block mt-0.5">
                   {{ $order->items_count }} item(s)
                 </span>
+                @if($order->prints->isNotEmpty())
+                  <span class="flex gap-1 mt-1">@include('admin.orders.partials.print-badges')</span>
+                @endif
               </td>
 
               {{-- Customer Info --}}
@@ -312,7 +331,10 @@
                     </form>
                   @endif
 
-                  <a href="{{ route('admin.orders.invoice', $order) }}" target="_blank" title="Print Invoice" class="w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 font-semibold transition-colors inline-flex items-center justify-center text-xs">
+                  <a href="{{ route('admin.orders.labels', ['orders' => [$order->order_number], 'print' => 1]) }}" target="_blank" data-print-link data-print-warning="{{ $order->printWarning('label') }}" title="Print Parcel Label" aria-label="Print parcel label" class="w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 transition-colors inline-flex items-center justify-center">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
+                  </a>
+                  <a href="{{ route('admin.orders.invoice', ['order' => $order, 'print' => 1]) }}" target="_blank" data-invoice-link data-print-link data-print-warning="{{ $order->printWarning('invoice') }}" title="Print Invoice" class="w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 font-semibold transition-colors inline-flex items-center justify-center text-xs">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                   </a>
                 </div>
@@ -320,7 +342,7 @@
             </tr>
           @empty
             <tr>
-              <td colspan="8" class="text-center py-12 text-gray-400 text-xs">
+              <td colspan="9" class="text-center py-12 text-gray-400 text-xs">
                 No orders matching your filters.
               </td>
             </tr>
@@ -336,4 +358,181 @@
     @endif
   </div>
 </div>
+
+{{-- Bulk printing: selection is kept while moving between pages of the list. --}}
+<div id="bulkBar" class="hidden fixed bottom-3 inset-x-3 lg:left-auto lg:right-6 lg:bottom-6 z-30 lg:max-w-3xl" role="region" aria-label="Selected orders">
+  <div class="bg-gray-900 text-white rounded-2xl shadow-2xl px-3 py-2.5 sm:px-4 flex flex-wrap items-center gap-2 sm:gap-3">
+    <div class="flex items-center gap-2 mr-auto">
+      <span class="text-sm font-semibold"><span id="bulkCount">0</span> selected</span>
+      <button type="button" id="bulkClear" class="text-xs text-gray-300 hover:text-white underline underline-offset-2">Clear</button>
+    </div>
+    <label class="sr-only" for="bulkFormat">Invoice format</label>
+    <select id="bulkFormat" data-invoice-format class="h-9 rounded-xl bg-gray-800 border border-gray-700 text-xs font-semibold text-white pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-teal-500">
+      @foreach(\App\Http\Controllers\Admin\OrderController::INVOICE_FORMATS as $key => $label)
+        <option value="{{ $key }}">{{ $label }}</option>
+      @endforeach
+    </select>
+    <button type="button" id="bulkInvoices" class="h-9 px-4 rounded-xl bg-teal-600 hover:bg-teal-500 text-xs font-bold inline-flex items-center gap-1.5">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+      Print invoices
+    </button>
+    <button type="button" id="bulkLabels" class="h-9 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold">Print labels</button>
+  </div>
+  <p id="bulkNote" class="hidden mt-1.5 text-center text-[11px] text-gray-600"></p>
+</div>
+
+{{-- Shown when some selected orders were already printed. --}}
+<div id="reprintDialog" class="hidden fixed inset-0 z-50 bg-gray-900/50 flex items-end sm:items-center justify-center p-3" role="dialog" aria-modal="true" aria-labelledby="reprintTitle">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-5 space-y-3">
+    <div class="flex items-start gap-3">
+      <span class="h-9 w-9 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center shrink-0" aria-hidden="true">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+      </span>
+      <div class="min-w-0">
+        <h2 id="reprintTitle" class="text-sm font-bold text-gray-900"></h2>
+        <p class="text-xs text-gray-500 mt-0.5">Make sure these orders are not packed twice.</p>
+      </div>
+    </div>
+    <ul id="reprintList" class="max-h-48 overflow-y-auto rounded-xl border border-gray-200 divide-y divide-gray-100 text-xs"></ul>
+    <div class="flex flex-col sm:flex-row-reverse gap-2 pt-1">
+      <button type="button" id="reprintSkip" class="h-10 px-4 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold"></button>
+      <button type="button" id="reprintAll" class="h-10 px-4 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-800 text-xs font-bold"></button>
+      <button type="button" id="reprintCancel" class="h-10 px-4 rounded-xl text-gray-500 hover:text-gray-800 text-xs font-semibold sm:mr-auto">Cancel</button>
+    </div>
+  </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+  (function () {
+    var KEY = 'admin.orders.selected';
+    var MAX = 100;
+    var invoicesUrl = @json(route('admin.orders.invoices'));
+    var labelsUrl = @json(route('admin.orders.labels'));
+    var boxes = Array.prototype.slice.call(document.querySelectorAll('.order-select'));
+    var all = document.getElementById('selectAllOrders');
+    var bar = document.getElementById('bulkBar');
+    var count = document.getElementById('bulkCount');
+    var fmt = document.getElementById('bulkFormat');
+    var note = document.getElementById('bulkNote');
+
+    function load() { try { return JSON.parse(sessionStorage.getItem(KEY) || '[]'); } catch (e) { return []; } }
+    var selected = load();
+    function save() { try { sessionStorage.setItem(KEY, JSON.stringify(selected)); } catch (e) {} }
+
+    function render() {
+      boxes.forEach(function (b) { b.checked = selected.indexOf(b.value) !== -1; });
+      // The table and the mobile cards each have a box per order; count the table ones for "select all".
+      var onPage = boxes.filter(function (b) { return b.closest('table'); });
+      var checked = onPage.filter(function (b) { return b.checked; }).length;
+      if (all) {
+        all.checked = onPage.length > 0 && checked === onPage.length;
+        all.indeterminate = checked > 0 && checked < onPage.length;
+      }
+      count.textContent = selected.length;
+      bar.classList.toggle('hidden', selected.length === 0);
+      // Keep the pagination reachable above the floating bar.
+      var main = document.querySelector('main');
+      if (main) main.style.paddingBottom = selected.length ? '7rem' : '';
+      var sheets = fmt.value === 'half' ? Math.ceil(selected.length / 2) : null;
+      note.textContent = sheets ? 'Half page: ' + selected.length + ' orders on ' + sheets + ' A4 ' + (sheets === 1 ? 'sheet' : 'sheets') : '';
+      note.classList.toggle('hidden', !sheets);
+    }
+
+    function toggle(value, on) {
+      var i = selected.indexOf(value);
+      if (on && i === -1) {
+        if (selected.length >= MAX) { alert('You can print up to ' + MAX + ' orders at a time.'); return false; }
+        selected.push(value);
+      }
+      if (!on && i !== -1) selected.splice(i, 1);
+      return true;
+    }
+
+    boxes.forEach(function (b) {
+      b.addEventListener('change', function () {
+        if (!toggle(b.value, b.checked)) b.checked = false;
+        save(); render(); refreshStatusSoon();
+      });
+    });
+    if (all) all.addEventListener('change', function () {
+      boxes.filter(function (b) { return b.closest('table'); }).forEach(function (b) { toggle(b.value, all.checked); });
+      save(); render(); refreshStatusSoon();
+    });
+    document.getElementById('bulkClear').addEventListener('click', function () { selected = []; save(); render(); refreshStatusSoon(); });
+    fmt.addEventListener('change', render);
+
+    function open(base, numbers, extra) {
+      var params = new URLSearchParams();
+      numbers.forEach(function (n) { params.append('orders[]', n); });
+      Object.keys(extra).forEach(function (k) { params.set(k, extra[k]); });
+      params.set('print', '1');
+      window.open(base + '?' + params.toString(), '_blank');
+      status = null; // printed now; fetch fresh history next time
+    }
+
+    // Print history of the selection is fetched in the background, so the warning can open
+    // straight from the click (browsers block new tabs opened after a slow request).
+    var statusUrl = @json(route('admin.orders.prints.status'));
+    var status = null, statusFor = '', statusReq = null;
+    function fetchStatus() {
+      var key = selected.slice().sort().join('|');
+      if (!selected.length) { status = null; statusFor = ''; return Promise.resolve(null); }
+      if (status && statusFor === key) return Promise.resolve(status);
+      var params = new URLSearchParams();
+      selected.forEach(function (n) { params.append('orders[]', n); });
+      statusReq = fetch(statusUrl + '?' + params.toString(), { headers: { 'Accept': 'application/json' } })
+        .then(function (r) { return r.ok ? r.json() : { printed: {} }; })
+        .then(function (d) { status = d.printed || {}; statusFor = key; return status; })
+        .catch(function () { return null; });
+      return statusReq;
+    }
+    var statusTimer = null;
+    function refreshStatusSoon() { clearTimeout(statusTimer); status = null; statusTimer = setTimeout(fetchStatus, 250); }
+    window.addEventListener('focus', function () { if (selected.length) { status = null; fetchStatus(); } });
+
+    var dialog = document.getElementById('reprintDialog');
+    function esc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+    function closeDialog() { dialog.classList.add('hidden'); }
+    document.getElementById('reprintCancel').addEventListener('click', closeDialog);
+    dialog.addEventListener('click', function (e) { if (e.target === dialog) closeDialog(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !dialog.classList.contains('hidden')) closeDialog(); });
+
+    function printWithCheck(type, base, extra) {
+      var go = function (st) {
+        var printed = (st && st[type]) || [];
+        var done = printed.map(function (p) { return p.order_number; });
+        var already = selected.filter(function (n) { return done.indexOf(n) !== -1; });
+        if (!already.length) { open(base, selected.slice(), extra); return; }
+
+        var fresh = selected.filter(function (n) { return done.indexOf(n) === -1; });
+        var what = type === 'invoice' ? 'invoice' : 'label';
+        document.getElementById('reprintTitle').textContent = already.length === 1
+          ? '1 of ' + selected.length + ' orders already has its ' + what + ' printed'
+          : already.length + ' of ' + selected.length + ' orders already have their ' + what + 's printed';
+        document.getElementById('reprintList').innerHTML = printed.map(function (p) {
+          return '<li class="px-3 py-2"><span class="font-mono font-bold text-gray-900">' + esc(p.order_number) + '</span>' +
+            '<span class="block text-gray-500">' + (p.times > 1 ? 'Printed ' + p.times + '×, last by ' : 'By ') + esc(p.last) + '</span></li>';
+        }).join('');
+        var skip = document.getElementById('reprintSkip');
+        skip.textContent = fresh.length ? 'Skip printed, print ' + fresh.length : 'Nothing new to print';
+        skip.disabled = !fresh.length;
+        skip.classList.toggle('opacity-50', !fresh.length);
+        skip.onclick = function () { closeDialog(); open(base, fresh, extra); };
+        var all = document.getElementById('reprintAll');
+        all.textContent = 'Print all ' + selected.length + ' anyway';
+        all.onclick = function () { closeDialog(); open(base, selected.slice(), extra); };
+        dialog.classList.remove('hidden');
+        (fresh.length ? skip : all).focus();
+      };
+      if (status && statusFor === selected.slice().sort().join('|')) go(status); else fetchStatus().then(go);
+    }
+    document.getElementById('bulkInvoices').addEventListener('click', function () { printWithCheck('invoice', invoicesUrl, { format: fmt.value }); });
+    document.getElementById('bulkLabels').addEventListener('click', function () { printWithCheck('label', labelsUrl, {}); });
+
+    render();
+    fetchStatus();
+  })();
+</script>
+@endpush

@@ -166,3 +166,48 @@
     if (nav) nav.addEventListener('scroll', function () { tip.classList.add('hidden'); });
   }
 })();
+
+/* Invoice format: chosen on the order page (or on the invoice itself) and used by every invoice link. */
+(function () {
+  var KEY = 'admin.invoice.format';
+  function get() { try { return localStorage.getItem(KEY) || 'a4'; } catch (e) { return 'a4'; } }
+
+  document.querySelectorAll('select[data-invoice-format]').forEach(function (sel) {
+    if (sel.querySelector('option[value="' + get() + '"]')) sel.value = get();
+    sel.addEventListener('change', function () {
+      try { localStorage.setItem(KEY, sel.value); } catch (e) {}
+    });
+  });
+
+  // Applied when the link is used, so it also covers middle-click and "open in new tab".
+  function apply(a) {
+    var url = new URL(a.href, window.location.href);
+    url.searchParams.set('format', get());
+    a.href = url.toString();
+  }
+  ['click', 'auxclick', 'contextmenu'].forEach(function (type) {
+    document.addEventListener(type, function (e) {
+      var a = e.target.closest && e.target.closest('a[data-invoice-link]');
+      if (a) apply(a);
+    }, true);
+  });
+})();
+
+/* Warn before printing an order's invoice or label again, so it isn't packed twice. */
+(function () {
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[data-print-link]');
+    if (!a) return;
+    var warning = a.getAttribute('data-print-warning');
+    if (warning && !window.confirm(warning + '\n\nMake sure it is not packed twice. Print again?')) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
+    // This page doesn't reload after printing in the other tab, so remember the click here.
+    if (!warning) {
+      var time = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      a.setAttribute('data-print-warning', 'This was opened for printing from this page at ' + time + '.');
+    }
+  }, true);
+})();

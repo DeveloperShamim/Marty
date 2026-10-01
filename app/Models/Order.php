@@ -236,8 +236,51 @@ class Order extends Model
             'steadfast' => 'Steadfast Courier',
             'pathao'    => 'Pathao Courier',
             'redx'      => 'RedX Courier',
-            default     => ucfirst((string) $this->courier_name),
+            'paperfly'  => 'Paperfly',
+            'in_house'  => 'In-House Rider',
+            default     => ucfirst(str_replace('_', ' ', (string) $this->courier_name)),
         };
+    }
+
+    public function prints()
+    {
+        return $this->hasMany(OrderPrint::class);
+    }
+
+    /** Prints of one type, newest first. */
+    public function printsOf(string $type)
+    {
+        $prints = $this->relationLoaded('prints') ? $this->prints : $this->prints()->with('user')->get();
+
+        return $prints->where('type', $type)->sortByDesc('id')->values();
+    }
+
+    /** Warning shown before printing again, or null if never printed. */
+    public function printWarning(string $type): ?string
+    {
+        $prints = $this->printsOf($type);
+        if ($prints->isEmpty()) {
+            return null;
+        }
+        $what = $type === 'invoice' ? 'invoice' : 'parcel label';
+        $times = $prints->count();
+
+        return "The {$what} for {$this->order_number} was already printed" . ($times > 1 ? " {$times} times" : '')
+            . ' (last: ' . $prints->first()->summary() . ').';
+    }
+
+    /** Confirmed / processing orders whose invoice hasn't been printed yet: the packing queue. */
+    public function scopeNotPrinted($query)
+    {
+        return $query->whereIn('status', ['confirmed', 'processing'])
+            ->where(fn ($q) => $q->whereNull('order_type')->orWhere('order_type', '!=', 'pos'))
+            ->whereDoesntHave('prints', fn ($p) => $p->where('type', 'invoice'));
+    }
+
+    /** Cash the courier must collect from the customer on delivery (0 when prepaid). */
+    public function amountToCollect(): float
+    {
+        return $this->payment_method === 'cod' && $this->payment_status !== 'verified' ? (float) $this->total : 0.0;
     }
 
     public function courierTrackingUrl(): ?string

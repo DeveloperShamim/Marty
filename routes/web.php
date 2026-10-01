@@ -168,6 +168,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Order & Customer Management Routes (Order Managers & Admins)
         Route::middleware(['role:order_manager'])->group(function () {
             Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
+            Route::get('orders/labels', [AdminOrderController::class, 'labels'])->name('orders.labels');
+            Route::get('orders/invoices', [AdminOrderController::class, 'invoices'])->name('orders.invoices');
+            Route::post('orders/prints', [AdminOrderController::class, 'recordPrints'])->name('orders.prints.record');
+            Route::get('orders/prints', [AdminOrderController::class, 'printStatus'])->name('orders.prints.status');
             Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
             Route::get('orders/{order}/invoice', [AdminOrderController::class, 'invoice'])->name('orders.invoice');
             Route::patch('orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');

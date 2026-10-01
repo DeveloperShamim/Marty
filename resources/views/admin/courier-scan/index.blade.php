@@ -89,7 +89,13 @@
               <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Awaiting Dispatch Handover (<span id="awaitingDispatchCount">{{ $awaitingDispatch->count() }}</span>):
             </span>
-            <span class="text-[11px] text-gray-400">Click any order to dispatch instantly or scan with barcode gun</span>
+            <span class="flex items-center gap-3">
+              <span class="text-[11px] text-gray-400">Click any order to dispatch instantly or scan with barcode gun</span>
+              <a href="{{ route('admin.orders.labels', ['ready' => 1]) }}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-[11px] font-bold text-gray-700" title="Print parcel labels for all confirmed and processing orders">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
+                Print labels
+              </a>
+            </span>
           </div>
           <div class="flex flex-wrap gap-2" id="awaitingDispatchList">
             @foreach($awaitingDispatch as $o)

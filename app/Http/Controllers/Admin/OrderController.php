@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\OrderPrint;
 use App\Services\Courier\PathaoService;
 use App\Services\Courier\RedxService;
 use App\Services\Courier\SteadfastService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
@@ -20,6 +22,8 @@ class OrderController extends Controller
         $status = $request->input('status', 'all');
         if ($status === 'pending_verification') {
             $query->where('payment_status', 'pending');
+        } elseif ($status === 'not_printed') {
+            $query->notPrinted();
         } elseif (in_array($status, Order::STATUSES, true)) {
             $query->where('status', $status);
         }
@@ -38,11 +42,14 @@ class OrderController extends Controller
             });
         }
 
-        $orders = $query->withCount('items')->paginate(15)->withQueryString();
+        $orders = $query->withCount('items')
+            ->with(['prints' => fn ($q) => $q->with('user')->latest('id')])
+            ->paginate(15)->withQueryString();
 
         $counts = [
             'all'                  => Order::count(),
             'pending_verification' => Order::where('payment_status', 'pending')->count(),
+            'not_printed'          => Order::notPrinted()->count(),
             'confirmed'            => Order::where('status', 'confirmed')->count(),
             'processing'           => Order::where('status', 'processing')->count(),
             'shipped'              => Order::where('status', 'shipped')->count(),
@@ -56,7 +63,7 @@ class OrderController extends Controller
 
     public function show(Order $order, SteadfastService $steadfast, PathaoService $pathao, RedxService $redx, Request $request)
     {
-        $order->load(['items.product.variants']);
+        $order->load(['items.product.variants', 'prints.user']);
 
         $couriers = [
             'steadfast' => ['name' => 'Steadfast Courier', 'configured' => $steadfast->isConfigured()],
@@ -70,11 +77,148 @@ class OrderController extends Controller
         return view('admin.orders.show', compact('order', 'couriers', 'steadfastDeliveryCheck'));
     }
 
-    public function invoice(Order $order)
-    {
-        $order->load('items');
+    /** Invoice formats: full A4 page, half page (two copies on one A4), and 80mm / 58mm thermal receipts. */
+    public const INVOICE_FORMATS = [
+        'a4'        => 'Full page (A4)',
+        'half'      => 'Half page (2 per A4)',
+        'thermal'   => 'Thermal 80mm',
+        'thermal58' => 'Thermal 58mm',
+    ];
 
-        return view('admin.orders.invoice', compact('order'));
+    public function invoice(Request $request, Order $order)
+    {
+        return $this->renderInvoices($request, collect([$order->load(['items', 'prints.user'])]));
+    }
+
+    /**
+     * Several invoices in one print job (?orders[]=ORD-...). On half page, two different
+     * orders share each A4 sheet, so 4 orders use 2 sheets.
+     */
+    public function invoices(Request $request)
+    {
+        $validated = $request->validate([
+            'orders'   => ['required', 'array', 'min:1', 'max:100'],
+            'orders.*' => ['string', 'max:64'],
+        ]);
+
+        $numbers = array_values(array_unique($validated['orders']));
+        $orders = Order::with(['items', 'prints.user'])->whereIn('order_number', $numbers)->get()
+            ->sortBy(fn ($o) => array_search($o->order_number, $numbers))->values();
+        abort_if($orders->isEmpty(), 404);
+
+        return $this->renderInvoices($request, $orders);
+    }
+
+    /**
+     * Called by the invoice / label pages when the print dialog opens. Printing an invoice
+     * also moves confirmed orders to "processing" (being packed).
+     */
+    public function recordPrints(Request $request)
+    {
+        $validated = $request->validate([
+            'orders'   => ['required', 'array', 'min:1', 'max:100'],
+            'orders.*' => ['string', 'max:64'],
+            'type'     => ['required', Rule::in(OrderPrint::TYPES)],
+            'format'   => ['nullable', Rule::in(array_keys(self::INVOICE_FORMATS))],
+        ]);
+
+        $orders = Order::whereIn('order_number', array_unique($validated['orders']))->get();
+        $moved = [];
+
+        DB::transaction(function () use ($orders, $validated, $request, &$moved) {
+            foreach ($orders as $order) {
+                $order->prints()->create([
+                    'user_id' => $request->user()?->id,
+                    'type'    => $validated['type'],
+                    'format'  => $validated['type'] === 'invoice' ? ($validated['format'] ?? 'a4') : null,
+                ]);
+                if ($validated['type'] === 'invoice' && $order->status === 'confirmed') {
+                    $order->update(['status' => 'processing']);
+                    $moved[] = $order->order_number;
+                }
+            }
+        });
+
+        if ($orders->isNotEmpty()) {
+            $what = $validated['type'] === 'invoice' ? 'invoice' : 'parcel label';
+            \App\Services\ActivityLogger::log(
+                'Printed ' . ucfirst($what) . 's',
+                'Printed ' . $what . ' for ' . $orders->pluck('order_number')->implode(', ')
+                    . ($moved ? '; moved to processing: ' . implode(', ', $moved) : '')
+            );
+        }
+
+        return response()->json(['success' => true, 'recorded' => $orders->count(), 'moved_to_processing' => $moved]);
+    }
+
+    /** Which of these orders were already printed, per type (for the warning before printing again). */
+    public function printStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'orders'   => ['required', 'array', 'min:1', 'max:100'],
+            'orders.*' => ['string', 'max:64'],
+        ]);
+
+        $orders = Order::whereIn('order_number', $validated['orders'])->whereHas('prints')
+            ->with(['prints' => fn ($q) => $q->with('user')->latest('id')])->get();
+
+        $printed = [];
+        foreach (OrderPrint::TYPES as $type) {
+            $printed[$type] = $orders->map(function ($o) use ($type) {
+                $prints = $o->prints->where('type', $type);
+
+                return $prints->isEmpty() ? null : [
+                    'order_number' => $o->order_number,
+                    'times'        => $prints->count(),
+                    'last'         => $prints->first()->summary(),
+                ];
+            })->filter()->values();
+        }
+
+        return response()->json(['printed' => $printed]);
+    }
+
+    private function renderInvoices(Request $request, \Illuminate\Support\Collection $orders)
+    {
+        $format = array_key_exists((string) $request->query('format'), self::INVOICE_FORMATS)
+            ? $request->query('format')
+            : 'a4';
+        $formats = self::INVOICE_FORMATS;
+
+        return view('admin.orders.invoice', compact('orders', 'format', 'formats'));
+    }
+
+    /**
+     * Printable parcel labels with a scannable order barcode for the courier scan station.
+     * ?orders[]=ORD-... prints those orders; ?ready=1 prints every confirmed/processing delivery order.
+     */
+    public function labels(Request $request)
+    {
+        $validated = $request->validate([
+            'orders'   => ['array', 'max:200'],
+            'orders.*' => ['string', 'max:64'],
+            'ready'    => ['nullable', 'boolean'],
+            'size'     => ['nullable', 'in:thermal,a4'],
+        ]);
+
+        $query = Order::with(['items', 'prints.user']);
+        if (! empty($validated['orders'])) {
+            $numbers = array_values($validated['orders']);
+            $query->whereIn('order_number', $numbers);
+            $orders = $query->get()->sortBy(fn ($o) => array_search($o->order_number, $numbers))->values();
+        } elseif ($request->boolean('ready')) {
+            $orders = $query->whereIn('status', ['confirmed', 'processing'])
+                ->where(fn ($q) => $q->whereNull('order_type')->orWhere('order_type', '!=', 'pos'))
+                ->oldest()
+                ->limit(200)
+                ->get();
+        } else {
+            $orders = collect();
+        }
+
+        $size = $validated['size'] ?? 'thermal';
+
+        return view('admin.orders.labels', compact('orders', 'size'));
     }
 
     /** Verify the manual payment (accept the order). */

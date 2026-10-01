@@ -1,344 +1,318 @@
+@php
+    $prefix = (string) setting('order_number_prefix');
+    $invFor = fn ($order) => [
+        'store'   => setting('invoice_company_name', site_name()),
+        'number'  => $prefix !== '' && ! str_starts_with($order->order_number, $prefix) ? $prefix . $order->order_number : $order->order_number,
+        'phone'   => setting('invoice_phone') ?: setting('contact_phone'),
+        'email'   => setting('contact_email'),
+        'address' => setting('invoice_address') ?: setting('contact_address'),
+        'vat'     => setting('invoice_vat_number'),
+        'due'     => $order->amountToCollect(),
+        'paymentStatus' => match (true) {
+            $order->payment_status === 'verified' => 'Paid',
+            $order->payment_status === 'rejected' => 'Payment rejected',
+            $order->payment_method === 'cod'      => 'Pay on delivery',
+            default                               => 'Awaiting verification',
+        },
+    ];
+    $single = $orders->count() === 1;
+    $order = $orders->first();
+    $inv = $invFor($order);
+    $formatUrl = fn ($f) => $single
+        ? route('admin.orders.invoice', ['order' => $order, 'format' => $f])
+        : route('admin.orders.invoices', ['orders' => $orders->pluck('order_number')->all(), 'format' => $f]);
+    $sheets = match ($format) {
+        'half'  => $single ? 1 : (int) ceil($orders->count() / 2),
+        'a4'    => $orders->count(),
+        default => null,
+    };
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Invoice #{{ (setting('order_number_prefix') && !str_starts_with($order->order_number, setting('order_number_prefix'))) ? setting('order_number_prefix') . $order->order_number : $order->order_number }} - {{ setting('invoice_company_name', site_name()) }}</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <title>{{ $single ? 'Invoice #' . $inv['number'] : $orders->count() . ' invoices' }} - {{ $inv['store'] }}</title>
+  <link rel="icon" href="{{ favicon_url() }}" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Plus Jakarta Sans', 'Hind Siliguri', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              50: '#fff7ed',
-              100: '#ffedd5',
-              500: '#f97316',
-              600: '#ea580c',
-              700: '#c2410c',
-              900: '#7c2d12',
-            },
-            slate: {
-              850: '#1e293b',
-            }
-          }
-        }
-      }
-    };
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body { background: #e5e7eb; color: #111827; font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+
+    /* ---------- Toolbar (screen only) ---------- */
+    .bar { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 16px; background: #fff; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
+    .bar a { color: inherit; }
+    .bar .back { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 10px; border: 1px solid #e5e7eb; text-decoration: none; font-weight: 600; color: #374151; }
+    .bar .back:hover { background: #f9fafb; }
+    .bar .grow { flex: 1; min-width: 160px; }
+    .bar .grow b { display: block; font-size: 14px; }
+    .bar .grow span { color: #6b7280; font-size: 12px; }
+    .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid #d1d5db; border-radius: 10px; overflow: hidden; }
+    .seg a { padding: 8px 12px; font-weight: 600; color: #374151; text-decoration: none; border-right: 1px solid #e5e7eb; }
+    .seg a:last-child { border-right: 0; }
+    .seg a:hover { background: #f3f4f6; }
+    .seg a.on { background: #0f766e; color: #fff; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border-radius: 10px; border: 0; background: #0f766e; color: #fff; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn:hover { background: #0b4f4a; }
+    .hint { width: 100%; margin: 0; padding: 8px 12px; border-radius: 10px; background: #fffbeb; color: #92400e; font-size: 12px; }
+    .stage { padding: 24px 16px 48px; display: flex; flex-direction: column; align-items: center; gap: 24px; overflow-x: auto; }
+
+    /* ---------- Paper invoice (A4 and half page) ---------- */
+    .paper { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06); }
+    .inv { display: flex; flex-direction: column; gap: 6mm; padding: 14mm 15mm; font-size: 9.5pt; line-height: 1.45; color: #111827; }
+    .inv-head { display: flex; justify-content: space-between; gap: 8mm; padding-bottom: 5mm; border-bottom: 2px solid #111827; }
+    .inv-logo { max-height: 14mm; max-width: 55mm; object-fit: contain; display: block; margin-bottom: 2mm; }
+    .inv-store { font-size: 17pt; font-weight: 800; letter-spacing: -.01em; margin-bottom: 1.5mm; }
+    .inv-muted { color: #6b7280; font-size: 8.5pt; }
+    .inv-meta { text-align: right; flex-shrink: 0; }
+    .inv-title { font-size: 20pt; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; line-height: 1; color: #0f766e; }
+    .inv-no { font-weight: 700; font-size: 11pt; margin-top: 1.5mm; }
+    .inv-copy { display: inline-block; margin-bottom: 1.5mm; padding: .6mm 2.2mm; border: 1px solid #111827; border-radius: 99px; font-size: 7pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .inv-barcode { display: block; margin: 2mm 0 0 auto; height: 11mm; width: 48mm; }
+    .inv-parties { display: grid; grid-template-columns: 1.2fr 1fr; gap: 8mm; }
+    .inv-label { font-size: 7.5pt; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #6b7280; margin-bottom: 1mm; }
+    .inv-strong { font-weight: 700; }
+    .inv-parties .inv-strong { font-size: 11pt; }
+    .inv-addr { margin-top: .5mm; }
+    .inv-kv { display: flex; justify-content: space-between; gap: 4mm; }
+    .inv-kv span { color: #6b7280; }
+    .inv-kv b { font-weight: 600; text-align: right; }
+    .inv-items { width: 100%; border-collapse: collapse; }
+    .inv-items th { text-align: left; font-size: 7.5pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6b7280; padding: 0 2mm 2mm; border-bottom: 1px solid #d1d5db; }
+    .inv-items td { padding: 2.2mm 2mm; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+    .inv-items tr { break-inside: avoid; page-break-inside: avoid; }
+    .inv-items th:first-child, .inv-items td:first-child { padding-left: 0; }
+    .inv-items th:last-child, .inv-items td:last-child { padding-right: 0; }
+    .c-n { width: 7mm; color: #9ca3af; }
+    .c-c { text-align: center; width: 12mm; }
+    .c-r { text-align: right; white-space: nowrap; }
+    .inv-item { display: flex; align-items: center; gap: 3mm; }
+    .inv-thumb { width: 10mm; height: 10mm; object-fit: cover; border-radius: 1.5mm; border: 1px solid #e5e7eb; flex-shrink: 0; }
+    .inv-bottom { display: grid; grid-template-columns: 1fr 72mm; gap: 10mm; break-inside: avoid; page-break-inside: avoid; }
+    .inv-notes p { margin: 0 0 3mm; }
+    .inv-terms { white-space: pre-line; color: #4b5563; font-size: 8.5pt; }
+    .inv-totals { display: flex; flex-direction: column; gap: 1.2mm; }
+    .inv-total { margin-top: 1mm; padding-top: 2mm; border-top: 2px solid #111827; font-size: 12pt; }
+    .inv-total span, .inv-total b { color: #111827; font-weight: 800; }
+    .inv-due { margin-top: 1.5mm; padding: 2mm 3mm; border-radius: 1.5mm; background: #111827; color: #fff; display: flex; justify-content: space-between; align-items: center; gap: 3mm; font-size: 8.5pt; }
+    .inv-due b { font-size: 12pt; }
+    .inv-paid { margin: 2mm 0 0 auto; padding: 1mm 4mm; border: 2px solid #0f766e; border-radius: 1.5mm; color: #0f766e; font-weight: 800; font-size: 11pt; letter-spacing: .15em; text-transform: uppercase; transform: rotate(-4deg); }
+    .inv-end { flex: 1; display: flex; flex-direction: column; gap: 6mm; break-inside: avoid; page-break-inside: avoid; }
+    .inv--half .inv-end { gap: 3mm; }
+    .inv-foot { margin-top: auto; padding-top: 4mm; border-top: 1px dashed #d1d5db; display: flex; justify-content: space-between; align-items: flex-end; color: #6b7280; font-size: 8pt; }
+    .inv-sign { width: 45mm; height: 9mm; border-bottom: 1px solid #9ca3af; margin-bottom: 1mm; }
+
+    .fmt-a4 .paper { width: 210mm; min-height: 297mm; }
+    .fmt-a4 .inv { min-height: 297mm; }
+
+    /* Half page: two copies (customer + office) on one A4, cut along the dashed line */
+    .fmt-half .paper { width: 210mm; height: 297mm; display: flex; flex-direction: column; }
+    .inv--half { height: 148.5mm; overflow: hidden; padding: 7mm 10mm 6mm; gap: 3mm; font-size: 8pt; line-height: 1.35; }
+    .inv--half + .inv--half { border-top: 1px dashed #9ca3af; position: relative; }
+    .inv--half + .inv--half::before { content: '\2702'; position: absolute; left: 6mm; top: -2.6mm; font-size: 9pt; line-height: 1; background: #fff; padding: 0 1mm; color: #6b7280; }
+    .inv--half .inv-head { padding-bottom: 2.5mm; }
+    .inv--half .inv-logo { max-height: 9mm; margin-bottom: 1mm; }
+    .inv--half .inv-store { font-size: 13pt; margin-bottom: .5mm; }
+    .inv--half .inv-muted { font-size: 7pt; }
+    .inv--half .inv-title { font-size: 14pt; }
+    .inv--half .inv-no { font-size: 9pt; margin-top: .5mm; }
+    .inv--half .inv-barcode { height: 8mm; width: 40mm; margin-top: 1mm; }
+    .inv--half .inv-parties { gap: 6mm; }
+    .inv--half .inv-parties .inv-strong { font-size: 9pt; }
+    .inv--half .inv-label { font-size: 6.5pt; margin-bottom: .3mm; }
+    .inv--half .inv-items th { font-size: 6.5pt; padding-bottom: 1mm; }
+    .inv--half .inv-items td { padding: 1mm 2mm; }
+    .inv--half .inv-item > div { display: flex; gap: 2mm; min-width: 0; }
+    .inv--half .inv-item .inv-strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 95mm; }
+    .inv--half .inv-item .inv-muted { white-space: nowrap; }
+    .inv--half .inv-bottom { grid-template-columns: 1fr 62mm; gap: 6mm; }
+    .inv--half .inv-terms { font-size: 7pt; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+    .inv--half .inv-total { font-size: 10pt; padding-top: 1mm; }
+    .inv--half .inv-due { padding: 1.2mm 2.5mm; font-size: 7.5pt; }
+    .inv--half .inv-due b { font-size: 10pt; }
+    .inv--half .inv-paid { font-size: 9pt; }
+    /* Half page: barcode beside the invoice number, signature under the notes, to leave room for items. */
+    .inv--half { position: relative; }
+    .inv--half .inv-meta { display: grid; grid-template-areas: "bar copy" "bar title" "bar no" "bar date"; column-gap: 4mm; align-items: center; }
+    .inv--half .inv-copy { grid-area: copy; justify-self: end; margin-bottom: .8mm; }
+    .inv--half .inv-title { grid-area: title; }
+    .inv--half .inv-no { grid-area: no; }
+    .inv--half .inv-meta > .inv-muted { grid-area: date; }
+    .inv--half .inv-barcode { grid-area: bar; margin: 0; }
+    .inv--half .inv-notes { padding-bottom: 11mm; }
+    .inv--half .inv-terms { -webkit-line-clamp: 3; }
+    .inv--half .inv-foot { position: absolute; left: 10mm; bottom: 6mm; right: 76mm; padding-top: 0; border-top: 0; font-size: 7pt; }
+    .inv--half .inv-sign { height: 5mm; width: 38mm; }
+
+    /* ---------- Thermal receipt (80mm / 58mm roll) ---------- */
+    .rcpt { background: #fff; color: #000; padding: 4mm 3.5mm 6mm; font-size: 8.5pt; line-height: 1.35; font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; }
+    .fmt-thermal .rcpt { width: 80mm; }
+    .fmt-thermal58 .rcpt { width: 58mm; padding: 3mm 2mm 5mm; font-size: 7.5pt; }
+    .rcpt .center { text-align: center; }
+    .rcpt-logo { max-height: 14mm; max-width: 80%; object-fit: contain; filter: grayscale(1) contrast(1.4); }
+    .rcpt-store { font-size: 12pt; font-weight: 800; }
+    .fmt-thermal58 .rcpt-store { font-size: 10pt; }
+    .rcpt hr { border: 0; border-top: 1px dashed #000; margin: 2.5mm 0; }
+    .rcpt-row { display: flex; justify-content: space-between; gap: 2mm; }
+    .rcpt-row > :last-child { text-align: right; white-space: nowrap; }
+    .rcpt-item { margin-bottom: 1.5mm; }
+    .rcpt-item .name { font-weight: 600; }
+    .rcpt-total { font-size: 11pt; font-weight: 800; }
+    .fmt-thermal58 .rcpt-total { font-size: 9.5pt; }
+    .rcpt-due { margin-top: 1.5mm; padding: 1.5mm 2mm; border: 1.5px solid #000; font-weight: 800; }
+    .rcpt-barcode { display: block; width: 100%; height: 12mm; margin-top: 2mm; }
+    .rcpt-small { font-size: 7pt; }
+    .rcpt-terms { white-space: pre-line; font-size: 7pt; }
+
     @media print {
-      body {
-        background: #ffffff !important;
-        color: #0f172a !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-      .no-print {
-        display: none !important;
-      }
-      .invoice-card {
-        box-shadow: none !important;
-        border: none !important;
-        padding: 0 !important;
-        max-width: 100% !important;
-        width: 100% !important;
-      }
-      .page-break-inside-avoid {
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-      }
-      tr {
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-      }
-      @page {
-        size: A4;
-        margin: 12mm 15mm;
-      }
+      body { background: #fff; }
+      .bar { display: none; }
+      .stage { padding: 0; display: block; overflow: visible; }
+      .paper { box-shadow: none; break-after: page; page-break-after: always; }
+      .rcpt { break-after: page; page-break-after: always; }
+      .paper:last-child, .rcpt:last-child { break-after: auto; page-break-after: auto; }
+      .fmt-a4 .paper { min-height: 0; }
+      .fmt-a4 .inv { min-height: 274mm; } /* signature at the foot of the page; longer orders flow onto more pages */
     }
   </style>
+  @if($format === 'a4')
+    <style media="print">@page { size: A4; margin: 11mm 0; } .fmt-a4 .inv { padding: 1mm 14mm; }</style>
+  @elseif($format === 'half')
+    <style media="print">@page { size: A4; margin: 0; }</style>
+  @else
+    {{-- Receipt height is measured after rendering so the roll is cut right after the receipt. --}}
+    <style media="print" id="receiptPage">@page { size: {{ $format === 'thermal58' ? '58mm' : '80mm' }} 200mm; margin: 0; }</style>
+    <style media="print" id="receiptPages"></style>
+  @endif
 </head>
-<body class="bg-slate-100 text-slate-900 font-sans antialiased min-h-screen py-6 sm:py-10 px-4">
-
-  <!-- Top Action Control Bar (Hidden on Print) -->
-  <div class="no-print max-w-4xl mx-auto mb-6 flex items-center justify-between bg-white/90 backdrop-blur p-4 rounded-2xl shadow-sm border border-slate-200/80">
-    <div class="flex items-center gap-3">
-      <button onclick="window.history.back()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer">
-        <span>&larr;</span> Back
-      </button>
-      <span class="text-slate-300">|</span>
-      <span class="text-xs font-extrabold text-slate-700">Order {{ $order->order_number }}</span>
-    </div>
-
-    <div class="flex items-center gap-3">
-      <a href="{{ route('admin.orders.show', $order) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-50 rounded-xl transition">
-        <span>✏️</span> Manage Order
-      </a>
-      <button onclick="window.print()" class="inline-flex items-center gap-2 px-5 py-2 text-xs font-extrabold bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white rounded-xl shadow-sm hover:shadow transition cursor-pointer">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-        </svg>
-        <span>Print Invoice / Download PDF</span>
-      </button>
-    </div>
+<body class="fmt-{{ $format }}">
+  <div class="bar">
+    @if($single)
+      <a href="{{ route('admin.orders.show', $order) }}" class="back">&larr; Order</a>
+      <div class="grow">
+        <b>Invoice #{{ $inv['number'] }}</b>
+        <span>{{ $order->customer_name }} &middot; {{ money($order->total) }}</span>
+      </div>
+    @else
+      <a href="{{ route('admin.orders.index') }}" class="back">&larr; Orders</a>
+      <div class="grow">
+        <b>{{ $orders->count() }} invoices</b>
+        <span>{{ $sheets ? $sheets . ' A4 ' . Str::plural('sheet', $sheets) . ($format === 'half' ? ', two orders per sheet' : ' (more if an order is long)') : 'One receipt per order' }}</span>
+      </div>
+    @endif
+    <nav class="seg" aria-label="Invoice format">
+      @foreach($formats as $key => $label)
+        <a href="{{ $formatUrl($key) }}" class="{{ $format === $key ? 'on' : '' }}" data-format="{{ $key }}" @if($format === $key) aria-current="page" @endif>{{ $label }}</a>
+      @endforeach
+    </nav>
+    <button type="button" class="btn" onclick="window.print()">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+      Print
+    </button>
+    <p class="hint" id="halfHint" hidden></p>
+    @include('admin.orders.partials.print-tracking', ['type' => 'invoice'])
   </div>
 
-  <!-- Main Executive Invoice Card -->
-  <div class="invoice-card max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-3xl shadow-xl border border-slate-200/80 space-y-8">
-    
-    <!-- Top Header Banner -->
-    <div class="flex flex-col sm:flex-row justify-between items-start border-b border-slate-200 pb-6 gap-6">
-      <div class="space-y-1.5">
-        @if(has_custom_logo())
-          <img src="{{ logo_url() }}" alt="{{ setting('invoice_company_name', site_name()) }}" class="h-12 max-w-[200px] object-contain mb-2">
-        @endif
-        <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-          {{ setting('invoice_company_name', site_name()) }}
-        </h1>
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Official Purchase Invoice &amp; Receipt</p>
-        
-        <div class="pt-2 text-xs text-slate-600 space-y-0.5">
-          @if(setting('invoice_vat_number'))
-            <p><span class="font-bold text-slate-800">VAT / BIN:</span> <span class="font-mono">{{ setting('invoice_vat_number') }}</span></p>
-          @endif
-          @if(setting('invoice_phone') || setting('contact_phone'))
-            <p><span class="font-bold text-slate-800">Helpline:</span> {{ setting('invoice_phone') ?: setting('contact_phone') }}</p>
-          @endif
-          @if(setting('contact_email'))
-            <p><span class="font-bold text-slate-800">Support Email:</span> {{ setting('contact_email') }}</p>
-          @endif
-          @if(setting('invoice_address') || setting('contact_address'))
-            <p class="max-w-sm text-slate-500 leading-tight mt-1">{{ setting('invoice_address') ?: setting('contact_address') }}</p>
-          @endif
+  <div class="stage">
+    @if($format === 'a4')
+      @foreach($orders as $order)
+        <div class="paper">
+          @include('admin.orders.partials.invoice-sheet', ['inv' => $invFor($order), 'half' => false, 'copy' => null])
         </div>
+      @endforeach
+    @elseif($format === 'half' && $single)
+      <div class="paper">
+        @include('admin.orders.partials.invoice-sheet', ['inv' => $invFor($order), 'half' => true, 'copy' => 'Customer copy'])
+        @include('admin.orders.partials.invoice-sheet', ['inv' => $invFor($order), 'half' => true, 'copy' => 'Office copy'])
       </div>
-
-      <!-- Right Header Badge -->
-      <div class="text-left sm:text-right space-y-2 shrink-0">
-        <div class="inline-block bg-slate-900 text-white px-4 py-1.5 rounded-xl text-xs font-black tracking-wider uppercase shadow-xs">
-          INVOICE RECEIPT
+    @elseif($format === 'half')
+      {{-- Two different orders per A4 sheet. --}}
+      @foreach($orders->chunk(2) as $pair)
+        <div class="paper">
+          @foreach($pair as $order)
+            @include('admin.orders.partials.invoice-sheet', ['inv' => $invFor($order), 'half' => true, 'copy' => null])
+          @endforeach
         </div>
-        <div>
-          <p class="text-xl font-extrabold text-orange-600 font-mono">
-            #{{ (setting('order_number_prefix') && !str_starts_with($order->order_number, setting('order_number_prefix'))) ? setting('order_number_prefix') . $order->order_number : $order->order_number }}
-          </p>
-          <p class="text-xs font-semibold text-slate-500 mt-0.5">
-            Placed: {{ $order->created_at->format('d M Y, g:i A') }}
-          </p>
-        </div>
-
-        <div class="flex items-center sm:justify-end gap-2 pt-1 flex-wrap">
-          <span class="px-3 py-1 text-[11px] font-extrabold rounded-full border {{ $order->payment_status === 'verified' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200' }}">
-            Payment: {{ strtoupper($order->payment_status) }}
-          </span>
-          <span class="px-3 py-1 text-[11px] font-extrabold rounded-full bg-slate-100 text-slate-800 border border-slate-200">
-            Status: {{ strtoupper($order->status) }}
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Customer & Order Information Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-      <!-- Customer Card -->
-      <div class="bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-200/80 space-y-2">
-        <h3 class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 border-b border-slate-200 pb-2 flex items-center gap-1.5">
-          <span>👤</span> Customer &amp; Delivery Information
-        </h3>
-        <div class="space-y-1 pt-1">
-          <p class="text-sm font-extrabold text-slate-900">{{ $order->customer_name }}</p>
-          <p class="font-medium text-slate-700"><span class="text-slate-400 font-normal">Phone:</span> {{ $order->customer_phone }}</p>
-          @if($order->customer_email)
-            <p class="font-medium text-slate-700"><span class="text-slate-400 font-normal">Email:</span> {{ $order->customer_email }}</p>
-          @endif
-          <div class="pt-1.5 border-t border-slate-200/60 mt-2">
-            <span class="text-slate-400 font-normal block mb-0.5">Shipping Address:</span>
-            <p class="font-semibold text-slate-800 leading-snug">{{ $order->shipping_address }}, {{ $order->city }} {{ $order->postal_code }}</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Payment & Dispatch Card -->
-      <div class="bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-200/80 space-y-2">
-        <h3 class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 border-b border-slate-200 pb-2 flex items-center gap-1.5">
-          <span>💳</span> Payment &amp; Logistics Details
-        </h3>
-        <div class="space-y-1.5 pt-1">
-          <div class="flex justify-between">
-            <span class="text-slate-500">Payment Method:</span>
-            <span class="font-bold text-slate-900">{{ $order->paymentMethodLabel() }}</span>
-          </div>
-          @if($order->isMobileBanking())
-            <div class="flex justify-between">
-              <span class="text-slate-500">Sender Phone:</span>
-              <span class="font-mono font-bold text-slate-800">{{ $order->payment_sender_number ?: 'N/A' }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-slate-500">TrxID / Ref:</span>
-              <span class="font-mono font-bold text-slate-900 bg-white px-1.5 py-0.5 rounded border border-slate-200">{{ $order->payment_txn_id ?: 'N/A' }}</span>
-            </div>
-          @endif
-          <div class="flex justify-between">
-            <span class="text-slate-500">Delivery Zone:</span>
-            <span class="font-bold text-slate-800">{{ shipping_zone_label($order->shipping_zone) }}</span>
-          </div>
-
-          @if($order->isDispatchedToCourier())
-            <div class="pt-1.5 border-t border-slate-200/60 flex justify-between items-center text-[11px]">
-              <span class="text-slate-500">Courier Provider:</span>
-              <span class="font-extrabold text-emerald-700">{{ $order->courierLabel() }} (#{{ $order->courier_tracking_code }})</span>
-            </div>
-          @endif
-        </div>
-      </div>
-    </div>
-
-    <!-- Order Items List Table (Handles large order lists cleanly) -->
-    <div class="space-y-2">
-      <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-        <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-          <span>🛍️</span> Ordered Items List ({{ $order->items->sum('quantity') }} items)
-        </h3>
-      </div>
-
-      <div class="overflow-x-auto rounded-2xl border border-slate-200">
-        <table class="w-full text-left text-xs border-collapse">
-          <thead>
-            <tr class="bg-slate-900 text-white uppercase text-[11px] font-extrabold tracking-wider">
-              <th class="py-3 px-3 w-10 text-center">#</th>
-              <th class="py-3 px-4">Item Details</th>
-              <th class="py-3 px-3 text-center">Unit Price</th>
-              <th class="py-3 px-3 text-center">Qty</th>
-              <th class="py-3 px-4 text-right">Line Subtotal</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 bg-white">
-            @foreach($order->items as $index => $item)
-              <tr class="hover:bg-slate-50/80 transition-colors">
-                <td class="py-3.5 px-3 text-center text-slate-400 font-mono text-[11px]">{{ $index + 1 }}</td>
-                <td class="py-3.5 px-4">
-                  <div class="flex items-center gap-3">
-                    @if($item->imageUrl())
-                      <img src="{{ $item->imageUrl() }}" alt="" class="h-10 w-10 object-cover rounded-lg bg-slate-100 border border-slate-200 shrink-0">
-                    @endif
-                    <div>
-                      <p class="font-bold text-slate-900 text-xs leading-snug">{{ $item->product_name }}</p>
-                      @if($item->variant)
-                        <span class="inline-block mt-0.5 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                          {{ $item->variant }}
-                        </span>
-                      @endif
-                    </div>
-                  </div>
-                </td>
-                <td class="py-3.5 px-3 text-center font-medium text-slate-700 font-mono">{{ money($item->unit_price) }}</td>
-                <td class="py-3.5 px-3 text-center">
-                  <span class="inline-block font-extrabold text-slate-900 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200 text-[11px]">
-                    {{ $item->quantity }}
-                  </span>
-                </td>
-                <td class="py-3.5 px-4 text-right font-extrabold text-slate-900 font-mono text-xs">{{ money($item->line_total) }}</td>
-              </tr>
-            @endforeach
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Calculations & Terms Footer Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-12 gap-6 pt-2 border-t border-slate-200 page-break-inside-avoid">
-      <!-- Left: Staff Notes & Terms -->
-      <div class="sm:col-span-7 space-y-3 text-xs">
-        @if($order->internal_note)
-          <div class="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-amber-900 space-y-1">
-            <p class="font-bold text-[11px] uppercase tracking-wider text-amber-800">📌 Staff Order Note:</p>
-            <p class="text-xs leading-relaxed">{{ $order->internal_note }}</p>
-          </div>
-        @endif
-
-        @if(setting('invoice_terms'))
-          <div class="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-1">
-            <p class="font-extrabold text-[11px] uppercase tracking-wider text-slate-600">📜 Terms &amp; Exchange Policy:</p>
-            <p class="text-[11px] text-slate-600 leading-relaxed whitespace-pre-line">{{ setting('invoice_terms') }}</p>
-          </div>
-        @else
-          <div class="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-1">
-            <p class="font-extrabold text-slate-800">Thank you for your business!</p>
-            <p class="text-[11px] text-slate-500">If you have any questions regarding your parcel, please contact our support helpline.</p>
-          </div>
-        @endif
-      </div>
-
-      <!-- Right: Subtotal, Shipping, Taxes & Total -->
-      <div class="sm:col-span-5 space-y-2 text-xs">
-        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-2">
-          <div class="flex justify-between text-slate-600">
-            <span>Items Subtotal:</span>
-            <span class="font-bold text-slate-900 font-mono">{{ money($order->subtotal) }}</span>
-          </div>
-
-          @if($order->discount_amount > 0)
-            <div class="flex justify-between text-orange-600 font-semibold">
-              <span>Coupon Discount @if($order->coupon_code)({{ $order->coupon_code }})@endif:</span>
-              <span class="font-bold font-mono">−{{ money($order->discount_amount) }}</span>
-            </div>
-          @endif
-
-          <div class="flex justify-between text-slate-600">
-            <span>Shipping Delivery Fee:</span>
-            <span class="font-bold text-slate-900 font-mono">{{ money($order->shipping_charge) }}</span>
-          </div>
-
-          @if($order->tax > 0)
-            <div class="flex justify-between text-slate-600">
-              <span>VAT / Tax:</span>
-              <span class="font-bold text-slate-900 font-mono">{{ money($order->tax) }}</span>
-            </div>
-          @endif
-
-          <div class="pt-2 border-t border-slate-200 flex justify-between items-center text-sm">
-            <span class="font-black uppercase tracking-wider text-slate-900">Total Amount:</span>
-            <span class="font-black text-base text-orange-600 font-mono">{{ money($order->total) }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Printable Signature Footer -->
-    <div class="pt-6 border-t border-dashed border-slate-300 flex justify-between items-end text-[11px] text-slate-400 page-break-inside-avoid">
-      <div>
-        <div class="h-8 border-b border-slate-300 w-36 mb-1"></div>
-        <p class="font-extrabold text-slate-700">{{ setting('invoice_company_name', site_name()) }}</p>
-        <p class="text-[10px]">Authorized Signature / Stamp</p>
-      </div>
-
-      <div class="text-right space-y-0.5">
-        <p class="font-medium text-slate-500">Thank you for shopping with us!</p>
-        <p class="text-[10px] text-slate-400">Generated on {{ now()->format('d M Y, g:i A') }}</p>
-      </div>
-    </div>
-
+      @endforeach
+    @else
+      @foreach($orders->values() as $index => $order)
+        @include('admin.orders.partials.invoice-receipt', ['inv' => $invFor($order)])
+      @endforeach
+    @endif
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script>
-    window.addEventListener('load', function () {
-      // Auto-trigger print dialog if not explicitly disabled
-      setTimeout(function () {
-        if (!window.location.search.includes('noprint')) {
-          window.print();
-        }
-      }, 500);
-    });
-  </script>
+    (function () {
+      document.querySelectorAll('[jsbarcode-value]').forEach(function (svg) {
+        try {
+          JsBarcode(svg, svg.getAttribute('jsbarcode-value'), { format: 'CODE128', width: 2, height: 60, margin: 6, displayValue: false });
+          svg.setAttribute('preserveAspectRatio', 'none');
+        } catch (e) {}
+      });
 
+      // Remember the chosen format for the print buttons on the order pages.
+      try { localStorage.setItem('admin.invoice.format', @json($format)); } catch (e) {}
+
+      // Thermal: size the printed page to the receipt so the roll isn't fed further than needed.
+      // Each receipt prints on its own named page (rcpt0, rcpt1, ...) sized to that receipt.
+      var receiptPages = document.getElementById('receiptPages');
+      function fitReceipt() {
+        if (!receiptPages) return;
+        var width = @json($format === 'thermal58' ? '58mm' : '80mm');
+        receiptPages.textContent = Array.prototype.map.call(document.querySelectorAll('[data-receipt]'), function (r, i) {
+          var mm = Math.ceil(r.getBoundingClientRect().height * 25.4 / 96) + 2;
+          return '@page rcpt' + i + ' { size: ' + width + ' ' + mm + 'mm; margin: 0; }';
+        }).join('\n');
+      }
+
+      // Half page: each copy is exactly half an A4. List as many items as fit and keep the totals visible.
+      function fitHalves() {
+        var hidden = 0, cut = 0;
+        document.querySelectorAll('.inv--half').forEach(function (copy) {
+          var rows = Array.prototype.slice.call(copy.querySelectorAll('.inv-row'));
+          var more = copy.querySelector('.inv-more');
+          rows.forEach(function (r) { r.hidden = false; });
+          if (more) more.hidden = true;
+          var shown = rows.length;
+          while (copy.scrollHeight > copy.clientHeight + 1 && shown > 1) {
+            rows[--shown].hidden = true;
+            if (more) {
+              var n = rows.length - shown;
+              more.hidden = false;
+              more.cells[1].textContent = '+ ' + n + ' more ' + (n === 1 ? 'item' : 'items') + ' (included in the total)';
+            }
+          }
+          hidden = Math.max(hidden, rows.length - shown);
+          if (rows.length - shown > 0) cut++;
+        });
+        var hint = document.getElementById('halfHint');
+        if (hint) {
+          hint.hidden = hidden === 0;
+          hint.textContent = @json($single)
+            ? 'Half page has room for ' + (document.querySelectorAll('.inv--half .inv-row').length / 2 - hidden) +
+              ' of this order\'s items; the rest are summarised (the total includes everything). Use Full page to list them all.'
+            : cut + ' of these invoices have more items than fit on half a page; those items are summarised (totals include everything). Use Full page to list them all.';
+        }
+      }
+
+      var ready = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+      window.addEventListener('load', function () {
+        ready.then(function () {
+          fitHalves();
+          fitReceipt();
+          @if(request()->boolean('print'))
+            setTimeout(function () { window.print(); }, 250);
+          @endif
+        });
+      });
+      window.addEventListener('beforeprint', function () { fitHalves(); fitReceipt(); });
+    })();
+  </script>
 </body>
 </html>

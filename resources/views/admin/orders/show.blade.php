@@ -28,9 +28,31 @@
 
     <!-- Action Buttons -->
     <div class="flex items-center gap-2 flex-wrap shrink-0">
-      <a href="{{ route('admin.orders.invoice', $order) }}" target="_blank" class="w-full sm:w-auto justify-center inline-flex items-center gap-2 px-4 py-2.5 text-xs font-extrabold bg-amber-500 hover:bg-amber-600 text-white rounded-2xl shadow-sm transition">
-        <span>🖨️</span> Print Invoice / PDF
+      {{-- Invoice format is remembered per browser (admin-shell.js) and applied to every invoice link. --}}
+      <div class="w-full sm:w-auto flex items-stretch rounded-2xl shadow-sm overflow-hidden border border-amber-600">
+        <a href="{{ route('admin.orders.invoice', ['order' => $order, 'print' => 1]) }}" target="_blank" data-invoice-link data-print-link data-print-warning="{{ $order->printWarning('invoice') }}" class="flex-1 sm:flex-none justify-center inline-flex items-center gap-2 px-4 py-2.5 text-xs font-extrabold bg-amber-500 hover:bg-amber-600 text-white transition">
+          <span>🖨️</span> Print Invoice
+        </a>
+        <label class="sr-only" for="invoiceFormat">Invoice format</label>
+        <select id="invoiceFormat" data-invoice-format class="text-xs font-bold bg-amber-50 text-amber-900 border-0 border-l border-amber-600 pl-2.5 pr-7 py-2.5 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-600 cursor-pointer" title="Invoice format">
+          @foreach(\App\Http\Controllers\Admin\OrderController::INVOICE_FORMATS as $key => $label)
+            <option value="{{ $key }}">{{ $label }}</option>
+          @endforeach
+        </select>
+      </div>
+      <a href="{{ route('admin.orders.labels', ['orders' => [$order->order_number], 'print' => 1]) }}" target="_blank" data-print-link data-print-warning="{{ $order->printWarning('label') }}" class="w-full sm:w-auto justify-center inline-flex items-center gap-2 px-4 py-2.5 text-xs font-extrabold bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-2xl shadow-sm transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg> Print Parcel Label
       </a>
+      @if($order->prints()->exists())
+        <div class="w-full text-[11px] text-slate-500 sm:text-right space-y-0.5">
+          @foreach(['invoice' => 'Invoice', 'label' => 'Label'] as $type => $name)
+            @php $p = $order->printsOf($type); @endphp
+            @if($p->isNotEmpty())
+              <p><span class="font-semibold {{ $p->count() > 1 ? 'text-amber-700' : 'text-slate-700' }}">{{ $name }} printed {{ $p->count() }}×</span> &middot; last {{ $p->first()->summary() }}</p>
+            @endif
+          @endforeach
+        </div>
+      @endif
     </div>
   </div>
 
