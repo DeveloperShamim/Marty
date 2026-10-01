@@ -12,7 +12,7 @@ class BarcodeController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'brand'])
+        $query = Product::with(['category', 'brand', 'images'])
             ->orderBy('name');
 
         if ($search = $request->input('search')) {

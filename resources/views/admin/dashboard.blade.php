@@ -2,12 +2,12 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<div class="space-y-6 max-w-full">
+<div class="space-y-4 sm:space-y-6 max-w-full">
 
   {{-- Welcome & Overview Header --}}
   <div class="bg-white rounded-2xl border border-gray-200/90 shadow-2xs p-4 sm:p-6">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div class="space-y-1">
+    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+      <div class="space-y-1 min-w-0">
         <div class="flex items-center gap-2 flex-wrap">
           <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -24,28 +24,28 @@
       </div>
 
       {{-- Header Quick Actions --}}
-      <div class="flex items-center gap-2 flex-wrap shrink-0">
-        <a href="{{ route('admin.products.create') }}" class="flex-1 sm:flex-none px-3.5 py-2 text-xs font-semibold rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
+      <div class="grid grid-cols-3 sm:flex sm:flex-wrap items-stretch gap-2 xl:justify-end xl:max-w-[560px]">
+        <a href="{{ route('admin.products.create') }}" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
           Add Product
         </a>
-        <a href="{{ route('admin.pos.index') }}" class="flex-1 sm:flex-none px-3.5 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
+        <a href="{{ route('admin.pos.index') }}" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-white/90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
           POS Counter
         </a>
-        <a href="{{ route('admin.courier-scan.index') }}" class="flex-1 sm:flex-none px-3.5 py-2 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
+        <a href="{{ route('admin.courier-scan.index') }}" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-white/90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
           Courier Scan
         </a>
-        <a href="{{ route('admin.analytics.index') }}" class="flex-1 sm:flex-none px-3.5 py-2 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
+        <a href="{{ route('admin.analytics.index') }}" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-white/90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           Analytics
         </a>
-        <a href="{{ route('admin.orders.index') }}" class="flex-1 sm:flex-none px-3.5 py-2 text-xs font-semibold rounded-xl bg-primary hover:bg-brand-700 text-white transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
+        <a href="{{ route('admin.orders.index') }}" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-primary hover:bg-brand-700 text-white transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-white/90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
           Orders
         </a>
-        <a href="{{ route('home') }}" target="_blank" class="flex-1 sm:flex-none px-3.5 py-2 text-xs font-semibold rounded-xl bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
+        <a href="{{ route('home') }}" target="_blank" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
           Storefront
         </a>
@@ -54,7 +54,7 @@
   </div>
 
   {{-- Primary Financial & Order KPIs (2-col on mobile, 4-col on desktop) --}}
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 sm:gap-5">
+  <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
 
     {{-- 1. Total Sales Amount --}}
     <div class="bg-white rounded-2xl border border-gray-200/90 p-3 sm:p-4 md:p-5 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between">
@@ -82,7 +82,7 @@
         </div>
       </div>
       <div class="mt-2 sm:mt-3 space-y-0.5 sm:space-y-1">
-        <p class="text-base sm:text-xl lg:text-2xl font-bold text-emerald-700 font-mono tracking-tight truncate">{{ money($netProfit) }}</p>
+        <p class="text-base sm:text-xl lg:text-2xl font-bold {{ $netProfit < 0 ? 'text-red-600' : 'text-emerald-700' }} font-mono tracking-tight truncate">{{ $netProfit < 0 ? '-' : '' }}{{ money(abs($netProfit)) }}</p>
         <p class="text-[10px] sm:text-xs text-emerald-700 font-semibold flex items-center justify-between pt-0.5 truncate">
           <span>Profit Margin:</span>
           <span class="font-mono">{{ round($profitMargin, 1) }}%</span>
@@ -134,10 +134,10 @@
   </div>
 
   {{-- Secondary Quick Stats (Compact 2-col or 4-col strip) --}}
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+  <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
     <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
       <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Today's Sales</span>
-      <div class="flex items-center justify-between mt-1">
+      <div class="flex items-center justify-between flex-wrap gap-x-2 mt-1">
         <p class="text-base sm:text-lg font-bold text-gray-900 font-mono truncate">{{ money($todayRevenue) }}</p>
         <span class="text-[11px] text-gray-400 truncate">Yest: {{ money($yesterdayRevenue) }}</span>
       </div>
@@ -152,14 +152,14 @@
     </div>
     <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
       <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Orders Today</span>
-      <div class="flex items-center justify-between mt-1">
+      <div class="flex items-center justify-between flex-wrap gap-x-2 mt-1">
         <p class="text-base sm:text-lg font-bold text-gray-900 font-mono">{{ number_format($todayOrdersCount) }}</p>
         <span class="text-[11px] text-gray-400">Yest: {{ number_format($yesterdayOrdersCount) }}</span>
       </div>
     </div>
-    <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
+    <div class="col-span-2 lg:col-span-1 bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
       <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Stock Health</span>
-      <div class="flex items-center justify-between mt-1">
+      <div class="flex items-center justify-between flex-wrap gap-x-2 mt-1">
         <p class="text-base sm:text-lg font-bold text-gray-900 font-mono">{{ number_format($totalStockUnits) }}</p>
         <a href="{{ route('admin.inventory.index') }}" class="text-[11px] font-semibold px-2 py-0.5 rounded-md {{ $lowStockCount > 0 ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200' }}">
           {{ $lowStockCount > 0 ? $lowStockCount . ' Low' : 'In Stock' }}
@@ -169,7 +169,7 @@
   </div>
 
   {{-- Main Analytics Grid: 12-Month Performance Chart & Operations Column --}}
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
 
     {{-- Left: Revenue Trend Chart (2 cols on desktop) --}}
     @php
@@ -177,7 +177,7 @@
       $currentMonthData = $monthlySeries->firstWhere('is_current', true) ?? ['value' => 0];
       $activeSalesMonths = $monthlySeries->where('value', '>', 0)->count();
     @endphp
-    <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-6 shadow-2xs lg:col-span-2 flex flex-col justify-between space-y-5">
+    <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-6 shadow-2xs xl:col-span-2 flex flex-col justify-between space-y-5 min-w-0">
       
       {{-- Card Header & Filter Bar --}}
       <div class="flex items-center justify-between gap-3 border-b border-gray-100 pb-3 sm:pb-4 flex-wrap">
@@ -284,7 +284,7 @@
       <div class="pt-3 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs text-gray-600">
         <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-200/70 flex items-center justify-between">
           <span class="text-gray-400 text-[11px]">Peak Month:</span>
-          <span class="font-bold text-gray-900 font-mono text-[11px] truncate max-w-[140px]" title="{{ $peakMonth['full_label'] ?? 'N/A' }}">
+          <span class="font-bold text-gray-900 font-mono text-[11px] truncate" title="{{ $peakMonth['full_label'] ?? 'N/A' }}">
             {{ $peakMonth['label'] ?? '' }} &middot; {{ money($peakMonth['value'] ?? 0) }}
           </span>
         </div>
@@ -301,7 +301,7 @@
     </div>
 
     {{-- Right: Action Items & Operations (1 col on desktop) --}}
-    <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-6 shadow-2xs flex flex-col justify-between space-y-5">
+    <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-6 shadow-2xs flex flex-col space-y-5 min-w-0">
       
       {{-- Pending Payments Action Feed --}}
       <div class="space-y-3">
@@ -313,7 +313,7 @@
             </h2>
             <p class="text-xs text-gray-400">Needs manual verification</p>
           </div>
-          <a href="{{ route('admin.orders.index', ['status' => 'pending_verification']) }}" class="text-xs font-semibold text-primary hover:underline">
+          <a href="{{ route('admin.orders.index', ['status' => 'pending_verification']) }}" class="text-xs font-semibold text-primary hover:underline whitespace-nowrap shrink-0">
             View All &rarr;
           </a>
         </div>
@@ -370,7 +370,7 @@
             <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
             Low Stock Alerts
           </span>
-          <a href="{{ route('admin.inventory.index') }}" class="text-xs font-semibold text-primary hover:underline">
+          <a href="{{ route('admin.inventory.index') }}" class="text-xs font-semibold text-primary hover:underline whitespace-nowrap shrink-0">
             Manage &rarr;
           </a>
         </div>
@@ -405,7 +405,7 @@
         <h2 class="font-bold text-sm sm:text-base text-gray-900">Top Revenue Products</h2>
         <p class="text-xs text-gray-500">Best-selling products ranked by verified revenue</p>
       </div>
-      <a href="{{ route('admin.products.index') }}" class="text-xs font-semibold text-primary hover:underline">
+      <a href="{{ route('admin.products.index') }}" class="text-xs font-semibold text-primary hover:underline whitespace-nowrap shrink-0">
         All Products &rarr;
       </a>
     </div>
@@ -521,7 +521,7 @@
         <h2 class="font-bold text-sm sm:text-base text-gray-900">Recent Orders</h2>
         <p class="text-xs text-gray-500">Latest incoming purchases across the storefront</p>
       </div>
-      <a href="{{ route('admin.orders.index') }}" class="text-xs font-semibold text-primary hover:underline">
+      <a href="{{ route('admin.orders.index') }}" class="text-xs font-semibold text-primary hover:underline whitespace-nowrap shrink-0">
         All Orders &rarr;
       </a>
     </div>
@@ -543,7 +543,7 @@
           @foreach($recentOrders as $order)
             <tr class="hover:bg-gray-50/70 transition-colors">
               <td class="py-3 px-4">
-                <a href="{{ route('admin.orders.show', $order) }}" class="font-bold text-primary hover:underline">
+                <a href="{{ route('admin.orders.show', $order) }}" class="font-bold text-primary hover:underline whitespace-nowrap">
                   {{ $order->order_number }}
                 </a>
               </td>

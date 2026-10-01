@@ -44,7 +44,8 @@ class DashboardController extends Controller
             ->sum(DB::raw('COALESCE(NULLIF(order_items.cost_price, 0), products.cost_price, 0) * order_items.quantity'));
 
         $courierLoss = (float) Order::where('status', 'returned')->sum('courier_loss_amount');
-        $netProfit = max(0, $revenue - $totalCogs - $courierLoss);
+        // Can be negative: a loss must show as a loss, not as zero.
+        $netProfit = $revenue - $totalCogs - $courierLoss;
         $profitMargin = $revenue > 0 ? (($netProfit / $revenue) * 100) : 0;
 
         $verifiedOrdersCount = Order::query()
@@ -108,12 +109,12 @@ class DashboardController extends Controller
         $currentYear = (int) date('Y');
         $selectedYear = (int) $request->input('year', $currentYear);
 
-        // Collect years from database + default past 5 years range
-        $dbYears = Order::all()
-            ->map(fn($o) => (int) $o->created_at->format('Y'))
-            ->unique()
-            ->filter()
-            ->toArray();
+        // Years that have orders (min/max only — never load every order into memory)
+        $firstOrderAt = Order::min('created_at');
+        $lastOrderAt = Order::max('created_at');
+        $dbYears = $firstOrderAt
+            ? range((int) Carbon::parse($firstOrderAt)->format('Y'), (int) Carbon::parse($lastOrderAt)->format('Y'))
+            : [];
 
         $defaultYears = range($currentYear - 5, $currentYear);
         $availableYears = array_unique(array_merge($dbYears, $defaultYears, [$selectedYear]));
@@ -125,16 +126,24 @@ class DashboardController extends Controller
             $endMonth = Carbon::createFromDate($selectedYear, 12, 1)->startOfMonth();
         }
 
-        // Build rolling 12-month series (excluding cancelled orders)
-        $monthlySeries = collect(range(11, 0))->map(function ($monthsAgo) use ($endMonth, $validOrders) {
+        // Build rolling 12-month series in ONE grouped query (was 12 queries)
+        $windowStart = (clone $endMonth)->subMonths(11)->startOfMonth();
+        $monthKey = DB::connection()->getDriverName() === 'sqlite'
+            ? "strftime('%Y-%m', created_at)"
+            : "DATE_FORMAT(created_at, '%Y-%m')";
+        $monthlyTotals = Order::query()
+            ->tap($validOrders)
+            ->whereBetween('created_at', [$windowStart, (clone $endMonth)->endOfMonth()])
+            ->selectRaw("{$monthKey} as month_key, SUM(subtotal - discount_amount) as total")
+            ->groupBy(DB::raw($monthKey))
+            ->pluck('total', 'month_key');
+
+        $monthlySeries = collect(range(11, 0))->map(function ($monthsAgo) use ($endMonth, $monthlyTotals) {
             $monthDate = (clone $endMonth)->subMonths($monthsAgo);
             $year = (int) $monthDate->format('Y');
             $monthNumber = (int) $monthDate->format('m');
 
-            $total = (float) Order::whereYear('created_at', $year)
-                ->whereMonth('created_at', $monthNumber)
-                ->tap($validOrders)
-                ->sum(DB::raw('subtotal - discount_amount'));
+            $total = (float) ($monthlyTotals[$monthDate->format('Y-m')] ?? 0);
 
             return [
                 'label'      => $monthDate->format('M'),
@@ -155,10 +164,14 @@ class DashboardController extends Controller
         $lowStockCount = Product::where('stock_quantity', '<=', 3)->count();
         $outOfStockCount = Product::where('stock_quantity', '<=', 0)->count();
 
-        $activeOrdersCount = Order::whereIn('status', ['pending', 'confirmed', 'processing', 'shipped'])->count();
-        $cancelledOrdersCount = Order::where('status', 'cancelled')->count();
-        $returnedOrdersCount = Order::where('status', 'returned')->count();
-        $deliveredOrdersCount = Order::where('status', 'delivered')->count();
+        // All status counts in one query
+        $statusCounts = Order::query()->selectRaw('status, COUNT(*) as aggregate')->groupBy('status')->pluck('aggregate', 'status');
+        $countOf = fn (string ...$statuses) => (int) collect($statuses)->sum(fn ($st) => $statusCounts[$st] ?? 0);
+
+        $activeOrdersCount = $countOf('pending', 'confirmed', 'processing', 'shipped');
+        $cancelledOrdersCount = $countOf('cancelled');
+        $returnedOrdersCount = $countOf('returned');
+        $deliveredOrdersCount = $countOf('delivered');
 
         return view('admin.dashboard', [
             'ordersCount'          => $activeOrdersCount,
@@ -192,8 +205,7 @@ class DashboardController extends Controller
             'peakMonth'           => $peakMonth,
             'totalSeriesRevenue'  => $totalSeriesRevenue,
             'dispatchedCount'     => Order::whereNotNull('courier_name')->count(),
-            'shippedCount'        => Order::where('status', 'shipped')->count(),
-            'deliveredCount'      => Order::where('status', 'delivered')->count(),
+            'shippedCount'        => $countOf('shipped'),
             'todayOrdersCount'    => Order::whereDate('created_at', Carbon::today())->tap($validOrders)->count(),
             'yesterdayOrdersCount'=> Order::whereDate('created_at', Carbon::yesterday())->tap($validOrders)->count(),
         ]);

@@ -2,7 +2,7 @@
 
 @php $editing = $product->exists; @endphp
 
-@section('title', $editing ? 'Edit: ' . $product->name : 'Create New Product — Marty Admin')
+@section('title', $editing ? 'Edit: ' . $product->name : 'Create New Product')
 
 @section('content')
 @php
@@ -54,49 +54,31 @@
   @csrf
   @if($editing) @method('PUT') @endif
 
-  {{-- Sticky Action Bar Header --}}
-  <div class="sticky top-0 z-30 bg-white/95 backdrop-blur-md -mx-3.5 sm:-mx-6 lg:-mx-8 px-3.5 sm:px-6 lg:px-8 py-3 border-b border-stone-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
-    <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
-      <a href="{{ route('admin.products.index') }}" class="h-8 w-8 sm:h-9 sm:w-9 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 flex items-center justify-center text-stone-500 hover:text-stone-900 transition-colors shrink-0 font-extrabold text-sm" title="Back to Products List">
-        ‹
+  {{-- Sticky action bar: one Save, one Cancel --}}
+  <div class="sticky top-16 z-10 bg-white/95 backdrop-blur -mx-3 sm:-mx-4 lg:-mx-6 !-mt-3 sm:!-mt-4 lg:!-mt-6 px-3 sm:px-4 lg:px-6 py-3 border-b border-stone-200 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-3 min-w-0">
+      <a href="{{ route('admin.products.index') }}" class="h-9 w-9 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 flex items-center justify-center text-stone-500 hover:text-stone-900 shrink-0" title="Back to products" aria-label="Back to products">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
       </a>
       <div class="min-w-0">
-        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-          <h1 class="text-sm sm:text-lg lg:text-xl font-extrabold text-stone-900 truncate tracking-tight">
-            {{ $editing ? $product->name : 'Create New Product' }}
-          </h1>
+        <p class="text-xs text-stone-500">Products</p>
+        <div class="flex items-center gap-2 min-w-0">
+          <h1 class="text-base sm:text-lg font-semibold text-stone-900 truncate">{{ $editing ? $product->name : 'Add product' }}</h1>
           @if($editing)
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider {{ $product->is_published ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
-              <span class="w-1.5 h-1.5 rounded-full {{ $product->is_published ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
-              <span>{{ $product->is_published ? 'Live on Store' : 'Draft' }}</span>
-            </span>
-          @else
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-50 text-brand-700 border border-brand-200">
-              New Draft
+            <span class="shrink-0 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium {{ $product->is_published ? 'bg-emerald-50 text-emerald-700' : 'bg-stone-100 text-stone-600' }}">
+              <span class="w-1.5 h-1.5 rounded-full {{ $product->is_published ? 'bg-emerald-500' : 'bg-stone-400' }}"></span>{{ $product->is_published ? 'Published' : 'Draft' }}
             </span>
           @endif
         </div>
-        <p class="text-[10px] sm:text-xs text-stone-500 truncate mt-0.5">
-          {{ $editing ? 'Manage product details, pricing, variations, stock & gallery' : 'Fill out product details to list a new catalog item' }}
-        </p>
       </div>
     </div>
 
-    <div class="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end">
+    <div class="hidden sm:flex items-center gap-2 shrink-0">
       @if($editing && $product->is_published)
-        <a href="{{ route('product.show', $product->slug) }}" target="_blank" class="px-3 py-1.5 sm:py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 font-bold text-xs shadow-2xs transition-all flex items-center justify-center gap-1 shrink-0">
-          <span>👁️ View</span>
-        </a>
+        <a href="{{ route('product.show', $product->slug) }}" target="_blank" class="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100">View on store</a>
       @endif
-
-      <a href="{{ route('admin.products.index') }}" class="px-3 py-1.5 sm:py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 text-stone-600 font-bold text-xs transition-colors shrink-0 text-center">
-        Cancel
-      </a>
-
-      <button type="submit" class="flex-1 sm:flex-none px-4 sm:px-5 py-1.5 sm:py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-        <span>{{ $editing ? 'Update Product' : 'Publish Product' }}</span>
-      </button>
+      <a href="{{ route('admin.products.index') }}" class="px-3.5 py-2 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-sm font-medium text-stone-700">Cancel</a>
+      <button type="submit" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold cursor-pointer">{{ $editing ? 'Save changes' : 'Save product' }}</button>
     </div>
   </div>
 
@@ -104,56 +86,55 @@
   <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-start">
 
     {{-- Left Column (Main Form Content - 8 cols on Desktop) --}}
-    <div class="lg:col-span-8 xl:col-span-8 space-y-6">
+    <div class="lg:col-span-8 space-y-5 sm:space-y-6">
 
       {{-- Card 1: Basic Product Information --}}
-      <div class="bg-white p-5 sm:p-6 lg:p-7 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-5">
-        <div class="flex items-center justify-between border-b border-stone-100 pb-3.5">
-          <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-brand-50 text-brand-700 font-black text-sm flex items-center justify-center border border-brand-100">1</div>
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 space-y-5">
+        <div class="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 rounded-full bg-stone-100 text-stone-600 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">1</div>
             <div>
-              <h2 class="text-sm sm:text-base font-extrabold text-stone-900">Basic Information</h2>
-              <p class="text-[11px] text-stone-500">Core identification, title, slug, brand &amp; categorisation</p>
+              <h2 class="text-base font-semibold text-stone-900">Basic information</h2>
+              <p class="text-[13px] text-stone-500 mt-0.5">Name, category, brand and description</p>
             </div>
           </div>
-          <span class="text-[11px] font-bold text-stone-400 font-mono">Step 1 of 5</span>
         </div>
 
         <div class="space-y-4">
           <div>
             <div class="flex items-center justify-between mb-1.5">
-              <label class="text-xs font-bold text-stone-800">Product Name <span class="text-rose-500">*</span></label>
+              <label class="text-[13px] font-medium text-stone-700">Product Name <span class="text-rose-500">*</span></label>
               <span id="nameCharCount" class="text-[10px] font-mono text-stone-400">0 chars</span>
             </div>
-            <input type="text" id="productNameInput" name="name" class="w-full px-3.5 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-stone-900 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all" value="{{ old('name', $product->name) }}" placeholder="e.g. Wood Milled Cold Pressed Mustard Oil" required />
+            <input type="text" id="productNameInput" name="name" class="w-full px-3.5 py-2.5 sm:py-3 text-sm text-stone-900 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 transition-all" value="{{ old('name', $product->name) }}" placeholder="e.g. Nike Air Zoom Pegasus 40 Running Shoes" required />
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <div class="flex items-center justify-between mb-1.5">
-                <label class="text-xs font-bold text-stone-800">URL Slug</label>
+                <label class="text-[13px] font-medium text-stone-700">URL Slug</label>
                 <button type="button" id="autoSlugBtn" class="text-[10px] font-bold text-brand-600 hover:text-brand-800 hover:underline cursor-pointer">Auto Generate</button>
               </div>
-              <input type="text" id="productSlugInput" name="slug" class="w-full px-3.5 py-2.5 text-xs font-mono text-stone-700 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" value="{{ old('slug', $product->slug) }}" placeholder="e.g. wood-milled-cold-pressed-mustard-oil" />
+              <input type="text" id="productSlugInput" name="slug" class="w-full px-3.5 py-2.5 text-sm font-mono text-stone-700 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20" value="{{ old('slug', $product->slug) }}" placeholder="e.g. nike-air-zoom-pegasus-40" />
             </div>
 
             <div>
-              <label class="text-xs font-bold text-stone-800 block mb-1.5">Base SKU Code</label>
-              <input type="text" name="sku" class="w-full px-3.5 py-2.5 text-xs font-mono font-bold text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" value="{{ old('sku', $product->sku) }}" placeholder="e.g. MARTY-OIL-01" />
+              <label class="text-[13px] font-medium text-stone-700 block mb-1.5">Base SKU Code</label>
+              <input type="text" name="sku" class="w-full px-3.5 py-2.5 text-sm font-mono text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20" value="{{ old('sku', $product->sku) }}" placeholder="e.g. NIKE-PEG40" />
             </div>
             <div>
-              <label class="text-xs font-bold text-stone-800 block mb-1.5">Barcode / EAN (Optional)</label>
-              <input type="text" name="barcode" class="w-full px-3.5 py-2.5 text-xs font-mono font-bold text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" value="{{ old('barcode', $product->barcode) }}" placeholder="Auto-generated if blank" />
+              <label class="text-[13px] font-medium text-stone-700 block mb-1.5">Barcode / EAN (Optional)</label>
+              <input type="text" name="barcode" class="w-full px-3.5 py-2.5 text-sm font-mono text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20" value="{{ old('barcode', $product->barcode) }}" placeholder="Auto-generated if blank" />
             </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <div class="flex items-center justify-between mb-1.5">
-                <label class="text-xs font-bold text-stone-800">Brand / Producer</label>
+                <label class="text-[13px] font-medium text-stone-700">Brand / Producer</label>
                 <a href="{{ route('admin.brands.create') }}" target="_blank" class="text-[10px] font-bold text-brand-600 hover:underline">+ New Brand</a>
               </div>
-              <select name="brand_id" class="w-full px-3.5 py-2.5 text-xs font-bold text-stone-800 rounded-xl border border-stone-200 bg-white focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20">
+              <select name="brand_id" class="w-full px-3.5 py-2.5 text-sm text-stone-800 rounded-xl border border-stone-200 bg-white focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20">
                 <option value="">-- Direct Brand / In-House --</option>
                 @foreach($brands as $b)
                   <option value="{{ $b->id }}" @selected((int) old('brand_id', $product->brand_id) === (int) $b->id)>
@@ -164,8 +145,8 @@
             </div>
 
             <div>
-              <label class="text-xs font-bold text-stone-800 block mb-1.5">Product Category <span class="text-rose-500">*</span></label>
-              <select name="category_id" class="w-full px-3.5 py-2.5 text-xs font-bold text-stone-800 rounded-xl border border-stone-200 bg-white focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" required>
+              <label class="text-[13px] font-medium text-stone-700 block mb-1.5">Product Category <span class="text-rose-500">*</span></label>
+              <select name="category_id" class="w-full px-3.5 py-2.5 text-sm text-stone-800 rounded-xl border border-stone-200 bg-white focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20" required>
                 <option value="">-- Select Category --</option>
                 @foreach($categories as $cat)
                   <option value="{{ $cat->id }}" @selected((int) old('category_id', $product->category_id) === (int) $cat->id)>
@@ -177,15 +158,14 @@
           </div>
 
           <div>
-            <label class="text-xs font-bold text-stone-800 block mb-1.5">Short Tagline Summary <span class="text-stone-400 font-normal">(Shown on catalog cards)</span></label>
-            <textarea name="short_description" rows="2" class="w-full px-3.5 py-2.5 text-xs font-medium text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" placeholder="e.g. 100% natural cold pressed organic mustard oil with rich aroma and unadulterated flavor.">{{ old('short_description', $product->short_description) }}</textarea>
+            <label class="text-[13px] font-medium text-stone-700 block mb-1.5">Short Tagline Summary <span class="text-stone-400 font-normal">(Shown on catalog cards)</span></label>
+            <textarea name="short_description" rows="2" class="w-full px-3.5 py-2.5 text-sm font-medium text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20" placeholder="e.g. Lightweight daily running shoe with responsive cushioning.">{{ old('short_description', $product->short_description) }}</textarea>
           </div>
 
           <div>
             <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-              <label class="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+              <label class="text-[13px] font-medium text-stone-700 flex items-center gap-1.5">
                 <span>Full Detailed Description &amp; Highlights</span>
-                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">Rich Media &amp; HTML</span>
               </label>
               <div class="flex items-center gap-1 bg-stone-100 p-0.5 rounded-lg text-xs font-semibold">
                 <button type="button" id="descModeVisualBtn" class="px-2.5 py-1 rounded-md bg-white text-stone-900 shadow-2xs font-bold text-[11px] transition-all cursor-pointer">Visual</button>
@@ -199,7 +179,7 @@
               {{-- Toolbar --}}
               <div id="descEditorToolbar" class="flex flex-wrap items-center gap-1 p-2 bg-stone-50/90 border-b border-stone-200 text-xs text-stone-700">
                 {{-- Format / Heading select --}}
-                <select id="descHeadingSelect" class="h-7 px-2 text-xs font-semibold bg-white border border-stone-200 rounded-lg focus:outline-none cursor-pointer">
+                <select id="descHeadingSelect" class="h-7 px-2 text-sm font-semibold bg-white border border-stone-200 rounded-lg focus:outline-none cursor-pointer text-stone-900">
                   <option value="p">Paragraph</option>
                   <option value="h2">Heading 2</option>
                   <option value="h3">Heading 3</option>
@@ -251,14 +231,14 @@
                 <div class="w-px h-5 bg-stone-200 mx-1"></div>
 
                 {{-- Media insertion buttons --}}
-                <button type="button" id="descOpenImageModalBtn" class="h-7 px-2.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 active:scale-95 flex items-center gap-1.5 font-extrabold text-[11px] transition-colors cursor-pointer" title="Add Image (Upload or URL)">
-                  <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <button type="button" id="descOpenImageModalBtn" class="h-7 px-2.5 rounded-lg bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 flex items-center gap-1.5 font-medium text-xs transition-colors cursor-pointer" title="Add Image (Upload or URL)">
+                  <svg class="w-3.5 h-3.5 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                   <span>Image</span>
                 </button>
 
-                <button type="button" id="descOpenVideoModalBtn" class="h-7 px-2.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-800 border border-red-200 active:scale-95 flex items-center gap-1.5 font-extrabold text-[11px] transition-colors cursor-pointer" title="Add Video (YouTube, Vimeo, MP4)">
-                  <svg class="w-3.5 h-3.5 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                  <span>Video / Link</span>
+                <button type="button" id="descOpenVideoModalBtn" class="h-7 px-2.5 rounded-lg bg-white hover:bg-stone-100 text-stone-700 border border-stone-200 flex items-center gap-1.5 font-medium text-xs transition-colors cursor-pointer" title="Add Video (YouTube, Vimeo, MP4)">
+                  <svg class="w-3.5 h-3.5 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <span>Video</span>
                 </button>
 
                 <button type="button" id="descInsertLinkBtn" class="h-7 px-2 rounded-lg hover:bg-stone-200 active:scale-95 flex items-center gap-1 text-[11px] font-bold transition-colors cursor-pointer" title="Insert Link">
@@ -277,7 +257,7 @@
               </div>
 
               {{-- Editor Viewport 2: Custom HTML Code View --}}
-              <textarea id="descHtmlEditor" name="description" rows="12" class="hidden w-full p-4 font-mono text-xs text-stone-100 bg-stone-900 border-0 focus:outline-none resize-y leading-relaxed" placeholder="Type or paste custom HTML, iframes, styles, video tags, or tables here...">{{ old('description', $product->description) }}</textarea>
+              <textarea id="descHtmlEditor" name="description" rows="12" class="hidden w-full p-4 font-mono text-sm text-stone-100 bg-stone-900 border-0 focus:outline-none resize-y leading-relaxed" placeholder="Type or paste custom HTML, iframes, styles, video tags, or tables here...">{{ old('description', $product->description) }}</textarea>
 
               {{-- Editor Viewport 3: Real-Time Live Preview --}}
               <div id="descPreviewEditor" class="hidden min-h-[220px] max-h-[500px] overflow-y-auto p-4 bg-stone-50/50 text-xs sm:text-sm text-stone-800 leading-relaxed prose prose-stone max-w-none">
@@ -300,289 +280,24 @@
         </div>
       </div>
 
-      {{-- Card 2: Pricing & General Inventory --}}
-      <div class="bg-white p-5 sm:p-6 lg:p-7 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-5">
-        <div class="flex items-center justify-between border-b border-stone-100 pb-3.5">
-          <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 font-black text-sm flex items-center justify-center border border-emerald-100">2</div>
-            <div>
-              <h2 class="text-sm sm:text-base font-extrabold text-stone-900">Pricing &amp; Inventory</h2>
-              <p class="text-[11px] text-stone-500">Base pricing, discount rules and default inventory counts</p>
-            </div>
-          </div>
-          <span id="autoStockNoticeHeader" class="hidden px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300"></span>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          <div>
-            <label class="text-xs font-bold text-stone-800 block mb-1.5">Regular Price (৳) <span class="text-rose-500">*</span></label>
-            <input type="number" step="0.01" id="regPriceInput" name="regular_price" class="w-full px-3.5 py-2.5 text-xs sm:text-sm font-black text-stone-900 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" value="{{ old('regular_price', $product->regular_price) }}" placeholder="e.g. 850" required />
-          </div>
-
-          <div>
-            <label class="text-xs font-bold text-emerald-800 block mb-1.5">Sale Price (৳)</label>
-            <input type="number" step="0.01" id="salePriceInput" name="sale_price" class="w-full px-3.5 py-2.5 text-xs sm:text-sm font-black text-emerald-700 bg-emerald-50/40 rounded-xl border border-emerald-200 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20" value="{{ old('sale_price', $product->sale_price) }}" placeholder="e.g. 750 (optional)" />
-          </div>
-
-          <div>
-            <label class="text-xs font-bold text-indigo-800 block mb-1.5">Buying Cost (৳)</label>
-            <input type="number" step="0.01" id="costPriceInput" name="cost_price" class="w-full px-3.5 py-2.5 text-xs sm:text-sm font-black text-indigo-700 bg-indigo-50/50 rounded-xl border border-indigo-200 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20" value="{{ old('cost_price', $product->cost_price) }}" placeholder="e.g. 550 (for profit reports)" />
-          </div>
-
-          <div id="stockQuantityFieldGroup">
-            <div class="flex items-center justify-between mb-1.5">
-              <label class="text-xs font-bold text-stone-800">Total Stock <span class="text-rose-500">*</span></label>
-              <span id="autoStockNotice" class="hidden px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
-                ⚡ Auto-Calculated
-              </span>
-            </div>
-            <input type="number" id="mainStockInput" name="stock_quantity" class="w-full px-3.5 py-2.5 text-xs sm:text-sm font-black text-stone-900 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all" value="{{ old('stock_quantity', $product->stock_quantity ?? 0) }}" required />
-            <div id="variantStockLinkHint" class="hidden mt-1.5 flex items-center justify-between text-[11px]">
-              <span class="text-stone-500">Auto-sum of active variants</span>
-              <a href="#skuMatrixSection" class="font-extrabold text-emerald-700 hover:text-emerald-900 flex items-center gap-0.5">
-                <span>Edit in Variations</span> ↓
-              </a>
-            </div>
-          </div>
-
-          <div>
-            <label class="text-xs font-bold text-stone-800 block mb-1.5">Unit / Pack Size</label>
-            <input type="text" name="unit" class="w-full px-3.5 py-2.5 text-xs font-bold text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20" value="{{ old('unit', $product->unit) }}" placeholder="e.g. 500ml, 1 Liter" />
-          </div>
-        </div>
-
-        <div id="discountBadgePreview" class="hidden p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between text-xs font-bold text-amber-900">
-          <span>Discount Applied: <span id="discountPercentText" class="text-brand-700 font-extrabold"></span></span>
-          <span class="text-[10px] font-mono text-amber-700 uppercase tracking-wider">Storefront Badge Live</span>
-        </div>
-      </div>
-
-      {{-- Card 3: Variants & Weight Pack Options --}}
-      <div id="skuMatrixSection" class="bg-white p-5 sm:p-6 lg:p-7 rounded-2xl sm:rounded-3xl border border-emerald-200/80 shadow-2xs space-y-5">
-        <input type="hidden" name="sku_matrix_submitted" value="1" />
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-100 pb-3.5">
-          <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 font-black text-sm flex items-center justify-center border border-teal-100">3</div>
-            <div>
-              <h2 class="text-sm sm:text-base font-extrabold text-stone-900">Weight, Size &amp; Pack Options (Variants)</h2>
-              <p class="text-[11px] text-stone-500">Generate option variations (e.g. 250ml, 500ml, 1L) with custom prices and stock per size</p>
-            </div>
-          </div>
-          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 self-start sm:self-auto shrink-0">Variant Matrix</span>
-        </div>
-
-        {{-- Dynamic Attribute Presets Bar --}}
-        @php
-          $dbAttributeTypes = \App\Models\ProductAttributeType::with('values')->where('is_active', true)->orderBy('position')->orderBy('name')->get();
-        @endphp
-        <div class="space-y-4 bg-emerald-50/50 p-4 sm:p-5 rounded-2xl border border-emerald-200/80">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-emerald-100 pb-2.5">
-            <span class="text-xs font-black text-emerald-950 uppercase tracking-wider">⚡ Attribute Quick-Add Presets</span>
-            <a href="{{ route('admin.variations.index') }}" target="_blank" class="text-[11px] font-bold text-emerald-700 hover:underline">Manage Attributes →</a>
-          </div>
-
-          {{-- Compact Attribute Filter & Presets List --}}
-          <div class="space-y-2">
-            @foreach($dbAttributeTypes as $attType)
-              @if($attType->values->isNotEmpty())
-                @php
-                  $isPrimaryGroup = in_array(strtolower($attType->name), ['weight', 'volume', 'size', 'unit']);
-                  $targetInputId = $isPrimaryGroup ? 'sizesInput' : 'colorsInput';
-                  $badgeClass = $isPrimaryGroup 
-                    ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-200/90' 
-                    : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200/90';
-                @endphp
-                <div class="flex flex-col sm:flex-row sm:items-center gap-2 bg-white/90 p-2 sm:p-2.5 rounded-xl border border-emerald-100/90 shadow-2xs">
-                  <span class="text-[11px] font-extrabold text-stone-700 font-mono uppercase tracking-wider shrink-0 sm:w-24">
-                    {{ $attType->name }}:
-                  </span>
-                  <div class="flex flex-wrap items-center gap-1 sm:gap-1.5">
-                    @foreach($attType->values as $valObj)
-                      <button type="button" class="preset-pill-btn px-2.5 py-1 rounded-lg font-extrabold border shadow-2xs transition cursor-pointer text-[11px] sm:text-xs {{ $badgeClass }}" data-target="{{ $targetInputId }}" data-type="{{ $attType->name }}" data-value="{{ $valObj->value }}">
-                        + {{ $valObj->value }}
-                      </button>
-                    @endforeach
-                  </div>
-                </div>
-              @endif
-            @endforeach
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-            <div>
-              <label class="text-xs font-bold text-stone-800 block mb-1.5">Primary Weight / Size Options <span class="text-stone-400 font-normal">(Comma-separated)</span></label>
-              <input id="sizesInput" name="sizes" class="w-full px-3.5 py-2.5 text-xs font-bold text-stone-900 rounded-xl border border-stone-200 bg-white focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-2xs" value="{{ old('sizes', $sizeValues) }}" placeholder="e.g. 250g, 500g, 1kg" />
-            </div>
-            <div>
-              <label class="text-xs font-bold text-stone-800 block mb-1.5">Packaging / Container Variant <span class="text-stone-400 font-normal">(Optional)</span></label>
-              <input id="colorsInput" name="colors" class="w-full px-3.5 py-2.5 text-xs font-bold text-stone-900 rounded-xl border border-stone-200 bg-white focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-2xs" value="{{ old('colors', $colorValues) }}" placeholder="e.g. Glass Jar, Craft Pouch" />
-            </div>
-          </div>
-
-          <div class="flex justify-end pt-1">
-            <button type="button" id="generateMatrixBtn" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-              <span>⚡ Generate Combination Matrix</span>
-            </button>
-          </div>
-        </div>
-
-        @php
-          $skus = $editing ? $product->skus : collect();
-        @endphp
-
-        {{-- Quick Variant Stock Toolbar --}}
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-emerald-50/60 p-3.5 sm:p-4 rounded-2xl border border-emerald-200/80">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white font-black text-sm flex items-center justify-center shadow-xs">📦</div>
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-black text-emerald-950 uppercase tracking-wider">Variation Stock Matrix</span>
-                <span id="matrixActiveCountBadge" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-white text-emerald-800 border border-emerald-200 shadow-2xs">
-                  {{ $skus->count() }} Variations
-                </span>
-              </div>
-              <p class="text-[11px] text-emerald-800/80 font-medium">Edit individual variant stock below. The total stock in Card 2 auto-calculates from these rows.</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-2 self-start sm:self-auto bg-white p-1.5 rounded-xl border border-emerald-200 shadow-2xs">
-            <span class="text-[11px] font-bold text-stone-600 pl-1">Set all to:</span>
-            <input type="number" id="bulkStockQtyInput" min="0" placeholder="Qty" class="w-16 px-2 py-1 text-xs text-center font-black rounded-lg border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:border-emerald-500" />
-            <button type="button" id="applyBulkStockBtn" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-lg transition-colors cursor-pointer shadow-xs">
-              Apply to All
-            </button>
-          </div>
-        </div>
-
-        {{-- Combination Matrix: Unified Responsive Table Layout for All Devices --}}
-        <div class="overflow-x-auto w-full border border-stone-200 rounded-2xl shadow-2xs">
-          <table class="w-full text-left text-xs min-w-[660px]">
-            <thead class="bg-stone-100 text-stone-700 font-extrabold border-b border-stone-200 whitespace-nowrap">
-              <tr>
-                <th class="py-3 px-4">Option / Weight</th>
-                <th class="py-3 px-4">SKU Code</th>
-                <th class="py-3 px-4 w-36 text-center bg-stone-200/60">Regular Price (৳)</th>
-                <th class="py-3 px-4 w-36 text-center bg-emerald-100/60 text-emerald-900">Sale Price (৳)</th>
-                <th class="py-3 px-4 w-32 text-center bg-emerald-50 text-emerald-900 border-x border-emerald-200 font-black">Stock Qty 📦</th>
-                <th class="py-3 px-4 w-16 text-center">Active</th>
-                <th class="py-3 px-3 w-10 text-center"></th>
-              </tr>
-            </thead>
-            <tbody id="skuMatrixBody" class="divide-y divide-stone-100 bg-white">
-              @forelse($skus as $index => $sku)
-                @php
-                  $isCustomReg = $sku->regular_price !== null && abs((float) $sku->regular_price - (float) $product->regular_price) > 0.01;
-                  $isCustomSale = $sku->sale_price !== null && abs((float) $sku->sale_price - (float) ($product->sale_price ?? $product->regular_price)) > 0.01;
-                @endphp
-                <tr class="sku-row hover:bg-stone-50/80 transition-colors">
-                  <td class="py-3 px-4">
-                    <input type="hidden" name="sku_matrix[{{ $index }}][id]" value="{{ $sku->id }}" />
-                    <div class="flex items-center gap-1.5 flex-wrap">
-                      @foreach($sku->getAttributesData() as $k => $v)
-                        <input type="hidden" name="sku_matrix[{{ $index }}][attributes][{{ $k }}]" value="{{ $v }}" />
-                        <span class="bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold border border-emerald-200/80">{{ $k }}: {{ $v }}</span>
-                      @endforeach
-                    </div>
-                  </td>
-                  <td class="py-3 px-4">
-                    <input name="sku_matrix[{{ $index }}][sku]" value="{{ $sku->sku }}" placeholder="SKU" class="w-full px-2.5 py-1.5 text-xs font-mono rounded-lg border border-stone-200 focus:outline-none focus:border-brand-500" />
-                  </td>
-                  <td class="py-3 px-4">
-                    <input name="sku_matrix[{{ $index }}][regular_price]" type="number" step="0.01" value="{{ $isCustomReg ? $sku->regular_price : '' }}" class="w-full px-2.5 py-1.5 text-xs text-center font-bold rounded-lg border border-stone-200 sku-regular-price-input focus:outline-none focus:border-brand-500" placeholder="Auto Base" />
-                  </td>
-                  <td class="py-3 px-4">
-                    <input name="sku_matrix[{{ $index }}][sale_price]" type="number" step="0.01" value="{{ $isCustomSale ? $sku->sale_price : '' }}" class="w-full px-2.5 py-1.5 text-xs text-center font-black text-emerald-700 bg-emerald-50/40 rounded-lg border border-emerald-200 sku-sale-price-input focus:outline-none focus:border-emerald-500" placeholder="Auto Base" />
-                  </td>
-                  <td class="py-3 px-4 bg-emerald-50/30 border-x border-emerald-100">
-                    <input name="sku_matrix[{{ $index }}][stock]" type="number" min="0" value="{{ $sku->stock_quantity }}" class="w-full px-2.5 py-1.5 text-xs text-center font-black text-stone-900 rounded-lg border border-emerald-300 bg-white sku-stock-input focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" required />
-                  </td>
-                  <td class="py-3 px-4 text-center">
-                    <input type="checkbox" name="sku_matrix[{{ $index }}][is_active]" value="1" @checked($sku->is_active) class="accent-emerald-600 h-4 w-4 cursor-pointer sku-active-check" />
-                  </td>
-                  <td class="py-3 px-3 text-center">
-                    <button type="button" onclick="this.closest('tr').remove(); updateMatrixCalculations();" class="text-rose-400 hover:text-rose-600 font-bold text-base cursor-pointer">×</button>
-                  </td>
-                </tr>
-              @empty
-                <tr id="emptyMatrixRow">
-                  <td colspan="7" class="py-8 text-center text-stone-400 italic bg-stone-50/50">
-                    🌿 No weight or size options generated yet.<br/>
-                    Enter weights above (e.g. <strong class="text-stone-800">250g, 500g, 1kg</strong>) and click <strong class="text-emerald-700">"⚡ Generate Combination Matrix"</strong>.
-                  </td>
-                </tr>
-              @endforelse
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {{-- Card 4: Product Specifications Builder --}}
-      @php
-        $oldLabels = old('spec_labels');
-        $oldValues = old('spec_values');
-        if (is_array($oldLabels)) {
-          $specRows = [];
-          foreach ($oldLabels as $i => $label) {
-            $specRows[] = ['label' => $label, 'value' => $oldValues[$i] ?? ''];
-          }
-        } else {
-          $specRows = $editing ? $product->specificationRows() : [];
-        }
-        if (empty($specRows)) {
-          $specRows = [
-            ['label' => 'Purity Standard', 'value' => '100% Pure & Unadulterated'],
-            ['label' => 'Source / Origin', 'value' => 'Direct Farm Sourced'],
-            ['label' => 'Shelf Life', 'value' => '12 Months'],
-          ];
-        }
-      @endphp
-      <div class="bg-white p-5 sm:p-6 lg:p-7 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-4">
-        <div class="flex items-center justify-between border-b border-stone-100 pb-3.5">
-          <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 font-black text-sm flex items-center justify-center border border-amber-100">4</div>
-            <div>
-              <h2 class="text-sm sm:text-base font-extrabold text-stone-900">Specifications &amp; Key Highlights</h2>
-              <p class="text-[11px] text-stone-500">Key features shown as bullet points and specification table on storefront</p>
-            </div>
-          </div>
-          <button type="button" id="addSpecRow" class="px-3.5 py-1.5 text-xs font-bold rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-800 shadow-2xs cursor-pointer shrink-0 transition-colors">+ Add Feature</button>
-        </div>
-
-        <div id="specRows" class="space-y-3">
-          @foreach($specRows as $row)
-            <div class="spec-row grid grid-cols-1 sm:grid-cols-[1fr_1.5fr_auto] gap-3 items-center p-3 sm:p-2.5 bg-stone-50 rounded-xl border border-stone-200/80">
-              <div>
-                <label class="text-[10px] font-bold text-stone-500 block uppercase">Feature Name</label>
-                <input name="spec_labels[]" class="w-full px-3 py-2 text-xs font-bold text-stone-800 rounded-lg border border-stone-200 bg-white focus:outline-none focus:border-brand-500" value="{{ $row['label'] ?? '' }}" placeholder="e.g. Shelf Life" />
-              </div>
-              <div>
-                <label class="text-[10px] font-bold text-stone-500 block uppercase">Value / Detail</label>
-                <input name="spec_values[]" class="w-full px-3 py-2 text-xs font-bold text-stone-800 rounded-lg border border-stone-200 bg-white focus:outline-none focus:border-brand-500" value="{{ $row['value'] ?? '' }}" placeholder="e.g. 12 Months" />
-              </div>
-              <button type="button" class="remove-spec-row sm:mt-4 h-8 w-8 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center font-bold text-base transition-colors self-end sm:self-center cursor-pointer" title="Remove Feature">×</button>
-            </div>
-          @endforeach
-        </div>
-      </div>
-
       {{-- Card 5: Media Gallery & Drag-and-Drop Image Uploader --}}
-      <div class="bg-white p-5 sm:p-6 lg:p-7 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-4">
-        <div class="flex items-center justify-between border-b border-stone-100 pb-3.5">
-          <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-purple-50 text-purple-700 font-black text-sm flex items-center justify-center border border-purple-100">5</div>
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 space-y-4">
+        <div class="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 rounded-full bg-stone-100 text-stone-600 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">2</div>
             <div>
-              <h2 class="text-sm sm:text-base font-extrabold text-stone-900">Product Media Gallery</h2>
-              <p class="text-[11px] text-stone-500">Upload high-resolution photos on white background</p>
+              <h2 class="text-base font-semibold text-stone-900">Photos</h2>
+              <p class="text-[13px] text-stone-500 mt-0.5">The first photo is the main image. JPG, PNG or WebP, up to 4&nbsp;MB each.</p>
             </div>
           </div>
-          <span class="text-[11px] font-bold text-stone-400 font-mono">Max 5MB / img</span>
         </div>
 
         {{-- Existing Uploaded Product Photos --}}
         @if($editing && $product->images->isNotEmpty())
           <div>
             <div class="flex items-center justify-between mb-2.5">
-              <label class="text-xs font-bold text-stone-800">Existing Uploaded Images ({{ $product->images->count() }})</label>
-              <span class="text-[10px] font-bold text-stone-400">💡 Drag cards or click ◄ ► arrows to re-order</span>
+              <label class="text-[13px] font-medium text-stone-700">Existing Uploaded Images ({{ $product->images->count() }})</label>
+              <span class="text-xs text-stone-500">Drag or use the arrows to reorder</span>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3" id="productImagesGrid">
               @foreach($product->images as $imgIndex => $img)
@@ -603,10 +318,10 @@
 
                   <div class="w-full mt-0.5">
                     <label class="text-[9px] font-bold text-stone-500 block text-center mb-0.5 uppercase tracking-wider">Variation Tag</label>
-                    <input type="text" name="image_colors[{{ $img->id }}]" value="{{ old("image_colors.{$img->id}", $img->color) }}" placeholder="e.g. 500ml, Jar" class="w-full text-[10px] font-bold px-1.5 py-1 bg-white border border-stone-200 rounded-lg text-center text-stone-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-2xs" />
+                    <input type="text" name="image_colors[{{ $img->id }}]" value="{{ old("image_colors.{$img->id}", $img->color) }}" placeholder="e.g. Black" class="w-full text-xs px-1.5 py-1 bg-white border border-stone-200 rounded-lg text-center text-stone-800 focus:outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-500 shadow-2xs" />
                   </div>
                   <div class="w-full text-[8.5px] font-semibold text-stone-500 bg-stone-100/70 p-1 rounded-md border border-stone-200/60 truncate" title="SEO Alt: {{ $img->alt }}">
-                    ⚡ Alt: <span class="text-stone-800 font-bold">{{ $img->alt }}</span>
+                    Alt: <span class="text-stone-700">{{ $img->alt }}</span>
                   </div>
                 </div>
               @endforeach
@@ -615,127 +330,300 @@
         @endif
 
         {{-- Upload Drag-and-Drop Area --}}
-        <div class="border-2 border-dashed border-stone-300 hover:border-brand-500 rounded-2xl p-6 text-center bg-stone-50/60 hover:bg-brand-50/20 transition-all cursor-pointer relative">
+        <div class="border-2 border-dashed border-stone-300 hover:border-brand-600 rounded-xl p-8 text-center bg-stone-50 hover:bg-brand-50 transition-colors cursor-pointer relative">
           <input id="imageFileInput" name="images[]" type="file" accept="image/*" multiple class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
           <div class="flex flex-col items-center gap-2">
-            <div class="h-10 w-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-xl">📸</div>
-            <p class="text-xs font-extrabold text-stone-800">Click or Drag &amp; Drop Product Photos Here</p>
-            <p class="text-[11px] text-stone-400">Upload clean PNG, JPG, or WEBP images with white background</p>
+            <svg class="w-8 h-8 text-stone-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.16-5.16a2.25 2.25 0 013.18 0l5.16 5.16m-1.5-1.5l1.41-1.41a2.25 2.25 0 013.18 0l2.91 2.91M3.75 21h16.5A1.5 1.5 0 0021.75 19.5V4.5A1.5 1.5 0 0020.25 3H3.75A1.5 1.5 0 002.25 4.5v15A1.5 1.5 0 003.75 21zM15 8.25h.008v.008H15V8.25z"/></svg>
+            <p class="text-sm font-medium text-stone-700">Click to upload or drag photos here</p>
+            <p class="text-xs text-stone-500">A plain white background looks best</p>
           </div>
         </div>
 
         {{-- Live New Uploads Preview Grid --}}
         <div id="newImagesPreview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"></div>
       </div>
-    </div>
 
-    {{-- Right Sidebar Column (Sticky on Desktop: Publish Box, Organization, Badges & SEO - 4 cols on Desktop) --}}
-    <div class="lg:col-span-4 xl:col-span-4 lg:sticky lg:top-20 space-y-5 sm:space-y-6">
-
-      {{-- Card 0: Desktop Quick Publish Widget --}}
-      <div class="bg-white p-5 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-4">
-        <div class="flex items-center justify-between border-b border-stone-100 pb-3">
-          <h3 class="text-xs sm:text-sm font-extrabold text-stone-900">Publish Action</h3>
-          <span class="text-[10px] font-mono text-stone-400">⌘S / Ctrl+S</span>
+      {{-- Card 2: Pricing & General Inventory --}}
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 space-y-5">
+        <div class="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 rounded-full bg-stone-100 text-stone-600 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">3</div>
+            <div>
+              <h2 class="text-base font-semibold text-stone-900">Pricing &amp; stock</h2>
+              <p class="text-[13px] text-stone-500 mt-0.5">Prices in Taka. Buying cost is private and used for profit reports.</p>
+            </div>
+          </div>
+          <span id="autoStockNoticeHeader" class="hidden text-xs text-stone-500"></span>
         </div>
 
-        <div class="space-y-2.5">
-          <button type="submit" class="w-full py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-            <span>{{ $editing ? 'Save Product Changes' : 'Publish Product Now' }}</span>
-          </button>
+        <div class="grid grid-cols-2 sm:grid-cols-3 2xl:grid-cols-5 gap-4">
+          <div>
+            <label class="text-[13px] font-medium text-stone-700 block mb-1.5">Regular Price (৳) <span class="text-rose-500">*</span></label>
+            <input type="number" step="0.01" id="regPriceInput" name="regular_price" class="w-full px-3.5 py-2.5 text-sm text-stone-900 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20" value="{{ old('regular_price', $product->regular_price) }}" placeholder="e.g. 850" required />
+          </div>
 
-          <div class="flex items-center gap-2">
-            @if($editing && $product->is_published)
-              <a href="{{ route('product.show', $product->slug) }}" target="_blank" class="flex-1 py-2 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 font-bold text-xs shadow-2xs transition-all text-center flex items-center justify-center gap-1">
-                <span>👁️ Live View</span>
-              </a>
-            @endif
-            <a href="{{ route('admin.products.index') }}" class="flex-1 py-2 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-600 font-bold text-xs transition-colors text-center">
-              Discard
-            </a>
+          <div>
+            <label class="text-[13px] font-medium text-stone-700 block mb-1.5">Sale Price (৳)</label>
+            <input type="number" step="0.01" id="salePriceInput" name="sale_price" class="w-full px-3.5 py-2.5 text-sm text-stone-900 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20" value="{{ old('sale_price', $product->sale_price) }}" placeholder="e.g. 750 (optional)" />
+          </div>
+
+          <div>
+            <label class="text-[13px] font-medium text-stone-700 block mb-1.5">Buying Cost (৳)</label>
+            <input type="number" step="0.01" id="costPriceInput" name="cost_price" class="w-full px-3.5 py-2.5 text-sm text-stone-900 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20" value="{{ old('cost_price', $product->cost_price) }}" placeholder="e.g. 550 (for profit reports)" />
+          </div>
+
+          <div id="stockQuantityFieldGroup">
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-[13px] font-medium text-stone-700">Total Stock <span class="text-rose-500">*</span></label>
+              <span id="autoStockNotice" class="hidden text-xs text-stone-500">From variants</span>
+            </div>
+            <input type="number" id="mainStockInput" name="stock_quantity" class="w-full px-3.5 py-2.5 text-sm text-stone-900 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20 transition-all" value="{{ old('stock_quantity', $product->stock_quantity ?? 0) }}" required />
+            <div id="variantStockLinkHint" class="hidden mt-1.5 flex items-center justify-between text-[11px]">
+              <span class="text-stone-500">Auto-sum of active variants</span>
+              <a href="#skuMatrixSection" class="font-medium text-brand-700 hover:underline">Edit in variants</a>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[13px] font-medium text-stone-700 block mb-1.5">Unit / Pack Size</label>
+            <input type="text" name="unit" class="w-full px-3.5 py-2.5 text-sm text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20" value="{{ old('unit', $product->unit) }}" placeholder="e.g. 500ml, 1 Liter" />
           </div>
         </div>
 
-        @if($editing)
-          <div class="pt-2 border-t border-stone-100 text-[11px] text-stone-500 space-y-1">
-            <div class="flex justify-between">
-              <span>Status:</span>
-              <strong class="{{ $product->is_published ? 'text-emerald-700' : 'text-amber-700' }}">{{ $product->is_published ? 'Published' : 'Draft' }}</strong>
-            </div>
-            <div class="flex justify-between">
-              <span>Created:</span>
-              <span class="font-mono text-stone-700">{{ $product->created_at ? $product->created_at->format('M d, Y') : 'N/A' }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span>Updated:</span>
-              <span class="font-mono text-stone-700">{{ $product->updated_at ? $product->updated_at->diffForHumans() : 'N/A' }}</span>
-            </div>
-          </div>
-        @endif
+        <p id="discountBadgePreview" class="hidden text-[13px] text-stone-600">Shoppers will see <span id="discountPercentText" class="font-semibold text-stone-900"></span> on this product.</p>
       </div>
 
-      {{-- Card: Storefront Badges & Visibility --}}
-      <div class="bg-white p-5 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-4">
-        <h3 class="text-xs sm:text-sm font-extrabold text-stone-900 border-b border-stone-100 pb-2.5">Storefront Visibility &amp; Badges</h3>
+      {{-- Card 3: Variants & Weight Pack Options --}}
+      <div id="skuMatrixSection" class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 space-y-5">
+        <input type="hidden" name="sku_matrix_submitted" value="1" />
+        <div class="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 rounded-full bg-stone-100 text-stone-600 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">4</div>
+            <div>
+              <h2 class="text-base font-semibold text-stone-900">Variants</h2>
+              <p class="text-[13px] text-stone-500 mt-0.5">Sizes, colours or other options, each with its own price and stock</p>
+            </div>
+          </div>
+        </div>
+
         @php
-          $toggles = [
-            'is_published'   => ['Published on Storefront', 'Visible to shoppers for direct purchase'],
-            'is_featured'    => ['⭐ Featured Product', 'Highlighted on home page flagship section'],
-            'is_flash_sale'  => ['⚡ Flash Sale Deal', 'Promoted inside limited-time deal section'],
-            'is_best_seller' => ['🏆 Best Seller', 'Show badge on catalog card'],
-            'is_new_arrival' => ['🆕 New Arrival', 'Show new arrival badge'],
-          ];
+          $skus = $editing ? $product->skus : collect();
+          // Saved attributes (Settings → Product Variations) and what each category already uses,
+          // so the picker suggests options that fit this product.
+          $attributeLibrary = $attributeTypes->mapWithKeys(fn ($t) => [$t->name => $t->values->sortBy('position')->pluck('value')->values()]);
+          $categoryAttributeUsage = \App\Models\ProductSku::with('product:id,category_id')->get(['id', 'product_id', 'attributes'])
+            ->groupBy(fn ($s) => (string) $s->product?->category_id)
+            ->map(fn ($group) => $group
+              ->flatMap(fn ($s) => collect($s->getAttributesData())->map(fn ($v, $k) => ['name' => (string) $k, 'value' => (string) $v])->values())
+              ->groupBy('name')
+              ->map(fn ($rows, $name) => ['name' => $name, 'count' => $rows->count(), 'values' => $rows->pluck('value')->unique()->values()])
+              ->sortByDesc('count')->values());
         @endphp
-        <div class="space-y-2">
-          @foreach($toggles as $field => [$label, $hint])
-            <label class="flex items-start justify-between gap-3 text-xs font-bold text-stone-800 cursor-pointer p-2.5 rounded-xl hover:bg-stone-50 transition-colors border border-transparent hover:border-stone-200">
+        <script type="application/json" id="variantPickerData">@json(['library' => $attributeLibrary, 'usage' => $categoryAttributeUsage])</script>
+
+        {{-- Legacy fields: kept empty so old size/colour lists are rebuilt from the variant table on save --}}
+        <input type="hidden" name="sizes" value="" />
+        <input type="hidden" name="colors" value="" />
+
+        {{-- Option picker (filled by JavaScript) --}}
+        <div class="space-y-3">
+          <div id="optionGroups" class="space-y-3"></div>
+          <div id="optionSuggestions" class="flex flex-wrap items-center gap-2"></div>
+          <p class="text-xs text-stone-500">
+            Suggestions come from <a href="{{ route('admin.variations.index') }}" target="_blank" class="text-brand-700 hover:underline">Product variations</a> and other products in this category.
+          </p>
+        </div>
+
+        {{-- Variant table --}}
+        <div id="variantTableWrap" class="space-y-3 {{ $skus->isEmpty() ? 'hidden' : '' }}">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-semibold text-stone-900">Variants</span>
+              <span id="matrixActiveCountBadge" class="px-2 py-0.5 rounded-full text-xs font-medium bg-stone-100 text-stone-600">{{ $skus->count() }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <label for="bulkStockQtyInput" class="text-[13px] text-stone-600">Set all stock to</label>
+              <input type="number" id="bulkStockQtyInput" min="0" placeholder="Qty" class="w-20 px-2.5 py-1.5 text-sm text-center rounded-lg border border-stone-200 focus:outline-none focus:border-brand-600 text-stone-900" />
+              <button type="button" id="applyBulkStockBtn" class="px-3 py-1.5 border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-sm font-medium rounded-lg cursor-pointer">Apply</button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto w-full border border-stone-200 rounded-xl">
+            <table class="w-full text-left text-sm min-w-[640px]">
+              <thead class="bg-stone-50 text-stone-500 text-xs font-medium border-b border-stone-200 whitespace-nowrap">
+                <tr>
+                  <th class="py-2.5 px-3">Variant</th>
+                  <th class="py-2.5 px-3">SKU</th>
+                  <th class="py-2.5 px-3 w-32">Price (৳)</th>
+                  <th class="py-2.5 px-3 w-32">Sale price (৳)</th>
+                  <th class="py-2.5 px-3 w-24">Stock</th>
+                  <th class="py-2.5 px-3 w-16 text-center">Active</th>
+                  <th class="py-2.5 px-2 w-10"><span class="sr-only">Remove</span></th>
+                </tr>
+              </thead>
+              <tbody id="skuMatrixBody" class="divide-y divide-stone-100 bg-white">
+                @foreach($skus as $index => $sku)
+                  @php
+                    $isCustomReg = $sku->regular_price !== null && abs((float) $sku->regular_price - (float) $product->regular_price) > 0.01;
+                    $isCustomSale = $sku->sale_price !== null && abs((float) $sku->sale_price - (float) ($product->sale_price ?? $product->regular_price)) > 0.01;
+                    $regValue = $isCustomReg ? $sku->regular_price : '';
+                    $saleValue = $isCustomSale ? $sku->sale_price : '';
+                  @endphp
+                  <tr class="sku-row">
+                    <td class="py-2.5 px-3">
+                      <input type="hidden" name="sku_matrix[{{ $index }}][id]" value="{{ $sku->id }}" />
+                      <div class="flex items-center gap-1 flex-wrap">
+                        @foreach($sku->getAttributesData() as $k => $v)
+                          <input type="hidden" name="sku_matrix[{{ $index }}][attributes][{{ $k }}]" value="{{ $v }}" />
+                          <span class="px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 text-xs font-medium whitespace-nowrap">{{ $v }}</span>
+                        @endforeach
+                      </div>
+                    </td>
+                    <td class="py-2.5 px-3"><input name="sku_matrix[{{ $index }}][sku]" value="{{ $sku->sku }}" placeholder="Auto" class="w-full min-w-[170px] px-2.5 py-1.5 text-sm font-mono rounded-lg border border-stone-200 focus:outline-none focus:border-brand-600 text-stone-900" /></td>
+                    <td class="py-2.5 px-3"><input name="sku_matrix[{{ $index }}][regular_price]" type="number" step="0.01" value="{{ $regValue }}" placeholder="Base" class="sku-regular-price-input w-full px-2.5 py-1.5 text-sm rounded-lg border border-stone-200 focus:outline-none focus:border-brand-600 text-stone-900" /></td>
+                    <td class="py-2.5 px-3"><input name="sku_matrix[{{ $index }}][sale_price]" type="number" step="0.01" value="{{ $saleValue }}" placeholder="Base" class="sku-sale-price-input w-full px-2.5 py-1.5 text-sm rounded-lg border border-stone-200 focus:outline-none focus:border-brand-600 text-stone-900" /></td>
+                    <td class="py-2.5 px-3"><input name="sku_matrix[{{ $index }}][stock]" type="number" min="0" value="{{ $sku->stock_quantity }}" class="sku-stock-input w-full px-2.5 py-1.5 text-sm rounded-lg border border-stone-200 focus:outline-none focus:border-brand-600 text-stone-900" required /></td>
+                    <td class="py-2.5 px-3 text-center"><input type="checkbox" name="sku_matrix[{{ $index }}][is_active]" value="1" @checked($sku->is_active) class="sku-active-check accent-brand-600 h-4 w-4 cursor-pointer" /></td>
+                    <td class="py-2.5 px-2 text-center"><button type="button" class="sku-remove-btn h-8 w-8 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer" aria-label="Remove variant">&times;</button></td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+          <p class="text-xs text-stone-500">Leave price empty to use the product price. Total stock is the sum of active variants. Removed variants are deleted when you save.</p>
+        </div>
+      </div>
+
+      {{-- Card 4: Product Specifications Builder --}}
+      @php
+        $oldLabels = old('spec_labels');
+        $oldValues = old('spec_values');
+        if (is_array($oldLabels)) {
+          $specRows = [];
+          foreach ($oldLabels as $i => $label) {
+            $specRows[] = ['label' => $label, 'value' => $oldValues[$i] ?? ''];
+          }
+        } else {
+          $specRows = $editing ? $product->specificationRows() : [];
+        }
+        if (empty($specRows)) {
+          $specRows = [['label' => '', 'value' => '']];
+        }
+      @endphp
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 space-y-4">
+        <div class="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 rounded-full bg-stone-100 text-stone-600 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">5</div>
+            <div>
+              <h2 class="text-base font-semibold text-stone-900">Specifications</h2>
+              <p class="text-[13px] text-stone-500 mt-0.5">Shown as a feature table on the product page</p>
+            </div>
+          </div>
+          <button type="button" id="addSpecRow" class="px-3 py-1.5 text-sm font-medium rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 cursor-pointer shrink-0">+ Add row</button>
+        </div>
+
+        <div id="specRows" class="space-y-3">
+          @foreach($specRows as $row)
+            <div class="spec-row grid grid-cols-1 sm:grid-cols-[1fr_1.5fr_auto] gap-3 items-end">
               <div>
-                <span class="block text-xs font-extrabold text-stone-900">{{ $label }}</span>
-                <span class="text-[10px] font-normal text-stone-400 block mt-0.5">{{ $hint }}</span>
+                <label class="text-[13px] font-medium text-stone-700 block mb-1.5">Name</label>
+                <input name="spec_labels[]" class="w-full px-3 py-2 text-sm text-stone-800 rounded-lg border border-stone-200 bg-white focus:outline-none focus:border-brand-600" value="{{ $row['label'] ?? '' }}" placeholder="e.g. Material" />
               </div>
-              <input type="checkbox" name="{{ $field }}" value="1" class="accent-brand-600 h-4 w-4 rounded cursor-pointer mt-0.5 shrink-0" @checked(old($field, $product->$field)) />
-            </label>
+              <div>
+                <label class="text-[13px] font-medium text-stone-700 block mb-1.5">Value</label>
+                <input name="spec_values[]" class="w-full px-3 py-2 text-sm text-stone-800 rounded-lg border border-stone-200 bg-white focus:outline-none focus:border-brand-600" value="{{ $row['value'] ?? '' }}" placeholder="e.g. Breathable Mesh" />
+              </div>
+              <button type="button" class="remove-spec-row h-10 w-10 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center font-bold text-base transition-colors self-end sm:self-center cursor-pointer" title="Remove Feature">×</button>
+            </div>
           @endforeach
         </div>
       </div>
 
-      {{-- Card: Search Engine Optimization (SEO) --}}
-      <div class="bg-white p-5 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-4">
-        <h3 class="text-xs sm:text-sm font-extrabold text-stone-900 border-b border-stone-100 pb-2.5">🔍 Search Engine Optimization (SEO)</h3>
-
+      {{-- Card 6: Search engine listing (collapsed) --}}
+      <details class="group bg-white p-5 sm:p-6 rounded-2xl border border-stone-200">
+        <summary class="flex items-start justify-between gap-3 cursor-pointer list-none">
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 rounded-full bg-stone-100 text-stone-600 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">6</div>
+            <div>
+              <h2 class="text-base font-semibold text-stone-900">Search engine listing</h2>
+              <p class="text-[13px] text-stone-500 mt-0.5">How this product appears on Google. Optional.</p>
+            </div>
+          </div>
+          <svg class="w-5 h-5 text-stone-400 mt-1 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+        <div class="space-y-4 pt-5 mt-4 border-t border-stone-100">
         {{-- Live Google Search Preview --}}
         <div class="p-3.5 rounded-xl bg-stone-50 border border-stone-200 text-xs space-y-1">
           <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">Google Search Preview</span>
           <p id="seoPreviewTitle" class="text-xs sm:text-sm font-bold text-blue-700 truncate hover:underline cursor-pointer">
-            {{ old('meta_title', $product->meta_title) ?: ($editing ? $product->name . ' — Marty' : 'Product Name — Marty') }}
+            {{ old('meta_title', $product->meta_title) ?: ($editing ? $product->name . ' — ' . site_name() : 'Product Name — ' . site_name()) }}
           </p>
           <p class="text-[11px] text-emerald-700 truncate font-mono">
-            {{ url('/products') }}/<span id="seoPreviewSlug">{{ old('slug', $product->slug) ?: 'product-slug' }}</span>
+            {{ url('/product') }}/<span id="seoPreviewSlug">{{ old('slug', $product->slug) ?: 'product-slug' }}</span>
           </p>
           <p id="seoPreviewDesc" class="text-[11px] text-stone-600 line-clamp-2">
-            {{ old('meta_description', $product->meta_description) ?: 'Buy 100% pure organic food online in Bangladesh at best prices.' }}
+            {{ old('meta_description', $product->meta_description) ?: ($product->short_description ?: 'Add a meta description to control what Google shows here.') }}
           </p>
         </div>
 
         <div class="space-y-3">
           <div>
-            <label class="text-xs font-bold text-stone-800 block mb-1">Meta Title</label>
-            <input type="text" id="metaTitleInput" name="meta_title" class="w-full px-3 py-2 text-xs font-medium text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500" value="{{ old('meta_title', $product->meta_title) }}" placeholder="e.g. Buy Pure Mustard Oil Online — Marty" />
+            <label class="text-[13px] font-medium text-stone-700 block mb-1">Meta Title</label>
+            <input type="text" id="metaTitleInput" name="meta_title" class="w-full px-3 py-2 text-sm font-medium text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-600" value="{{ old('meta_title', $product->meta_title) }}" placeholder="e.g. Buy Nike Pegasus 40 Online — {{ site_name() }}" />
           </div>
 
           <div>
-            <label class="text-xs font-bold text-stone-800 block mb-1">Meta Description</label>
-            <textarea id="metaDescInput" name="meta_description" rows="2" class="w-full px-3 py-2 text-xs font-medium text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500" placeholder="Short description for Google search results...">{{ old('meta_description', $product->meta_description) }}</textarea>
+            <label class="text-[13px] font-medium text-stone-700 block mb-1">Meta Description</label>
+            <textarea id="metaDescInput" name="meta_description" rows="2" class="w-full px-3 py-2 text-sm font-medium text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-600" placeholder="Short description for Google search results...">{{ old('meta_description', $product->meta_description) }}</textarea>
           </div>
 
           <div>
-            <label class="text-xs font-bold text-stone-800 block mb-1">Meta Keywords</label>
-            <input type="text" name="meta_keywords" class="w-full px-3 py-2 text-xs font-medium text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-500" value="{{ old('meta_keywords', $product->meta_keywords) }}" placeholder="e.g. mustard oil, organic food bd" />
+            <label class="text-[13px] font-medium text-stone-700 block mb-1">Meta Keywords</label>
+            <input type="text" name="meta_keywords" class="w-full px-3 py-2 text-sm font-medium text-stone-800 rounded-xl border border-stone-200 focus:outline-none focus:border-brand-600" value="{{ old('meta_keywords', $product->meta_keywords) }}" placeholder="e.g. running shoes, nike, sneakers bd" />
           </div>
         </div>
-      </div>
+      
+        </div>
+      </details>
+    </div>
 
+    {{-- Right Sidebar Column (Sticky on Desktop: Publish Box, Organization, Badges & SEO - 4 cols on Desktop) --}}
+    <div class="order-first lg:order-none lg:col-span-4 lg:sticky lg:top-36 space-y-5">
+
+      {{-- Status & storefront badges --}}
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 space-y-1">
+        <h3 class="text-base font-semibold text-stone-900 pb-2">Status</h3>
+        @php
+          $toggles = [
+            'is_published'   => ['Published', 'Visible to shoppers'],
+            'is_featured'    => ['Featured', 'Shown on the home page'],
+            'is_flash_sale'  => ['Flash sale', 'Listed in the flash sale section'],
+            'is_best_seller' => ['Best seller', 'Best seller badge on the card'],
+            'is_new_arrival' => ['New arrival', 'New arrival badge on the card'],
+          ];
+        @endphp
+        <div class="divide-y divide-stone-100">
+          @foreach($toggles as $field => [$label, $hint])
+            <label class="flex items-center justify-between gap-3 py-3 cursor-pointer">
+              <span>
+                <span class="block text-sm font-medium text-stone-900">{{ $label }}</span>
+                <span class="block text-xs text-stone-500">{{ $hint }}</span>
+              </span>
+              <span class="relative inline-flex shrink-0">
+                <input type="checkbox" name="{{ $field }}" value="1" class="peer sr-only" @checked(old($field, $product->$field)) />
+                <span class="w-10 h-6 rounded-full bg-stone-300 transition-colors peer-checked:bg-brand-600 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-600/40"></span>
+                <span class="absolute left-0.5 top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4"></span>
+              </span>
+            </label>
+          @endforeach
+        </div>
+        @if($editing)
+          <dl class="pt-3 mt-1 border-t border-stone-100 text-xs text-stone-500 space-y-1">
+            <div class="flex justify-between"><dt>Created</dt><dd class="text-stone-700">{{ $product->created_at?->format('d M Y') ?? '—' }}</dd></div>
+            <div class="flex justify-between"><dt>Last updated</dt><dd class="text-stone-700">{{ $product->updated_at?->diffForHumans() ?? '—' }}</dd></div>
+          </dl>
+        @endif
+      </div>
     </div>
   </div>
 
@@ -798,7 +686,7 @@
       <div id="descImgUrlPanel" class="hidden space-y-3">
         <div>
           <label class="block text-xs font-bold text-stone-800 mb-1">Image URL (https://...)</label>
-          <input type="url" id="descImgUrlInput" placeholder="https://example.com/photo.jpg" class="w-full px-3.5 py-2.5 text-xs font-medium rounded-xl border border-stone-200 focus:outline-none focus:border-emerald-500" />
+          <input type="url" id="descImgUrlInput" placeholder="https://example.com/photo.jpg" class="w-full px-3.5 py-2.5 text-sm font-medium rounded-xl border border-stone-200 focus:outline-none focus:border-brand-600 text-stone-900" />
         </div>
       </div>
 
@@ -806,13 +694,13 @@
       <div class="pt-2 border-t border-stone-100 space-y-3">
         <div>
           <label class="block text-xs font-bold text-stone-800 mb-1">Alt Text / Caption (Optional)</label>
-          <input type="text" id="descImgAltInput" placeholder="Describe the image for customers &amp; SEO..." class="w-full px-3.5 py-2 text-xs font-medium rounded-xl border border-stone-200 focus:outline-none focus:border-emerald-500" />
+          <input type="text" id="descImgAltInput" placeholder="Describe the image for customers &amp; SEO..." class="w-full px-3.5 py-2 text-sm font-medium rounded-xl border border-stone-200 focus:outline-none focus:border-brand-600 text-stone-900" />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-stone-800 mb-1">Width / Layout</label>
-            <select id="descImgWidthSelect" class="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-stone-200 focus:outline-none bg-white">
+            <select id="descImgWidthSelect" class="w-full px-3 py-2 text-sm font-semibold rounded-xl border border-stone-200 focus:outline-none bg-white text-stone-900">
               <option value="100%">100% Full Width</option>
               <option value="75%">75% Large</option>
               <option value="50%">50% Medium</option>
@@ -822,7 +710,7 @@
 
           <div>
             <label class="block text-xs font-bold text-stone-800 mb-1">Alignment</label>
-            <select id="descImgAlignSelect" class="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-stone-200 focus:outline-none bg-white">
+            <select id="descImgAlignSelect" class="w-full px-3 py-2 text-sm font-semibold rounded-xl border border-stone-200 focus:outline-none bg-white text-stone-900">
               <option value="center">Centered</option>
               <option value="left">Left</option>
               <option value="right">Right</option>
@@ -869,7 +757,7 @@
       <div id="descVidLinkPanel" class="space-y-3">
         <div>
           <label class="block text-xs font-bold text-stone-800 mb-1">YouTube or Vimeo Video URL</label>
-          <input type="url" id="descVidUrlInput" placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ or https://youtu.be/..." class="w-full px-3.5 py-2.5 text-xs font-medium rounded-xl border border-stone-200 focus:outline-none focus:border-red-500" />
+          <input type="url" id="descVidUrlInput" placeholder="e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ or https://youtu.be/..." class="w-full px-3.5 py-2.5 text-sm font-medium rounded-xl border border-stone-200 focus:outline-none focus:border-red-500 text-stone-900" />
           <p class="text-[11px] text-stone-400 mt-1">Supports standard YouTube, Shorts, youtu.be, and Vimeo URLs. Responsive 16:9 player generated automatically.</p>
         </div>
       </div>
@@ -878,7 +766,7 @@
       <div id="descVidDirectPanel" class="hidden space-y-3">
         <div>
           <label class="block text-xs font-bold text-stone-800 mb-1">Direct Video URL (.mp4 / .webm)</label>
-          <input type="url" id="descVidDirectUrlInput" placeholder="https://example.com/video.mp4" class="w-full px-3.5 py-2.5 text-xs font-medium rounded-xl border border-stone-200 focus:outline-none focus:border-red-500" />
+          <input type="url" id="descVidDirectUrlInput" placeholder="https://example.com/video.mp4" class="w-full px-3.5 py-2.5 text-sm font-medium rounded-xl border border-stone-200 focus:outline-none focus:border-red-500 text-stone-900" />
         </div>
         <div class="text-center text-stone-400 text-xs font-bold">OR</div>
         <label class="block border-2 border-dashed border-stone-300 hover:border-red-500 rounded-2xl p-4 text-center cursor-pointer transition-colors bg-stone-50/50 hover:bg-red-50/20">
@@ -899,7 +787,7 @@
       <div class="pt-2 border-t border-stone-100 space-y-3">
         <div>
           <label class="block text-xs font-bold text-stone-800 mb-1">Optional Caption or Title</label>
-          <input type="text" id="descVidCaptionInput" placeholder="e.g. Official Product Showcase Video" class="w-full px-3.5 py-2 text-xs font-medium rounded-xl border border-stone-200 focus:outline-none focus:border-red-500" />
+          <input type="text" id="descVidCaptionInput" placeholder="e.g. Official Product Showcase Video" class="w-full px-3.5 py-2 text-sm font-medium rounded-xl border border-stone-200 focus:outline-none focus:border-red-500 text-stone-900" />
         </div>
       </div>
     </div>
@@ -913,6 +801,7 @@
 
 @push('scripts')
 <script>
+  const SITE_NAME = @json(site_name());
 // ==========================================
 // Rich Product Description Editor Controller
 // ==========================================
@@ -1652,9 +1541,10 @@
       if (nameCount) nameCount.innerText = `${len} chars`;
 
       if (seoTitle && (!metaTitle || !metaTitle.value)) {
-        seoTitle.innerText = nameInput.value ? `${nameInput.value} — Marty` : 'Product Name — Marty';
+        seoTitle.innerText = nameInput.value ? `${nameInput.value} — ${SITE_NAME}` : `Product Name — ${SITE_NAME}`;
       }
     });
+    if (nameCount) nameCount.innerText = `${nameInput.value.length} chars`;
   }
 
   if (autoSlugBtn && nameInput && slugInput) {
@@ -1672,13 +1562,13 @@
 
   if (metaTitle && seoTitle) {
     metaTitle.addEventListener('input', () => {
-      seoTitle.innerText = metaTitle.value || (nameInput.value ? `${nameInput.value} — Marty` : 'Product Name — Marty');
+      seoTitle.innerText = metaTitle.value || (nameInput.value ? `${nameInput.value} — ${SITE_NAME}` : `Product Name — ${SITE_NAME}`);
     });
   }
 
   if (metaDesc && seoDesc) {
     metaDesc.addEventListener('input', () => {
-      seoDesc.innerText = metaDesc.value || 'Buy 100% pure organic food online in Bangladesh at best prices.';
+      seoDesc.innerText = metaDesc.value || 'Add a meta description to control what Google shows here.';
     });
   }
 
@@ -1731,12 +1621,12 @@
     row.className = 'spec-row grid grid-cols-1 sm:grid-cols-[1fr_1.5fr_auto] gap-2.5 sm:gap-3 items-center p-3 bg-stone-50 rounded-xl border border-stone-200/80';
     row.innerHTML = `
       <div>
-        <label class="text-[10px] font-bold text-stone-500 block uppercase">Feature Name</label>
-        <input name="spec_labels[]" class="w-full px-3 py-1.5 text-xs font-bold text-stone-800 rounded-lg border border-stone-200 bg-white" placeholder="e.g. Shelf Life" />
+        <label class="text-[13px] font-medium text-stone-700 block mb-1.5">Name</label>
+        <input name="spec_labels[]" class="w-full px-3 py-1.5 text-sm text-stone-800 rounded-lg border border-stone-200 bg-white" placeholder="e.g. Material" />
       </div>
       <div>
-        <label class="text-[10px] font-bold text-stone-500 block uppercase">Value / Detail</label>
-        <input name="spec_values[]" class="w-full px-3 py-1.5 text-xs font-bold text-stone-800 rounded-lg border border-stone-200 bg-white" placeholder="e.g. 12 Months" />
+        <label class="text-[13px] font-medium text-stone-700 block mb-1.5">Value</label>
+        <input name="spec_values[]" class="w-full px-3 py-1.5 text-sm text-stone-800 rounded-lg border border-stone-200 bg-white" placeholder="e.g. Breathable Mesh" />
       </div>
       <button type="button" class="remove-spec-row sm:mt-4 h-7 w-7 sm:h-8 sm:w-8 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center font-bold text-base transition-colors self-end sm:self-center cursor-pointer" title="Remove Feature">×</button>
     `;
@@ -1745,146 +1635,9 @@
   });
 })();
 
-// Preset Pills & Variant Matrix Script
+// Variant table totals & bulk stock
 (function () {
-  const presetTypeMap = {};
-
-  document.querySelectorAll('.preset-pill-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-      const targetId = btn.dataset.target;
-      const val = btn.dataset.value;
-      const attType = btn.dataset.type;
-      if (attType && val) {
-        presetTypeMap[val.toLowerCase().trim()] = attType;
-      }
-      const input = document.getElementById(targetId);
-      if (!input) return;
-      const current = input.value.split(',').map(s => s.trim()).filter(Boolean);
-      if (!current.includes(val)) {
-        current.push(val);
-        input.value = current.join(', ');
-      }
-    });
-  });
-
-  function detectAttrType(val) {
-    const vLower = val.toLowerCase().trim();
-    if (presetTypeMap[vLower]) return presetTypeMap[vLower];
-
-    if (/^(black|brown|natural gold|white|red|blue|green|yellow|silver|gold|grey|gray|pink|purple|orange|navy|cream|maroon)$/i.test(vLower)) {
-      return 'Color';
-    }
-    if (/^(original|raw honey|black seed infused|spicy|honey|infused)$/i.test(vLower)) {
-      return 'Flavor';
-    }
-    if (/glass|plastic|jar|bottle|pouch|can|box|container|pack/i.test(vLower)) {
-      return 'Packaging';
-    }
-    if (/\d+\s*(l|ml|liter|litre)/i.test(vLower)) {
-      return 'Volume';
-    }
-    if (/\d+\s*(g|kg|oz|lb|gm|gram)/i.test(vLower)) {
-      return 'Weight';
-    }
-    if (/^(s|m|l|xl|xxl|eu\s*\d+|\d+)$/i.test(vLower)) {
-      return 'Size';
-    }
-    return 'Size';
-  }
-
-  const genBtn = document.getElementById('generateMatrixBtn');
   const body = document.getElementById('skuMatrixBody');
-  const sizesInput = document.getElementById('sizesInput');
-  const colorsInput = document.getElementById('colorsInput');
-
-  if (!genBtn) return;
-
-  genBtn.addEventListener('click', () => {
-    let rawSizes = (sizesInput ? sizesInput.value : '').split(',').map(s => s.trim()).filter(Boolean);
-    let rawColors = (colorsInput ? colorsInput.value : '').split(',').map(c => c.trim()).filter(Boolean);
-
-    if (rawSizes.length === 0 && rawColors.length === 0) {
-      alert('Please enter at least one Weight or Size option first.');
-      return;
-    }
-
-    const groupedAttrs = {};
-    [...rawSizes, ...rawColors].forEach(item => {
-      const type = detectAttrType(item);
-      if (!groupedAttrs[type]) groupedAttrs[type] = [];
-      if (!groupedAttrs[type].includes(item)) groupedAttrs[type].push(item);
-    });
-
-    const attrKeys = Object.keys(groupedAttrs);
-    if (attrKeys.length === 0) {
-      alert('Please select or enter variation options.');
-      return;
-    }
-
-    function cartesianProduct(keys, index = 0, current = {}) {
-      if (index === keys.length) return [{ ...current }];
-      const key = keys[index];
-      const results = [];
-      groupedAttrs[key].forEach(val => {
-        results.push(...cartesianProduct(keys, index + 1, { ...current, [key]: val }));
-      });
-      return results;
-    }
-
-    const combinations = cartesianProduct(attrKeys);
-
-    if (body) body.innerHTML = '';
-
-    combinations.forEach((combo, idx) => {
-      let attrBadgesHtml = '';
-      let attrInputsHtml = '';
-      Object.keys(combo).forEach(k => {
-        const v = combo[k];
-        attrBadgesHtml += `<span class="bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold border border-emerald-200/80">${k}: ${v}</span> `;
-        attrInputsHtml += `<input type="hidden" name="sku_matrix[${idx}][attributes][${k}]" value="${v}" />`;
-      });
-
-      let sizeVal = (combo.Weight || combo.Volume || combo.Size || '').replace(/[^A-Za-z0-9]/g, '');
-      let colorVal = (combo.Packaging || combo.Color || combo.Flavor || '').split(' ')[0].replace(/[^A-Za-z0-9]/g, '');
-      let autoSkuHint = (colorVal || sizeVal) ? (colorVal + sizeVal) : 'VAR';
-
-      if (body) {
-        const row = document.createElement('tr');
-        row.className = 'sku-row hover:bg-stone-50/80 transition-colors';
-        row.innerHTML = `
-          <td class="py-3 px-4">
-            ${attrInputsHtml}
-            <div class="flex items-center gap-1.5 flex-wrap">${attrBadgesHtml}</div>
-          </td>
-          <td class="py-3 px-4">
-            <input name="sku_matrix[${idx}][sku]" value="" placeholder="Auto: [SKU]-${autoSkuHint}" class="w-full px-2.5 py-1.5 text-xs font-mono rounded-lg border border-stone-200 focus:outline-none focus:border-brand-500" />
-          </td>
-          <td class="py-3 px-4">
-            <input name="sku_matrix[${idx}][regular_price]" type="number" step="0.01" value="" class="w-full px-2.5 py-1.5 text-xs text-center font-bold rounded-lg border border-stone-200 sku-regular-price-input focus:outline-none focus:border-brand-500" placeholder="Auto Base" />
-          </td>
-          <td class="py-3 px-4">
-            <input name="sku_matrix[${idx}][sale_price]" type="number" step="0.01" value="" class="w-full px-2.5 py-1.5 text-xs text-center font-black text-emerald-700 bg-emerald-50/40 rounded-lg border border-emerald-200 sku-sale-price-input focus:outline-none focus:border-emerald-500" placeholder="Auto Base" />
-          </td>
-          <td class="py-3 px-4 bg-emerald-50/30 border-x border-emerald-100">
-            <input name="sku_matrix[${idx}][stock]" type="number" min="0" value="10" class="w-full px-2.5 py-1.5 text-xs text-center font-black text-stone-900 rounded-lg border border-emerald-300 bg-white sku-stock-input focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500" required />
-          </td>
-          <td class="py-3 px-4 text-center">
-            <input type="checkbox" name="sku_matrix[${idx}][is_active]" value="1" checked class="accent-emerald-600 h-4 w-4 cursor-pointer sku-active-check" />
-          </td>
-          <td class="py-3 px-3 text-center">
-            <button type="button" onclick="this.closest('tr').remove(); updateMatrixCalculations();" class="text-rose-400 hover:text-rose-600 font-bold text-base cursor-pointer">×</button>
-          </td>
-        `;
-        body.appendChild(row);
-      }
-    });
-
-    updateMatrixCalculations();
-
-    if (body) {
-      body.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-  });
 
   function updateMatrixCalculations() {
     const regInput = document.getElementById('regPriceInput');
@@ -1928,7 +1681,7 @@
     });
 
     if (matrixCountBadge) {
-      matrixCountBadge.textContent = `${totalRowsCount} Variations (${activeSkusCount} Active)`;
+      matrixCountBadge.textContent = activeSkusCount === totalRowsCount ? `${totalRowsCount}` : `${activeSkusCount} of ${totalRowsCount} active`;
     }
 
     if (totalRowsCount > 0 && stockInput) {
@@ -1937,11 +1690,11 @@
       stockInput.classList.add('bg-stone-50', 'text-stone-700', 'cursor-pointer');
       stockInput.title = 'Total stock is auto-calculated from variations below. Click to jump to variations.';
       if (autoStockBadge) {
-        autoStockBadge.textContent = `⚡ Auto: ${totalStockSum} Units`;
+        autoStockBadge.textContent = `From variants`;
         autoStockBadge.classList.remove('hidden');
       }
       if (autoStockHeader) {
-        autoStockHeader.textContent = `⚡ Total Stock: ${totalStockSum} units (${activeSkusCount} variations)`;
+        autoStockHeader.textContent = `${totalStockSum} in stock across ${activeSkusCount} variants`;
         autoStockHeader.classList.remove('hidden');
       }
       if (variantStockLinkHint) {
@@ -1982,8 +1735,8 @@
           const firstStockInp = matrixSec.querySelector('.sku-stock-input');
           if (firstStockInp) {
             firstStockInp.focus();
-            firstStockInp.classList.add('ring-4', 'ring-emerald-400');
-            setTimeout(() => firstStockInp.classList.remove('ring-4', 'ring-emerald-400'), 1200);
+            firstStockInp.classList.add('ring-2', 'ring-brand-600');
+            setTimeout(() => firstStockInp.classList.remove('ring-2', 'ring-brand-600'), 1200);
           }
         }
       }
@@ -2015,6 +1768,223 @@
 
   window.updateMatrixCalculations = updateMatrixCalculations;
   setTimeout(updateMatrixCalculations, 100);
+})();
+
+// Variant picker: options (Size, Colour…) with values → live variant table.
+// Rows already in the table keep their price, stock, SKU and id when options change.
+(function () {
+  const body = document.getElementById('skuMatrixBody');
+  const groupsEl = document.getElementById('optionGroups');
+  const suggestEl = document.getElementById('optionSuggestions');
+  const tableWrap = document.getElementById('variantTableWrap');
+  const dataEl = document.getElementById('variantPickerData');
+  const categorySelect = document.querySelector('select[name="category_id"]');
+  if (!body || !groupsEl || !dataEl) return;
+
+  const DATA = JSON.parse(dataEl.textContent || '{}');
+  const LIBRARY = DATA.library || {};
+  const USAGE = DATA.usage || {};
+  const MAX_OPTIONS = 3;
+  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const norm = (v) => String(v ?? '').trim().toLowerCase();
+  const cleanName = (v) => String(v ?? '').replace(/[\[\]]/g, '').trim();
+
+  let options = [];          // [{ name, values: [] }]
+  let saved = [];            // rows: { attrs: {name: value}, id, sku, regular_price, sale_price, stock, is_active }
+  const removed = new Set(); // variant keys the admin removed by hand
+
+  const keyOf = (attrs) => Object.keys(attrs).map((k) => norm(k) + '=' + norm(attrs[k])).sort().join('|');
+
+  function readRowsFromTable() {
+    return Array.from(body.querySelectorAll('tr.sku-row')).map((tr) => {
+      const attrs = {};
+      tr.querySelectorAll('input[name*="[attributes]"]').forEach((inp) => {
+        const m = inp.name.match(/\[attributes\]\[(.*)\]$/);
+        if (m) attrs[m[1]] = inp.value;
+      });
+      const val = (suffix) => tr.querySelector(`input[name$="[${suffix}]"]`)?.value ?? '';
+      return {
+        attrs, id: val('id'), sku: val('sku'), regular_price: val('regular_price'), sale_price: val('sale_price'),
+        stock: val('stock'), is_active: tr.querySelector('input[name$="[is_active]"]')?.checked ?? true,
+      };
+    });
+  }
+
+  function combinations() {
+    const filled = options.filter((o) => o.name && o.values.length);
+    if (!filled.length) return [];
+    return filled.reduce((acc, o) => acc.flatMap((combo) => o.values.map((v) => ({ ...combo, [o.name]: v }))), [{}]);
+  }
+
+  const partsOf = (attrs) => Object.keys(attrs).map((k) => norm(k) + '=' + norm(attrs[k]));
+  const isSubset = (small, big) => small.every((p) => big.includes(p));
+
+  function findSaved(combo, claimed) {
+    const key = keyOf(combo);
+    const parts = partsOf(combo);
+    // 1) same variant  2) an option was added (row is a subset)  3) an option was removed (combo is a subset)
+    return saved.find((r) => !claimed.has(r) && keyOf(r.attrs) === key)
+      || saved.find((r) => !claimed.has(r) && isSubset(partsOf(r.attrs), parts))
+      || saved.find((r) => !claimed.has(r) && isSubset(parts, partsOf(r.attrs)));
+  }
+
+  // A variant removed by hand stays removed, also after adding another option.
+  const isRemoved = (combo) => [...removed].some((k) => isSubset(k.split('|'), partsOf(combo)));
+
+  function renderTable() {
+    saved = readRowsFromTable().concat(saved.filter((r) => r.detached));
+    const claimed = new Set();
+    const rows = combinations().filter((c) => !isRemoved(c)).map((combo) => {
+      const prev = findSaved(combo, claimed);
+      if (prev) claimed.add(prev);
+      return { attrs: combo, id: '', sku: '', regular_price: '', sale_price: '', stock: '0', is_active: true, ...(prev ? { ...prev, attrs: combo } : {}) };
+    });
+
+    body.innerHTML = rows.map((r, i) => {
+      const attrInputs = Object.keys(r.attrs).map((k) => `<input type="hidden" name="sku_matrix[${i}][attributes][${esc(k)}]" value="${esc(r.attrs[k])}" />`).join('');
+      const chips = Object.keys(r.attrs).map((k) => `<span class="px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 text-xs font-medium whitespace-nowrap" title="${esc(k)}">${esc(r.attrs[k])}</span>`).join('');
+      const input = 'w-full px-2.5 py-1.5 text-sm rounded-lg border border-stone-200 focus:outline-none focus:border-brand-600 text-stone-900';
+      return `<tr class="sku-row" data-key="${esc(keyOf(r.attrs))}">
+        <td class="py-2.5 px-3">${r.id ? `<input type="hidden" name="sku_matrix[${i}][id]" value="${esc(r.id)}" />` : ''}${attrInputs}<div class="flex items-center gap-1 flex-wrap">${chips}</div></td>
+        <td class="py-2.5 px-3"><input name="sku_matrix[${i}][sku]" value="${esc(r.sku)}" placeholder="Auto" class="${input} min-w-[170px] font-mono" /></td>
+        <td class="py-2.5 px-3"><input name="sku_matrix[${i}][regular_price]" type="number" step="0.01" value="${esc(r.regular_price)}" placeholder="Base" class="sku-regular-price-input ${input}" /></td>
+        <td class="py-2.5 px-3"><input name="sku_matrix[${i}][sale_price]" type="number" step="0.01" value="${esc(r.sale_price)}" placeholder="Base" class="sku-sale-price-input ${input}" /></td>
+        <td class="py-2.5 px-3"><input name="sku_matrix[${i}][stock]" type="number" min="0" value="${esc(r.stock)}" class="sku-stock-input ${input}" required /></td>
+        <td class="py-2.5 px-3 text-center"><input type="checkbox" name="sku_matrix[${i}][is_active]" value="1" ${r.is_active ? 'checked' : ''} class="sku-active-check accent-brand-600 h-4 w-4 cursor-pointer" /></td>
+        <td class="py-2.5 px-2 text-center"><button type="button" class="sku-remove-btn h-8 w-8 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer" aria-label="Remove variant">&times;</button></td>
+      </tr>`;
+    }).join('');
+
+    // Rows that no longer match any combination stay remembered, in case the value is added back.
+    saved = saved.filter((r) => !claimed.has(r)).map((r) => ({ ...r, detached: true }));
+    if (tableWrap) tableWrap.classList.toggle('hidden', rows.length === 0);
+    if (typeof window.updateMatrixCalculations === 'function') window.updateMatrixCalculations();
+  }
+
+  // ---- suggestions -----------------------------------------------------------
+  const categoryUsage = () => USAGE[categorySelect?.value || ''] || [];
+  function suggestedValues(name) {
+    const out = [];
+    const add = (v) => { if (v && !out.some((x) => norm(x) === norm(v))) out.push(v); };
+    Object.keys(LIBRARY).forEach((lib) => { if (norm(lib) === norm(name)) LIBRARY[lib].forEach(add); });
+    categoryUsage().forEach((u) => { if (norm(u.name) === norm(name)) u.values.forEach(add); });
+    return out;
+  }
+  function suggestedNames() {
+    const used = new Set(options.map((o) => norm(o.name)));
+    const names = categoryUsage().map((u) => u.name);
+    const fallback = names.length ? [] : Object.keys(LIBRARY);
+    return [...names, ...fallback].filter((n, i, all) => !used.has(norm(n)) && all.findIndex((x) => norm(x) === norm(n)) === i).slice(0, 4);
+  }
+
+  // ---- option groups UI --------------------------------------------------------
+  function renderOptions(focusIndex = null) {
+    const nameList = Object.keys(LIBRARY).concat(categoryUsage().map((u) => u.name));
+    groupsEl.innerHTML = options.map((o, gi) => {
+      const chips = o.values.map((v, vi) => `<span class="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-full bg-stone-100 text-sm text-stone-800">${esc(v)}<button type="button" class="og-value-remove h-5 w-5 rounded-full hover:bg-stone-200 text-stone-500" data-g="${gi}" data-v="${vi}" aria-label="Remove ${esc(v)}">&times;</button></span>`).join('');
+      const sugg = suggestedValues(o.name).filter((v) => !o.values.some((x) => norm(x) === norm(v)));
+      return `<div class="option-group rounded-xl border border-stone-200 p-4 space-y-3" data-g="${gi}">
+        <div class="flex items-center gap-2">
+          <input class="og-name flex-1 px-3 py-2 text-sm font-medium rounded-lg border border-stone-200 focus:outline-none focus:border-brand-600 text-stone-900" list="variantOptionNames" value="${esc(o.name)}" placeholder="Option name, e.g. Size or Colour" data-g="${gi}" aria-label="Option name" />
+          <button type="button" class="og-remove h-9 px-3 rounded-lg text-sm text-stone-500 hover:text-rose-600 hover:bg-rose-50" data-g="${gi}">Remove</button>
+        </div>
+        <div class="flex flex-wrap items-center gap-1.5">
+          ${chips}
+          <input class="og-value-input min-w-[180px] flex-1 px-3 py-1.5 text-sm rounded-lg border border-dashed border-stone-300 focus:outline-none focus:border-brand-600 text-stone-900" placeholder="Add a value and press Enter" data-g="${gi}" aria-label="Add value" />
+        </div>
+        ${sugg.length ? `<div class="flex flex-wrap items-center gap-1.5"><span class="text-xs text-stone-500 mr-1">Suggested</span>${sugg.slice(0, 24).map((v) => `<button type="button" class="og-suggest px-2.5 py-1 rounded-full border border-stone-200 bg-white hover:bg-stone-50 text-xs text-stone-700" data-g="${gi}" data-value="${esc(v)}">+ ${esc(v)}</button>`).join('')}</div>` : ''}
+      </div>`;
+    }).join('') + `<datalist id="variantOptionNames">${[...new Set(nameList)].map((n) => `<option value="${esc(n)}"></option>`).join('')}</datalist>`;
+
+    const canAdd = options.length < MAX_OPTIONS;
+    suggestEl.innerHTML = canAdd ? [
+      ...suggestedNames().map((n) => `<button type="button" class="og-add-named px-3 py-1.5 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-sm text-stone-700" data-name="${esc(n)}">+ ${esc(n)}</button>`),
+      `<button type="button" class="og-add px-3 py-1.5 rounded-lg text-sm font-medium text-brand-700 hover:bg-brand-50">+ ${options.length ? 'Add another option' : 'Add option (size, colour…)'}</button>`,
+    ].join('') : '';
+
+    if (focusIndex !== null) groupsEl.querySelector(`.og-value-input[data-g="${focusIndex}"]`)?.focus();
+  }
+
+  function addValues(gi, raw, keepFocus = true) {
+    const o = options[gi];
+    if (!o) return;
+    String(raw).split(',').map((v) => v.trim()).filter(Boolean).forEach((v) => {
+      if (!o.values.some((x) => norm(x) === norm(v))) o.values.push(v);
+      [...removed].forEach((k) => { if (k.split('|').includes(norm(o.name) + '=' + norm(v))) removed.delete(k); });
+    });
+    renderOptions(keepFocus ? gi : null);
+    renderTable();
+  }
+
+  groupsEl.addEventListener('click', (e) => {
+    const t = e.target.closest('button');
+    if (!t) return;
+    const gi = Number(t.dataset.g);
+    if (t.classList.contains('og-value-remove')) { options[gi].values.splice(Number(t.dataset.v), 1); renderOptions(); renderTable(); }
+    else if (t.classList.contains('og-remove')) { options.splice(gi, 1); renderOptions(); renderTable(); }
+    else if (t.classList.contains('og-suggest')) { addValues(gi, t.dataset.value); }
+  });
+  groupsEl.addEventListener('keydown', (e) => {
+    if (!e.target.classList.contains('og-value-input')) return;
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addValues(Number(e.target.dataset.g), e.target.value);
+    } else if (e.key === 'Backspace' && !e.target.value) {
+      const o = options[Number(e.target.dataset.g)];
+      if (o && o.values.length) { o.values.pop(); renderOptions(Number(e.target.dataset.g)); renderTable(); }
+    }
+  });
+  groupsEl.addEventListener('focusout', (e) => {
+    if (e.target.classList.contains('og-value-input') && e.target.value.trim()) addValues(Number(e.target.dataset.g), e.target.value, false);
+  });
+  groupsEl.addEventListener('change', (e) => {
+    if (!e.target.classList.contains('og-name')) return;
+    const gi = Number(e.target.dataset.g);
+    const oldName = options[gi].name;
+    const newName = cleanName(e.target.value);
+    if (!newName || newName === oldName) { e.target.value = oldName; return; }
+    if (options.some((o, i) => i !== gi && norm(o.name) === norm(newName))) { alert('That option already exists.'); e.target.value = oldName; return; }
+    // Rename the attribute on existing rows so their prices and stock are kept.
+    body.querySelectorAll(`input[name*="[attributes][${CSS.escape(oldName)}]"]`).forEach((inp) => {
+      inp.name = inp.name.replace(`[attributes][${oldName}]`, `[attributes][${newName}]`);
+    });
+    saved.forEach((r) => { if (oldName in r.attrs) { r.attrs[newName] = r.attrs[oldName]; delete r.attrs[oldName]; } });
+    [...removed].forEach((k) => { removed.delete(k); removed.add(k.split('|').map((p) => p.startsWith(norm(oldName) + '=') ? norm(newName) + p.slice(norm(oldName).length) : p).sort().join('|')); });
+    options[gi].name = newName;
+    renderOptions();
+    renderTable();
+  });
+  suggestEl.addEventListener('click', (e) => {
+    const t = e.target.closest('button');
+    if (!t || options.length >= MAX_OPTIONS) return;
+    options.push({ name: t.dataset.name || '', values: [] });
+    renderOptions(options.length - 1);
+    if (!t.dataset.name) groupsEl.querySelector(`.og-name[data-g="${options.length - 1}"]`)?.focus();
+  });
+  body.addEventListener('click', (e) => {
+    const t = e.target.closest('.sku-remove-btn');
+    if (!t) return;
+    const tr = t.closest('tr');
+    const attrs = {};
+    tr.querySelectorAll('input[name*="[attributes]"]').forEach((inp) => { const m = inp.name.match(/\[attributes\]\[(.*)\]$/); if (m) attrs[m[1]] = inp.value; });
+    removed.add(keyOf(attrs));
+    tr.remove();
+    renderTable();
+  });
+  categorySelect?.addEventListener('change', () => renderOptions());
+
+  // ---- start from the variants already saved on this product ----------------
+  readRowsFromTable().forEach((r) => {
+    Object.keys(r.attrs).forEach((name) => {
+      let o = options.find((x) => norm(x.name) === norm(name));
+      if (!o) options.push(o = { name, values: [] });
+      if (!o.values.some((v) => norm(v) === norm(r.attrs[name]))) o.values.push(r.attrs[name]);
+    });
+  });
+  renderOptions();
+  renderTable();
+
+  window.getVariantOptionValues = () => options.flatMap((o) => o.values);
 })();
 
 function deleteProductImage(productId, imageId) {
@@ -2131,9 +2101,7 @@ function deleteProductImage(productId, imageId) {
 
   function getEnteredVariantOptions() {
     const opts = [];
-    const sizes = document.getElementById('sizesInput')?.value?.split(',').map(s => s.trim()).filter(Boolean) || [];
-    const colors = document.getElementById('colorsInput')?.value?.split(',').map(c => c.trim()).filter(Boolean) || [];
-    return [...sizes, ...colors];
+    return typeof window.getVariantOptionValues === 'function' ? window.getVariantOptionValues() : [];
   }
 
   fileInput.addEventListener('change', function(e) {
@@ -2152,7 +2120,7 @@ function deleteProductImage(productId, imageId) {
         let seoAlt = productName;
         if (autoTag) seoAlt += ` (${autoTag})`;
         if (brandName) seoAlt += ` by ${brandName}`;
-        seoAlt += ' — 100% Pure & Organic Marty BD';
+        seoAlt += ' — ' + @json(site_name());
 
         const div = document.createElement('div');
         div.className = 'new-image-card relative flex flex-col items-center gap-1 p-1.5 bg-stone-50 border border-stone-200 rounded-xl shadow-2xs cursor-grab';
@@ -2168,10 +2136,10 @@ function deleteProductImage(productId, imageId) {
           </div>
           <div class="w-full mt-0.5">
             <label class="text-[9px] font-bold text-stone-500 block text-center mb-0.5 uppercase tracking-wider">Variation Tag</label>
-            <input type="text" name="new_image_colors[${idx}]" value="${autoTag}" placeholder="e.g. 500ml, Jar" class="w-full text-[10px] font-bold px-1.5 py-1 bg-white border border-stone-200 rounded-lg text-center text-stone-800 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-2xs" />
+            <input type="text" name="new_image_colors[${idx}]" value="${autoTag}" placeholder="e.g. Black" class="w-full text-sm px-1.5 py-1 bg-white border border-stone-200 rounded-lg text-center text-stone-800 focus:outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600" />
           </div>
           <div class="w-full text-[8.5px] font-semibold text-stone-500 bg-emerald-50/90 p-1 rounded-md border border-emerald-200/60 truncate" title="SEO Alt: ${seoAlt}">
-            ⚡ Alt: <span class="text-emerald-900 font-bold">${seoAlt}</span>
+            Alt: <span class="text-stone-700">${seoAlt}</span>
           </div>
         `;
         previewBox.appendChild(div);

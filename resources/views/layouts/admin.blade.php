@@ -12,7 +12,7 @@
     tailwind.config = { theme: { extend: {
       colors: {
         primary: { DEFAULT: '#0f766e' },
-        brand: { 600: '#0f766e', 700: '#0B4F4A' },
+        brand: { 50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4', 400: '#2dd4bf', 500: '#14b8a6', 600: '#0f766e', 700: '#0B4F4A', 800: '#134e4a' },
         accent: { 500: '#B8892E' },
         ink: '#1F2A28',
       },

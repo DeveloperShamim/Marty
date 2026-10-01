@@ -4,7 +4,7 @@
   </button>
   <h1 class="text-lg font-semibold text-ink truncate min-w-0">@yield('title', 'Dashboard')</h1>
   <div class="ml-auto flex items-center gap-3 shrink-0">
-    <a href="{{ route('home') }}" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary">
+    <a href="{{ route('home') }}" target="_blank" class="hidden lg:inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14L21 3"/></svg>
       View store
     </a>
@@ -15,21 +15,21 @@
       @endif
     </a>
     <a href="{{ route('admin.profile.edit') }}" class="hidden sm:inline-flex items-center gap-2 text-sm text-gray-700 hover:text-brand-600 font-medium py-1 px-2 rounded-xl hover:bg-gray-100 transition-colors" title="Edit Profile & Password">
-      <span class="hidden md:inline truncate max-w-[140px] font-bold">{{ auth()->user()->name ?? 'Admin' }}</span>
-      <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name ?? 'Admin') }}&background=2540e0&color=fff" class="h-8 w-8 rounded-lg shrink-0 object-cover" alt="">
+      <span class="hidden xl:inline truncate max-w-[140px] font-bold">{{ auth()->user()->name ?? 'Admin' }}</span>
+      <span class="h-8 w-8 shrink-0 bg-teal-700 text-white text-xs font-semibold rounded-full flex items-center justify-center uppercase" aria-hidden="true">{{ collect(explode(' ', trim(auth()->user()->name ?? 'Admin')))->filter()->take(2)->map(fn ($w) => mb_substr($w, 0, 1))->implode('') }}</span>
     </a>
     <form method="POST" action="{{ route('admin.cache.clear') }}" class="shrink-0">
       @csrf
       <button type="submit" class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-amber-600 border border-gray-200 hover:border-amber-200 rounded-lg px-2.5 sm:px-3 py-1.5 transition-colors bg-white" title="Clear Cache">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-        <span class="hidden md:inline">Clear Cache</span>
+        <span class="hidden xl:inline">Clear Cache</span>
       </button>
     </form>
     <form method="POST" action="{{ route('admin.logout') }}" class="shrink-0">
       @csrf
       <button type="submit" class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-red-600 border border-gray-200 hover:border-red-200 rounded-lg px-2.5 sm:px-3 py-1.5 transition-colors bg-white" title="Log out">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-        <span class="hidden md:inline">Log out</span>
+        <span class="hidden xl:inline">Log out</span>
       </button>
     </form>
   </div>

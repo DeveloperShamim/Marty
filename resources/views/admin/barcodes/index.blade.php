@@ -115,7 +115,7 @@
                 </td>
                 <td class="py-3 px-4">
                   <div class="flex items-center gap-3">
-                    <img src="{{ image_url($p->images->first()?->image, $p->name) }}" class="w-10 h-10 rounded-lg object-cover bg-gray-100 shrink-0 border border-gray-200">
+                    <img src="{{ $p->imageUrl() }}" alt="" loading="lazy" onerror="this.onerror=null;this.removeAttribute('src')" class="w-10 h-10 rounded-lg object-cover bg-gray-100 shrink-0 border border-gray-200">
                     <div>
                       <div class="font-bold text-gray-900 text-sm">{{ $p->name }}</div>
                       <div class="text-[11px] text-gray-500">{{ $p->category?->name ?? 'Uncategorized' }}</div>
