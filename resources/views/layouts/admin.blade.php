@@ -24,7 +24,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="{{ asset('theme/css/admin.css') }}?v={{ @filemtime(public_path('theme/css/admin.css')) ?: '1' }}" />
-  <style>body{font-family:'Plus Jakarta Sans','Hind Siliguri',sans-serif}</style>
+  <style>
+    body{font-family:'Plus Jakarta Sans','Hind Siliguri',sans-serif}
+    /* Prevent mobile auto-zoom on input focus (iOS Safari/Chrome zooms in if font-size < 16px) */
+    @media screen and (max-width: 768px) {
+      input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+      select,
+      textarea {
+        font-size: 16px !important;
+      }
+    }
+  </style>
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased{{ testing_mode() ? ' testing-mode' : '' }}">
   @if(testing_mode())
