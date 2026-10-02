@@ -12,7 +12,6 @@ use App\Services\FreeDelivery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 use App\Services\FraudDetectionService;
@@ -213,7 +212,7 @@ class CheckoutController extends Controller
         try {
             $order = DB::transaction(function () use ($validated, $items, $subtotal, $discount, $shipping, $tax, $total, $totals, $isCod, $coupon, $ipAddress, $fraudAnalysis) {
                 $order = Order::create([
-                    'order_number'    => $this->generateOrderNumber(),
+                    'order_number'    => \App\Support\OrderNumber::generate(),
                     'user_id'         => Auth::id(),
                     'customer_name'   => $validated['customer_name'],
                     'customer_phone'  => $validated['customer_phone'],
@@ -380,15 +379,6 @@ class CheckoutController extends Controller
         }
 
         return $methods;
-    }
-
-    private function generateOrderNumber(): string
-    {
-        do {
-            $number = 'ORD-' . now()->format('ymd') . '-' . strtoupper(Str::random(4));
-        } while (Order::where('order_number', $number)->exists());
-
-        return $number;
     }
 
     private function syncDraftAbandonedCart($items, float $subtotal, float $total, ?array $customerData = null): void

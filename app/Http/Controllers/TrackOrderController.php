@@ -50,8 +50,9 @@ class TrackOrderController extends Controller
         // Strip non-digits from input
         $inputDigits = preg_replace('/\D+/', '', $rawPhone);
 
+        // "vb-482913" and just "482913" both work.
         $order = Order::with(['items.product', 'coupon'])
-            ->where('order_number', $orderNumber)
+            ->whereIn('order_number', \App\Support\OrderNumber::candidates($orderNumber))
             ->first();
 
         $matched = false;

@@ -36,6 +36,12 @@
           </div>
         @endif
 
+        @if(session('error'))
+          <div class="bg-red-50 border border-red-200 text-red-700 text-xs px-3.5 py-2.5 rounded-xl">
+            {{ session('error') }}
+          </div>
+        @endif
+
         @if(session('status'))
           <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs px-3.5 py-2.5 rounded-xl">
             {{ session('status') }}

@@ -2,7 +2,7 @@
     $prefix = (string) setting('order_number_prefix');
     $invFor = fn ($order) => [
         'store'   => setting('invoice_company_name', site_name()),
-        'number'  => $prefix !== '' && ! str_starts_with($order->order_number, $prefix) ? $prefix . $order->order_number : $order->order_number,
+        'number'  => $order->order_number, // the store prefix is already part of the order ID
         'phone'   => setting('invoice_phone') ?: setting('contact_phone'),
         'email'   => setting('contact_email'),
         'address' => setting('invoice_address') ?: setting('contact_address'),

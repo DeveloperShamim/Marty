@@ -137,7 +137,7 @@
           <p class="text-xs text-stone-500 mt-0.5">Set 3 core colors (60-30-10 rule) — system matches hover states &amp; soft tints</p>
         </div>
 
-        <button type="button" onclick="setThemeColors('#16A34A', '#1C1917', '#FAFAF5')" class="w-full sm:w-auto px-3.5 py-1.5 text-xs font-extrabold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
+        <button type="button" onclick="setThemeColors('#8B5A2B', '#2B1D14', '#FAF7F2')" class="w-full sm:w-auto px-3.5 py-1.5 text-xs font-extrabold text-[#5C3A1A] bg-[#F5EDE3] hover:bg-[#EADBC8] border border-[#D9BFA0] rounded-xl transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           <span>Reset Default Colors</span>
         </button>
@@ -176,6 +176,9 @@
       <div class="pt-3 border-t border-stone-100 space-y-2">
         <span class="text-xs font-extrabold text-stone-500 uppercase tracking-wider block">Theme Presets:</span>
         <div class="flex flex-wrap gap-2 items-center">
+          <button type="button" onclick="setThemeColors('#8B5A2B', '#2B1D14', '#FAF7F2')" class="text-xs font-extrabold text-[#5C3A1A] bg-[#F5EDE3] hover:bg-[#EADBC8] border border-[#D9BFA0] px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-2xs">
+            <span class="h-3 w-3 rounded-full bg-[#8B5A2B]"></span> 👜 Vant Leather Brown
+          </button>
           <button type="button" onclick="setThemeColors('#16A34A', '#1C1917', '#FAFAF5')" class="text-xs font-extrabold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-2xs">
             <span class="h-3 w-3 rounded-full bg-[#16A34A]"></span> 🌿 Fresh Organic Eco Green
           </button>
@@ -515,6 +518,12 @@
         <label class="text-xs font-bold text-stone-700 block mb-1">Order help hotline</label>
         <input name="order_hotline" class="w-full sm:w-80 text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl" value="{{ $settings['order_hotline'] ?? '' }}" placeholder="{{ $settings['contact_phone'] ?? '01700000000' }}" />
         <p class="text-[11px] text-stone-500 mt-1">Shown at checkout and after ordering as “Need help? Call …”. Empty = your contact phone ({{ $settings['contact_phone'] ?? 'not set' }}).</p>
+      </div>
+
+      <div class="pt-3 border-t border-stone-100">
+        <label class="text-xs font-bold text-stone-700 block mb-1">Order ID prefix</label>
+        <input name="order_number_prefix" maxlength="6" class="w-full sm:w-40 text-xs font-bold uppercase px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl" value="{{ $settings['order_number_prefix'] ?? 'VB' }}" placeholder="VB" />
+        <p class="text-[11px] text-stone-500 mt-1">Letters and numbers, up to 6. New orders look like <b class="font-mono">{{ \App\Support\OrderNumber::prefix() }}-482913</b> (POS: <b class="font-mono">{{ \App\Support\OrderNumber::prefix() }}-P-482913</b>). Existing orders keep their numbers.</p>
       </div>
     </div>
   </form>

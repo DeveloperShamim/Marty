@@ -164,17 +164,19 @@
     /* Phone header "Flash Sale" button: same shine sweep + breathing as the product page BUY NOW */
     .flash-pill {
       position: relative; overflow: hidden;
-      background: #0c0a09;
+      background: var(--brand-primary);
       box-shadow: 0 4px 6px -1px rgba(0,0,0,.16), 0 2px 4px -2px rgba(0,0,0,.1);
       animation: flash-pulse 3.2s ease-in-out infinite;
     }
+    .flash-pill:hover { background: var(--brand-hover); }
     .flash-pill::after {
-      content: ""; position: absolute; top: 0; left: 0; width: 60%; height: 100%; pointer-events: none;
-      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.35) 50%, rgba(255,255,255,0) 100%);
-      animation: flash-shine 3.2s cubic-bezier(.4, 0, .2, 1) infinite;
+      content: ""; position: absolute; top: 0; left: 0; width: 150%; height: 100%; pointer-events: none;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.22) 30%, rgba(255,255,255,.6) 50%, rgba(255,255,255,.22) 70%, rgba(255,255,255,0) 100%);
+      animation: flash-shine 4.5s ease-in-out infinite;
     }
     .flash-pill:active { transform: scale(.97); }
-    @keyframes flash-shine { 0% { transform: translateX(-160%) skewX(-20deg); } 26%, 100% { transform: translateX(260%) skewX(-20deg); } }
+    /* Slow, long sweep: crosses the button in about 1.8 s, then rests */
+    @keyframes flash-shine { 0% { transform: translateX(-110%) skewX(-20deg); } 40%, 100% { transform: translateX(110%) skewX(-20deg); } }
     @keyframes flash-pulse {
       0%, 100% { transform: scale(1); box-shadow: 0 4px 6px -1px rgba(0,0,0,.16), 0 2px 4px -2px rgba(0,0,0,.1); }
       50% { transform: scale(1.04); box-shadow: 0 6px 10px -2px rgba(0,0,0,.22), 0 3px 6px -2px rgba(0,0,0,.12); }

@@ -12,7 +12,6 @@ use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class PosController extends Controller
 {
@@ -273,7 +272,7 @@ class PosController extends Controller
         $cashTendered = (float) ($validated['cash_tendered'] ?? $total);
         $changeAmount = max(0, $cashTendered - $total);
 
-        $orderNumber = 'POS-' . date('ymd') . '-' . strtoupper(Str::random(4));
+        $orderNumber = \App\Support\OrderNumber::generate(pos: true);
 
         $order = Order::create([
             'order_number'       => $orderNumber,

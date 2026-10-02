@@ -130,15 +130,15 @@
 
       {{-- Top Actions: Track Order, Account, Cart --}}
       <div class="ml-auto flex items-center gap-0.5 sm:gap-4 lg:gap-6 shrink-0">
-        {{-- Flash sale (phones) --}}
+        {{-- Flash sale button (all screen sizes) --}}
         @if($hasFlashSale ?? false)
-          <a href="{{ route('shop', ['flash' => 1]) }}" class="flash-pill sm:hidden mr-2 min-[390px]:mr-3.5 inline-flex items-center h-8 px-2 min-[390px]:px-2.5 rounded-lg text-white text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
+          <a href="{{ route('shop', ['flash' => 1]) }}" class="flash-pill mr-2 min-[390px]:mr-3.5 sm:mr-0 inline-flex items-center gap-1 h-8 sm:h-9 px-2 min-[390px]:px-2.5 sm:px-3.5 rounded-lg text-white text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider whitespace-nowrap shrink-0">
             <span class="max-[359px]:hidden">Flash&nbsp;</span>Sale
           </a>
         @endif
 
         {{-- 1. Track Order (Desktop & Tablet) --}}
-        <a href="{{ route('track') }}" class="hidden sm:flex flex-col items-center justify-center text-center group cursor-pointer py-0.5 px-1 min-w-[48px] text-stone-700 hover:text-brand-600 transition-colors" aria-label="Track Order">
+        <a href="{{ route('track') }}" class="hidden lg:flex flex-col items-center justify-center text-center group cursor-pointer py-0.5 px-1 min-w-[48px] text-stone-700 hover:text-brand-600 transition-colors" aria-label="Track Order">
           <svg class="w-6 h-6 text-stone-800 group-hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"/>
             <circle cx="12" cy="10" r="3"/>
@@ -254,12 +254,7 @@
           </div>
         @endif
 
-        {{-- 6. Deals --}}
-        @if($hasFlashSale ?? true)
-          <a href="{{ route('shop', ['flash' => 1]) }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors text-amber-700 bg-amber-50 font-bold hover:bg-amber-100 flex items-center gap-1 shrink-0">
-            <span>⚡ Deals</span>
-          </a>
-        @endif
+        {{-- Flash sale deals: the Flash Sale button in the top bar --}}
       </nav>
     </div>
   </div>

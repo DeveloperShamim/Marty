@@ -106,7 +106,12 @@ class CourierScanController extends Controller
                 ->first();
         }
 
-        // 3. Try prepending 'ORD-' if not present
+        // 3. Just the 6 digits of an order ID, e.g. "482913" for VB-482913 (or VB-P-482913)
+        if (!$order) {
+            $order = Order::with('items')->whereIn('order_number', \App\Support\OrderNumber::candidates($clean))->first();
+        }
+
+        // 3b. Older order IDs: try prepending 'ORD-' if not present
         if (!$order && !str_starts_with(strtoupper($clean), 'ORD-')) {
             $order = Order::with('items')
                 ->where('order_number', 'ORD-' . $clean)

@@ -36,9 +36,6 @@
   <nav class="flex-1 overflow-y-auto overscroll-contain px-4 py-3 text-sm font-medium pb-8">
     <a href="{{ route('home') }}" class="block py-2.5 px-2.5 rounded-xl font-semibold text-stone-800 hover:text-brand-600 hover:bg-stone-100 transition-all">Home</a>
     <a href="{{ route('shop') }}" class="block py-2.5 px-2.5 rounded-xl font-semibold text-stone-800 hover:text-brand-600 hover:bg-stone-100 transition-all">Shop</a>
-    @if($hasFlashSale ?? false)
-      <a href="{{ route('shop', ['flash' => 1]) }}" class="block py-2.5 px-2.5 rounded-xl font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 transition-all">⚡ Deals &amp; Offers</a>
-    @endif
     <a href="{{ route('login') }}" class="block py-2.5 px-2.5 rounded-xl font-semibold text-stone-800 hover:text-brand-600 hover:bg-stone-100 sm:hidden transition-all">Account</a>
 
     @if(isset($navCategories) && $navCategories->isNotEmpty())

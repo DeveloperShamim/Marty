@@ -151,6 +151,7 @@ class SettingController extends Controller
                 'nagad_account_type'  => ['nullable', 'in:personal,merchant,agent'],
                 'rocket_account_type' => ['nullable', 'in:personal,merchant,agent'],
                 'order_hotline' => ['nullable', 'string', 'max:40'],
+                'order_number_prefix' => ['nullable', 'string', 'max:6', 'regex:/^[A-Za-z0-9]*$/'],
                 'pay_cod_enabled' => ['nullable', 'boolean'],
                 'pay_bkash_enabled' => ['nullable', 'boolean'],
                 'pay_nagad_enabled' => ['nullable', 'boolean'],
@@ -239,7 +240,7 @@ class SettingController extends Controller
             ],
             'payments' => [
                 'bkash_number', 'nagad_number', 'rocket_number',
-                'bkash_account_type', 'nagad_account_type', 'rocket_account_type', 'order_hotline',
+                'bkash_account_type', 'nagad_account_type', 'rocket_account_type', 'order_hotline', 'order_number_prefix',
             ],
             'shipping' => [
                 'shipping_inside_dhaka', 'shipping_outside_dhaka', 'tax_percent',

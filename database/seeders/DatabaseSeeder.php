@@ -124,6 +124,7 @@ class DatabaseSeeder extends Seeder
             'contact_phone' => '01775-075543',
             'whatsapp_number' => '01775-075543',
             'order_hotline' => '01775-075543',
+            'order_number_prefix' => 'VB',
             'messenger_url' => '',
             'size_guide_enabled' => '0',
             'contact_email' => 'help@vantbd.com',
@@ -930,7 +931,7 @@ class DatabaseSeeder extends Seeder
 
             $order = Order::create([
                 'user_id'               => $cEmail === 'customer@vantbd.com' ? $customerUser?->id : null,
-                'order_number'          => 'MARTY-' . $orderDate->format('ymd') . '-' . strtoupper(Str::random(4)),
+                'order_number'          => \App\Support\OrderNumber::generate(),
                 'order_type'            => 'online',
                 'customer_name'         => $cName,
                 'customer_phone'        => $cPhone,
@@ -998,7 +999,7 @@ class DatabaseSeeder extends Seeder
         foreach ($posDays as $pIdx => $daysAgo) {
             $orderDate = now()->subDays($daysAgo)->subHours(random_int(2, 6));
             $method = $posPayMethods[$pIdx];
-            $orderNum = 'POS-' . $orderDate->format('ymd') . '-' . strtoupper(Str::random(4));
+            $orderNum = \App\Support\OrderNumber::generate(pos: true);
 
             $order = Order::create([
                 'user_id'            => $adminUser?->id,
