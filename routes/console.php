@@ -29,6 +29,7 @@ Schedule::command('couriers:sync', ['--limit' => 1000])
 Schedule::command('chat:prune --days=90')->daily();
 
 // Lets `php artisan app:launch-check` confirm the server's cron job is running.
-Schedule::call(fn () => \Illuminate\Support\Facades\Cache::put('scheduler_heartbeat', now(), now()->addHour()))
+// A plain timestamp: the cache refuses to unserialize objects such as Carbon (cache.serializable_classes = false).
+Schedule::call(fn () => \Illuminate\Support\Facades\Cache::put('scheduler_heartbeat', now()->getTimestamp(), now()->addHour()))
     ->everyMinute()
     ->name('scheduler-heartbeat');

@@ -31,14 +31,17 @@ class LaunchCheck extends Command
         $this->check(! in_array(config('logging.channels.' . config('logging.default') . '.level', config('logging.channels.single.level')), ['debug'], true), 'Log level is not debug', 'Set LOG_LEVEL=error (debug logs grow fast and may contain customer data)', 'warn');
         $this->check(! testing_mode(), 'Testing (read-only demo) mode is off', 'Remove TESTING_MODE from .env', 'fail');
         $beat = Cache::get('scheduler_heartbeat');
+        $beat = is_int($beat) ? \Illuminate\Support\Carbon::createFromTimestamp($beat) : null;
         $this->check($beat && now()->diffInMinutes($beat, true) <= 5, 'Cron / scheduler is running', 'Add the cron job: * * * * * cd ' . base_path() . ' && php artisan schedule:run >> /dev/null 2>&1 (courier sync, clean-ups)', 'warn');
 
         // Accounts
         $weak = User::whereIn('role', ['admin', 'store_manager', 'order_manager', 'inventory_manager'])->get()
             ->filter(fn ($u) => Hash::check('password', $u->password))->pluck('email');
         $this->check($weak->isEmpty(), 'No staff account uses the password "password"', 'Change the password of: ' . $weak->implode(', '), 'fail');
-        $demo = User::where('email', 'like', '%@marty.com')->pluck('email');
-        $this->check($demo->isEmpty(), 'No demo accounts (@marty.com)', 'Delete or rename demo accounts: ' . $demo->implode(', '), 'warn');
+        $demo = User::where('email', 'like', '%@marty.com')
+            ->orWhereIn('email', ['manager@vantbd.com', 'orders@vantbd.com', 'inventory@vantbd.com', 'customer@vantbd.com'])
+            ->pluck('email');
+        $this->check($demo->isEmpty(), 'No demo accounts', 'Delete or rename demo accounts: ' . $demo->implode(', '), 'warn');
 
         // Store settings
         foreach (['bkash' => 'bKash', 'nagad' => 'Nagad', 'rocket' => 'Rocket'] as $k => $name) {
