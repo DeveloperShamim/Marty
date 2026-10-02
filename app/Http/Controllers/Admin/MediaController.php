@@ -246,9 +246,9 @@ class MediaController extends Controller
         ]);
 
         $relPath = $this->normalizeRelPath($request->input('relative_path'));
-        $absPath = public_path($relPath);
+        $absPath = $this->mediaAbsPath($relPath);
 
-        if (!File::exists($absPath)) {
+        if (!$absPath || !File::exists($absPath)) {
             return back()->withErrors(['image' => "Image file not found on disk: {$relPath}"]);
         }
 
@@ -285,10 +285,10 @@ class MediaController extends Controller
         $optimizedCount = 0;
 
         foreach ($paths as $relPath) {
-            $relPath = $this->normalizeRelPath($relPath);
-            $absPath = public_path($relPath);
+            $relPath = $this->normalizeRelPath(is_string($relPath) ? $relPath : '');
+            $absPath = $this->mediaAbsPath($relPath);
 
-            if (File::exists($absPath)) {
+            if ($absPath && File::exists($absPath)) {
                 $res = $this->optimizeFile($absPath, $quality);
                 if ($res['saved_bytes'] > 0 || $res['converted_webp']) {
                     $totalSavedBytes += $res['saved_bytes'];
@@ -308,7 +308,10 @@ class MediaController extends Controller
         ]);
 
         $relPath = $this->normalizeRelPath($request->input('relative_path'));
-        $absPath = public_path($relPath);
+        $absPath = $this->mediaAbsPath($relPath);
+        if (!$absPath) {
+            return back()->withErrors(['image' => 'Only images inside the media library can be deleted.']);
+        }
 
         if (File::exists($absPath)) {
             File::delete($absPath);
@@ -341,7 +344,10 @@ class MediaController extends Controller
         $deleted = 0;
         foreach ($request->input('paths') as $relPath) {
             $relPath = $this->normalizeRelPath($relPath);
-            $absPath = public_path($relPath);
+            $absPath = $this->mediaAbsPath($relPath);
+            if (!$absPath) {
+                continue;
+            }
 
             if (File::exists($absPath)) {
                 File::delete($absPath);
@@ -431,8 +437,23 @@ class MediaController extends Controller
         return ['saved_bytes' => 0, 'percent_saved' => 0, 'initial_bytes' => $initialBytes, 'final_bytes' => $initialBytes, 'converted_webp' => false];
     }
 
-    private function normalizeRelPath(string $path): string
+    /**
+     * Absolute path of a media file, or null when the path leaves public/uploads or isn't an image
+     * (so "../.env" or "index.php" can never be optimized or deleted).
+     */
+    private function mediaAbsPath(string $relPath): ?string
     {
+        if ($relPath === '' || str_contains($relPath, '..') || !str_starts_with($relPath, 'uploads/')
+            || !preg_match('/\.(png|jpe?g|webp|gif|svg|avif)$/i', $relPath)) {
+            return null;
+        }
+
+        return public_path($relPath);
+    }
+
+    private function normalizeRelPath(?string $path): string
+    {
+        $path = (string) $path;
         $publicDir = str_replace('\\', '/', public_path());
         $cleanPath = str_replace('\\', '/', $path);
 
