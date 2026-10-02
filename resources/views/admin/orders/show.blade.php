@@ -2,661 +2,475 @@
 @section('title', 'Order ' . $order->order_number)
 
 @section('content')
-<div class="space-y-6">
-  <!-- Top Navigation & Action Header -->
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-4">
-    <div class="space-y-1.5">
-      <a href="{{ route('admin.orders.index') }}" class="text-xs font-bold text-slate-500 hover:text-brand-600 inline-flex items-center gap-1">
-        <span>&larr;</span> Back to Orders List
-      </a>
-      <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
-        <h2 class="text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight">
-          Order #{{ $order->order_number }}
-        </h2>
-        <span class="px-2.5 sm:px-3 py-1 text-xs font-extrabold rounded-full {{ $order->statusBadge() }}">
-          {{ ucfirst($order->status) }}
-        </span>
-        <span class="px-2.5 sm:px-3 py-1 text-xs font-extrabold rounded-full {{ $order->paymentBadge() }}">
-          Payment: {{ ucfirst($order->payment_status) }}
-        </span>
-        <span class="px-2.5 sm:px-3 py-1 text-xs font-extrabold rounded-full bg-slate-100 text-slate-700 border border-slate-200" title="Source: {{ $order->utm_source ?? 'Direct' }}">
-          Source: {{ $order->utmSourceIcon() }}
-        </span>
+@php
+  $digits = preg_replace('/[^0-9]/', '', (string) $order->customer_phone);
+  $waPhone = str_starts_with($digits, '880') ? $digits : (str_starts_with($digits, '0') ? '88' . $digits : '880' . $digits);
+  $isCod = $order->payment_method === 'cod';
+  $qty = $order->items->sum('quantity');
+  $steps = ['pending' => 'Placed', 'confirmed' => 'Confirmed', 'processing' => 'Processing', 'shipped' => 'Shipped', 'delivered' => 'Delivered'];
+  $stepIndex = array_search($order->status, array_keys($steps), true);
+  $head = 'flex items-center justify-between gap-2 px-4 sm:px-5 py-3 border-b border-slate-100';
+  $title = 'flex items-center gap-2 text-sm font-semibold text-slate-900';
+  $initials = collect(preg_split('/\s+/', trim((string) $order->customer_name)))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode('');
+  $menu = 'absolute right-0 z-30 mt-1.5 w-52 rounded-xl border border-slate-200 bg-white p-1 shadow-lg';
+  $menuItem = 'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-left cursor-pointer';
+@endphp
+<style>
+  .op details > summary { list-style: none; } .op details > summary::-webkit-details-marker { display: none; }
+</style>
+
+<div class="op max-w-6xl mx-auto space-y-4">
+
+  {{-- ================= Header ================= --}}
+  <section class="card overflow-hidden">
+    <div class="p-4 sm:p-5 space-y-3">
+      <div class="flex items-center justify-between gap-2">
+        <a href="{{ route('admin.orders.index') }}" class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900">
+          <x-oi name="arrow-left" class="w-3.5 h-3.5" /> All orders
+        </a>
+        <details class="relative">
+          <summary class="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 cursor-pointer" title="More actions">
+            <x-oi name="more" /><span class="sr-only">More actions</span>
+          </summary>
+          <div class="{{ $menu }}">
+            <form method="POST" action="{{ route('admin.orders.destroy', $order) }}" onsubmit="return confirm('Are you SURE you want to permanently delete order {{ $order->order_number }}? This action cannot be undone.')">
+              @csrf @method('DELETE')
+              <button type="submit" class="{{ $menuItem }} text-rose-600 hover:bg-rose-50"><x-oi name="trash" /> Delete order</button>
+            </form>
+          </div>
+        </details>
       </div>
-      <p class="text-xs text-slate-400">Placed on {{ $order->created_at->format('d M Y, g:i A') }} ({{ $order->created_at->diffForHumans() }})</p>
+
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div class="min-w-0 space-y-1.5">
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 font-mono tracking-tight">#{{ $order->order_number }}</h2>
+            <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->statusBadge() }}">{{ ucfirst($order->status) }}</span>
+            <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->paymentBadge() }}">Payment: {{ ucfirst($order->payment_status) }}</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+            <span class="inline-flex items-center gap-1.5" title="{{ $order->created_at->diffForHumans() }}"><x-oi name="calendar" class="w-3.5 h-3.5" />{{ $order->created_at->format('d M Y, g:i A') }}</span>
+            <span class="inline-flex items-center gap-1.5"><x-oi name="{{ $isCod ? 'cash' : 'card' }}" class="w-3.5 h-3.5" />{{ $order->paymentMethodLabel() }}</span>
+            <span class="inline-flex items-center gap-1.5" title="Source: {{ $order->utm_source ?? 'Direct' }}"><x-oi name="globe" class="w-3.5 h-3.5" />{{ $order->utm_source ? ucfirst($order->utm_source) : 'Direct' }}</span>
+          </div>
+        </div>
+        <div class="sm:text-right shrink-0">
+          <p class="text-[11px] font-medium uppercase tracking-wider text-slate-400">Total · {{ $qty }} {{ \Illuminate\Support\Str::plural('item', $qty) }}</p>
+          <p class="text-2xl font-bold text-slate-900 font-mono leading-tight">{{ money($order->total) }}</p>
+        </div>
+      </div>
+
+      @if($order->auto_confirmed_reason)
+        <p class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 ring-1 ring-emerald-200 rounded-full px-2.5 py-1">
+          <x-oi name="zap" class="w-3.5 h-3.5" /> Auto-confirmed: {{ $order->auto_confirmed_reason }}
+        </p>
+      @endif
     </div>
 
-    <!-- Action Buttons -->
-    <div class="flex items-center gap-2 flex-wrap shrink-0">
-      {{-- Invoice format is remembered per browser (admin-shell.js) and applied to every invoice link. --}}
-      <div class="w-full sm:w-auto flex items-stretch rounded-2xl shadow-sm overflow-hidden border border-amber-600">
-        <a href="{{ route('admin.orders.invoice', ['order' => $order, 'print' => 1]) }}" target="_blank" data-invoice-link data-print-link data-print-warning="{{ $order->printWarning('invoice') }}" class="flex-1 sm:flex-none justify-center inline-flex items-center gap-2 px-4 py-2.5 text-xs font-extrabold bg-amber-500 hover:bg-amber-600 text-white transition">
-          <span>🖨️</span> Print Invoice
-        </a>
-        <label class="sr-only" for="invoiceFormat">Invoice format</label>
-        <select id="invoiceFormat" data-invoice-format class="text-xs font-bold bg-amber-50 text-amber-900 border-0 border-l border-amber-600 pl-2.5 pr-7 py-2.5 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-600 cursor-pointer" title="Invoice format">
-          @foreach(\App\Http\Controllers\Admin\OrderController::INVOICE_FORMATS as $key => $label)
-            <option value="{{ $key }}">{{ $label }}</option>
+    {{-- Progress --}}
+    <div class="px-4 sm:px-5 pb-4">
+      @if($stepIndex !== false)
+        <ol class="grid grid-cols-5">
+          @foreach($steps as $key => $label)
+            @php $i = $loop->index; $done = $i < $stepIndex; $current = $i === $stepIndex; @endphp
+            <li class="relative flex flex-col items-center text-center">
+              @if(! $loop->first)
+                <span class="absolute top-3 right-1/2 w-full h-0.5 -z-0 {{ $i <= $stepIndex ? 'bg-brand-600' : 'bg-slate-200' }}" aria-hidden="true"></span>
+              @endif
+              <span class="relative z-10 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold
+                {{ $done ? 'bg-brand-600 text-white' : ($current ? 'bg-white text-brand-700 ring-2 ring-brand-600' : 'bg-white text-slate-400 ring-1 ring-slate-300') }}">
+                @if($done)<x-oi name="check" class="w-3.5 h-3.5" />@else{{ $i + 1 }}@endif
+              </span>
+              <span class="mt-1.5 text-[10px] sm:text-xs {{ $current ? 'font-semibold text-slate-900' : 'text-slate-500' }}">{{ $label }}</span>
+            </li>
           @endforeach
-        </select>
+        </ol>
+      @else
+        <div class="flex items-center gap-2 rounded-xl bg-rose-50 ring-1 ring-rose-200 px-3 py-2 text-sm text-rose-700">
+          <x-oi name="{{ $order->status === 'returned' ? 'undo' : 'x-circle' }}" />
+          <span>This order was <b>{{ $order->status }}</b>.</span>
+        </div>
+      @endif
+    </div>
+
+    {{-- Next step --}}
+    @if($order->isAwaitingReview())
+      <div class="mx-4 sm:mx-5 mb-4 rounded-xl bg-amber-50 ring-1 ring-amber-200 p-3 sm:p-4 flex flex-col md:flex-row md:items-center gap-3">
+        <div class="flex items-start gap-2.5 min-w-0 flex-1">
+          <span class="w-8 h-8 shrink-0 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center"><x-oi name="{{ $isCod ? 'phone' : 'card' }}" /></span>
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-amber-900">Next step: {{ $isCod ? 'confirm this order' : 'check the payment' }}</p>
+            <p class="text-xs text-amber-800 mt-0.5 break-words">
+              @if($isCod)
+                Check the delivery history below; call if it looks risky, then confirm.
+              @else
+                Check that <b>{{ money($order->total) }}</b> arrived in {{ $order->paymentMethodLabel() }}@if($order->payment_sender_number) from <b class="font-mono">{{ $order->payment_sender_number }}</b>@endif @if($order->payment_txn_id)(TxID <b class="font-mono">{{ $order->payment_txn_id }}</b>)@endif, then verify.
+              @endif
+            </p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 md:flex gap-2 shrink-0">
+          <form method="POST" action="{{ route('admin.orders.verify', $order) }}">
+            @csrf
+            <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2.5 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition cursor-pointer whitespace-nowrap"><x-oi name="check" /> {{ $order->acceptLabel() }}</button>
+          </form>
+          <form method="POST" action="{{ route('admin.orders.reject', $order) }}" onsubmit="return confirm('{{ $isCod ? 'Reject this order?' : 'Reject this payment?' }}')">
+            @csrf
+            <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2.5 text-sm font-semibold bg-white text-rose-600 ring-1 ring-rose-200 hover:bg-rose-50 rounded-xl transition cursor-pointer whitespace-nowrap"><x-oi name="x" /> {{ $isCod ? 'Reject order' : 'Reject payment' }}</button>
+          </form>
+        </div>
       </div>
-      <a href="{{ route('admin.orders.labels', ['orders' => [$order->order_number], 'print' => 1]) }}" target="_blank" data-print-link data-print-warning="{{ $order->printWarning('label') }}" class="w-full sm:w-auto justify-center inline-flex items-center gap-2 px-4 py-2.5 text-xs font-extrabold bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 rounded-2xl shadow-sm transition">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg> Print Parcel Label
-      </a>
+    @endif
+
+    {{-- Print --}}
+    <div class="flex flex-wrap items-center gap-2 px-4 sm:px-5 py-3 bg-slate-50/70 border-t border-slate-100">
+      {{-- Invoice format is remembered per browser (admin-shell.js) and applied to every invoice link. --}}
+      @php $short = ['a4' => 'A4', 'half' => 'Half A4', 'thermal' => '80mm', 'thermal58' => '58mm']; @endphp
+      <div class="flex gap-2 w-full sm:w-auto">
+        <div class="flex-1 sm:flex-none flex items-stretch rounded-lg ring-1 ring-slate-300 bg-white overflow-hidden min-w-0">
+          <a href="{{ route('admin.orders.invoice', ['order' => $order, 'print' => 1]) }}" target="_blank" data-invoice-link data-print-link data-print-warning="{{ $order->printWarning('invoice') }}" class="flex-1 inline-flex items-center justify-center gap-1.5 pl-3 pr-2 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 whitespace-nowrap">
+            <x-oi name="printer" /> Invoice
+          </a>
+          <label class="shrink-0 flex items-center pr-2 border-l border-slate-200 bg-slate-50 hover:bg-slate-100 cursor-pointer" title="Invoice size">
+            <span class="sr-only">Invoice size</span>
+            <select id="invoiceFormat" data-invoice-format class="appearance-none bg-transparent border-0 pl-2.5 pr-1 py-2 text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-600 cursor-pointer">
+              @foreach(\App\Http\Controllers\Admin\OrderController::INVOICE_FORMATS as $key => $label)
+                <option value="{{ $key }}" title="{{ $label }}">{{ $short[$key] ?? $label }}</option>
+              @endforeach
+            </select>
+            <x-oi name="chevron-down" class="!w-3 !h-3 text-slate-400 pointer-events-none" />
+          </label>
+        </div>
+        <a href="{{ route('admin.orders.labels', ['orders' => [$order->order_number], 'print' => 1]) }}" target="_blank" data-print-link data-print-warning="{{ $order->printWarning('label') }}" class="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-800 bg-white ring-1 ring-slate-300 hover:bg-slate-50 rounded-lg whitespace-nowrap">
+          <x-oi name="barcode" /> Label
+        </a>
+      </div>
       @if($order->prints()->exists())
-        <div class="w-full text-[11px] text-slate-500 sm:text-right space-y-0.5">
+        <div class="w-full sm:w-auto sm:ml-auto text-[11px] text-slate-500 sm:text-right">
           @foreach(['invoice' => 'Invoice', 'label' => 'Label'] as $type => $name)
             @php $p = $order->printsOf($type); @endphp
             @if($p->isNotEmpty())
-              <p><span class="font-semibold {{ $p->count() > 1 ? 'text-amber-700' : 'text-slate-700' }}">{{ $name }} printed {{ $p->count() }}×</span> &middot; last {{ $p->first()->summary() }}</p>
+              <p><span class="font-medium {{ $p->count() > 1 ? 'text-amber-700' : 'text-slate-700' }}">{{ $name }} printed {{ $p->count() }}×</span> · last {{ $p->first()->summary() }}</p>
             @endif
           @endforeach
         </div>
       @endif
     </div>
-  </div>
+  </section>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Left Column (Items, Payment Verification & Financial Totals) -->
-    <div class="lg:col-span-2 space-y-6">
-      
-      @include('admin.orders.partials.customer-history')
+  {{-- On phones the two columns merge (display: contents) and the cards follow the order you work in. --}}
+  <div class="flex flex-col gap-4 lg:grid lg:grid-cols-3 lg:items-start">
+    <div class="max-lg:contents lg:col-span-2 lg:space-y-4">
 
-      <!-- Automated Steadfast Delivery Success Check Card -->
-      @php
-        $st = $steadfastDeliveryCheck ?? [
-          'configured' => false,
-          'success' => false,
-          'risk_level' => 'unconfigured',
-          'rating_label' => 'Not Configured',
-          'rating_color' => 'slate',
-          'total' => 0,
-          'delivered' => 0,
-          'cancelled' => 0,
-          'fraud' => 0,
-          'rate' => null
-        ];
-        $isConfigured = !empty($st['configured']);
-        $riskLevel = $st['risk_level'] ?? 'unknown';
-        $rate = $st['rate'] ?? null;
-      @endphp
-
-      <div class="card p-5 border border-slate-200/90 shadow-xs space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 border border-sky-200 flex items-center justify-center shrink-0">
-              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                <path d="M9 12l2 2 4-4"/>
-              </svg>
-            </div>
-            <div>
-              <div class="flex items-center gap-2 flex-wrap">
-                <h3 class="font-bold text-sm text-slate-900">Steadfast Courier Delivery History</h3>
-                @if(!$isConfigured)
-                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
-                    API Not Configured
-                  </span>
-                @elseif($riskLevel === 'low')
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    {{ $rate }}% High Success Rate
-                  </span>
-                @elseif($riskLevel === 'medium')
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                    {{ $rate }}% Moderate Success
-                  </span>
-                @elseif($riskLevel === 'high')
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-                    High Return Risk {{ $rate !== null ? "({$rate}%)" : '' }}
-                  </span>
-                @elseif($riskLevel === 'new')
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                    <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                    New Buyer (No History)
-                  </span>
-                @else
-                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
-                    {{ $st['rating_label'] ?? 'Checked' }}
-                  </span>
+      {{-- ================= Customer ================= --}}
+      <section class="card max-lg:order-1">
+        <div class="{{ $head }}">
+          <h3 class="{{ $title }}"><x-oi name="user" class="w-4 h-4 text-slate-400" /> Customer</h3>
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick="openEditCustomerModal()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 rounded-lg cursor-pointer"><x-oi name="pencil" class="w-3.5 h-3.5" /> Edit</button>
+            <details class="relative">
+              <summary class="w-8 h-8 rounded-lg ring-1 ring-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 cursor-pointer" title="Block customer"><x-oi name="more" /><span class="sr-only">More</span></summary>
+              <div class="{{ $menu }}">
+                <form method="POST" action="{{ route('admin.blacklist.store') }}">
+                  @csrf
+                  <input type="hidden" name="type" value="phone" />
+                  <input type="hidden" name="value" value="{{ $order->customer_phone }}" />
+                  <input type="hidden" name="reason" value="Blacklisted from Order #{{ $order->order_number }}" />
+                  <button type="submit" onclick="return confirm('Block phone {{ $order->customer_phone }} from placing future orders?')" class="{{ $menuItem }} text-rose-600 hover:bg-rose-50"><x-oi name="ban" /> Block phone</button>
+                </form>
+                @if($order->ip_address)
+                  <form method="POST" action="{{ route('admin.blacklist.store') }}">
+                    @csrf
+                    <input type="hidden" name="type" value="ip" />
+                    <input type="hidden" name="value" value="{{ $order->ip_address }}" />
+                    <input type="hidden" name="reason" value="Blacklisted IP from Order #{{ $order->order_number }}" />
+                    <button type="submit" onclick="return confirm('Block IP {{ $order->ip_address }}?')" class="{{ $menuItem }} text-amber-700 hover:bg-amber-50"><x-oi name="globe" /> Block IP {{ $order->ip_address }}</button>
+                  </form>
                 @endif
               </div>
-              <p class="text-[11px] text-slate-500 font-mono mt-0.5">Automated check for phone: <span class="font-bold text-slate-700">{{ $order->customer_phone }}</span></p>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2 shrink-0">
-            @if($isConfigured)
-              <a href="{{ request()->fullUrlWithQuery(['refresh_courier' => 1]) }}" title="Re-query live Steadfast API" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition">
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
-                </svg>
-                <span>Refresh</span>
-              </a>
-            @endif
-
-            <form action="{{ route('admin.blacklist.store') }}" method="POST" class="inline">
-              @csrf
-              <input type="hidden" name="type" value="phone">
-              <input type="hidden" name="value" value="{{ $order->customer_phone }}">
-              <input type="hidden" name="reason" value="Blocked from Order #{{ $order->order_number }} - High Courier Return Risk">
-              <button type="submit" onclick="return confirm('Block phone {{ $order->customer_phone }} from placing future orders?')" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition cursor-pointer">
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-                </svg>
-                <span>Block Phone</span>
-              </button>
-            </form>
+            </details>
           </div>
         </div>
 
-        @if(!$isConfigured)
-          <div class="p-3.5 rounded-xl bg-amber-50/70 border border-amber-200 text-xs text-amber-800 flex items-start gap-2.5">
-            <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <div>
-              <p class="font-bold">Steadfast API is not configured yet.</p>
-              <p class="text-amber-700 text-[11px] mt-0.5">Enter your free Steadfast Merchant API Key and Secret Key in <a href="{{ route('admin.integrations.index') }}" class="underline font-bold hover:text-amber-900">Admin &gt; Integrations</a> to enable automatic nationwide delivery history checks.</p>
-            </div>
-          </div>
-        @else
-          <!-- 4 KPI Metrics -->
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div class="p-3 bg-slate-50/80 rounded-xl border border-slate-100">
-              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Total Parcels</span>
-              <p class="text-lg font-black text-slate-800 mt-0.5 font-mono">{{ (int) ($st['total'] ?? 0) }}</p>
-              <span class="text-[10px] text-slate-500 font-medium">Nationwide bookings</span>
-            </div>
-
-            <div class="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
-              <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">Delivered</span>
-              <p class="text-lg font-black text-emerald-800 mt-0.5 font-mono">{{ (int) ($st['delivered'] ?? 0) }}</p>
-              <span class="text-[10px] text-emerald-600 font-medium">{{ $rate !== null ? $rate . '% success' : 'No history' }}</span>
-            </div>
-
-            <div class="p-3 bg-rose-50/50 rounded-xl border border-rose-100">
-              <span class="text-[10px] font-bold text-rose-700 uppercase tracking-wider block">Returned / Cancelled</span>
-              <p class="text-lg font-black text-rose-800 mt-0.5 font-mono">{{ (int) ($st['cancelled'] ?? 0) }}</p>
-              <span class="text-[10px] text-rose-600 font-medium">{{ $st['total'] > 0 ? round(($st['cancelled'] / $st['total']) * 100, 1) . '% return rate' : '0 returns' }}</span>
-            </div>
-
-            <div class="p-3 bg-slate-50/80 rounded-xl border border-slate-100">
-              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Fraud Reports</span>
-              <p class="text-lg font-black {{ ($st['fraud'] ?? 0) > 0 ? 'text-rose-700' : 'text-slate-800' }} mt-0.5 font-mono">{{ (int) ($st['fraud'] ?? 0) }}</p>
-              <span class="text-[10px] {{ ($st['fraud'] ?? 0) > 0 ? 'text-rose-600 font-bold' : 'text-slate-500' }} font-medium">{{ ($st['fraud'] ?? 0) > 0 ? 'Complaints filed' : 'Zero complaints' }}</span>
-            </div>
-          </div>
-
-          <!-- Progress Bar & Recommendation -->
-          @if($st['total'] > 0)
-            <div class="space-y-1.5 pt-1">
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-bold text-slate-700">Delivery Ratio</span>
-                <span class="font-mono text-slate-600 text-[11px]"><strong class="text-emerald-700">{{ $st['delivered'] }} delivered</strong> / <strong class="text-rose-700">{{ $st['cancelled'] }} returned</strong></span>
-              </div>
-              <div class="w-full h-2.5 bg-rose-100 rounded-full overflow-hidden flex">
-                <div class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: {{ $rate }}%"></div>
+        <div class="p-4 sm:p-5 grid gap-4 md:grid-cols-2">
+          <div class="min-w-0 space-y-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="w-10 h-10 shrink-0 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center text-sm font-bold">{{ $initials ?: '?' }}</span>
+              <div class="min-w-0">
+                <p class="font-semibold text-slate-900 break-words">{{ $order->customer_name }}</p>
+                @if($order->customer_email)
+                  <a href="mailto:{{ $order->customer_email }}" class="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-brand-700 break-all"><x-oi name="mail" class="w-3.5 h-3.5" />{{ $order->customer_email }}</a>
+                @endif
               </div>
             </div>
-          @endif
-
-          <!-- Recommendation Alert -->
-          <div class="p-3 rounded-xl text-xs flex items-center gap-2.5 {{ $riskLevel === 'low' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : ($riskLevel === 'medium' ? 'bg-amber-50 text-amber-800 border border-amber-200' : ($riskLevel === 'high' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-slate-50 text-slate-700 border border-slate-200')) }}">
-            @if($riskLevel === 'low')
-              <svg class="w-4 h-4 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-              <span><strong>Safe to dispatch:</strong> Customer has a reliable delivery track record ({{ $rate }}% success) on Steadfast Courier.</span>
-            @elseif($riskLevel === 'medium')
-              <svg class="w-4 h-4 text-amber-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <span><strong>Moderate return risk:</strong> Delivery rate is {{ $rate }}%. We recommend phone confirmation before dispatching.</span>
-            @elseif($riskLevel === 'high')
-              <svg class="w-4 h-4 text-rose-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <span><strong>High return risk:</strong> Customer has {{ $st['cancelled'] }} returned orders or reported fraud. Advance delivery fee or verification strongly advised.</span>
-            @else
-              <svg class="w-4 h-4 text-slate-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-              <span><strong>First-time buyer:</strong> No prior Steadfast records found for this phone number. Verify delivery address before sending.</span>
-            @endif
+            <div class="grid grid-cols-[1fr_auto] sm:flex gap-2">
+              <a href="tel:{{ $order->customer_phone }}" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-900 hover:bg-slate-700 text-white text-sm font-medium font-mono"><x-oi name="phone" class="w-3.5 h-3.5" /> {{ $order->customer_phone }}</a>
+              <a href="https://wa.me/{{ $waPhone }}" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg ring-1 ring-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-medium"><x-oi name="chat" class="w-3.5 h-3.5" /> WhatsApp</a>
+            </div>
           </div>
-        @endif
-      </div>
-
-      <!-- Ordered Items Card -->
-      <div class="card overflow-hidden">
-        <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-          <h3 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
-            <span>🛍️</span> Ordered Items ({{ $order->items->sum('quantity') }} items)
-          </h3>
-          <span class="text-xs font-bold text-slate-400 font-mono">Subtotal: {{ money($order->subtotal) }}</span>
+          <div class="flex items-start gap-3 min-w-0 rounded-xl bg-slate-50 p-3">
+            <x-oi name="pin" class="w-4 h-4 text-slate-400 mt-0.5" />
+            <div class="min-w-0">
+              <p class="text-sm text-slate-800 leading-snug break-words">{{ $order->shipping_address }}, {{ $order->city }} {{ $order->postal_code }}</p>
+              <p class="text-xs text-slate-500 mt-1">{{ shipping_zone_label($order->shipping_zone) }}</p>
+            </div>
+          </div>
         </div>
+        @include('admin.orders.partials.customer-history')
+      </section>
 
-        <div class="divide-y divide-slate-100">
+      {{-- ================= Items, totals & payment ================= --}}
+      <section class="card overflow-hidden max-lg:order-2">
+        <div class="{{ $head }}">
+          <h3 class="{{ $title }}"><x-oi name="bag" class="w-4 h-4 text-slate-400" /> Items ({{ $qty }})</h3>
+        </div>
+        <ul class="divide-y divide-slate-100">
           @foreach($order->items as $item)
-            <div class="p-5 space-y-3">
-              <div class="flex items-start sm:items-center gap-4">
-                <img src="{{ $item->imageUrl() }}" class="h-16 w-16 object-cover bg-slate-100 rounded-2xl border border-slate-200 shrink-0" alt="{{ $item->product_name }}">
+            <li class="px-4 sm:px-5 py-3.5 space-y-3">
+              <div class="flex items-start gap-3">
+                <img src="{{ $item->imageUrl() }}" class="h-14 w-14 object-cover bg-slate-100 rounded-xl ring-1 ring-slate-200 shrink-0" alt="{{ $item->product_name }}">
                 <div class="flex-1 min-w-0">
-                  <p class="font-extrabold text-slate-900 text-sm leading-snug">{{ $item->product_name }}</p>
-                  <div class="flex items-center gap-2 mt-1.5 flex-wrap text-xs">
-                    <span class="font-mono text-slate-600">{{ money($item->unit_price) }} × {{ $item->quantity }}</span>
+                  <div class="flex items-start justify-between gap-3">
+                    <p class="text-sm font-medium text-slate-900 leading-snug break-words">{{ $item->product_name }}</p>
+                    <p class="text-sm font-semibold text-slate-900 font-mono shrink-0">{{ money($item->line_total) }}</p>
+                  </div>
+                  <div class="flex items-center gap-2 mt-1 flex-wrap text-xs text-slate-500">
+                    <span class="font-mono">{{ money($item->unit_price) }} × {{ $item->quantity }}</span>
                     @if($item->variant)
-                      <span class="px-2.5 py-0.5 text-[11px] font-bold rounded-md bg-amber-50 text-amber-800 border border-amber-200">
-                        {{ $item->variant }}
-                      </span>
-                    @else
-                      <span class="px-2 py-0.5 text-[10px] rounded bg-slate-100 text-slate-400">No variation</span>
+                      <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">{{ $item->variant }}</span>
                     @endif
-                    <button type="button" onclick="document.getElementById('edit-variant-{{ $item->id }}').classList.toggle('hidden')" class="text-xs text-brand-600 hover:underline font-bold cursor-pointer inline-flex items-center gap-1 ml-1">
-                      ✏️ Edit Variation
+                    <button type="button" onclick="document.getElementById('edit-variant-{{ $item->id }}').classList.toggle('hidden')" class="inline-flex items-center gap-1 text-brand-700 hover:underline cursor-pointer">
+                      <x-oi name="pencil" class="w-3 h-3" /> {{ $item->variant ? 'Edit' : 'Add variation' }}
                     </button>
                   </div>
                 </div>
-                <div class="font-black text-slate-900 font-mono text-sm shrink-0">{{ money($item->line_total) }}</div>
               </div>
-
-              <!-- Inline Edit Variation Form -->
-              <form id="edit-variant-{{ $item->id }}" method="POST" action="{{ route('admin.orders.items.update-variant', [$order, $item]) }}" class="hidden p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5">
-                @csrf
-                @method('PATCH')
-                <div class="flex items-center justify-between">
-                  <label class="block text-xs font-extrabold text-slate-700">Update Item Variation (Size / Color / Specification)</label>
-                  <button type="button" onclick="document.getElementById('edit-variant-{{ $item->id }}').classList.add('hidden')" class="text-xs text-slate-400 hover:text-slate-600">✕ Close</button>
+              <form id="edit-variant-{{ $item->id }}" method="POST" action="{{ route('admin.orders.items.update-variant', [$order, $item]) }}" class="hidden p-3 bg-slate-50 rounded-xl ring-1 ring-slate-200 space-y-2">
+                @csrf @method('PATCH')
+                <div class="flex items-center justify-between gap-2">
+                  <label for="variant-{{ $item->id }}" class="text-xs font-semibold text-slate-700">Variation (size / colour)</label>
+                  <button type="button" onclick="document.getElementById('edit-variant-{{ $item->id }}').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 cursor-pointer"><x-oi name="x" /><span class="sr-only">Close</span></button>
                 </div>
-
                 @if($item->product && $item->product->variants->isNotEmpty())
-                  @php
-                    $variantsGrouped = $item->product->variants->groupBy('type');
-                  @endphp
-                  <div class="text-xs text-slate-500 bg-white p-2.5 rounded-xl border border-slate-200">
-                    <span class="font-bold text-slate-700">Available product options:</span>
-                    <div class="flex flex-wrap gap-2 mt-1">
-                      @foreach($variantsGrouped as $type => $vars)
-                        <span class="inline-flex items-center gap-1 bg-slate-100 px-2 py-0.5 rounded text-[11px] text-slate-700">
-                          <strong>{{ $type }}:</strong> {{ $vars->pluck('value')->join(', ') }}
-                        </span>
-                      @endforeach
-                    </div>
+                  <div class="flex flex-wrap gap-1.5 text-[11px]">
+                    @foreach($item->product->variants->groupBy('type') as $type => $vars)
+                      <span class="bg-white ring-1 ring-slate-200 px-2 py-0.5 rounded text-slate-600"><b class="text-slate-800">{{ $type }}:</b> {{ $vars->pluck('value')->join(', ') }}</span>
+                    @endforeach
                   </div>
                 @endif
-
-                <div class="flex items-center gap-2">
-                  <input type="text" name="variant" value="{{ old('variant', $item->variant) }}" placeholder="e.g. Size: L, Color: Black" class="inp text-xs py-2 px-3 flex-1" />
-                  <button type="submit" class="px-4 py-2 text-xs font-extrabold rounded-xl bg-brand-600 hover:bg-brand-700 text-white transition cursor-pointer">Save Variation</button>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <input id="variant-{{ $item->id }}" type="text" name="variant" value="{{ old('variant', $item->variant) }}" placeholder="e.g. Size: L, Color: Black" class="inp text-sm py-2 px-3 flex-1" />
+                  <button type="submit" class="btn-primary py-2 px-4">Save</button>
                 </div>
               </form>
-            </div>
+            </li>
           @endforeach
-        </div>
+        </ul>
 
-        <!-- Financial Totals Summary -->
-        <div class="p-6 border-t border-slate-200 bg-slate-50/50 space-y-2 text-xs">
-          <div class="flex justify-between text-slate-600">
-            <span>Subtotal</span>
-            <span class="font-bold text-slate-900 font-mono">{{ money($order->subtotal) }}</span>
-          </div>
-
+        <dl class="px-4 sm:px-5 py-3.5 border-t border-slate-100 space-y-1.5 text-sm">
+          <div class="flex justify-between gap-3 text-slate-600"><dt>Subtotal</dt><dd class="font-mono text-slate-900">{{ money($order->subtotal) }}</dd></div>
           @if($order->discount_amount > 0)
-            <div class="flex justify-between text-brand-600 font-semibold">
-              <span>Coupon Discount @if($order->coupon_code)({{ $order->coupon_code }})@endif</span>
-              <span class="font-bold font-mono">−{{ money($order->discount_amount) }}</span>
-            </div>
+            <div class="flex justify-between gap-3 text-emerald-700"><dt>Discount @if($order->coupon_code)<span class="font-mono text-xs">({{ $order->coupon_code }})</span>@endif</dt><dd class="font-mono">−{{ money($order->discount_amount) }}</dd></div>
           @endif
-
-          <div class="flex justify-between text-slate-600">
-            <span>Shipping Charge ({{ shipping_zone_label($order->shipping_zone) }})</span>
+          <div class="flex justify-between gap-3 text-slate-600">
+            <dt>Delivery</dt>
             @if($order->hasFreeDelivery())
-              <span class="font-bold font-mono"><s class="text-slate-400 font-normal mr-1">{{ money($order->shipping_waived) }}</s><span class="text-emerald-700">FREE</span></span>
+              <dd class="font-mono"><s class="text-slate-400 mr-1">{{ money($order->shipping_waived) }}</s><span class="text-emerald-700 font-semibold">FREE</span></dd>
             @else
-              <span class="font-bold text-slate-900 font-mono">{{ money($order->shipping_charge) }}</span>
+              <dd class="font-mono text-slate-900">{{ money($order->shipping_charge) }}</dd>
             @endif
           </div>
           @if($order->hasFreeDelivery())
-            <div class="rounded-lg bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-[11px] text-amber-900">
-              🚚 <b>Free delivery</b> — {{ \App\Services\FreeDelivery::label($order->free_delivery_reason) ?? 'given at checkout' }}.
-              You pay the courier {{ money($order->shipping_waived) }}; it is subtracted from profit.
-              @if($order->free_delivery_reason === 'online_payment' && $order->payment_status !== 'verified')
-                <span class="block mt-0.5">Only valid once the payment is verified.</span>
-              @endif
+            <div class="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
+              <x-oi name="gift" class="w-3.5 h-3.5 mt-0.5" />
+              <span><b>Free delivery</b>: {{ \App\Services\FreeDelivery::label($order->free_delivery_reason) ?? 'given at checkout' }}. You pay the courier {{ money($order->shipping_waived) }}; it is subtracted from profit.@if($order->free_delivery_reason === 'online_payment' && $order->payment_status !== 'verified') Only valid once the payment is verified.@endif</span>
             </div>
           @endif
-
           @if($order->tax > 0)
-            <div class="flex justify-between text-slate-600">
-              <span>VAT / Tax</span>
-              <span class="font-bold text-slate-900 font-mono">{{ money($order->tax) }}</span>
-            </div>
+            <div class="flex justify-between gap-3 text-slate-600"><dt>VAT / Tax</dt><dd class="font-mono text-slate-900">{{ money($order->tax) }}</dd></div>
           @endif
+          <div class="flex justify-between items-center gap-3 pt-2 mt-1 border-t border-slate-100">
+            <dt class="font-semibold text-slate-900">Total to collect</dt>
+            <dd class="text-lg font-bold text-slate-900 font-mono">{{ money($order->total) }}</dd>
+          </div>
+        </dl>
 
-          <div class="flex justify-between items-center text-sm font-black text-slate-900 pt-3 border-t border-slate-200">
-            <span>Total Payable Amount</span>
-            <span class="text-base text-brand-600 font-mono">{{ money($order->total) }}</span>
+        {{-- Payment --}}
+        <div class="px-4 sm:px-5 py-3.5 border-t border-slate-100 bg-slate-50/60 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <p class="{{ $title }}"><x-oi name="{{ $isCod ? 'cash' : 'card' }}" class="w-4 h-4 text-slate-400" /> Payment</p>
+            <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->paymentBadge() }}">{{ ucfirst($order->payment_status) }}</span>
           </div>
-        </div>
-      </div>
-
-      <!-- Payment Verification Card -->
-      <div class="card p-6 space-y-4">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 class="font-extrabold text-base text-slate-900 flex items-center gap-2">
-            <span>💳</span> Payment Statement Verification
-          </h3>
-          <span class="px-2.5 py-0.5 text-xs font-extrabold rounded-full {{ $order->paymentBadge() }}">
-            {{ ucfirst($order->payment_status) }}
-          </span>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-            <span class="text-slate-400 font-bold block text-[10px] uppercase">Payment Method</span>
-            <p class="font-extrabold text-slate-900 text-sm mt-0.5">{{ $order->paymentMethodLabel() }}</p>
-          </div>
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-            <span class="text-slate-400 font-bold block text-[10px] uppercase">Expected Amount</span>
-            <p class="font-extrabold text-brand-600 font-mono text-sm mt-0.5">{{ money($order->total) }}</p>
-          </div>
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-            <span class="text-slate-400 font-bold block text-[10px] uppercase">Sender Phone</span>
-            <p class="font-mono font-bold text-slate-800 text-xs mt-0.5">{{ $order->payment_sender_number ?? 'N/A' }}</p>
-          </div>
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-            <span class="text-slate-400 font-bold block text-[10px] uppercase">Transaction ID</span>
-            <p class="font-mono font-black text-slate-900 text-xs mt-0.5 bg-white px-1.5 py-0.5 rounded border border-slate-200 inline-block">{{ $order->payment_txn_id ?? 'N/A' }}</p>
-          </div>
-        </div>
-
-        @if($order->isAwaitingReview())
-          <div class="flex items-center gap-3 pt-2">
-            <form method="POST" action="{{ route('admin.orders.verify', $order) }}" class="inline">
-              @csrf
-              <button type="submit" class="px-5 py-2.5 text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs transition cursor-pointer">
-                ✓ {{ $order->acceptLabel() }}
-              </button>
-            </form>
-            <form method="POST" action="{{ route('admin.orders.reject', $order) }}" class="inline">
-              @csrf
-              <button type="submit" class="px-5 py-2.5 text-xs font-extrabold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 rounded-xl transition cursor-pointer">
-                ✕ {{ $order->payment_method === 'cod' ? 'Reject Order' : 'Reject Payment' }}
-              </button>
-            </form>
-          </div>
-        @else
-          @if($order->payment_method === 'cod' && $order->payment_status === 'pending')
-          <p class="text-xs text-slate-500 font-medium">
-            Cash on delivery: the payment is marked <b class="text-amber-700">Paid</b> automatically when the order is set to Delivered.
-          </p>
+          @php
+            $showTxn = ! $isCod && ($order->payment_sender_number || $order->payment_txn_id || in_array($order->payment_method, ['bkash', 'nagad', 'rocket'], true));
+          @endphp
+          @if($isCod)
+            <p class="text-sm text-slate-700">Cash on delivery: collect at the door · <b class="font-mono">{{ money($order->total) }}</b></p>
           @else
-          <p class="text-xs text-slate-500 font-medium">
-            Payment is currently marked as <b class="{{ $order->payment_status === 'verified' ? 'text-emerald-700' : 'text-rose-700' }}">{{ ucfirst($order->payment_status) }}</b>. Update status in the sidebar if needed.
-          </p>
+            <dl class="grid grid-cols-2 {{ $showTxn ? 'sm:grid-cols-4' : '' }} gap-x-4 gap-y-2 text-sm">
+              <div class="min-w-0"><dt class="text-[11px] text-slate-400">Method</dt><dd class="font-medium text-slate-900 break-words">{{ $order->paymentMethodLabel() }}</dd></div>
+              <div class="min-w-0"><dt class="text-[11px] text-slate-400">Amount</dt><dd class="font-medium text-slate-900 font-mono">{{ money($order->total) }}</dd></div>
+              @if($showTxn)
+                <div class="min-w-0"><dt class="text-[11px] text-slate-400">Sender phone</dt><dd class="font-medium text-slate-900 font-mono break-all">{{ $order->payment_sender_number ?? 'Not given' }}</dd></div>
+                <div class="min-w-0"><dt class="text-[11px] text-slate-400">Transaction ID</dt><dd class="font-medium text-slate-900 font-mono break-all">{{ $order->payment_txn_id ?? 'Not given' }}</dd></div>
+              @endif
+            </dl>
           @endif
-        @endif
-        @if($order->canSwitchToCod())
-          <form method="POST" action="{{ route('admin.orders.switch-to-cod', $order) }}" class="pt-2"
-                onsubmit="return confirm('Money not received? The order becomes cash on delivery{{ $order->free_delivery_reason === 'online_payment' ? ' and the ' . money($order->shipping_waived) . ' delivery charge is added back' : '' }}.')">
-            @csrf
-            <button type="submit" class="px-4 py-2 text-xs font-extrabold bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 rounded-xl transition cursor-pointer">
-              💵 Payment not received — switch to cash on delivery
-            </button>
-            @if($order->free_delivery_reason === 'online_payment')
-              <span class="block text-[11px] text-slate-500 mt-1">Free delivery was for paying online, so {{ money($order->shipping_waived) }} delivery is added back.</span>
+          <p class="text-xs text-slate-500">
+            @if($order->isAwaitingReview())
+              Waiting for you: use <b>{{ $order->acceptLabel() }}</b> or reject at the top of the page.
+            @elseif($isCod && $order->payment_status === 'pending')
+              Marked <b>Paid</b> automatically when the order is set to Delivered.
+            @else
+              Marked <b>{{ ucfirst($order->payment_status) }}</b>. Change it under Update order if needed.
             @endif
-          </form>
-        @endif
-      </div>
-
+          </p>
+          @if($order->canSwitchToCod())
+            <form method="POST" action="{{ route('admin.orders.switch-to-cod', $order) }}"
+                  onsubmit="return confirm('Money not received? The order becomes cash on delivery{{ $order->free_delivery_reason === 'online_payment' ? ' and the ' . money($order->shipping_waived) . ' delivery charge is added back' : '' }}.')">
+              @csrf
+              <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 rounded-lg transition cursor-pointer">
+                <x-oi name="cash" class="w-3.5 h-3.5" /> Payment not received: switch to cash on delivery
+              </button>
+              @if($order->free_delivery_reason === 'online_payment')
+                <span class="block text-xs text-slate-500 mt-1">Free delivery was for paying online, so {{ money($order->shipping_waived) }} delivery is added back.</span>
+              @endif
+            </form>
+          @endif
+        </div>
+      </section>
     </div>
 
-    <!-- Right Column (Order Status Form, Courier, Customer & Fraud Analysis) -->
-    <div class="space-y-6">
-      
-      <!-- Update Order Status Form -->
-      <form method="POST" action="{{ route('admin.orders.update', $order) }}" class="card p-5 space-y-4">
+    <div class="max-lg:contents lg:space-y-4">
+
+      {{-- ================= Update order ================= --}}
+      <form method="POST" action="{{ route('admin.orders.update', $order) }}" class="card max-lg:order-3">
         @csrf @method('PATCH')
-        <h3 class="font-extrabold text-sm text-slate-900 border-b border-slate-100 pb-2">Update Order Details</h3>
-        
-        <div>
-          <label class="lbl text-xs font-bold text-slate-700">Fulfillment Status</label>
-          <select name="status" id="orderFulfillmentStatusSelect" class="inp text-xs font-bold py-2 mt-1">
-            @foreach(\App\Models\Order::STATUSES as $s)
-              <option value="{{ $s }}" @selected($order->status === $s)>{{ ucfirst($s) }}</option>
-            @endforeach
-          </select>
+        <div class="{{ $head }}">
+          <h3 class="{{ $title }}"><x-oi name="clipboard" class="w-4 h-4 text-slate-400" /> Update order</h3>
         </div>
-
-        <div>
-          <label class="lbl text-xs font-bold text-slate-700">Payment Status</label>
-          <select name="payment_status" id="orderPaymentStatusSelect" class="inp text-xs font-bold py-2 mt-1">
-            @foreach(\App\Models\Order::PAYMENT_STATUSES as $s)
-              <option value="{{ $s }}" @selected($order->payment_status === $s)>{{ ucfirst($s) }}</option>
-            @endforeach
-          </select>
+        <div class="p-4 sm:p-5 space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="orderFulfillmentStatusSelect" class="lbl">Order status</label>
+              <select name="status" id="orderFulfillmentStatusSelect" class="inp text-sm py-2">
+                @foreach(\App\Models\Order::STATUSES as $s)
+                  <option value="{{ $s }}" @selected($order->status === $s)>{{ ucfirst($s) }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div>
+              <label for="orderPaymentStatusSelect" class="lbl">Payment</label>
+              <select name="payment_status" id="orderPaymentStatusSelect" class="inp text-sm py-2">
+                @foreach(\App\Models\Order::PAYMENT_STATUSES as $s)
+                  <option value="{{ $s }}" @selected($order->payment_status === $s)>{{ ucfirst($s) }}</option>
+                @endforeach
+              </select>
+            </div>
+          </div>
+          <div>
+            <label for="internalNote" class="lbl">Courier &amp; invoice note</label>
+            <textarea id="internalNote" name="internal_note" rows="2" class="inp text-sm" placeholder="e.g. Call before delivery">{{ $order->internal_note }}</textarea>
+            <p class="text-[11px] text-slate-500 mt-1">Printed on the invoice and sent to the courier. Private notes go in Calls &amp; staff notes.</p>
+          </div>
+          <button type="submit" class="w-full btn-primary py-2.5">Save changes</button>
         </div>
-
-        <div>
-          <label class="lbl text-xs font-bold text-slate-700">Internal Staff Note</label>
-          <textarea name="internal_note" rows="3" class="inp text-xs mt-1" placeholder="Add private notes for staff…">{{ $order->internal_note }}</textarea>
-        </div>
-
-        <button type="submit" class="w-full btn-primary text-xs py-2.5 font-extrabold">Save Order Status</button>
       </form>
 
-      <!-- Courier Integration Module -->
-      <div class="card p-5 space-y-3">
-        <div class="flex items-center justify-between border-b border-gray-100 pb-2">
-          <h3 class="font-extrabold text-sm flex items-center gap-1.5 text-slate-900">
-            <span>🚚</span> Courier Integration
-          </h3>
-          @if($order->isDispatchedToCourier())
-            <span class="px-2.5 py-0.5 text-[11px] font-extrabold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">Dispatched</span>
-          @else
-            <span class="px-2.5 py-0.5 text-[11px] font-extrabold rounded-full bg-amber-100 text-amber-800 border border-amber-200">Not Dispatched</span>
-          @endif
-        </div>
+      @include('admin.orders.partials.activity-log')
 
-        @if($order->isDispatchedToCourier())
-          <div class="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl space-y-2 text-xs">
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-gray-700">Courier Provider:</span>
-              <span class="font-extrabold text-emerald-700">{{ $order->courierLabel() }}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-gray-700">Consignment Code:</span>
-              <span class="font-mono font-bold text-gray-900 bg-white px-2 py-0.5 rounded-lg border border-gray-200">{{ $order->courier_tracking_code ?: 'Handed over via Scan Station' }}</span>
-            </div>
-            @if($order->courier_sent_at)
-              <div class="flex items-center justify-between text-[11px] text-gray-500">
-                <span>Sent Date:</span>
-                <span>{{ $order->courier_sent_at->format('d M Y, g:i A') }}</span>
-              </div>
-            @endif
+      {{-- ================= Courier ================= --}}
+      <section class="card max-lg:order-5">
+        <div class="{{ $head }}">
+          <h3 class="{{ $title }}"><x-oi name="truck" class="w-4 h-4 text-slate-400" /> Courier</h3>
+          <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->isDispatchedToCourier() ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-slate-100 text-slate-600' }}">{{ $order->isDispatchedToCourier() ? 'Sent' : 'Not sent' }}</span>
+        </div>
+        <div class="p-4 sm:p-5 space-y-3 text-sm">
+          @if($order->isDispatchedToCourier())
+            <dl class="space-y-2">
+              <div class="flex items-center justify-between gap-3"><dt class="text-slate-500">Courier</dt><dd class="font-medium text-slate-900 text-right">{{ $order->courierLabel() }}</dd></div>
+              <div class="flex items-center justify-between gap-3"><dt class="text-slate-500 shrink-0">Tracking</dt><dd class="font-mono text-slate-900 text-right break-all">{{ $order->courier_tracking_code ?: 'Scan Station' }}</dd></div>
+              @if($order->courier_sent_at)
+                <div class="flex items-center justify-between gap-3"><dt class="text-slate-500">Sent</dt><dd class="text-slate-700 text-right">{{ $order->courier_sent_at->format('d M, g:i A') }}</dd></div>
+              @endif
+            </dl>
             @if($order->courier_tracking_code && in_array($order->courier_name, \App\Services\Courier\CourierStatusUpdater::PROVIDERS, true))
               @php
                 $cs = $order->courier_status;
                 $csTone = match (true) {
-                    $cs === 'delivered' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
-                    in_array($cs, \App\Services\Courier\CourierStatusUpdater::ATTENTION, true) => 'bg-amber-100 text-amber-900 border-amber-300',
-                    default => 'bg-white text-gray-700 border-gray-200',
+                    $cs === 'delivered' => 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+                    in_array($cs, \App\Services\Courier\CourierStatusUpdater::ATTENTION, true) => 'bg-amber-50 text-amber-800 ring-amber-200',
+                    default => 'bg-slate-50 text-slate-700 ring-slate-200',
                 };
               @endphp
-              <div class="pt-2 border-t border-emerald-200/60 space-y-1.5">
+              <div class="pt-3 border-t border-slate-100 space-y-1.5">
                 <div class="flex items-center justify-between gap-2">
-                  <span class="font-bold text-gray-700">Courier says:</span>
-                  <span class="px-2 py-0.5 rounded-full border text-[11px] font-bold {{ $csTone }}">{{ \App\Services\Courier\CourierStatusUpdater::label($cs) ?? 'Not checked yet' }}</span>
+                  <span class="text-slate-500">Courier says</span>
+                  <span class="px-2 py-0.5 rounded-full ring-1 text-xs font-medium {{ $csTone }}">{{ \App\Services\Courier\CourierStatusUpdater::label($cs) ?? 'Not checked yet' }}</span>
                 </div>
-                @if($order->courier_status_message)
-                  <p class="text-[11px] text-gray-600">{{ $order->courier_status_message }}</p>
-                @endif
-                <div class="flex items-center justify-between gap-2 text-[11px] text-gray-500">
-                  <span>{{ $order->courier_synced_at ? 'Checked ' . $order->courier_synced_at->diffForHumans() : 'Updates automatically every day at 9 PM' }}</span>
+                @if($order->courier_status_message)<p class="text-xs text-slate-600">{{ $order->courier_status_message }}</p>@endif
+                <div class="flex items-center justify-between gap-2 text-xs text-slate-500">
+                  <span>{{ $order->courier_synced_at ? 'Checked ' . $order->courier_synced_at->diffForHumans() : 'Updates daily at 9 PM' }}</span>
                   <form method="POST" action="{{ route('admin.orders.courier-status', $order) }}">
                     @csrf
-                    <button type="submit" class="font-bold text-emerald-800 hover:underline cursor-pointer">Refresh status</button>
+                    <button type="submit" class="inline-flex items-center gap-1 font-medium text-brand-700 hover:underline cursor-pointer"><x-oi name="refresh" class="w-3 h-3" /> Refresh</button>
                   </form>
                 </div>
                 @if(in_array($cs, ['returning', 'returned', 'cancelled'], true) && $order->status === 'shipped')
-                  <p class="text-[11px] font-semibold text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
-                    The parcel is coming back. When it arrives, scan it in at <a href="{{ route('admin.courier-scan.index') }}" class="underline">Courier Scan &rarr; Courier IN</a> to restock and record the courier charge.
+                  <p class="text-xs text-amber-900 bg-amber-50 rounded-lg px-2.5 py-2">
+                    The parcel is coming back. When it arrives, scan it in at <a href="{{ route('admin.courier-scan.index') }}" class="underline">Courier Scan → Courier IN</a> to restock and record the courier charge.
                   </p>
                 @endif
               </div>
             @endif
             @if($order->courierTrackingUrl())
-              <div class="pt-2 border-t border-emerald-200/60 text-center">
-                <a href="{{ $order->courierTrackingUrl() }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-xs font-extrabold text-emerald-800 hover:underline">
-                  <span>Track Live on {{ $order->courierLabel() }} Portal &rarr;</span>
-                </a>
-              </div>
+              <a href="{{ $order->courierTrackingUrl() }}" target="_blank" rel="noopener" class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg ring-1 ring-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                Track on {{ $order->courierLabel() }} <x-oi name="external" class="w-3.5 h-3.5" />
+              </a>
             @endif
-          </div>
-        @else
-          <p class="text-xs text-slate-500">Dispatch this parcel directly to courier API in 1-click:</p>
-          
-          <div class="space-y-2 pt-1">
-            @php $anyConfigured = false; @endphp
-            @foreach($couriers as $key => $info)
-              @if($info['configured'])
-                @php $anyConfigured = true; @endphp
-                <form method="POST" action="{{ route('admin.orders.dispatch-courier', [$order, $key]) }}">
-                  @csrf
-                  <button type="submit" class="w-full py-2.5 px-3 text-xs font-extrabold rounded-2xl border border-slate-200 hover:border-brand-500 bg-white hover:bg-brand-50/50 text-slate-800 hover:text-brand-700 transition flex items-center justify-between cursor-pointer group">
-                    <span class="flex items-center gap-2">
-                      @if($key === 'steadfast') <span>📦</span>
-                      @elseif($key === 'pathao') <span>🛵</span>
-                      @else <span>🔴</span>
-                      @endif
-                      <span>Dispatch via {{ $info['name'] }}</span>
-                    </span>
-                    <span class="text-xs font-extrabold text-brand-600 group-hover:translate-x-0.5 transition-transform">Send &rarr;</span>
-                  </button>
-                </form>
-              @endif
-            @endforeach
-
-            @if(! $anyConfigured)
-              <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900 space-y-1">
-                <p class="font-extrabold">No Courier APIs Configured</p>
-                <p class="text-[11px] leading-relaxed">Go to <a href="{{ route('admin.integrations.index') }}" class="underline font-bold text-brand-700">API Integrations</a> to enter your API Keys for Steadfast, Pathao, or RedX.</p>
+          @else
+            @php $anyConfigured = collect($couriers)->contains('configured', true); @endphp
+            @if($anyConfigured)
+              <p class="text-xs text-slate-500">Send this parcel in one click:</p>
+              <div class="space-y-2">
+                @foreach($couriers as $key => $info)
+                  @if($info['configured'])
+                    <form method="POST" action="{{ route('admin.orders.dispatch-courier', [$order, $key]) }}">
+                      @csrf
+                      <button type="submit" class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg ring-1 ring-slate-200 hover:ring-brand-600 hover:bg-brand-50/40 text-sm font-medium text-slate-800 transition cursor-pointer group">
+                        <span class="inline-flex items-center gap-2"><x-oi name="package" class="w-4 h-4 text-slate-400" /><span>{{ $info['name'] }}</span></span>
+                        <span class="text-brand-700 text-xs group-hover:translate-x-0.5 transition-transform">Send →</span>
+                      </button>
+                    </form>
+                  @endif
+                @endforeach
               </div>
+            @else
+              <p class="text-xs text-slate-500">No courier connected. Add Steadfast, Pathao or RedX keys in <a href="{{ route('admin.integrations.index') }}" class="text-brand-700 underline">Integrations</a>.</p>
             @endif
-          </div>
-        @endif
-      </div>
+          @endif
+        </div>
+      </section>
 
-      <!-- Return & Restock Module -->
+      {{-- ================= Return ================= --}}
       @if($order->status === 'returned' || $order->courier_returned_at)
-        <div class="card p-5 space-y-3 border-2 border-amber-300/80 bg-amber-50/20">
-          <div class="flex items-center justify-between border-b border-amber-200/60 pb-2">
-            <h3 class="font-extrabold text-sm flex items-center gap-1.5 text-amber-900">
-              <span>🔄</span> Return &amp; Restock Details
-            </h3>
-            <span class="px-2.5 py-0.5 text-[11px] font-extrabold rounded-full {{ $order->return_restocked ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200' }}">
-              {{ $order->return_restocked ? '✓ Restocked' : 'Not Restocked' }}
-            </span>
+        <section class="card max-lg:order-6">
+          <div class="{{ $head }}">
+            <h3 class="{{ $title }}"><x-oi name="undo" class="w-4 h-4 text-slate-400" /> Return</h3>
+            <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->return_restocked ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-amber-50 text-amber-800 ring-1 ring-amber-200' }}">{{ $order->return_restocked ? 'Restocked' : 'Not restocked' }}</span>
           </div>
-
-          <div class="space-y-2 text-xs">
-            <div class="flex items-center justify-between">
-              <span class="text-gray-600 font-bold">Returned Date:</span>
-              <span class="font-bold text-gray-900">{{ $order->courier_returned_at ? $order->courier_returned_at->format('d M Y, g:i A') : 'Recorded' }}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-gray-600 font-bold">Return Type:</span>
-              <span class="font-extrabold {{ $order->return_type === 'paid_delivery' ? 'text-emerald-700' : 'text-rose-700' }}">
-                {{ $order->return_type === 'paid_delivery' ? 'Buyer Paid Delivery Charge' : 'Unpaid Delivery (Business Loss)' }}
-              </span>
-            </div>
+          <dl class="p-4 sm:p-5 space-y-2 text-sm">
+            <div class="flex items-center justify-between gap-3"><dt class="text-slate-500">Returned</dt><dd class="text-slate-900 text-right">{{ $order->courier_returned_at ? $order->courier_returned_at->format('d M Y, g:i A') : 'Recorded' }}</dd></div>
+            <div class="flex items-center justify-between gap-3"><dt class="text-slate-500">Delivery charge</dt><dd class="font-medium text-right {{ $order->return_type === 'paid_delivery' ? 'text-emerald-700' : 'text-rose-600' }}">{{ $order->return_type === 'paid_delivery' ? 'Paid by buyer' : 'Not paid (your loss)' }}</dd></div>
             @if($order->courier_loss_amount > 0)
-              <div class="flex items-center justify-between">
-                <span class="text-gray-600 font-bold">Courier Loss:</span>
-                <span class="font-mono font-extrabold text-rose-700">-৳{{ number_format($order->courier_loss_amount, 2) }}</span>
-              </div>
+              <div class="flex items-center justify-between gap-3"><dt class="text-slate-500">Courier loss</dt><dd class="font-mono text-rose-600">−{{ money($order->courier_loss_amount) }}</dd></div>
             @endif
             @if($order->return_reason)
-              <div class="pt-1.5 border-t border-amber-200/50">
-                <span class="text-gray-500 font-semibold block text-[11px]">Reason:</span>
-                <p class="text-gray-800 font-medium text-xs mt-0.5 italic">"{{ $order->return_reason }}"</p>
-              </div>
+              <div class="pt-2 border-t border-slate-100"><dt class="text-xs text-slate-500">Reason</dt><dd class="text-slate-800 mt-0.5">“{{ $order->return_reason }}”</dd></div>
             @endif
-          </div>
-        </div>
+          </dl>
+        </section>
       @endif
-
-      <!-- Customer Address Card -->
-      <div class="card p-5 space-y-3 text-xs">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-          <h3 class="font-extrabold text-sm text-slate-900 flex items-center gap-1.5">
-            <span>👤</span> Customer Details
-          </h3>
-          <button type="button" onclick="openEditCustomerModal()" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-extrabold text-brand-700 bg-brand-50 hover:bg-brand-100 border border-brand-200/80 rounded-xl transition cursor-pointer shadow-2xs">
-            <span>✏️</span> Edit
-          </button>
-        </div>
-        <div class="space-y-1.5 pt-0.5">
-          <div class="flex items-center justify-between">
-            <span class="text-slate-400 font-bold text-[10px] uppercase">Name:</span>
-            <span class="text-sm font-extrabold text-slate-900">{{ $order->customer_name }}</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-slate-400 font-bold text-[10px] uppercase">Phone:</span>
-            <a href="tel:{{ $order->customer_phone }}" class="font-mono text-slate-700 font-bold hover:text-brand-600 hover:underline">📞 {{ $order->customer_phone }}</a>
-          </div>
-          @if($order->customer_email)
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400 font-bold text-[10px] uppercase">Email:</span>
-              <a href="mailto:{{ $order->customer_email }}" class="text-slate-600 hover:text-brand-600 hover:underline">✉️ {{ $order->customer_email }}</a>
-            </div>
-          @endif
-          <div class="pt-2 border-t border-slate-100 mt-2">
-            <span class="text-slate-400 font-bold block mb-0.5 text-[10px] uppercase">Delivery Address:</span>
-            <p class="font-semibold text-slate-800 leading-snug">{{ $order->shipping_address }}, {{ $order->city }} {{ $order->postal_code }}</p>
-          </div>
-
-          <!-- Quick Blacklist Action Buttons -->
-          <div class="pt-2 border-t border-slate-100 flex items-center gap-2 flex-wrap text-xs">
-            <form method="POST" action="{{ route('admin.blacklist.store') }}" class="inline">
-              @csrf
-              <input type="hidden" name="type" value="phone" />
-              <input type="hidden" name="value" value="{{ $order->customer_phone }}" />
-              <input type="hidden" name="reason" value="Blacklisted from Order #{{ $order->order_number }}" />
-              <button type="submit" onclick="return confirm('Block phone {{ $order->customer_phone }} from placing future orders?')" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition cursor-pointer">
-                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-                <span>Block Phone</span>
-              </button>
-            </form>
-
-            @if($order->ip_address)
-              <form method="POST" action="{{ route('admin.blacklist.store') }}" class="inline">
-                @csrf
-                <input type="hidden" name="type" value="ip" />
-                <input type="hidden" name="value" value="{{ $order->ip_address }}" />
-                <input type="hidden" name="reason" value="Blacklisted IP from Order #{{ $order->order_number }}" />
-                <button type="submit" onclick="return confirm('Block IP {{ $order->ip_address }}?')" class="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition cursor-pointer">
-                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                  <span>Block IP</span>
-                </button>
-              </form>
-            @endif
-          </div>
-        </div>
-      </div>
-
-      <!-- Danger Zone Card -->
-      <div class="card p-5 border-rose-200 bg-rose-50/40 space-y-2 text-xs">
-        <h3 class="font-extrabold text-rose-800">Danger Zone</h3>
-        <p class="text-[11px] text-rose-600">Permanently delete this order record from your database.</p>
-        <form method="POST" action="{{ route('admin.orders.destroy', $order) }}" onsubmit="return confirm('Are you SURE you want to permanently delete order {{ $order->order_number }}? This action cannot be undone.')">
-          @csrf
-          @method('DELETE')
-          <button type="submit" class="w-full py-2 px-3 text-xs font-extrabold rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition shadow-xs cursor-pointer">
-            Delete Order {{ $order->order_number }}
-          </button>
-        </form>
-      </div>
-
     </div>
   </div>
 </div>

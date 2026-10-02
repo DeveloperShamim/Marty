@@ -63,7 +63,7 @@
           <td class="c-n">{{ $i + 1 }}</td>
           <td>
             <div class="inv-item">
-              @unless($half)<img src="{{ $item->imageUrl() }}" alt="" class="inv-thumb" onerror="this.remove()">@endunless
+              <img src="{{ $item->imageUrl() }}" alt="" class="inv-thumb" onerror="this.remove()">
               <div>
                 <div class="inv-strong">{{ $item->product_name }}</div>
                 @if($item->variant)<div class="inv-muted">{{ $item->variant }}</div>@endif

@@ -244,6 +244,31 @@ class Order extends Model
         };
     }
 
+    public function activities(): HasMany
+    {
+        return $this->hasMany(OrderActivity::class)->latest('id');
+    }
+
+    /** Log who changed the status, payment or courier, from any screen (order page, scan station, auto-confirm). */
+    protected static function booted(): void
+    {
+        static::updated(function (Order $order) {
+            if ($order->wasChanged('status')) {
+                $body = 'Status: ' . ucfirst((string) $order->getOriginal('status')) . ' → ' . ucfirst($order->status);
+                if ($order->wasChanged('auto_confirmed_reason') && $order->auto_confirmed_reason) {
+                    $body .= ' (auto-confirmed: ' . $order->auto_confirmed_reason . ')';
+                }
+                OrderActivity::record($order, 'status', $body);
+            }
+            if ($order->wasChanged('payment_status')) {
+                OrderActivity::record($order, 'payment', 'Payment: ' . ucfirst((string) $order->getOriginal('payment_status')) . ' → ' . ucfirst($order->payment_status));
+            }
+            if ($order->wasChanged('courier_name') && $order->courier_name && ! $order->getOriginal('courier_name')) {
+                OrderActivity::record($order, 'courier', 'Sent to ' . $order->courierLabel() . ($order->courier_tracking_code ? ' (' . $order->courier_tracking_code . ')' : ''));
+            }
+        });
+    }
+
     public function prints()
     {
         return $this->hasMany(OrderPrint::class);

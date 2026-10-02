@@ -20,8 +20,11 @@
   <hr>
   @foreach($order->items as $item)
     <div class="rcpt-item">
-      <div class="name">{{ $item->product_name }}@if($item->variant) ({{ $item->variant }})@endif</div>
-      <div class="rcpt-row"><span>{{ $item->quantity }} &times; {{ money($item->unit_price) }}</span><span>{{ money($item->line_total) }}</span></div>
+      <img src="{{ $item->imageUrl() }}" alt="" class="rcpt-thumb" onerror="this.remove()">
+      <div class="rcpt-item-body">
+        <div class="name">{{ $item->product_name }}@if($item->variant) ({{ $item->variant }})@endif</div>
+        <div class="rcpt-row"><span>{{ $item->quantity }} &times; {{ money($item->unit_price) }}</span><span>{{ money($item->line_total) }}</span></div>
+      </div>
     </div>
   @endforeach
   <hr>

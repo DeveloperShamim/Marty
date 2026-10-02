@@ -465,6 +465,18 @@
           </span>
         </label>
 
+        <label class="flex items-center justify-between gap-4 rounded-xl border border-stone-200 p-4 cursor-pointer hover:bg-stone-50/50 transition ml-4 sm:ml-6">
+          <span class="min-w-0">
+            <span class="text-xs font-extrabold text-stone-900 block">⚡ Auto-confirm safe COD orders</span>
+            <span class="text-[11px] text-stone-500 block mt-0.5">Confirms a cash-on-delivery order straight away when the customer has earlier delivered orders here (and no returns) or a good courier history (80%+ delivered, no fraud reports). New, risky or blacklisted customers stay <b>Pending</b> for you to call. The payment stays pending until delivery.</span>
+          </span>
+          <span class="relative inline-flex items-center shrink-0">
+            <input type="checkbox" name="cod_auto_confirm" value="1" class="peer sr-only" @checked(($settings['cod_auto_confirm'] ?? '0') === '1')>
+            <span class="h-6 w-11 rounded-full bg-stone-300 transition peer-checked:bg-brand-600"></span>
+            <span class="pointer-events-none absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition peer-checked:translate-x-5"></span>
+          </span>
+        </label>
+
         <label class="flex items-center justify-between gap-4 rounded-xl border border-stone-200 p-4 cursor-pointer hover:bg-stone-50/50 transition">
           <span class="text-xs font-extrabold text-pink-600 flex items-center gap-2">📱 bKash Merchant Payment</span>
           <span class="relative inline-flex items-center shrink-0">

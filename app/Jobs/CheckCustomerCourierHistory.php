@@ -3,12 +3,14 @@
 namespace App\Jobs;
 
 use App\Models\Order;
+use App\Services\CodAutoConfirm;
 use App\Services\Courier\BdCourierService;
 use Illuminate\Foundation\Bus\Dispatchable;
 
 /**
  * Runs right after the customer's checkout page is sent (no queue worker needed):
- * looks up the buyer's courier delivery history and adds it to the order's fraud score.
+ * looks up the buyer's courier delivery history and adds it to the order's fraud score,
+ * then auto-confirms the order if the customer is safe (see CodAutoConfirm).
  */
 class CheckCustomerCourierHistory
 {
@@ -19,14 +21,19 @@ class CheckCustomerCourierHistory
     public function handle(BdCourierService $bdCourier): void
     {
         $order = Order::find($this->orderId);
-        if (! $order || ! self::shouldCheck($order) || ! $bdCourier->isConfigured()) {
+        if (! $order) {
             return;
         }
 
-        $result = $bdCourier->check($order->customer_phone);
-        if ($result['success']) {
-            self::applyToFraudScore($order, $result['check']);
+        if (self::shouldCheck($order) && $bdCourier->isConfigured()) {
+            $result = $bdCourier->check($order->customer_phone);
+            if ($result['success']) {
+                self::applyToFraudScore($order, $result['check']);
+            }
         }
+
+        // Safe cash-on-delivery customers are confirmed straight away (when switched on).
+        CodAutoConfirm::apply($order->fresh(), $bdCourier->saved($order->customer_phone));
     }
 
     /** Cash-on-delivery web orders from customers we haven't already delivered to twice. */

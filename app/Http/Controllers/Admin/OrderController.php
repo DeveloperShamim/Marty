@@ -63,7 +63,7 @@ class OrderController extends Controller
 
     public function show(Order $order, SteadfastService $steadfast, PathaoService $pathao, RedxService $redx, Request $request)
     {
-        $order->load(['items.product.variants', 'prints.user']);
+        $order->load(['items.product.variants', 'prints.user', 'activities']);
 
         $couriers = [
             'steadfast' => ['name' => 'Steadfast Courier', 'configured' => $steadfast->isConfigured()],
@@ -71,15 +71,17 @@ class OrderController extends Controller
             'redx'      => ['name' => 'RedX Courier', 'configured' => $redx->isConfigured()],
         ];
 
-        $forceRefresh = $request->boolean('refresh_courier');
-        $steadfastDeliveryCheck = $steadfast->checkDeliveryHistory($order->customer_phone, $forceRefresh);
-
+        // One delivery-history source: BD Courier (all couriers) when it is set up, otherwise Steadfast.
+        // This only picks the history lookup; sending parcels via Steadfast is not affected.
         $bdCourier = app(\App\Services\Courier\BdCourierService::class);
+        $useBdCourier = $bdCourier->isConfigured();
         $earlier = Order::where('customer_phone', $order->customer_phone)->where('id', '!=', $order->id)
             ->selectRaw('status, COUNT(*) as n')->groupBy('status')->pluck('n', 'status');
         $customerHistory = [
-            'configured'  => $bdCourier->isConfigured(),
-            'check'       => $bdCourier->saved($order->customer_phone),
+            'source'      => $useBdCourier ? 'bdcourier' : 'steadfast',
+            'configured'  => $useBdCourier,
+            'check'       => $useBdCourier ? $bdCourier->saved($order->customer_phone) : null,
+            'steadfast'   => $useBdCourier ? null : $steadfast->checkDeliveryHistory($order->customer_phone, $request->boolean('refresh_courier')),
             'own'         => [
                 'total'     => (int) $earlier->sum(),
                 'delivered' => (int) ($earlier['delivered'] ?? 0),
@@ -89,7 +91,7 @@ class OrderController extends Controller
             'blacklisted' => \App\Models\Blacklist::isBlacklisted('phone', $order->customer_phone),
         ];
 
-        return view('admin.orders.show', compact('order', 'couriers', 'steadfastDeliveryCheck', 'customerHistory'));
+        return view('admin.orders.show', compact('order', 'couriers', 'customerHistory'));
     }
 
     /**
@@ -524,6 +526,28 @@ class OrderController extends Controller
         }
 
         return back()->with('error', $result['message']);
+    }
+
+    /** Log a phone call (with its result) or a private staff note on the order. */
+    public function storeActivity(Request $request, Order $order)
+    {
+        $data = $request->validate([
+            'call_result' => ['nullable', Rule::in(array_keys(\App\Models\OrderActivity::CALL_RESULTS))],
+            'body'        => ['nullable', 'string', 'max:1000', 'required_without:call_result'],
+        ], ['body.required_without' => 'Pick a call result or write a note.']);
+
+        $body = trim((string) ($data['body'] ?? '')) ?: null;
+        $result = $data['call_result'] ?? null;
+        \App\Models\OrderActivity::record($order, $result ? 'call' : 'note', $body, $result);
+
+        // The customer confirmed on the phone: confirm a waiting order in the same step.
+        if ($result === 'confirmed' && $order->status === 'pending') {
+            $order->update(['status' => 'confirmed']);
+
+            return back()->with('status', "Call saved and order {$order->order_number} confirmed.");
+        }
+
+        return back()->with('status', $result ? 'Call saved.' : 'Note saved.');
     }
 
     /** "Check now" on the order page: look up the customer's courier history (uses one BD Courier search). */

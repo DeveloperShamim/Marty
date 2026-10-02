@@ -92,7 +92,8 @@
     .c-c { text-align: center; width: 12mm; }
     .c-r { text-align: right; white-space: nowrap; }
     .inv-item { display: flex; align-items: center; gap: 3mm; }
-    .inv-thumb { width: 10mm; height: 10mm; object-fit: cover; border-radius: 1.5mm; border: 1px solid #e5e7eb; flex-shrink: 0; }
+    .inv-thumb { width: 14mm; height: 14mm; object-fit: cover; border-radius: 2mm; border: 1px solid #e5e7eb; flex-shrink: 0; background: #f5f5f4; }
+    .inv-items td { vertical-align: middle; }
     .inv-bottom { display: grid; grid-template-columns: 1fr 72mm; gap: 10mm; break-inside: avoid; page-break-inside: avoid; }
     .inv-notes p { margin: 0 0 3mm; }
     .inv-terms { white-space: pre-line; color: #4b5563; font-size: 8.5pt; }
@@ -127,6 +128,8 @@
     .inv--half .inv-label { font-size: 6.5pt; margin-bottom: .3mm; }
     .inv--half .inv-items th { font-size: 6.5pt; padding-bottom: 1mm; }
     .inv--half .inv-items td { padding: 1mm 2mm; }
+    .inv--half .inv-item { gap: 2mm; }
+    .inv--half .inv-thumb { width: 8mm; height: 8mm; border-radius: 1mm; }
     .inv--half .inv-item > div { display: flex; gap: 2mm; min-width: 0; }
     .inv--half .inv-item .inv-strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 95mm; }
     .inv--half .inv-item .inv-muted { white-space: nowrap; }
@@ -160,7 +163,10 @@
     .rcpt hr { border: 0; border-top: 1px dashed #000; margin: 2.5mm 0; }
     .rcpt-row { display: flex; justify-content: space-between; gap: 2mm; }
     .rcpt-row > :last-child { text-align: right; white-space: nowrap; }
-    .rcpt-item { margin-bottom: 1.5mm; }
+    .rcpt-item { margin-bottom: 1.5mm; display: flex; gap: 2mm; align-items: flex-start; }
+    .rcpt-item-body { flex: 1; min-width: 0; }
+    .rcpt-thumb { width: 10mm; height: 10mm; object-fit: cover; border-radius: 1mm; flex-shrink: 0; filter: grayscale(1) contrast(1.2); }
+    .fmt-thermal58 .rcpt-thumb { display: none; }
     .rcpt-item .name { font-weight: 600; }
     .rcpt-total { font-size: 11pt; font-weight: 800; }
     .fmt-thermal58 .rcpt-total { font-size: 9.5pt; }

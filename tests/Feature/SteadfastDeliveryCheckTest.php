@@ -75,14 +75,37 @@ class SteadfastDeliveryCheckTest extends TestCase
         $this->assertEquals('low', $result['risk_level']);
     }
 
-    public function test_admin_order_show_displays_steadfast_delivery_check(): void
+    public function test_order_page_uses_steadfast_history_when_bd_courier_is_not_set_up(): void
     {
+        Setting::put('steadfast_api_key', 'test_key');
+        Setting::put('steadfast_secret_key', 'test_secret');
+        Http::fake(['https://portal.packzy.com/api/v1/fraud_check/*' => Http::response([
+            'Total_parcels' => 10, 'total_delivered' => 9, 'total_cancelled' => 1, 'total_fraud_reports' => [],
+        ], 200)]);
+
         $admin = User::factory()->create(['role' => 'admin']);
-        $order = $this->createOrder();
+        $html = $this->actingAs($admin)->get(route('admin.orders.show', $this->createOrder()))->assertOk()->getContent();
 
-        $response = $this->actingAs($admin)->get(route('admin.orders.show', $order));
+        $this->assertSame(1, substr_count($html, 'Customer delivery history'));
+        $this->assertStringContainsString('Steadfast Courier', $html);
+        $this->assertStringContainsString('90%', $html);
+    }
 
-        $response->assertOk();
-        $response->assertSee('Steadfast Courier Delivery History');
+    public function test_bd_courier_replaces_the_steadfast_history_but_not_steadfast_sending(): void
+    {
+        Setting::put('steadfast_enabled', '1');
+        Setting::put('steadfast_api_key', 'test_key');
+        Setting::put('steadfast_secret_key', 'test_secret');
+        Setting::put('bdcourier_keys', json_encode([['id' => 'k1', 'label' => 'Main', 'token' => 'tok', 'limit' => null]]));
+        Http::fake();
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $html = $this->actingAs($admin)->get(route('admin.orders.show', $this->createOrder()))->assertOk()->getContent();
+
+        Http::assertNothingSent(); // no Steadfast history lookup
+        $this->assertSame(1, substr_count($html, 'Customer delivery history'));
+        $this->assertStringContainsString('via BD Courier', $html);
+        $this->assertStringContainsString('Steadfast Courier</span>', $html); // still offered for sending the parcel
+        $this->assertSame('1', setting('steadfast_enabled'));
     }
 }

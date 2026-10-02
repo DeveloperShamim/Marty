@@ -153,6 +153,7 @@ class SettingController extends Controller
                 'order_hotline' => ['nullable', 'string', 'max:40'],
                 'order_number_prefix' => ['nullable', 'string', 'max:6', 'regex:/^[A-Za-z0-9]*$/'],
                 'pay_cod_enabled' => ['nullable', 'boolean'],
+                'cod_auto_confirm' => ['nullable', 'boolean'],
                 'pay_bkash_enabled' => ['nullable', 'boolean'],
                 'pay_nagad_enabled' => ['nullable', 'boolean'],
                 'pay_rocket_enabled' => ['nullable', 'boolean'],
@@ -297,6 +298,7 @@ class SettingController extends Controller
 
         if ($section === 'payments') {
             Setting::put('pay_cod_enabled', $request->boolean('pay_cod_enabled') ? '1' : '0');
+            Setting::put('cod_auto_confirm', $request->boolean('cod_auto_confirm') ? '1' : '0');
             Setting::put('pay_bkash_enabled', $request->boolean('pay_bkash_enabled') ? '1' : '0');
             Setting::put('pay_nagad_enabled', $request->boolean('pay_nagad_enabled') ? '1' : '0');
             Setting::put('pay_rocket_enabled', $request->boolean('pay_rocket_enabled') ? '1' : '0');

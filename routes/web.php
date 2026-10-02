@@ -191,6 +191,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('orders/{order}/verify', [AdminOrderController::class, 'verify'])->middleware('area:orders')->name('orders.verify');
             Route::post('orders/{order}/switch-to-cod', [AdminOrderController::class, 'switchToCod'])->middleware('area:orders')->name('orders.switch-to-cod');
             Route::post('orders/{order}/reject', [AdminOrderController::class, 'reject'])->middleware('area:orders')->name('orders.reject');
+            Route::post('orders/{order}/activities', [AdminOrderController::class, 'storeActivity'])->middleware('area:orders')->name('orders.activities.store');
             Route::post('orders/{order}/courier-history', [AdminOrderController::class, 'courierHistory'])->middleware('area:orders')->name('orders.courier-history');
             Route::post('orders/{order}/courier-status', [AdminOrderController::class, 'refreshCourierStatus'])->middleware('area:orders')->name('orders.courier-status');
             Route::post('orders/{order}/courier/{provider}', [AdminOrderController::class, 'dispatchCourier'])->middleware('area:orders')->name('orders.dispatch-courier');
