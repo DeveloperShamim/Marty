@@ -272,8 +272,9 @@ class StorefrontPurchaseFlowTest extends TestCase
     {
         $orderManager = User::factory()->create(['role' => 'order_manager']);
         $this->actingAs($orderManager)->get(route('admin.orders.index'))->assertOk();
-        $this->actingAs($orderManager)->get(route('admin.products.index'))->assertRedirect(route('admin.dashboard'));
-        $this->actingAs($orderManager)->get(route('admin.staff.index'))->assertRedirect(route('admin.dashboard'));
+        // Refused pages send staff to their own home page (orders for an order manager).
+        $this->actingAs($orderManager)->get(route('admin.products.index'))->assertRedirect(route('admin.orders.index'));
+        $this->actingAs($orderManager)->get(route('admin.staff.index'))->assertRedirect(route('admin.orders.index'));
 
         $inventoryManager = User::factory()->create(['role' => 'inventory_manager']);
         $this->actingAs($inventoryManager)->get(route('admin.products.index'))->assertOk();

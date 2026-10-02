@@ -105,7 +105,7 @@
         @endif
         <div class="flex justify-between text-slate-600">
           <span>Shipping Charge</span>
-          <span class="font-mono font-bold">{{ money($order->shipping_charge) }}</span>
+          <span class="font-mono font-bold">{{ $order->deliveryDisplay() }}</span>
         </div>
         <div class="flex justify-between text-slate-600">
           <span>Tax</span>

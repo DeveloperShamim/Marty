@@ -51,7 +51,7 @@ class StaffController extends Controller
             'email'    => 'required|email|unique:users,email',
             'phone'    => 'nullable|string|max:25',
             'role'     => ['required', Rule::in(['admin', 'store_manager', 'order_manager', 'inventory_manager'])],
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:8',
         ]);
 
         $user = User::create([
@@ -72,9 +72,8 @@ class StaffController extends Controller
 
     public function toggleStatus(User $staff)
     {
-        // Protect main admin from being suspended
-        if ($staff->email === 'admin@freshkart.test' || $staff->id === auth()->id()) {
-            return back()->withErrors(['staff' => 'You cannot suspend your own account or the master admin.']);
+        if ($error = $this->protectedReason($staff, $staff->is_suspended ? null : 'suspend')) {
+            return back()->withErrors(['staff' => $error]);
         }
 
         $staff->is_suspended = !$staff->is_suspended;
@@ -92,8 +91,8 @@ class StaffController extends Controller
 
     public function destroy(User $staff)
     {
-        if ($staff->email === 'admin@freshkart.test' || $staff->id === auth()->id()) {
-            return back()->withErrors(['staff' => 'You cannot delete your own account or the master admin.']);
+        if ($error = $this->protectedReason($staff, 'delete')) {
+            return back()->withErrors(['staff' => $error]);
         }
 
         $name = $staff->name;
@@ -106,5 +105,24 @@ class StaffController extends Controller
         );
 
         return redirect()->route('admin.staff.index')->with('status', "Staff member {$name} deleted.");
+    }
+
+    /** Staff pages may only manage staff accounts, never your own account or the store owner's. */
+    private function protectedReason(User $staff, ?string $action): ?string
+    {
+        if ($action === null) {
+            return null; // re-activating is always allowed
+        }
+        if (! in_array($staff->role, ['admin', 'store_manager', 'order_manager', 'inventory_manager'], true)) {
+            return 'Only staff accounts can be managed here.';
+        }
+        if ($staff->id === auth()->id()) {
+            return "You cannot {$action} your own account.";
+        }
+        if ($staff->isStoreOwner()) {
+            return "You cannot {$action} the store owner's account.";
+        }
+
+        return null;
     }
 }

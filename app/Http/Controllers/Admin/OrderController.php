@@ -21,7 +21,7 @@ class OrderController extends Controller
 
         $status = $request->input('status', 'all');
         if ($status === 'pending_verification') {
-            $query->where('payment_status', 'pending');
+            $query->needsReview();
         } elseif ($status === 'not_printed') {
             $query->notPrinted();
         } elseif (in_array($status, Order::STATUSES, true)) {
@@ -48,7 +48,7 @@ class OrderController extends Controller
 
         $counts = [
             'all'                  => Order::count(),
-            'pending_verification' => Order::where('payment_status', 'pending')->count(),
+            'pending_verification' => Order::needsReview()->count(),
             'not_printed'          => Order::notPrinted()->count(),
             'confirmed'            => Order::where('status', 'confirmed')->count(),
             'processing'           => Order::where('status', 'processing')->count(),
@@ -74,7 +74,78 @@ class OrderController extends Controller
         $forceRefresh = $request->boolean('refresh_courier');
         $steadfastDeliveryCheck = $steadfast->checkDeliveryHistory($order->customer_phone, $forceRefresh);
 
-        return view('admin.orders.show', compact('order', 'couriers', 'steadfastDeliveryCheck'));
+        $bdCourier = app(\App\Services\Courier\BdCourierService::class);
+        $earlier = Order::where('customer_phone', $order->customer_phone)->where('id', '!=', $order->id)
+            ->selectRaw('status, COUNT(*) as n')->groupBy('status')->pluck('n', 'status');
+        $customerHistory = [
+            'configured'  => $bdCourier->isConfigured(),
+            'check'       => $bdCourier->saved($order->customer_phone),
+            'own'         => [
+                'total'     => (int) $earlier->sum(),
+                'delivered' => (int) ($earlier['delivered'] ?? 0),
+                'returned'  => (int) ($earlier['returned'] ?? 0),
+                'cancelled' => (int) ($earlier['cancelled'] ?? 0),
+            ],
+            'blacklisted' => \App\Models\Blacklist::isBlacklisted('phone', $order->customer_phone),
+        ];
+
+        return view('admin.orders.show', compact('order', 'couriers', 'steadfastDeliveryCheck', 'customerHistory'));
+    }
+
+    /**
+     * Polled by every admin page (about every 20s) for the new-order popup.
+     * Without ?after it only returns the latest id, so existing orders don't pop up.
+     */
+    public function feed(Request $request)
+    {
+        $latestId = (int) Order::max('id');
+        $payload = ['latest_id' => $latestId, 'needs_review' => Order::needsReview()->count(), 'orders' => [], 'more' => 0];
+
+        $after = $request->integer('after');
+        if ($request->has('after') && $after < $latestId) {
+            $new = Order::where('id', '>', $after)
+                ->where(fn ($q) => $q->whereNull('order_type')->orWhere('order_type', '!=', 'pos'));
+            $total = (clone $new)->count();
+            $payload['orders'] = $new->with('items')->latest('id')->take(5)->get()->map(fn ($o) => $this->alertData($o))->values();
+            $payload['more'] = max(0, $total - 5);
+        }
+
+        return response()->json($payload)->header('Cache-Control', 'no-store');
+    }
+
+    private function alertData(Order $order): array
+    {
+        $items = $order->items->take(2)->map(fn ($i) => $i->quantity . ' × ' . $i->product_name . ($i->variant ? " ({$i->variant})" : ''))->implode(', ');
+        if ($order->items->count() > 2) {
+            $items .= ' +' . ($order->items->count() - 2) . ' more';
+        }
+
+        return [
+            'id'           => $order->id,
+            'number'       => $order->order_number,
+            'customer'     => $order->customer_name,
+            'phone'        => $order->customer_phone,
+            'city'         => $order->city,
+            'items'        => $items,
+            'total'        => money($order->total),
+            'method'       => $order->paymentMethodLabel(),
+            'is_cod'       => $order->payment_method === 'cod',
+            'sender'       => $order->payment_sender_number,
+            'txn'          => $order->payment_txn_id,
+            'risk'         => $order->fraudRiskLevel(),
+            'history'      => ($h = app(\App\Services\Courier\BdCourierService::class)->saved($order->customer_phone)) ? [
+                'total' => $h->total_parcels, 'delivered' => $h->delivered, 'ratio' => $h->success_ratio,
+                'reports' => count($h->reports ?? []), 'level' => $h->riskLevel(), 'label' => $h->riskLabel(),
+            ] : null,
+            'created_at'   => $order->created_at->toIso8601String(),
+            'needs_review' => $order->isAwaitingReview(),
+            'accept_label' => $order->acceptLabel(),
+            'urls'         => [
+                'show'    => route('admin.orders.show', $order),
+                'invoice' => route('admin.orders.invoice', ['order' => $order, 'print' => 1]),
+                'accept'  => route('admin.orders.verify', $order),
+            ],
+        ];
     }
 
     /** Invoice formats: full A4 page, half page (two copies on one A4), and 80mm / 58mm thermal receipts. */
@@ -222,16 +293,59 @@ class OrderController extends Controller
     }
 
     /** Verify the manual payment (accept the order). */
-    public function verify(Order $order)
+    public function verify(Request $request, Order $order)
     {
-        $order->update([
-            'payment_status' => 'verified',
-            'status'         => $order->status === 'pending' ? 'confirmed' : $order->status,
-        ]);
+        $nextStatus = $order->status === 'pending' ? 'confirmed' : $order->status;
 
-        \App\Services\ActivityLogger::log('Verified Order Payment', "Verified payment for order #{$order->order_number} ({$order->customer_name})");
+        if ($order->payment_method === 'cod') {
+            // Cash is collected on delivery, so the payment stays pending until the order is delivered.
+            $order->update(['status' => $nextStatus]);
+            \App\Services\ActivityLogger::log('Confirmed COD Order', "Confirmed order #{$order->order_number} ({$order->customer_name})");
+            $message = "Order {$order->order_number} confirmed. Cash will be collected on delivery.";
+        } else {
+            $order->update(['payment_status' => 'verified', 'status' => $nextStatus]);
+            \App\Services\ActivityLogger::log('Verified Order Payment', "Verified payment for order #{$order->order_number} ({$order->customer_name})");
+            $message = "Payment verified for {$order->order_number}.";
+        }
 
-        return back()->with('status', "Payment verified for {$order->order_number}.");
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true, 'message' => $message,
+                'status' => $order->status, 'payment_status' => $order->payment_status,
+            ]);
+        }
+
+        return back()->with('status', $message);
+    }
+
+    /**
+     * The online payment didn't arrive (wrong/fake TrxID) but the customer will pay cash: turn the
+     * order into cash on delivery. Free delivery given for paying online is taken back.
+     */
+    public function switchToCod(Order $order)
+    {
+        if (! $order->canSwitchToCod()) {
+            return back()->with('error', 'Only unverified bKash / Nagad / Rocket orders that have not shipped can be switched to cash on delivery.');
+        }
+
+        $from = strtoupper($order->payment_method);
+        $attrs = ['payment_method' => 'cod', 'payment_status' => 'pending'];
+        $note = '';
+        if ($order->free_delivery_reason === 'online_payment') {
+            $fee = (float) $order->shipping_waived;
+            $attrs += [
+                'shipping_charge'      => $fee,
+                'shipping_waived'      => 0,
+                'free_delivery_reason' => null,
+                'total'                => (float) $order->total + $fee,
+            ];
+            $note = ' Delivery charge of ' . money($fee) . ' added back (free delivery was for paying online).';
+        }
+        $order->update($attrs);
+
+        \App\Services\ActivityLogger::log('Switched Order to COD', "Order #{$order->order_number}: {$from} payment not received, switched to cash on delivery.{$note}");
+
+        return back()->with('status', "Order {$order->order_number} is now cash on delivery. Collect " . money($order->total) . '.' . $note);
     }
 
     /** Reject the manual payment. */
@@ -290,7 +404,7 @@ class OrderController extends Controller
             }
             if (!$order->return_type) {
                 $data['return_type'] = 'unpaid_delivery';
-                $data['courier_loss_amount'] = (float) ($order->shipping_charge > 0 ? $order->shipping_charge : 130);
+                $data['courier_loss_amount'] = $order->returnDeliveryLoss();
             }
         }
 
@@ -382,6 +496,14 @@ class OrderController extends Controller
     ) {
         $provider = strtolower(trim($provider));
 
+        // Booking twice creates two parcels and two courier charges.
+        if ($order->courier_tracking_code) {
+            return back()->with('error', "Order {$order->order_number} is already booked with {$order->courierLabel()} (#{$order->courier_tracking_code}).");
+        }
+        if (in_array($order->status, ['cancelled', 'returned', 'delivered'], true)) {
+            return back()->with('error', "A {$order->status} order can't be sent to a courier.");
+        }
+
         $result = match ($provider) {
             'steadfast' => $steadfast->createOrder($order),
             'pathao'    => $pathao->createOrder($order),
@@ -402,5 +524,27 @@ class OrderController extends Controller
         }
 
         return back()->with('error', $result['message']);
+    }
+
+    /** "Check now" on the order page: look up the customer's courier history (uses one BD Courier search). */
+    public function courierHistory(Order $order, \App\Services\Courier\BdCourierService $bdCourier)
+    {
+        $result = $bdCourier->check($order->customer_phone, force: true);
+        if (! $result['success']) {
+            return back()->with('error', $result['message']);
+        }
+        \App\Jobs\CheckCustomerCourierHistory::applyToFraudScore($order, $result['check']);
+
+        return back()->with('status', 'Courier history updated: ' . $result['check']->riskLabel() . '.');
+    }
+
+    /** Ask the courier for this parcel's latest status now (instead of waiting for the next sync). */
+    public function refreshCourierStatus(Order $order, \App\Services\Courier\CourierStatusUpdater $updater)
+    {
+        $result = $updater->refresh($order);
+
+        return back()->with($result['success'] ? 'status' : 'error', $result['success']
+            ? "{$order->courierLabel()} says: {$result['message']}." . ($order->fresh()->status === 'delivered' ? ' The order is now marked delivered.' : '')
+            : $result['message']);
     }
 }

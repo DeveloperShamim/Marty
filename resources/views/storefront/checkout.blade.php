@@ -265,6 +265,11 @@
               </span>
             </div>
 
+            {{-- Free delivery offer note (kept in sync by recalc()) --}}
+            <div id="freeDeliveryNote" class="hidden flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] sm:text-xs font-semibold text-emerald-800">
+              <span class="text-sm leading-none">🚚</span><span id="freeDeliveryText"></span>
+            </div>
+
             <div class="space-y-2">
               @if($showCod)
               {{-- Cash On Delivery Row --}}
@@ -288,6 +293,7 @@
                 <label class="pay-opt relative flex flex-col items-center justify-center py-2 px-1.5 rounded-xl border transition-all text-center cursor-pointer select-none {{ $method==='bkash' ? 'border-brand-600 bg-brand-50/70 ring-1 ring-brand-600 font-bold shadow-2xs' : 'border-slate-200 bg-white hover:border-slate-300' }}">
                   <span class="px-2 py-0.5 rounded-md bg-[#E2136E] text-white font-black text-[10px] leading-tight mb-1 shadow-2xs">bKash</span>
                   <span class="text-[11px] font-bold text-slate-800 block leading-tight">bKash</span>
+                  <span class="online-free-tag hidden mt-0.5 text-[9px] font-extrabold uppercase tracking-wide text-emerald-700">Free delivery</span>
                   <input type="radio" name="payment_method" value="bkash" @checked($method==='bkash') class="pay-radio hidden" data-manual="1" data-pay-number="{{ $bkash }}" />
                   <span class="pay-check absolute top-1.5 right-1.5 grid h-3.5 w-3.5 place-items-center rounded-full bg-brand-600 text-white text-[9px] font-bold {{ $method==='bkash' ? '' : 'hidden' }}">✓</span>
                 </label>
@@ -297,6 +303,7 @@
                 <label class="pay-opt relative flex flex-col items-center justify-center py-2 px-1.5 rounded-xl border transition-all text-center cursor-pointer select-none {{ $method==='nagad' ? 'border-brand-600 bg-brand-50/70 ring-1 ring-brand-600 font-bold shadow-2xs' : 'border-slate-200 bg-white hover:border-slate-300' }}">
                   <span class="px-2 py-0.5 rounded-md bg-[#F7941D] text-white font-black text-[10px] leading-tight mb-1 shadow-2xs">Nagad</span>
                   <span class="text-[11px] font-bold text-slate-800 block leading-tight">Nagad</span>
+                  <span class="online-free-tag hidden mt-0.5 text-[9px] font-extrabold uppercase tracking-wide text-emerald-700">Free delivery</span>
                   <input type="radio" name="payment_method" value="nagad" @checked($method==='nagad') class="pay-radio hidden" data-manual="1" data-pay-number="{{ $nagad }}" />
                   <span class="pay-check absolute top-1.5 right-1.5 grid h-3.5 w-3.5 place-items-center rounded-full bg-brand-600 text-white text-[9px] font-bold {{ $method==='nagad' ? '' : 'hidden' }}">✓</span>
                 </label>
@@ -306,6 +313,7 @@
                 <label class="pay-opt relative flex flex-col items-center justify-center py-2 px-1.5 rounded-xl border transition-all text-center cursor-pointer select-none {{ $method==='rocket' ? 'border-brand-600 bg-brand-50/70 ring-1 ring-brand-600 font-bold shadow-2xs' : 'border-slate-200 bg-white hover:border-slate-300' }}">
                   <span class="px-2 py-0.5 rounded-md bg-[#8C3494] text-white font-black text-[10px] leading-tight mb-1 shadow-2xs">Rocket</span>
                   <span class="text-[11px] font-bold text-slate-800 block leading-tight">Rocket</span>
+                  <span class="online-free-tag hidden mt-0.5 text-[9px] font-extrabold uppercase tracking-wide text-emerald-700">Free delivery</span>
                   <input type="radio" name="payment_method" value="rocket" @checked($method==='rocket') class="pay-radio hidden" data-manual="1" data-pay-number="{{ $rocket }}" />
                   <span class="pay-check absolute top-1.5 right-1.5 grid h-3.5 w-3.5 place-items-center rounded-full bg-brand-600 text-white text-[9px] font-bold {{ $method==='rocket' ? '' : 'hidden' }}">✓</span>
                 </label>
@@ -360,7 +368,7 @@
             @if($discount > 0)
               <div class="flex justify-between text-brand-600"><dt>Discount ({{ $couponCode }})</dt><dd class="font-semibold sumDiscount">−{{ money($discount) }}</dd></div>
             @endif
-            <div class="flex justify-between"><dt class="text-slate-500">Delivery</dt><dd class="font-semibold text-brand-600 sumShipping">{{ money($totals['shipping']) }}</dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Delivery</dt><dd class="font-semibold text-brand-600 sumShipping">{!! $totals['reason'] ? '<s class="text-slate-400 font-normal mr-1">' . e(money($totals['waived'])) . '</s><span class="text-emerald-600 font-extrabold">FREE</span>' : e(money($totals['shipping'])) !!}</dd></div>
             <div class="flex justify-between"><dt class="text-slate-500">Tax ({{ rtrim(rtrim(number_format($taxPercent, 2), '0'), '.') }}%)</dt><dd class="font-semibold text-slate-800 sumTax">{{ money($totals['tax']) }}</dd></div>
           </dl>
           <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
@@ -488,7 +496,7 @@
               @if($discount > 0)
                 <div class="flex justify-between text-brand-600"><dt>Discount ({{ $couponCode }})</dt><dd class="font-semibold sumDiscount" id="sumDiscount">−{{ money($discount) }}</dd></div>
               @endif
-              <div class="flex justify-between"><dt class="text-slate-500">Delivery</dt><dd class="font-semibold text-brand-600 sumShipping" id="sumShipping">{{ money($totals['shipping']) }}</dd></div>
+              <div class="flex justify-between"><dt class="text-slate-500">Delivery</dt><dd class="font-semibold text-brand-600 sumShipping">{!! $totals['reason'] ? '<s class="text-slate-400 font-normal mr-1">' . e(money($totals['waived'])) . '</s><span class="text-emerald-600 font-extrabold">FREE</span>' : e(money($totals['shipping'])) !!}</dd></div>
               <div class="flex justify-between"><dt class="text-slate-500">Tax ({{ rtrim(rtrim(number_format($taxPercent, 2), '0'), '.') }}%)</dt><dd class="font-semibold text-slate-800 sumTax" id="sumTax">{{ money($totals['tax']) }}</dd></div>
             </dl>
             <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
@@ -566,23 +574,42 @@
     return currencySymbol + ' ' + Number(n).toLocaleString('en-US', { maximumFractionDigits: 0 });
   };
 
+  // Free delivery: same rules as App\Services\FreeDelivery (the server re-checks on order).
+  var fd = @json($freeDelivery);
+  fd.online_enabled = fd.online_enabled && @json(\App\Services\FreeDelivery::onlinePaymentAvailable());
+  var hasFreeProduct = @json($hasFreeProduct);
+  var ONLINE = ['bkash', 'nagad', 'rocket'];
+  function currentMethod() {
+    var r = document.querySelector('.pay-radio:checked');
+    return r ? r.value : 'cod';
+  }
+  function onlineOfferFor(zoneKey) {
+    return fd.online_enabled && (fd.online_zones === 'both' || fd.online_zones === zoneKey);
+  }
+  function deliveryReason(orderValue, zoneKey, method) {
+    if (hasFreeProduct) return 'product';
+    if (fd.over_amount > 0 && orderValue >= fd.over_amount) return 'order_total';
+    if (onlineOfferFor(zoneKey) && ONLINE.indexOf(method) !== -1 && orderValue >= fd.online_min) return 'online_payment';
+    return null;
+  }
+
   function recalc() {
     var fee = parseFloat(zone.options[zone.selectedIndex].dataset.fee) || 0;
     var taxable = Math.max(0, subtotal - discount);
     var tax = Math.round(taxable * taxPct / 100);
-    var total = taxable + fee + tax;
+    var method = currentMethod();
+    var reason = fee > 0 ? deliveryReason(taxable, zone.value, method) : null;
+    var shipping = reason ? 0 : fee;
+    var total = taxable + shipping + tax;
+    var shipHtml = reason
+      ? '<s class="text-slate-400 font-normal mr-1">' + money(fee) + '</s><span class="text-emerald-600 font-extrabold">FREE</span>'
+      : money(fee);
 
-    document.querySelectorAll('.sumShipping').forEach(function(el) { el.textContent = money(fee); });
+    document.querySelectorAll('.sumShipping').forEach(function(el) { el.innerHTML = shipHtml; });
     document.querySelectorAll('.sumTax').forEach(function(el) { el.textContent = money(tax); });
     document.querySelectorAll('.sumTotal').forEach(function(el) { el.textContent = money(total); });
     document.querySelectorAll('.placeTotalText').forEach(function(el) { el.textContent = money(total); });
 
-    var sumShipEl = document.getElementById('sumShipping');
-    if (sumShipEl) sumShipEl.textContent = money(fee);
-    var sumTaxEl = document.getElementById('sumTax');
-    if (sumTaxEl) sumTaxEl.textContent = money(tax);
-    var sumTotalEl = document.getElementById('sumTotal');
-    if (sumTotalEl) sumTotalEl.textContent = money(total);
     var placeTotalEl = document.getElementById('placeTotal');
     if (placeTotalEl) placeTotalEl.textContent = money(total);
     var stickyTotalEl = document.getElementById('stickyMobilePlaceTotal');
@@ -590,6 +617,21 @@
 
     var manualAmt = document.getElementById('manualPayAmount');
     if (manualAmt) manualAmt.textContent = money(total);
+
+    // Offer note + "Free delivery" tags on bKash / Nagad / Rocket
+    var unconditional = reason === 'product' || reason === 'order_total';
+    var offerHere = !unconditional && fee > 0 && onlineOfferFor(zone.value);
+    var minReached = taxable >= fd.online_min;
+    document.querySelectorAll('.online-free-tag').forEach(function(el) { el.classList.toggle('hidden', !(offerHere && minReached)); });
+
+    var note = document.getElementById('freeDeliveryNote'), text = document.getElementById('freeDeliveryText');
+    var msg = '';
+    if (reason === 'product') msg = 'Free delivery on this order — it includes a free-delivery product.';
+    else if (reason === 'order_total') msg = 'Free delivery — your order is over ' + money(fd.over_amount) + '.';
+    else if (reason === 'online_payment') msg = 'Free delivery applied for paying online. You save ' + money(fee) + '.';
+    else if (offerHere && minReached) msg = 'Pay with bKash, Nagad or Rocket and get FREE delivery (save ' + money(fee) + ').';
+    else if (offerHere) msg = 'Add ' + money(fd.online_min - taxable) + ' more and pay online to get FREE delivery.';
+    if (note && text) { text.textContent = msg; note.classList.toggle('hidden', !msg); }
   }
 
   if (zone) zone.addEventListener('change', recalc);
@@ -645,6 +687,7 @@
       if (numEl) {
         numEl.textContent = r.dataset.payNumber || "—";
       }
+      recalc();
     });
   });
 

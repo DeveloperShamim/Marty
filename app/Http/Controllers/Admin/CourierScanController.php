@@ -50,7 +50,26 @@ class CourierScanController extends Controller
         }
         $lastCourier = strtolower((string) ($lastCourier ?: 'steadfast'));
 
-        return view('admin.courier-scan.index', compact('dispatchedToday', 'returnedToday', 'awaitingDispatch', 'courierOptions', 'lastCourier'));
+        // Parcels the courier reports as returning, on hold or partly delivered.
+        $courierAttention = Order::where('status', 'shipped')
+            ->whereIn('courier_status', \App\Services\Courier\CourierStatusUpdater::ATTENTION)
+            ->latest('courier_synced_at')
+            ->take(30)
+            ->get();
+        $lastSync = json_decode((string) setting('courier_last_sync', ''), true) ?: null;
+
+        return view('admin.courier-scan.index', compact('dispatchedToday', 'returnedToday', 'awaitingDispatch', 'courierOptions', 'lastCourier', 'courierAttention', 'lastSync'));
+    }
+
+    /** "Sync now": check parcels out for delivery with the courier APIs (also runs daily at 9 PM). */
+    public function syncStatuses()
+    {
+        \Illuminate\Support\Facades\Artisan::call('couriers:sync', ['--limit' => 60]);
+        $r = json_decode((string) setting('courier_last_sync', ''), true) ?: [];
+
+        return back()->with('status', ($r['checked'] ?? 0) === 0
+            ? 'No booked parcels need checking right now.'
+            : "Checked {$r['checked']} parcels: {$r['delivered']} delivered, {$r['attention']} need attention" . ($r['failed'] ? ", {$r['failed']} couldn't be checked." : '.'));
     }
 
     /**
@@ -203,7 +222,7 @@ class CourierScanController extends Controller
                 'order_number'     => $order->order_number,
                 'customer_name'    => $order->customer_name,
                 'phone'            => $order->customer_phone,
-                'shipping_charge'  => (float) ($order->shipping_charge ?: 130),
+                'shipping_charge'  => $order->returnDeliveryLoss(),
                 'total'            => (float) $order->total,
                 'current_status'   => ucfirst($order->status),
                 'courier_name'     => $order->courierLabel(),
@@ -237,7 +256,7 @@ class CourierScanController extends Controller
         $courierLoss = 0;
         if ($validated['return_type'] === 'unpaid_delivery') {
             // Business bears courier delivery cost
-            $courierLoss = (float) ($order->shipping_charge > 0 ? $order->shipping_charge : 130);
+            $courierLoss = $order->returnDeliveryLoss(); // includes the fee the shop absorbed for free delivery
         }
 
         $defaultReason = $validated['return_type'] === 'paid_delivery'

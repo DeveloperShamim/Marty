@@ -29,7 +29,7 @@
   @if($order->discount_amount > 0)
     <div class="rcpt-row"><span>Discount</span><span>−{{ money($order->discount_amount) }}</span></div>
   @endif
-  <div class="rcpt-row"><span>Delivery</span><span>{{ money($order->shipping_charge) }}</span></div>
+  <div class="rcpt-row"><span>Delivery</span><span>{{ $order->deliveryDisplay() }}</span></div>
   @if($order->tax > 0)
     <div class="rcpt-row"><span>VAT / Tax</span><span>{{ money($order->tax) }}</span></div>
   @endif

@@ -49,6 +49,33 @@ class RedxService
         });
     }
 
+    /** Current status of a booked parcel by its tracking ID. */
+    public function trackOrder(Order $order): array
+    {
+        $token = trim((string) setting('redx_api_token'));
+        if (! $token) {
+            return ['success' => false, 'message' => 'RedX API token is not configured.'];
+        }
+        if (str_starts_with(strtolower($token), 'bearer ')) {
+            $token = trim(substr($token, 7));
+        }
+
+        try {
+            $response = Http::withHeaders(['API-ACCESS-TOKEN' => 'Bearer ' . $token, 'Accept' => 'application/json'])
+                ->timeout(15)
+                ->get($this->getBaseUrl() . '/parcel/info/' . rawurlencode((string) $order->courier_tracking_code));
+            $status = $response->json('parcel.status');
+
+            if ($response->successful() && $status) {
+                return ['success' => true, 'status' => (string) $status, 'message' => null];
+            }
+
+            return ['success' => false, 'message' => 'RedX: ' . ($response->json('message') ?? 'HTTP ' . $response->status())];
+        } catch (\Throwable $e) {
+            return ['success' => false, 'message' => 'RedX connection error: ' . $e->getMessage()];
+        }
+    }
+
     public function createOrder(Order $order): array
     {
         $token = trim((string) setting('redx_api_token'));
@@ -65,7 +92,8 @@ class RedxService
             $token = trim(substr($token, 7));
         }
 
-        $codAmount = $order->payment_status === 'verified' ? 0 : (float) $order->total;
+        // Only cash-on-delivery orders are collected; prepaid (bKash/Nagad/...) orders never are.
+        $codAmount = $order->amountToCollect();
 
         // Clean BD phone number (e.g. 01XXXXXXXXX)
         $phone = preg_replace('/[^0-9]/', '', (string) $order->customer_phone);
@@ -100,18 +128,22 @@ class RedxService
             }
         }
 
-        // 3. Fallback to default area from settings or first available area
+        // 3. Fall back to the default area set in Integrations. Never guess: a wrong area
+        //    sends the parcel to the wrong hub.
         $deliveryAreaId = (int) setting('redx_default_area_id', 0);
         $deliveryAreaName = $order->city ?: 'Dhaka';
 
         if ($matchedArea) {
             $deliveryAreaId = (int) ($matchedArea['id'] ?? $deliveryAreaId);
             $deliveryAreaName = (string) ($matchedArea['name'] ?? $deliveryAreaName);
-        } elseif (! empty($areas)) {
-            $deliveryAreaId = (int) ($areas[0]['id'] ?? 1);
-            $deliveryAreaName = (string) ($areas[0]['name'] ?? $deliveryAreaName);
-        } elseif ($deliveryAreaId === 0) {
-            $deliveryAreaId = 1; // Default fallback ID for RedX sandbox / central hub
+        } elseif ($deliveryAreaId > 0) {
+            $default = collect($areas)->firstWhere('id', $deliveryAreaId);
+            $deliveryAreaName = (string) ($default['name'] ?? $deliveryAreaName);
+        } else {
+            return [
+                'success' => false,
+                'message' => 'RedX: no delivery area matched this address. Add the area (e.g. "Mirpur 10") or postcode to the address, or set a default RedX area ID in Integrations.',
+            ];
         }
 
         $payload = [

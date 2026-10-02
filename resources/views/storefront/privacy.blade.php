@@ -37,7 +37,7 @@
       <!-- Key Metadata Badges -->
       <div class="pt-3 flex flex-wrap items-center gap-3 text-xs text-slate-400">
         <span class="flex items-center gap-1.5 bg-slate-800/60 px-3 py-1.5 rounded-xl border border-slate-700/50">
-          <span>📅</span> Updated: <strong>August 2026</strong>
+          <span>📅</span> Updated: <strong>October 2026</strong>
         </span>
         <span class="flex items-center gap-1.5 bg-slate-800/60 px-3 py-1.5 rounded-xl border border-slate-700/50">
           <span>⏱️</span> Read Time: <strong>~3 Minutes</strong>
@@ -246,6 +246,8 @@
                 <li>Transaction IDs (TrxID) for bKash/Nagad</li>
                 <li>IP Address &amp; Device User-Agent</li>
                 <li>UTM Traffic Referral Source</li>
+                <li>Checkout details you type (name, phone, address), saved even if you don't finish the order, so we can help you complete it</li>
+                <li>Live chat messages, photos and voice notes you send us</li>
               </ul>
             </div>
           </div>
@@ -268,7 +270,8 @@
             <ul class="space-y-2 text-xs list-disc list-inside text-slate-700 bg-slate-50 p-4 rounded-2xl border border-slate-100">
               <li><strong>Order Processing:</strong> Confirming orders, verifying payment details, and dispatching parcels.</li>
               <li><strong>Customer Communication:</strong> Sending SMS/email order updates, tracking codes, and delivery notifications.</li>
-              <li><strong>Fraud Prevention:</strong> Checking phone numbers and IP addresses against risk rules to prevent fake orders.</li>
+              <li><strong>Fraud Prevention:</strong> Checking phone numbers and IP addresses against risk rules to prevent fake orders. For cash-on-delivery orders we may look up your phone number's past delivery record (parcels delivered and returned) with courier history services such as Steadfast and BD Courier.</li>
+              <li><strong>Unfinished Orders:</strong> If you leave checkout before ordering, we may contact you once to help you complete the order.</li>
               <li><strong>Platform Improvement:</strong> Analyzing store performance and popular product categories.</li>
             </ul>
           </div>
@@ -320,7 +323,7 @@
               <li>Order Parcel Weight &amp; Payable Cash-on-Delivery (COD) Amount</li>
             </ul>
             <p class="text-[11px] text-slate-500 pt-1 border-t border-slate-200">
-              Courier partners are contractually obligated to use this data strictly for parcel delivery and tracking.
+              Courier partners receive this data only to deliver and track your parcel. To check delivery history for fraud prevention, only your phone number is sent to the courier history services named above.
             </p>
           </div>
         </article>
@@ -338,6 +341,17 @@
           <p class="text-sm text-slate-600 leading-relaxed">
             {{ $site }} uses essential browser cookies and session state to provide standard shopping features (such as maintaining items in your shopping cart, remembering user login, and tracking UTM referral sources).
           </p>
+          @php
+            $analytics = array_filter([
+                (tracking_ga4_id() || tracking_gtm_id()) ? 'Google Analytics / Google Tag Manager' : null,
+                tracking_meta_pixel_id() ? 'Meta (Facebook) Pixel' : null,
+            ]);
+          @endphp
+          @if($analytics)
+            <p class="text-sm text-slate-600 leading-relaxed">
+              We also use {{ implode(' and ', $analytics) }} to understand how visitors use the store and to measure our advertising. These services set their own cookies and receive information about your visit (such as pages viewed and purchases made). You can block or delete these cookies in your browser settings.
+            </p>
+          @endif
         </article>
 
         <!-- Section 06 -->
@@ -352,6 +366,9 @@
 
           <p class="text-sm text-slate-600 leading-relaxed">
             We implement industry-standard administrative and technical security measures to protect your information against unauthorized access, disclosure, or alteration. All web communications are transmitted via SSL (HTTPS) encryption.
+          </p>
+          <p class="text-sm text-slate-600 leading-relaxed">
+            <strong>How long we keep data:</strong> unfinished checkout details are deleted automatically after 60 days, and live chat messages and attachments after 90 days. Order records are kept for accounting, warranty and returns.
           </p>
         </article>
 

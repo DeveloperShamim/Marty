@@ -44,8 +44,10 @@ class DashboardController extends Controller
             ->sum(DB::raw('COALESCE(NULLIF(order_items.cost_price, 0), products.cost_price, 0) * order_items.quantity'));
 
         $courierLoss = (float) Order::where('status', 'returned')->sum('courier_loss_amount');
+        // Delivery fees the shop paid for free-delivery orders.
+        $freeDeliveryCost = (float) Order::query()->tap($validOrders)->sum('shipping_waived');
         // Can be negative: a loss must show as a loss, not as zero.
-        $netProfit = $revenue - $totalCogs - $courierLoss;
+        $netProfit = $revenue - $totalCogs - $courierLoss - $freeDeliveryCost;
         $profitMargin = $revenue > 0 ? (($netProfit / $revenue) * 100) : 0;
 
         $verifiedOrdersCount = Order::query()
@@ -179,7 +181,7 @@ class DashboardController extends Controller
             'cancelledOrdersCount' => $cancelledOrdersCount,
             'returnedOrdersCount'  => $returnedOrdersCount,
             'deliveredCount'       => $deliveredOrdersCount,
-            'pendingCount'         => Order::where('payment_status', 'pending')->whereNotIn('status', ['cancelled', 'returned'])->count(),
+            'pendingCount'         => Order::needsReview()->count(),
             'revenue'              => $revenue,
             'totalCogs'            => $totalCogs,
             'netProfit'            => $netProfit,
@@ -193,7 +195,7 @@ class DashboardController extends Controller
             'lowStockProducts'    => $lowStockProducts,
             'lowStockCount'       => $lowStockCount,
             'outOfStockCount'     => $outOfStockCount,
-            'pendingOrders'       => Order::where('payment_status', 'pending')->where('status', '!=', 'cancelled')->latest()->take(6)->get(),
+            'pendingOrders'       => Order::needsReview()->latest()->take(6)->get(),
             'recentOrders'        => Order::latest()->take(8)->get(),
             'topProducts'         => $topProducts,
             'selectedYear'        => $selectedYear,

@@ -125,8 +125,6 @@ class SettingController extends Controller
                 'remove_favicon'  => ['nullable', 'boolean'],
             ],
             'homepage' => [
-                'header_promo_text'   => ['nullable', 'string', 'max:200'],
-                'header_promo_link'   => ['nullable', 'string', 'max:255'],
                 'shop_subtitle'       => ['nullable', 'string', 'max:255'],
                 'delivery_eta_text'   => ['nullable', 'string', 'max:120'],
                 'home_categories_title' => ['nullable', 'string', 'max:80'],
@@ -227,7 +225,6 @@ class SettingController extends Controller
                 'theme_primary_color', 'theme_dark_color', 'theme_surface_color',
             ],
             'homepage' => [
-                'header_promo_text', 'header_promo_link',
                 'shop_subtitle', 'delivery_eta_text',
                 'home_categories_title', 'home_hot_deal_title', 'home_featured_title',
                 'home_reviews_title', 'home_reviews_subtitle',

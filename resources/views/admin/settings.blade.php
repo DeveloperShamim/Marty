@@ -275,18 +275,19 @@
     </div>
     <div class="section-feedback hidden text-xs font-bold rounded-xl px-4 py-2"></div>
 
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-brand-50 border border-brand-100 rounded-2xl px-4 py-3">
+      <p class="text-xs text-stone-700"><b>📰 Top headline bar</b> is now managed in <b>Marketing → News Ticker</b>.</p>
+      <a href="{{ route('admin.news-ticker.index') }}" class="text-xs font-extrabold text-brand-700 underline shrink-0">Open News Ticker →</a>
+    </div>
+
     <div class="bg-white p-4 sm:p-6 rounded-2xl border border-stone-200 shadow-2xs space-y-4">
       <div class="border-b border-stone-100 pb-3">
         <h3 class="font-extrabold text-base text-stone-900 flex items-center gap-2">
-          <span>📢</span> Top Announcement &amp; Subtitles
+          <span>📢</span> Page Subtitles
         </h3>
-        <p class="text-xs text-stone-500 mt-0.5">Top promo notification bar and general page subtitles</p>
+        <p class="text-xs text-stone-500 mt-0.5">Shop page subtitle and delivery time note</p>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div><label class="text-xs font-bold text-stone-700 block mb-1">Top Banner Promo Text</label><input name="header_promo_text" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl" value="{{ $settings['header_promo_text'] ?? '' }}" placeholder="Free shipping on orders over ৳1000!" /></div>
-        <div><label class="text-xs font-bold text-stone-700 block mb-1">Promo Banner Link URL</label><input name="header_promo_link" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl" value="{{ $settings['header_promo_link'] ?? '' }}" placeholder="/shop or full URL" /></div>
-      </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div><label class="text-xs font-bold text-stone-700 block mb-1">Shop Page Subtitle</label><input name="shop_subtitle" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl" value="{{ $settings['shop_subtitle'] ?? '' }}" placeholder="Explore our full collection" /></div>
         <div><label class="text-xs font-bold text-stone-700 block mb-1">Delivery ETA Announcement</label><input name="delivery_eta_text" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl" value="{{ $settings['delivery_eta_text'] ?? '' }}" placeholder="Estimated delivery in 2–3 days" /></div>

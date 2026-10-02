@@ -22,7 +22,8 @@ class IntegrationController extends Controller
         $keys = [
             'steadfast_enabled', 'steadfast_api_key', 'steadfast_secret_key',
             'pathao_enabled', 'pathao_env', 'pathao_client_id', 'pathao_client_secret', 'pathao_username', 'pathao_password', 'pathao_store_id',
-            'redx_enabled', 'redx_env', 'redx_api_token',
+            'redx_enabled', 'redx_env', 'redx_api_token', 'redx_default_area_id', 'courier_auto_sync',
+            'bdcourier_api_token', 'bdcourier_auto_check',
             'tracking_gtm_id', 'tracking_ga4_id', 'tracking_meta_pixel_id', 'google_site_verification',
             'google_client_id', 'google_client_secret', 'google_redirect_uri',
             'otp_enabled', 'mail_mailer', 'mail_host', 'mail_port', 'mail_username',
@@ -34,9 +35,27 @@ class IntegrationController extends Controller
             $settings[$key] = $dbSettings[$key] ?? (string) setting($key, '');
         }
 
+        $secret = courier_webhook_secret();
+        $webhooks = collect(['steadfast', 'pathao', 'redx'])->mapWithKeys(fn ($p) => [
+            $p => route('webhooks.courier', ['provider' => $p, 'token' => $secret]),
+        ])->all();
+        $lastSync = json_decode((string) setting('courier_last_sync', ''), true) ?: null;
+        $bdCourier = app(\App\Services\Courier\BdCourierService::class);
+        $usage = $bdCourier->usageToday();
+        $bdKeys = array_map(fn ($k) => $k + ['used' => $usage[$k['id']]['used'] ?? 0, 'blocked' => $usage[$k['id']]['blocked'] ?? null], $bdCourier->keys());
+
         return view('admin.integrations.index', [
             'settings' => $settings,
+            'webhooks' => $webhooks,
+            'lastSync' => $lastSync,
+            'bdKeys'   => $bdKeys,
         ]);
+    }
+
+    /** "Check connection" for BD Courier: plan and searches left. */
+    public function bdCourierPlan(Request $request, \App\Services\Courier\BdCourierService $bdCourier)
+    {
+        return response()->json($bdCourier->plan($request->query('key')));
     }
 
     public function update(Request $request, string $section)
@@ -112,6 +131,14 @@ class IntegrationController extends Controller
                 'redx_enabled'         => ['nullable', 'boolean'],
                 'redx_env'             => ['nullable', 'in:sandbox,production'],
                 'redx_api_token'       => ['nullable', 'string', 'max:1000'],
+                'redx_default_area_id' => ['nullable', 'integer', 'min:1'],
+                'courier_auto_sync'    => ['nullable', 'boolean'],
+                'bdcourier_keys'         => ['nullable', 'array', 'max:10'],
+                'bdcourier_keys.*.id'    => ['nullable', 'string', 'max:40', 'alpha_dash'],
+                'bdcourier_keys.*.label' => ['nullable', 'string', 'max:60'],
+                'bdcourier_keys.*.token' => ['nullable', 'string', 'max:500'],
+                'bdcourier_keys.*.limit' => ['nullable', 'integer', 'min:0', 'max:100000'],
+                'bdcourier_auto_check' => ['nullable', 'boolean'],
             ],
             'tracking' => [
                 'tracking_gtm_id'          => ['nullable', 'string', 'max:20', 'regex:/^(|GTM-[A-Z0-9]+)$/i'],
@@ -145,7 +172,7 @@ class IntegrationController extends Controller
             'couriers' => [
                 'steadfast_api_key', 'steadfast_secret_key',
                 'pathao_env', 'pathao_client_id', 'pathao_client_secret', 'pathao_username', 'pathao_password', 'pathao_store_id',
-                'redx_env', 'redx_api_token',
+                'redx_env', 'redx_api_token', 'redx_default_area_id',
             ],
             'tracking' => ['tracking_gtm_id', 'tracking_ga4_id', 'tracking_meta_pixel_id', 'google_site_verification'],
             'google'   => ['google_client_id', 'google_client_secret', 'google_redirect_uri'],
@@ -171,6 +198,25 @@ class IntegrationController extends Controller
             Setting::put('steadfast_enabled', $request->boolean('steadfast_enabled') ? '1' : '0');
             Setting::put('pathao_enabled', $request->boolean('pathao_enabled') ? '1' : '0');
             Setting::put('redx_enabled', $request->boolean('redx_enabled') ? '1' : '0');
+            Setting::put('courier_auto_sync', $request->boolean('courier_auto_sync') ? '1' : '0');
+            Setting::put('bdcourier_auto_check', $request->boolean('bdcourier_auto_check') ? '1' : '0');
+
+            // BD Courier keys, used top to bottom. The id stays the same so today's usage count carries over.
+            $keys = [];
+            foreach (array_values($data['bdcourier_keys'] ?? []) as $i => $row) {
+                $token = trim((string) ($row['token'] ?? ''));
+                if ($token === '') {
+                    continue;
+                }
+                $keys[] = [
+                    'id'    => ($row['id'] ?? '') !== '' ? $row['id'] : \Illuminate\Support\Str::lower(\Illuminate\Support\Str::random(12)),
+                    'label' => trim((string) ($row['label'] ?? '')) ?: 'API key ' . (count($keys) + 1),
+                    'token' => $token,
+                    'limit' => isset($row['limit']) && $row['limit'] !== '' ? (int) $row['limit'] : null,
+                ];
+            }
+            Setting::put('bdcourier_keys', json_encode($keys));
+            Setting::put('bdcourier_api_token', ''); // replaced by the key list
         }
 
         if ($section === 'mail') {

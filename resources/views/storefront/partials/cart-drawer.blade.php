@@ -23,6 +23,9 @@
     </div>
   </div>
 
+  {{-- "You May Also Like": loaded when the drawer first opens, refreshed after every cart change. --}}
+  <div id="cartRecs" data-src="{{ route('cart.recommendations') }}" class="shrink-0 bg-stone-50 border-t border-stone-100 empty:hidden"></div>
+
   <div id="cartDrawerFooter" class="p-4 sm:p-5 border-t border-stone-100 space-y-3 shrink-0 bg-white {{ $cartItems->isEmpty() ? 'hidden' : '' }}" style="padding-bottom: max(1.25rem, calc(env(safe-area-inset-bottom, 0px) + 1rem));">
     <div class="flex justify-between font-bold text-ink">
       <span>Subtotal</span>

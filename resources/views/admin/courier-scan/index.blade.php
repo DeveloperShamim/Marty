@@ -28,6 +28,42 @@
     </div>
   </div>
 
+  {{-- Courier reports that need staff action (from the API sync / webhooks). --}}
+  <div class="bg-white rounded-2xl border {{ $courierAttention->isNotEmpty() ? 'border-amber-300' : 'border-gray-200/90' }} shadow-2xs p-4 sm:p-5 space-y-3">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <div>
+        <h2 class="text-sm font-bold text-gray-900">Courier updates
+          @if($courierAttention->isNotEmpty())<span class="ml-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px]">{{ $courierAttention->count() }} need you</span>@endif
+        </h2>
+        <p class="text-xs text-gray-500">
+          Delivered parcels are marked delivered automatically. Returns, holds and part deliveries are listed here.
+          @if($lastSync) Last checked {{ \Illuminate\Support\Carbon::parse($lastSync['at'])->diffForHumans() }}.@endif
+        </p>
+      </div>
+      <form method="POST" action="{{ route('admin.courier-scan.sync') }}">
+        @csrf
+        <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-xs font-bold text-gray-700">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+          Sync now
+        </button>
+      </form>
+    </div>
+    @if($courierAttention->isNotEmpty())
+      <ul class="divide-y divide-gray-100 border border-gray-100 rounded-xl text-xs">
+        @foreach($courierAttention as $o)
+          <li class="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
+            <a href="{{ route('admin.orders.show', $o) }}" class="font-mono font-bold text-brand-700 hover:underline">{{ $o->order_number }}</a>
+            <span class="text-gray-700">{{ $o->customer_name }}</span>
+            <span class="text-gray-400">{{ $o->courierLabel() }}</span>
+            <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-semibold">{{ \App\Services\Courier\CourierStatusUpdater::label($o->courier_status) }}</span>
+            @if($o->courier_status_message)<span class="text-gray-500 truncate max-w-xs" title="{{ $o->courier_status_message }}">{{ $o->courier_status_message }}</span>@endif
+            <span class="ml-auto text-gray-400">{{ $o->courier_synced_at?->diffForHumans() }}</span>
+          </li>
+        @endforeach
+      </ul>
+    @endif
+  </div>
+
   {{-- Station Tabs --}}
   <div class="flex border-b border-gray-200 gap-4">
     <button type="button" onclick="switchScanTab('dispatch')" id="tabBtnDispatch" class="pb-3 text-sm font-bold border-b-2 border-brand-600 text-brand-600 flex items-center gap-2 transition-all">

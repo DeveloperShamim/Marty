@@ -38,6 +38,9 @@
           -{{ $discount }}%
         </span>
       @endif
+      @if($product->free_delivery)
+        <span class="bg-emerald-600 text-white font-extrabold text-[9px] sm:text-[10px] tracking-wide uppercase px-2 py-1 rounded-lg shadow-sm">🚚 Free Delivery</span>
+      @endif
     </div>
   @endif
 

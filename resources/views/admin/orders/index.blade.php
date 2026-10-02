@@ -39,7 +39,7 @@
       @php
         $tabs = [
           'all'                  => 'All Orders',
-          'pending_verification' => 'Pending Verification',
+          'pending_verification' => 'Needs Review',
           'not_printed'          => 'Not Printed',
           'confirmed'            => 'Confirmed',
           'processing'           => 'Processing',
@@ -154,6 +154,9 @@
             <span class="inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full {{ $order->statusBadge() }}">
               {{ ucfirst($order->status) }}
             </span>
+            @if(in_array($order->courier_status, \App\Services\Courier\CourierStatusUpdater::ATTENTION, true) && $order->status === 'shipped')
+              <span class="inline-block px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-900">{{ \App\Services\Courier\CourierStatusUpdater::label($order->courier_status) }}</span>
+            @endif
 
             <span class="inline-block px-2 py-0.5 text-[10px] font-semibold rounded-full {{ $order->paymentBadge() }}">
               {{ ucfirst($order->payment_status) }}
@@ -182,11 +185,11 @@
               Details
             </a>
 
-            @if($order->payment_status === 'pending')
+            @if($order->isAwaitingReview())
               <form method="POST" action="{{ route('admin.orders.verify', $order) }}" class="inline">
                 @csrf
                 <button type="submit" class="py-1.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition-colors shadow-2xs cursor-pointer">
-                  Verify
+                  {{ $order->payment_method === 'cod' ? 'Confirm' : 'Verify' }}
                 </button>
               </form>
               <form method="POST" action="{{ route('admin.orders.reject', $order) }}" class="inline">
@@ -295,6 +298,9 @@
                 <span class="inline-block px-2.5 py-0.5 text-[11px] font-semibold rounded-full {{ $order->statusBadge() }}">
                   {{ ucfirst($order->status) }}
                 </span>
+                @if(in_array($order->courier_status, \App\Services\Courier\CourierStatusUpdater::ATTENTION, true) && $order->status === 'shipped')
+                  <span class="block mt-0.5"><span class="px-1.5 py-px rounded-md bg-amber-100 text-amber-900 text-[10px] font-bold" title="{{ $order->courier_status_message }}">{{ \App\Services\Courier\CourierStatusUpdater::label($order->courier_status) }}</span></span>
+                @endif
                 @if($order->isDispatchedToCourier())
                   <span class="block text-[10px] font-medium text-emerald-700 mt-0.5" title="Dispatched to {{ $order->courierLabel() }}">
                     {{ $order->courierLabel() }}
@@ -315,17 +321,17 @@
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                   </a>
 
-                  @if($order->payment_status === 'pending')
+                  @if($order->isAwaitingReview())
                     <form method="POST" action="{{ route('admin.orders.verify', $order) }}" class="inline">
                       @csrf
-                      <button type="submit" title="Verify Payment" class="w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-colors inline-flex items-center justify-center text-xs shadow-2xs cursor-pointer">
+                      <button type="submit" title="{{ $order->acceptLabel() }}" class="w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-colors inline-flex items-center justify-center text-xs shadow-2xs cursor-pointer">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                       </button>
                     </form>
 
                     <form method="POST" action="{{ route('admin.orders.reject', $order) }}" class="inline">
                       @csrf
-                      <button type="submit" title="Reject Payment" class="w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-bold transition-colors inline-flex items-center justify-center text-xs cursor-pointer">
+                      <button type="submit" title="Reject order" class="w-7 h-7 lg:w-8 lg:h-8 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-bold transition-colors inline-flex items-center justify-center text-xs cursor-pointer">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                       </button>
                     </form>

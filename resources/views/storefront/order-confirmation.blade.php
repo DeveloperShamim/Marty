@@ -102,7 +102,7 @@
       @if($order->discount_amount > 0)
         <div class="flex justify-between text-brand-600"><span>Coupon @if($order->coupon_code)({{ $order->coupon_code }})@endif</span><span>−{{ money($order->discount_amount) }}</span></div>
       @endif
-      <div class="flex justify-between text-slate-600"><span>Shipping ({{ shipping_zone_label($order->shipping_zone) }})</span><span>{{ money($order->shipping_charge) }}</span></div>
+      <div class="flex justify-between text-slate-600"><span>Shipping ({{ shipping_zone_label($order->shipping_zone) }})</span><span>{{ $order->deliveryDisplay() }}</span></div>
       <div class="flex justify-between text-slate-600"><span>Tax</span><span>{{ money($order->tax) }}</span></div>
       <div class="flex justify-between font-extrabold text-base pt-2 border-t border-slate-100 mt-2"><span>Total</span><span class="text-brand-600">{{ money($order->total) }}</span></div>
     </div>

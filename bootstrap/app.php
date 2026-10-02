@@ -14,13 +14,15 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureAdmin::class,
-            'role'  => \App\Http\Middleware\EnsureRolePermission::class,
+            'area'  => \App\Http\Middleware\EnsureStaffArea::class,
             'testing.readonly' => \App\Http\Middleware\BlockMutationsInTestingMode::class,
         ]);
 
         $middleware->web(append: [
             \App\Http\Middleware\TrackUtmSource::class,
         ]);
+
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 
         // Guests hitting an auth-protected storefront page go to the customer login.
         $middleware->redirectGuestsTo(fn () => route('login'));

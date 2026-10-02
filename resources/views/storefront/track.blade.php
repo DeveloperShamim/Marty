@@ -466,7 +466,7 @@
                         <span class="text-[10px] text-stone-400 font-normal">({{ shipping_zone_label($order->shipping_zone) }})</span>
                       @endif
                     </span>
-                    <span class="font-semibold text-stone-800">{{ money($order->shipping_charge) }}</span>
+                    <span class="font-semibold text-stone-800">{{ $order->deliveryDisplay() }}</span>
                   </div>
 
                   @if($order->tax > 0)

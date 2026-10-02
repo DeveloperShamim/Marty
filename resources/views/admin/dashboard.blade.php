@@ -4,6 +4,11 @@
 @section('content')
 <div class="space-y-4 sm:space-y-6 max-w-full">
 
+  @php
+    // Inventory managers see the dashboard without money or order details (App\Support\StaffAccess).
+    $canMoney = \App\Support\StaffAccess::allows(auth()->user(), 'analytics');
+    $canOrders = \App\Support\StaffAccess::allows(auth()->user(), 'orders');
+  @endphp
   {{-- Welcome & Overview Header --}}
   <div class="bg-white rounded-2xl border border-gray-200/90 shadow-2xs p-4 sm:p-6">
     <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
@@ -25,26 +30,36 @@
 
       {{-- Header Quick Actions --}}
       <div class="grid grid-cols-3 sm:flex sm:flex-wrap items-stretch gap-2 xl:justify-end xl:max-w-[560px]">
+        @if(\App\Support\StaffAccess::allows(auth()->user(), 'products'))
         <a href="{{ route('admin.products.create') }}" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
           Add Product
         </a>
+        @endif
+        @if(\App\Support\StaffAccess::allows(auth()->user(), 'pos'))
         <a href="{{ route('admin.pos.index') }}" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-white/90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
           POS Counter
         </a>
+        @endif
+        @if(\App\Support\StaffAccess::allows(auth()->user(), 'courier-scan'))
         <a href="{{ route('admin.courier-scan.index') }}" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-white/90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
           Courier Scan
         </a>
+        @endif
+        @if(\App\Support\StaffAccess::allows(auth()->user(), 'analytics'))
         <a href="{{ route('admin.analytics.index') }}" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-white/90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           Analytics
         </a>
+        @endif
+        @if(\App\Support\StaffAccess::allows(auth()->user(), 'orders'))
         <a href="{{ route('admin.orders.index') }}" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-primary hover:bg-brand-700 text-white transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-white/90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
           Orders
         </a>
+        @endif
         <a href="{{ route('home') }}" target="_blank" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
           Storefront
@@ -53,6 +68,7 @@
     </div>
   </div>
 
+  @if($canMoney)
   {{-- Primary Financial & Order KPIs (2-col on mobile, 4-col on desktop) --}}
   <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
 
@@ -133,8 +149,11 @@
 
   </div>
 
+  @endif
+
   {{-- Secondary Quick Stats (Compact 2-col or 4-col strip) --}}
   <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+    @if($canMoney)
     <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
       <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Today's Sales</span>
       <div class="flex items-center justify-between flex-wrap gap-x-2 mt-1">
@@ -150,6 +169,8 @@
       <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Avg. Order Value</span>
       <p class="text-base sm:text-lg font-bold text-gray-900 font-mono mt-1 truncate">{{ money($avgOrderValue) }}</p>
     </div>
+    @endif
+    @if($canOrders)
     <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
       <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Orders Today</span>
       <div class="flex items-center justify-between flex-wrap gap-x-2 mt-1">
@@ -157,6 +178,7 @@
         <span class="text-[11px] text-gray-400">Yest: {{ number_format($yesterdayOrdersCount) }}</span>
       </div>
     </div>
+    @endif
     <div class="col-span-2 lg:col-span-1 bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
       <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Stock Health</span>
       <div class="flex items-center justify-between flex-wrap gap-x-2 mt-1">
@@ -171,6 +193,7 @@
   {{-- Main Analytics Grid: 12-Month Performance Chart & Operations Column --}}
   <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
 
+    @if($canMoney)
     {{-- Left: Revenue Trend Chart (2 cols on desktop) --}}
     @php
       $monthlyAvg = $totalSeriesRevenue > 0 ? ($totalSeriesRevenue / 12) : 0;
@@ -300,9 +323,12 @@
 
     </div>
 
+    @endif
+
     {{-- Right: Action Items & Operations (1 col on desktop) --}}
     <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-6 shadow-2xs flex flex-col space-y-5 min-w-0">
       
+      @if($canOrders)
       {{-- Pending Payments Action Feed --}}
       <div class="space-y-3">
         <div class="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -363,6 +389,8 @@
         </div>
       </div>
 
+      @endif
+
       {{-- Low Stock Alerts Feed --}}
       <div class="space-y-2 pt-1 border-t border-gray-100">
         <div class="flex items-center justify-between">
@@ -398,6 +426,7 @@
 
   </div>
 
+  @if($canMoney)
   {{-- Top Products Leaderboard --}}
   <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-6 shadow-2xs space-y-4">
     <div class="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -514,6 +543,9 @@
     </div>
   </div>
 
+  @endif
+
+  @if($canOrders)
   {{-- Recent Orders Activity --}}
   <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-6 shadow-2xs space-y-4">
     <div class="flex items-center justify-between border-b border-gray-100 pb-3">
@@ -607,5 +639,6 @@
     </div>
   </div>
 
+  @endif
 </div>
 @endsection

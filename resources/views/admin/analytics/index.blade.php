@@ -103,7 +103,7 @@
         ৳{{ number_format($netProfit, 2) }}
       </div>
       <div class="text-[11px] text-gray-400 font-medium">
-        Gross ৳{{ number_format($grossProfit, 0) }} &minus; Courier Loss ৳{{ number_format($courierLoss, 0) }}
+        Gross ৳{{ number_format($grossProfit, 0) }} &minus; Courier Loss ৳{{ number_format($courierLoss, 0) }}@if($freeDeliveryCost > 0) &minus; Free Delivery ৳{{ number_format($freeDeliveryCost, 0) }}@endif
       </div>
     </div>
 
@@ -261,8 +261,16 @@
           <span class="font-black text-rose-700">-৳{{ number_format($courierLoss, 2) }}</span>
         </div>
 
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-amber-50 border border-amber-200">
+          <div>
+            <div class="font-bold text-amber-900">🚚 Free Delivery Cost</div>
+            <div class="text-[10px] text-amber-700">{{ $freeDeliveryOrders }} {{ \Illuminate\Support\Str::plural('order', $freeDeliveryOrders) }} shipped free (store paid the courier)</div>
+          </div>
+          <span class="font-black text-amber-800">-৳{{ number_format($freeDeliveryCost, 2) }}</span>
+        </div>
+
         <div class="text-[11px] text-gray-400 text-center">
-          Courier loss is deducted automatically from Gross Profit.
+          Courier loss and free delivery cost are deducted automatically from Gross Profit.
         </div>
       </div>
     </div>

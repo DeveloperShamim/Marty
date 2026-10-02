@@ -54,7 +54,7 @@ class SteadfastDeliveryCheckTest extends TestCase
         Setting::put('steadfast_secret_key', 'test_secret');
 
         Http::fake([
-            'https://portal.steadfast.com.bd/api/v1/fraud_check/*' => Http::response([
+            'https://portal.packzy.com/api/v1/fraud_check/*' => Http::response([
                 'status'              => 200,
                 'Total_parcels'       => 20,
                 'total_delivered'     => 18,

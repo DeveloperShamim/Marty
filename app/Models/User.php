@@ -31,6 +31,13 @@ class User extends Authenticatable
         return in_array($this->role, ['admin', 'store_manager', 'order_manager', 'inventory_manager'], true) && !$this->is_suspended;
     }
 
+    /** The store owner: the first admin account. Other admins can't suspend or delete it. */
+    public function isStoreOwner(): bool
+    {
+        return $this->role === 'admin'
+            && $this->id === static::where('role', 'admin')->orderBy('id')->value('id');
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin' && !$this->is_suspended;

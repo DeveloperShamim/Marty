@@ -27,9 +27,14 @@ class PathaoService
             : 'https://api-hermes.pathao.com';
     }
 
+    /** Access tokens last for days, so one is cached instead of logging in for every request. */
     protected function getAccessToken(): ?string
     {
         $baseUrl = $this->getBaseUrl();
+        $cacheKey = 'pathao_token_' . md5($baseUrl . '|' . setting('pathao_client_id') . '|' . setting('pathao_username'));
+        if ($cached = cache()->get($cacheKey)) {
+            return $cached;
+        }
 
         try {
             $response = Http::asJson()->timeout(15)->post($baseUrl . '/aladdin/api/v1/issue-token', [
@@ -40,8 +45,11 @@ class PathaoService
                 'grant_type'    => 'password',
             ]);
 
-            if ($response->successful()) {
-                return $response->json('access_token');
+            if ($response->successful() && ($token = $response->json('access_token'))) {
+                $ttl = max(60, (int) $response->json('expires_in', 3600) - 300);
+                cache()->put($cacheKey, $token, now()->addSeconds($ttl));
+
+                return $token;
             }
 
             Log::error('Pathao Token Error', ['response' => $response->json()]);
@@ -49,6 +57,32 @@ class PathaoService
         } catch (\Throwable $e) {
             Log::error('Pathao Token Exception', ['error' => $e->getMessage()]);
             return null;
+        }
+    }
+
+    /** Current status of a booked parcel by its consignment ID. */
+    public function trackOrder(Order $order): array
+    {
+        if (! $this->isConfigured()) {
+            return ['success' => false, 'message' => 'Pathao API is not configured.'];
+        }
+        $token = $this->getAccessToken();
+        if (! $token) {
+            return ['success' => false, 'message' => 'Could not log in to the Pathao API.'];
+        }
+
+        try {
+            $response = Http::withToken($token)->acceptJson()->timeout(15)
+                ->get($this->getBaseUrl() . '/aladdin/api/v1/orders/' . rawurlencode((string) $order->courier_tracking_code) . '/info');
+            $status = $response->json('data.order_status');
+
+            if ($response->successful() && $status) {
+                return ['success' => true, 'status' => (string) $status, 'message' => $response->json('data.order_status_slug') ?: null];
+            }
+
+            return ['success' => false, 'message' => 'Pathao: ' . ($response->json('message') ?? 'HTTP ' . $response->status())];
+        } catch (\Throwable $e) {
+            return ['success' => false, 'message' => 'Pathao connection error: ' . $e->getMessage()];
         }
     }
 
@@ -69,7 +103,8 @@ class PathaoService
             ];
         }
 
-        $codAmount = $order->payment_status === 'verified' ? 0 : (float) $order->total;
+        // Only cash-on-delivery orders are collected; prepaid (bKash/Nagad/...) orders never are.
+        $codAmount = $order->amountToCollect();
         $totalItems = $order->items->sum('quantity') ?: 1;
 
         // Clean BD phone number (e.g. 01XXXXXXXXX)

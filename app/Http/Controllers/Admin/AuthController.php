@@ -11,8 +11,7 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::check() && Auth::user()->isStaff()) {
-            $route = Auth::user()->role === 'order_manager' ? route('admin.orders.index') : route('admin.dashboard');
-            return redirect()->to($route);
+            return redirect()->to(\App\Support\StaffAccess::home(Auth::user()));
         }
 
         return view('admin.auth.login');
@@ -41,7 +40,7 @@ class AuthController extends Controller
             $request->session()->regenerate();
             \App\Services\ActivityLogger::log('Staff Login', "Logged into Admin Panel");
 
-            $targetRoute = $user->role === 'order_manager' ? route('admin.orders.index') : route('admin.dashboard');
+            $targetRoute = \App\Support\StaffAccess::home($user);
             return redirect()->intended($targetRoute);
         }
 

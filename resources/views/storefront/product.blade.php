@@ -302,6 +302,19 @@
         @endif
       </div>
 
+      {{-- Free delivery offers --}}
+      @php $fdOffer = \App\Services\FreeDelivery::config(); @endphp
+      @if($product->free_delivery)
+        <div class="flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-emerald-800">
+          <span class="text-base leading-none">🚚</span> Free delivery on this product — anywhere in Bangladesh.
+        </div>
+      @elseif($fdOffer['online_enabled'] && \App\Services\FreeDelivery::onlinePaymentAvailable())
+        <div class="flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-emerald-800">
+          <span class="text-base leading-none">🚚</span>
+          <span>Free delivery when you pay with bKash, Nagad or Rocket{{ $fdOffer['online_min'] > 0 ? ' on orders of ' . money($fdOffer['online_min']) . ' or more' : '' }}{{ $fdOffer['online_zones'] === 'inside_dhaka' ? ' (inside Dhaka)' : ($fdOffer['online_zones'] === 'outside_dhaka' ? ' (outside Dhaka)' : '') }}.</span>
+        </div>
+      @endif
+
       {{-- Clean Trust Guarantee Strip --}}
       <div class="pt-4 border-t border-stone-100">
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5">

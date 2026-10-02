@@ -459,3 +459,17 @@ SVG;
         return 'data:image/svg+xml;charset=utf-8,' . rawurlencode($svg);
     }
 }
+
+if (! function_exists('courier_webhook_secret')) {
+    /** Secret in the courier webhook URLs; created the first time it is needed. */
+    function courier_webhook_secret(): string
+    {
+        $secret = (string) setting('courier_webhook_secret', '');
+        if ($secret === '') {
+            $secret = \Illuminate\Support\Str::random(40);
+            \App\Models\Setting::put('courier_webhook_secret', $secret);
+        }
+
+        return $secret;
+    }
+}

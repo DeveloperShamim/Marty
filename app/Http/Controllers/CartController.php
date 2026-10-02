@@ -93,6 +93,7 @@ class CartController extends Controller
                 'ok'      => true,
                 'message' => "Added \"{$product->name}\" to cart",
                 'cart'    => $this->cart->toArray(),
+                'recs'    => $this->recommendationsHtml(),
                 'drawer'  => view('storefront.partials.cart-drawer-items', [
                     'items'    => $this->cart->items(),
                     'subtotal' => $this->cart->subtotal(),
@@ -142,6 +143,7 @@ class CartController extends Controller
             return response()->json([
                 'ok'     => true,
                 'cart'   => $this->cart->toArray(),
+                'recs'   => $this->recommendationsHtml(),
                 'drawer' => view('storefront.partials.cart-drawer-items', [
                     'items'    => $this->cart->items(),
                     'subtotal' => $this->cart->subtotal(),
@@ -161,6 +163,7 @@ class CartController extends Controller
             return response()->json([
                 'ok'     => true,
                 'cart'   => $this->cart->toArray(),
+                'recs'   => $this->recommendationsHtml(),
                 'drawer' => view('storefront.partials.cart-drawer-items', [
                     'items'    => $this->cart->items(),
                     'subtotal' => $this->cart->subtotal(),
@@ -169,5 +172,18 @@ class CartController extends Controller
         }
 
         return back();
+    }
+
+    /** "You May Also Like" for the cart drawer (loaded when the drawer first opens). */
+    public function recommendations()
+    {
+        return response($this->recommendationsHtml())->header('Cache-Control', 'no-store');
+    }
+
+    private function recommendationsHtml(): string
+    {
+        return view('storefront.partials.cart-recommendations', [
+            'recommendations' => $this->cart->recommendations(),
+        ])->render();
     }
 }

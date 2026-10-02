@@ -258,6 +258,139 @@
         </div>
       </div>
 
+
+      {{-- Automatic delivery status updates --}}
+      <div class="bg-white p-5 sm:p-7 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-stone-100 pb-3.5">
+          <div>
+            <h3 class="font-extrabold text-sm sm:text-base text-stone-900">Automatic delivery status updates</h3>
+            <p class="text-xs text-stone-500 mt-0.5">Booked parcels are checked with the courier once a day at 9 PM. Delivered parcels become <b>Delivered</b> (cash-on-delivery marked paid); returns, holds and part deliveries are listed on Courier Scan.</p>
+            @if($lastSync)
+              <p class="text-[11px] text-stone-400 mt-1">Last check {{ \Illuminate\Support\Carbon::parse($lastSync['at'])->diffForHumans() }}: {{ $lastSync['checked'] }} checked, {{ $lastSync['delivered'] }} delivered, {{ $lastSync['attention'] }} need attention, {{ $lastSync['failed'] }} failed.</p>
+            @endif
+          </div>
+          <label class="inline-flex items-center gap-2 cursor-pointer shrink-0">
+            <input type="hidden" name="courier_auto_sync" value="0">
+            <input type="checkbox" name="courier_auto_sync" value="1" class="peer sr-only" @checked(($settings['courier_auto_sync'] ?? '1') !== '0')>
+            <span class="w-10 h-6 rounded-full bg-stone-300 peer-checked:bg-brand-600 relative transition after:content-[''] after:absolute after:top-1 after:left-1 after:w-4 after:h-4 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-4"></span>
+            <span class="text-xs font-bold text-stone-700">Auto-update</span>
+          </label>
+        </div>
+
+        <div class="text-xs text-stone-600 space-y-1.5">
+          <p class="font-bold text-stone-800">Instant updates (optional): paste these links into each courier's merchant panel</p>
+          <p>Look for the webhook / callback URL setting in the courier's merchant panel (API or developer section). Keep these links private; they contain your secret key.</p>
+          @foreach($webhooks as $provider => $url)
+            <div class="flex items-center gap-2">
+              <span class="w-20 shrink-0 font-bold text-stone-700 capitalize">{{ $provider === 'redx' ? 'RedX' : $provider }}</span>
+              <input type="text" readonly value="{{ $url }}" class="flex-1 min-w-0 text-[11px] font-mono px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded-lg" onclick="this.select()">
+              <button type="button" class="px-2.5 py-1.5 rounded-lg border border-stone-200 hover:bg-stone-50 text-[11px] font-bold" onclick="navigator.clipboard.writeText(this.previousElementSibling.value).then(() => { this.textContent = 'Copied'; setTimeout(() => this.textContent = 'Copy', 1500); })">Copy</button>
+            </div>
+          @endforeach
+          <p class="text-stone-500">Without webhooks the daily check still works. It needs the server's cron job: <code class="font-mono text-[11px] bg-stone-100 px-1 rounded">* * * * * cd {{ base_path() }} &amp;&amp; php artisan schedule:run</code></p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+          <div class="space-y-1">
+            <label class="text-xs font-black text-stone-800 block" for="redx_default_area_id">RedX default area ID</label>
+            <input id="redx_default_area_id" name="redx_default_area_id" type="number" min="1" class="w-full text-xs font-mono font-bold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" value="{{ $settings['redx_default_area_id'] ?? '' }}" placeholder="e.g. 1" />
+          </div>
+          <p class="sm:col-span-2 text-[11px] text-stone-500 self-end">Used for RedX bookings when no delivery area matches the customer's address. Leave empty to be asked to fix the address instead.</p>
+        </div>
+      </div>
+
+      {{-- Customer delivery history (BD Courier) --}}
+      <div class="bg-white p-5 sm:p-7 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-stone-100 pb-3.5">
+          <div>
+            <h3 class="font-extrabold text-sm sm:text-base text-stone-900">Customer delivery history (BD Courier)</h3>
+            <p class="text-xs text-stone-500 mt-0.5">Shows a customer's delivered / returned parcels across Pathao, Steadfast, RedX, Paperfly and others, plus fraud reports from other merchants. Get the API token from your account at <a href="https://bdcourier.com" target="_blank" rel="noopener" class="underline">bdcourier.com</a>.</p>
+          </div>
+          <label class="inline-flex items-center gap-2 cursor-pointer shrink-0">
+            <input type="hidden" name="bdcourier_auto_check" value="0">
+            <input type="checkbox" name="bdcourier_auto_check" value="1" class="peer sr-only" @checked(($settings['bdcourier_auto_check'] ?? '1') !== '0')>
+            <span class="w-10 h-6 rounded-full bg-stone-300 peer-checked:bg-brand-600 relative transition after:content-[''] after:absolute after:top-1 after:left-1 after:w-4 after:h-4 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-4"></span>
+            <span class="text-xs font-bold text-stone-700">Check new COD orders</span>
+          </label>
+        </div>
+        <div class="space-y-2">
+          <div class="hidden sm:grid grid-cols-12 gap-2 px-1 text-[10px] font-bold uppercase tracking-wider text-stone-400">
+            <span class="col-span-3">Name</span><span class="col-span-4">API token</span><span class="col-span-2">Searches / day</span><span class="col-span-2">Used today</span><span></span>
+          </div>
+          <div id="bdcKeys" class="space-y-2">
+            @foreach(($bdKeys ?: [['id' => '', 'label' => '', 'token' => '', 'limit' => null, 'used' => 0, 'blocked' => null]]) as $i => $k)
+              <div class="bdc-key grid grid-cols-12 gap-2 items-center rounded-xl sm:rounded-none border sm:border-0 border-stone-200 p-2 sm:p-0">
+                <input type="hidden" name="bdcourier_keys[{{ $i }}][id]" value="{{ $k['id'] }}">
+                <input name="bdcourier_keys[{{ $i }}][label]" value="{{ $k['label'] }}" placeholder="e.g. Main account" maxlength="60" class="col-span-12 sm:col-span-3 text-xs font-bold px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500" aria-label="Key name">
+                <input name="bdcourier_keys[{{ $i }}][token]" value="{{ $k['token'] }}" type="password" autocomplete="off" placeholder="Paste API token" class="col-span-12 sm:col-span-4 text-xs font-mono px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500" aria-label="API token">
+                <input name="bdcourier_keys[{{ $i }}][limit]" value="{{ $k['limit'] }}" type="number" min="0" placeholder="No limit" class="col-span-5 sm:col-span-2 text-xs font-mono px-3 py-2 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500" aria-label="Searches per day">
+                <span class="col-span-5 sm:col-span-2 text-xs {{ $k['blocked'] ? 'text-rose-700' : 'text-stone-600' }}" @if($k['blocked']) title="{{ $k['blocked'] }}" @endif>
+                  @if($k['id'] !== '')
+                    <b>{{ $k['used'] }}</b>{{ $k['limit'] !== null ? ' / ' . $k['limit'] : '' }}
+                    @if($k['blocked']) · paused today @elseif($k['limit'] !== null && $k['used'] >= $k['limit']) · limit reached @endif
+                  @else — @endif
+                </span>
+                <div class="col-span-2 sm:col-span-1 flex justify-end gap-1">
+                  @if($k['id'] !== '')
+                    <button type="button" class="bdc-plan h-8 px-2 rounded-lg border border-stone-200 hover:bg-stone-50 text-[11px] font-bold text-stone-700" data-key="{{ $k['id'] }}" title="Check connection and searches left">Check</button>
+                  @endif
+                  <button type="button" class="bdc-remove h-8 w-8 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50" aria-label="Remove key">&times;</button>
+                </div>
+              </div>
+            @endforeach
+          </div>
+          <button type="button" id="bdcAddKey" class="text-xs font-bold text-brand-700 hover:underline">+ Add another key</button>
+        </div>
+        <p id="bdcPlanResult" class="text-xs text-stone-600" hidden></p>
+        <p class="text-[11px] text-stone-500">Keys are used <b>top to bottom</b>: the first key until it reaches its searches per day, then the next. A key BD Courier refuses (out of searches, expired or wrong) is paused until tomorrow. Leave "Searches / day" empty for no limit. Each phone number is looked up once and reused for 7 days; only cash-on-delivery web orders are checked automatically, and customers you've delivered to twice are skipped. Save, then use <b>Check</b> to see a key's plan and searches left.</p>
+      </div>
+      <script>
+        (function () {
+          var list = document.getElementById('bdcKeys');
+          function renumber() {
+            list.querySelectorAll('.bdc-key').forEach(function (row, i) {
+              row.querySelectorAll('[name^="bdcourier_keys["]').forEach(function (el) {
+                el.name = el.name.replace(/^bdcourier_keys\[\d+\]/, 'bdcourier_keys[' + i + ']');
+              });
+            });
+          }
+          document.getElementById('bdcAddKey').addEventListener('click', function () {
+            var rows = list.querySelectorAll('.bdc-key');
+            if (rows.length >= 10) return;
+            var row = rows[rows.length - 1].cloneNode(true);
+            row.querySelectorAll('input').forEach(function (el) { el.value = ''; });
+            var used = row.querySelector('span'); if (used) { used.textContent = '—'; used.className = 'col-span-5 sm:col-span-2 text-xs text-stone-600'; used.removeAttribute('title'); }
+            var check = row.querySelector('.bdc-plan'); if (check) check.remove();
+            list.appendChild(row);
+            renumber();
+            row.querySelector('input:not([type=hidden])').focus();
+          });
+          list.addEventListener('click', function (e) {
+            var rm = e.target.closest('.bdc-remove');
+            if (rm) {
+              var rows = list.querySelectorAll('.bdc-key');
+              var row = rm.closest('.bdc-key');
+              if (rows.length > 1) row.remove(); else row.querySelectorAll('input').forEach(function (el) { el.value = ''; });
+              renumber();
+              return;
+            }
+            var btn = e.target.closest('.bdc-plan');
+            if (!btn) return;
+            var out = document.getElementById('bdcPlanResult');
+            out.hidden = false; out.className = 'text-xs text-stone-600'; out.textContent = 'Checking…';
+            fetch(@json(route('admin.integrations.bdcourier-plan')) + '?key=' + encodeURIComponent(btn.getAttribute('data-key')), { headers: { 'Accept': 'application/json' } })
+              .then(function (r) { return r.json(); })
+              .then(function (d) {
+                var name = btn.closest('.bdc-key').querySelector('[name$="[label]"]').value || 'Key';
+                out.className = 'text-xs font-semibold ' + (d.success ? 'text-emerald-700' : 'text-rose-700');
+                out.textContent = name + ': ' + (d.success
+                  ? 'connected · ' + d.plan + ' plan · ' + d.remaining + ' searches left' + (d.renews ? ' · renews ' + d.renews : '')
+                  : 'not connected: ' + d.message);
+              })
+              .catch(function () { out.className = 'text-xs font-semibold text-rose-700'; out.textContent = 'Could not check right now.'; });
+          });
+        })();
+      </script>
     </form>
   </div>
 

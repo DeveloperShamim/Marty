@@ -62,6 +62,7 @@
     if (sideCartBtn) sideCartBtn.style.visibility = "hidden";
     cartDrawer && cartDrawer.classList.remove("translate-x-full"); 
     openOverlay(); 
+    loadCartRecs();
   }
   function closeCart() { 
     const chatRoot = document.getElementById("liveChatRoot");
@@ -153,6 +154,72 @@
     document.addEventListener("click", (e) => { if (!megaMenu.contains(e.target) && e.target !== megaBtn) megaMenu.classList.add("hidden"); });
   }
 
+  /* ---------------- "You May Also Like" in the cart drawer (#cartRecs) ---------------- */
+  function setCartRecs(html) {
+    const box = $("#cartRecs");
+    if (!box) return;
+    box.innerHTML = String(html || "").trim();
+    box.dataset.loaded = "1";
+    updateRecArrows();
+  }
+  function loadCartRecs() {
+    const box = $("#cartRecs");
+    if (!box || box.dataset.loaded === "1" || box.dataset.loading === "1" || !box.dataset.src) return;
+    box.dataset.loading = "1";
+    fetch(box.dataset.src, { headers: { "X-Requested-With": "XMLHttpRequest" }, credentials: "same-origin" })
+      .then((r) => (r.ok ? r.text() : ""))
+      .then(setCartRecs)
+      .catch(() => {})
+      .finally(() => { delete box.dataset.loading; });
+  }
+  function updateRecArrows() {
+    const track = $("#cartRecs [data-recs-track]");
+    if (!track) return;
+    const prev = $("#cartRecs [data-recs-prev]"), next = $("#cartRecs [data-recs-next]");
+    if (prev) prev.disabled = track.scrollLeft <= 4;
+    if (next) next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+  }
+  document.addEventListener("click", (e) => {
+    const arrow = e.target.closest("#cartRecs [data-recs-prev], #cartRecs [data-recs-next]");
+    if (!arrow) return;
+    const track = $("#cartRecs [data-recs-track]");
+    const card = track && track.querySelector("article");
+    if (!card) return;
+    const step = card.offsetWidth + 12;
+    track.scrollBy({ left: arrow.hasAttribute("data-recs-prev") ? -step : step, behavior: "smooth" });
+  });
+  document.addEventListener("scroll", (e) => {
+    if (e.target && e.target.matches && e.target.matches("#cartRecs [data-recs-track]")) updateRecArrows();
+  }, true);
+
+  // Auto-slide: one card every few seconds while the drawer is open. Pauses for a while after the
+  // shopper touches, clicks, swipes or uses the arrows; loops back to the first card after the last.
+  // With "reduce motion" on, it still advances but jumps instead of sliding.
+  const RECS_AUTO_MS = 3500;
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let recsLastMove = Date.now(), recsPausedUntil = 0, recsWasOpen = false;
+  const recsBox = $("#cartRecs");
+  if (recsBox) {
+    ["pointerdown", "touchstart", "wheel", "keydown"].forEach((t) =>
+      recsBox.addEventListener(t, () => { recsPausedUntil = Date.now() + 8000; }, { passive: true }));
+    setInterval(() => {
+      const drawerOpen = cartDrawer && !cartDrawer.classList.contains("translate-x-full");
+      if (drawerOpen && !recsWasOpen) recsLastMove = Date.now(); // first move comes RECS_AUTO_MS after opening
+      recsWasOpen = drawerOpen;
+      if (!drawerOpen || document.hidden) return;
+      const now = Date.now();
+      if (now < recsPausedUntil || now - recsLastMove < RECS_AUTO_MS) return;
+      const track = $("#cartRecs [data-recs-track]");
+      const card = track && track.querySelector("article");
+      if (!card || track.scrollWidth <= track.clientWidth + 4) return;
+      recsLastMove = now;
+      const behavior = reduceMotion ? "instant" : "smooth";
+      const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+      if (atEnd) track.scrollTo({ left: 0, behavior });
+      else track.scrollBy({ left: card.offsetWidth + 12, behavior });
+    }, 250);
+  }
+
   /* ---------------- Cart badge + drawer sync (#cartItems / #cartEmpty) ---------------- */
   function applyCart(data) {
     if (!data) return;
@@ -179,6 +246,7 @@
       list.innerHTML = data.drawer.trim();
       bindDrawer();
     }
+    if (typeof data.recs === "string") setCartRecs(data.recs);
 
     const hasItems = count > 0;
     if (list) list.classList.toggle("hidden", !hasItems);
@@ -1512,9 +1580,42 @@
       if ($("[data-h]", cd)) $("[data-h]", cd).textContent = pad(h);
       if ($("[data-m]", cd)) $("[data-m]", cd).textContent = pad(m);
       if ($("[data-s]", cd)) $("[data-s]", cd).textContent = pad(s);
+      const dWrap = $("[data-d-wrap]", cd);
+      if (dWrap) { dWrap.hidden = d === 0; $("[data-d]", cd).textContent = d; } // "2d 05:10:09", then "05:10:09"
+      if (end <= Date.now() && cd.hasAttribute("data-countdown-hide")) {
+        const item = cd.parentElement;         // ticker headline + its ◆ separator
+        if (item && item.nextElementSibling && item.nextElementSibling.matches("[aria-hidden]")) item.nextElementSibling.remove();
+        if (item) item.remove();
+        clearInterval(timer);
+      }
     };
+    const timer = setInterval(tick, 1000);
     tick();
-    setInterval(tick, 1000);
+  });
+
+  /* ---------------- Tap-to-copy coupon codes (promo bar) ---------------- */
+  const copyText = (text) => {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+    return new Promise((resolve, reject) => {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy") ? resolve() : reject(); } catch (e) { reject(e); } finally { ta.remove(); }
+    });
+  };
+  const copyCode = (el, e) => {
+    e.preventDefault(); e.stopPropagation();   // the headline may be a link
+    const code = el.getAttribute("data-copy-code");
+    copyText(code).then(() => {
+      $$(`[data-copy-code="${code}"]`).forEach((c) => c.classList.add("is-copied"));
+      setTimeout(() => $$(`[data-copy-code="${code}"]`).forEach((c) => c.classList.remove("is-copied")), 1600);
+      toast(`Code ${code} copied — paste it at checkout`);
+    }).catch(() => toast(`Use code ${code} at checkout`));
+  };
+  document.addEventListener("click", (e) => { const el = e.target.closest("[data-copy-code]"); if (el) copyCode(el, e); });
+  document.addEventListener("keydown", (e) => {
+    const el = (e.key === "Enter" || e.key === " ") && e.target.closest && e.target.closest("[data-copy-code]");
+    if (el) copyCode(el, e);
   });
   /* ---------------- Hero slider ---------------- */
   const slider = $("#heroSlider");

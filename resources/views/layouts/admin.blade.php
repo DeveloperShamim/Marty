@@ -63,6 +63,15 @@
   </div>
   <div id="backdrop" class="fixed inset-0 bg-ink/40 z-40 hidden lg:hidden" aria-hidden="true"></div>
   <script src="{{ asset('theme/js/admin-shell.js') }}?v={{ @filemtime(public_path('theme/js/admin-shell.js')) ?: '1' }}"></script>
+  @php $alertUser = auth()->user(); @endphp
+  @if(\App\Support\StaffAccess::allows($alertUser, 'orders'))
+    {{-- New-order popup: polls the order feed; see public/theme/js/order-alerts.js --}}
+    <div id="orderAlertsConfig" hidden
+         data-feed="{{ route('admin.orders.feed') }}"
+         data-review-url="{{ route('admin.orders.index', ['status' => 'pending_verification']) }}"
+         data-icon="{{ favicon_url() }}"></div>
+    <script src="{{ asset('theme/js/order-alerts.js') }}?v={{ @filemtime(public_path('theme/js/order-alerts.js')) ?: '1' }}" defer></script>
+  @endif
   @if(testing_mode())
   <script>
     (function () {

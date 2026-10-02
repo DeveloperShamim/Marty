@@ -21,6 +21,7 @@ class Product extends Model
         'is_new_arrival'  => 'boolean',
         'is_best_seller'  => 'boolean',
         'is_flash_sale'   => 'boolean',
+        'free_delivery'   => 'boolean',
         'specifications'  => 'array',
     ];
 

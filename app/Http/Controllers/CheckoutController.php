@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\ProductSku;
 use App\Services\CartService;
 use App\Services\CouponService;
+use App\Services\FreeDelivery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +35,8 @@ class CheckoutController extends Controller
         $subtotal = $this->cart->subtotal();
         $coupon   = $this->coupons->summary($subtotal);
         $zone     = old('shipping_zone', 'inside_dhaka');
-        $totals   = $this->orderTotals($subtotal, $coupon['discount'], $zone);
+        $hasFreeProduct = $this->hasFreeDeliveryProduct($items);
+        $totals   = $this->orderTotals($subtotal, $coupon['discount'], $zone, old('payment_method', 'cod'), $hasFreeProduct);
 
         $this->syncDraftAbandonedCart($items, $subtotal, $totals['total']);
 
@@ -48,6 +50,8 @@ class CheckoutController extends Controller
             'couponCode'  => $coupon['code'],
             'discount'    => $coupon['discount'],
             'totals'      => $totals,
+            'freeDelivery'   => FreeDelivery::config(),
+            'hasFreeProduct' => $hasFreeProduct,
         ]);
     }
 
@@ -92,7 +96,7 @@ class CheckoutController extends Controller
             $subtotal = $this->cart->subtotal();
             $coupon   = $this->coupons->summary($subtotal);
             $zone     = $request->input('shipping_zone', 'inside_dhaka');
-            $totals   = $this->orderTotals($subtotal, $coupon['discount'], $zone);
+            $totals   = $this->orderTotals($subtotal, $coupon['discount'], $zone, null, $this->hasFreeDeliveryProduct($items));
 
             $this->syncDraftAbandonedCart($items, $subtotal, $totals['total'], $validated);
         }
@@ -185,7 +189,7 @@ class CheckoutController extends Controller
             $discount = $coupon->calculateDiscount($subtotal);
         }
 
-        $totals = $this->orderTotals($subtotal, $discount, $validated['shipping_zone']);
+        $totals = $this->orderTotals($subtotal, $discount, $validated['shipping_zone'], $validated['payment_method'], $this->hasFreeDeliveryProduct($items));
         $shipping = $totals['shipping'];
         $tax      = $totals['tax'];
         $total    = $totals['total'];
@@ -207,7 +211,7 @@ class CheckoutController extends Controller
         $fraudAnalysis = $this->fraudService->analyzeOrder($validated, $total, $ipAddress);
 
         try {
-            $order = DB::transaction(function () use ($validated, $items, $subtotal, $discount, $shipping, $tax, $total, $isCod, $coupon, $ipAddress, $fraudAnalysis) {
+            $order = DB::transaction(function () use ($validated, $items, $subtotal, $discount, $shipping, $tax, $total, $totals, $isCod, $coupon, $ipAddress, $fraudAnalysis) {
                 $order = Order::create([
                     'order_number'    => $this->generateOrderNumber(),
                     'user_id'         => Auth::id(),
@@ -223,6 +227,8 @@ class CheckoutController extends Controller
                     'subtotal'        => $subtotal,
                     'discount_amount' => $discount,
                     'shipping_charge' => $shipping,
+                    'shipping_waived' => $totals['waived'],
+                    'free_delivery_reason' => $totals['reason'],
                     'tax'             => $tax,
                     'total'           => $total,
                     'payment_method'  => $validated['payment_method'],
@@ -317,6 +323,9 @@ class CheckoutController extends Controller
 
         session(['recent_order' => $order->order_number]);
 
+        // Courier delivery history lookup after the response, so checkout isn't slowed down.
+        \App\Jobs\CheckCustomerCourierHistory::dispatchAfterResponse($order->id);
+
         return redirect()->route('order.confirmation', $order->order_number);
     }
 
@@ -333,16 +342,22 @@ class CheckoutController extends Controller
         return view('storefront.order-confirmation', compact('order'));
     }
 
-    private function orderTotals(float $subtotal, float $discount, string $shippingZone): array
+    private function orderTotals(float $subtotal, float $discount, string $shippingZone, ?string $paymentMethod = null, bool $hasFreeProduct = false): array
     {
         $taxable  = max(0, $subtotal - $discount);
-        $shipping = $shippingZone === 'inside_dhaka'
-            ? (float) setting('shipping_inside_dhaka', 60)
-            : (float) setting('shipping_outside_dhaka', 120);
+        $delivery = FreeDelivery::quote($taxable, $shippingZone, $paymentMethod, $hasFreeProduct);
+        $shipping = $delivery['shipping'];
+        $waived   = $delivery['waived'];
+        $reason   = $delivery['reason'];
         $tax      = round($taxable * (float) setting('tax_percent', 0) / 100, 2);
         $total    = $taxable + $shipping + $tax;
 
-        return compact('shipping', 'tax', 'total');
+        return compact('shipping', 'waived', 'reason', 'tax', 'total');
+    }
+
+    private function hasFreeDeliveryProduct($items): bool
+    {
+        return $items->contains(fn ($item) => (bool) ($item->product?->free_delivery));
     }
 
     /** COD is always available; mobile banking only when a merchant number is configured. */

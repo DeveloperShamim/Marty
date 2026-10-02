@@ -579,6 +579,10 @@ class ProductController extends Controller
         $data['is_new_arrival'] = $request->boolean('is_new_arrival');
         $data['is_best_seller'] = $request->boolean('is_best_seller');
         $data['is_flash_sale']  = $request->boolean('is_flash_sale');
+        // Free delivery costs money, so only staff who run the offer may change it.
+        if (\App\Support\StaffAccess::allows($request->user(), 'free-delivery')) {
+            $data['free_delivery'] = $request->boolean('free_delivery');
+        }
 
         if ($data['is_flash_sale']) {
             $wasFlash = $product?->is_flash_sale ?? false;

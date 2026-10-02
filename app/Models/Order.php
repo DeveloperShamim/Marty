@@ -14,6 +14,7 @@ class Order extends Model
         'subtotal'            => 'decimal:2',
         'discount_amount'     => 'decimal:2',
         'shipping_charge'     => 'decimal:2',
+        'shipping_waived'     => 'decimal:2',
         'tax'                 => 'decimal:2',
         'total'               => 'decimal:2',
         'pos_cash_tendered'   => 'decimal:2',
@@ -23,6 +24,7 @@ class Order extends Model
         'fraud_flags'         => 'array',
         'courier_sent_at'     => 'datetime',
         'courier_returned_at' => 'datetime',
+        'courier_synced_at'   => 'datetime',
         'return_restocked'    => 'boolean',
         'stock_restored'      => 'boolean',
     ];
@@ -247,6 +249,30 @@ class Order extends Model
         return $this->hasMany(OrderPrint::class);
     }
 
+    /**
+     * Orders waiting for staff: new orders not yet accepted, and mobile-banking payments not yet
+     * checked. Cash-on-delivery stays "payment pending" until delivery, so accepted COD orders are not here.
+     */
+    public function scopeNeedsReview($query)
+    {
+        return $query->where(fn ($q) => $q->where('status', 'pending')
+            ->orWhere(fn ($m) => $m->where('payment_status', 'pending')
+                ->where('payment_method', '!=', 'cod')
+                ->whereNotIn('status', ['cancelled', 'returned'])));
+    }
+
+    public function isAwaitingReview(): bool
+    {
+        return $this->status === 'pending'
+            || ($this->payment_status === 'pending' && $this->payment_method !== 'cod' && ! in_array($this->status, ['cancelled', 'returned'], true));
+    }
+
+    /** Label for the accept button: COD orders are confirmed, prepaid orders have their payment verified. */
+    public function acceptLabel(): string
+    {
+        return $this->payment_method === 'cod' ? 'Confirm order' : 'Verify payment';
+    }
+
     /** Prints of one type, newest first. */
     public function printsOf(string $type)
     {
@@ -278,6 +304,37 @@ class Order extends Model
     }
 
     /** Cash the courier must collect from the customer on delivery (0 when prepaid). */
+    /** The courier's delivery fee for this parcel, whether the customer paid it or the shop absorbed it. */
+    public function deliveryFee(): float
+    {
+        return (float) $this->shipping_charge + (float) $this->shipping_waived;
+    }
+
+    /** Delivery cost lost when the parcel comes back (fee unknown on old/manual orders: ৳130). */
+    public function returnDeliveryLoss(): float
+    {
+        return $this->deliveryFee() > 0 ? $this->deliveryFee() : 130.0;
+    }
+
+    /** Delivery line for invoices and the customer's order pages: "FREE" or the amount. */
+    public function deliveryDisplay(): string
+    {
+        return $this->hasFreeDelivery() ? 'FREE' : money($this->shipping_charge);
+    }
+
+    public function hasFreeDelivery(): bool
+    {
+        return (float) $this->shipping_waived > 0 && (float) $this->shipping_charge == 0.0;
+    }
+
+    /** Online payment not received yet: staff may turn the order into cash on delivery. */
+    public function canSwitchToCod(): bool
+    {
+        return \App\Services\FreeDelivery::isOnline($this->payment_method)
+            && $this->payment_status !== 'verified'
+            && in_array($this->status, ['pending', 'confirmed', 'processing'], true);
+    }
+
     public function amountToCollect(): float
     {
         return $this->payment_method === 'cod' && $this->payment_status !== 'verified' ? (float) $this->total : 0.0;

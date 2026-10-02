@@ -601,6 +601,9 @@
             'is_best_seller' => ['Best seller', 'Best seller badge on the card'],
             'is_new_arrival' => ['New arrival', 'New arrival badge on the card'],
           ];
+          if (\App\Support\StaffAccess::allows(auth()->user(), 'free-delivery')) {
+            $toggles['free_delivery'] = ['Free delivery', 'Orders with this product ship free'];
+          }
         @endphp
         <div class="divide-y divide-stone-100">
           @foreach($toggles as $field => [$label, $hint])

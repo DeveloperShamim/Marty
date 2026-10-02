@@ -103,7 +103,7 @@
       @if($order->discount_amount > 0)
         <div class="inv-kv"><span>Discount @if($order->coupon_code)({{ $order->coupon_code }})@endif</span><b class="mono">−{{ money($order->discount_amount) }}</b></div>
       @endif
-      <div class="inv-kv"><span>Delivery</span><b class="mono">{{ money($order->shipping_charge) }}</b></div>
+      <div class="inv-kv"><span>Delivery</span><b class="mono">{{ $order->deliveryDisplay() }}</b></div>
       @if($order->tax > 0)
         <div class="inv-kv"><span>VAT / Tax</span><b class="mono">{{ money($order->tax) }}</b></div>
       @endif

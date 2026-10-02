@@ -60,6 +60,8 @@
     <!-- Left Column (Items, Payment Verification & Financial Totals) -->
     <div class="lg:col-span-2 space-y-6">
       
+      @include('admin.orders.partials.customer-history')
+
       <!-- Automated Steadfast Delivery Success Check Card -->
       @php
         $st = $steadfastDeliveryCheck ?? [
@@ -306,8 +308,21 @@
 
           <div class="flex justify-between text-slate-600">
             <span>Shipping Charge ({{ shipping_zone_label($order->shipping_zone) }})</span>
-            <span class="font-bold text-slate-900 font-mono">{{ money($order->shipping_charge) }}</span>
+            @if($order->hasFreeDelivery())
+              <span class="font-bold font-mono"><s class="text-slate-400 font-normal mr-1">{{ money($order->shipping_waived) }}</s><span class="text-emerald-700">FREE</span></span>
+            @else
+              <span class="font-bold text-slate-900 font-mono">{{ money($order->shipping_charge) }}</span>
+            @endif
           </div>
+          @if($order->hasFreeDelivery())
+            <div class="rounded-lg bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-[11px] text-amber-900">
+              🚚 <b>Free delivery</b> — {{ \App\Services\FreeDelivery::label($order->free_delivery_reason) ?? 'given at checkout' }}.
+              You pay the courier {{ money($order->shipping_waived) }}; it is subtracted from profit.
+              @if($order->free_delivery_reason === 'online_payment' && $order->payment_status !== 'verified')
+                <span class="block mt-0.5">Only valid once the payment is verified.</span>
+              @endif
+            </div>
+          @endif
 
           @if($order->tax > 0)
             <div class="flex justify-between text-slate-600">
@@ -353,25 +368,43 @@
           </div>
         </div>
 
-        @if($order->payment_status === 'pending')
+        @if($order->isAwaitingReview())
           <div class="flex items-center gap-3 pt-2">
             <form method="POST" action="{{ route('admin.orders.verify', $order) }}" class="inline">
               @csrf
               <button type="submit" class="px-5 py-2.5 text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs transition cursor-pointer">
-                ✓ Verify Payment
+                ✓ {{ $order->acceptLabel() }}
               </button>
             </form>
             <form method="POST" action="{{ route('admin.orders.reject', $order) }}" class="inline">
               @csrf
               <button type="submit" class="px-5 py-2.5 text-xs font-extrabold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 rounded-xl transition cursor-pointer">
-                ✕ Reject Payment
+                ✕ {{ $order->payment_method === 'cod' ? 'Reject Order' : 'Reject Payment' }}
               </button>
             </form>
           </div>
         @else
+          @if($order->payment_method === 'cod' && $order->payment_status === 'pending')
+          <p class="text-xs text-slate-500 font-medium">
+            Cash on delivery: the payment is marked <b class="text-amber-700">Paid</b> automatically when the order is set to Delivered.
+          </p>
+          @else
           <p class="text-xs text-slate-500 font-medium">
             Payment is currently marked as <b class="{{ $order->payment_status === 'verified' ? 'text-emerald-700' : 'text-rose-700' }}">{{ ucfirst($order->payment_status) }}</b>. Update status in the sidebar if needed.
           </p>
+          @endif
+        @endif
+        @if($order->canSwitchToCod())
+          <form method="POST" action="{{ route('admin.orders.switch-to-cod', $order) }}" class="pt-2"
+                onsubmit="return confirm('Money not received? The order becomes cash on delivery{{ $order->free_delivery_reason === 'online_payment' ? ' and the ' . money($order->shipping_waived) . ' delivery charge is added back' : '' }}.')">
+            @csrf
+            <button type="submit" class="px-4 py-2 text-xs font-extrabold bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 rounded-xl transition cursor-pointer">
+              💵 Payment not received — switch to cash on delivery
+            </button>
+            @if($order->free_delivery_reason === 'online_payment')
+              <span class="block text-[11px] text-slate-500 mt-1">Free delivery was for paying online, so {{ money($order->shipping_waived) }} delivery is added back.</span>
+            @endif
+          </form>
         @endif
       </div>
 
@@ -438,6 +471,37 @@
               <div class="flex items-center justify-between text-[11px] text-gray-500">
                 <span>Sent Date:</span>
                 <span>{{ $order->courier_sent_at->format('d M Y, g:i A') }}</span>
+              </div>
+            @endif
+            @if($order->courier_tracking_code && in_array($order->courier_name, \App\Services\Courier\CourierStatusUpdater::PROVIDERS, true))
+              @php
+                $cs = $order->courier_status;
+                $csTone = match (true) {
+                    $cs === 'delivered' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                    in_array($cs, \App\Services\Courier\CourierStatusUpdater::ATTENTION, true) => 'bg-amber-100 text-amber-900 border-amber-300',
+                    default => 'bg-white text-gray-700 border-gray-200',
+                };
+              @endphp
+              <div class="pt-2 border-t border-emerald-200/60 space-y-1.5">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-bold text-gray-700">Courier says:</span>
+                  <span class="px-2 py-0.5 rounded-full border text-[11px] font-bold {{ $csTone }}">{{ \App\Services\Courier\CourierStatusUpdater::label($cs) ?? 'Not checked yet' }}</span>
+                </div>
+                @if($order->courier_status_message)
+                  <p class="text-[11px] text-gray-600">{{ $order->courier_status_message }}</p>
+                @endif
+                <div class="flex items-center justify-between gap-2 text-[11px] text-gray-500">
+                  <span>{{ $order->courier_synced_at ? 'Checked ' . $order->courier_synced_at->diffForHumans() : 'Updates automatically every day at 9 PM' }}</span>
+                  <form method="POST" action="{{ route('admin.orders.courier-status', $order) }}">
+                    @csrf
+                    <button type="submit" class="font-bold text-emerald-800 hover:underline cursor-pointer">Refresh status</button>
+                  </form>
+                </div>
+                @if(in_array($cs, ['returning', 'returned', 'cancelled'], true) && $order->status === 'shipped')
+                  <p class="text-[11px] font-semibold text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1.5">
+                    The parcel is coming back. When it arrives, scan it in at <a href="{{ route('admin.courier-scan.index') }}" class="underline">Courier Scan &rarr; Courier IN</a> to restock and record the courier charge.
+                  </p>
+                @endif
               </div>
             @endif
             @if($order->courierTrackingUrl())

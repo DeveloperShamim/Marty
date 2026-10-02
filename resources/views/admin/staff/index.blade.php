@@ -186,7 +186,7 @@
               {{-- Actions --}}
               <td class="py-3.5 px-4 text-right whitespace-nowrap">
                 <div class="flex items-center justify-end gap-1.5">
-                  @if($member->email !== 'admin@freshkart.test' && $member->id !== auth()->id())
+                  @if(! $member->isStoreOwner() && $member->id !== auth()->id())
                     <form method="POST" action="{{ route('admin.staff.toggle', $member) }}" class="inline">
                       @csrf
                       @method('PATCH')
@@ -275,7 +275,7 @@
             <span class="text-[11px] text-stone-400 font-medium">Joined: {{ $member->created_at ? $member->created_at->format('d M, Y') : 'N/A' }}</span>
 
             <div class="flex items-center gap-1.5">
-              @if($member->email !== 'admin@freshkart.test' && $member->id !== auth()->id())
+              @if(! $member->isStoreOwner() && $member->id !== auth()->id())
                 <form method="POST" action="{{ route('admin.staff.toggle', $member) }}">
                   @csrf @method('PATCH')
                   <button type="submit" class="px-3 py-1.5 text-xs font-bold rounded-xl border transition {{ $member->is_suspended ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200' }}">
@@ -349,7 +349,7 @@
 
       <div class="space-y-1">
         <label class="block font-black text-stone-700">Temporary Password <span class="text-rose-500">*</span></label>
-        <input type="password" name="password" required placeholder="Min 6 characters" class="w-full px-3.5 py-2.5 text-xs font-bold bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
+        <input type="password" name="password" required minlength="8" placeholder="Min 8 characters" class="w-full px-3.5 py-2.5 text-xs font-bold bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
       </div>
 
       <div class="flex items-center justify-end gap-2 pt-2 border-t border-stone-100">

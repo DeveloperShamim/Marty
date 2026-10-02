@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Log;
 
 class SteadfastService
 {
-    protected string $baseUrl = 'https://portal.steadfast.com.bd/api/v1';
+    // Steadfast moved its API to packzy.com; portal.steadfast.com.bd no longer resolves.
+    protected string $baseUrl = 'https://portal.packzy.com/api/v1';
 
     public function isConfigured(): bool
     {
@@ -27,7 +28,8 @@ class SteadfastService
             ];
         }
 
-        $codAmount = $order->payment_status === 'verified' ? 0 : (float) $order->total;
+        // Only cash-on-delivery orders are collected; prepaid (bKash/Nagad/...) orders never are.
+        $codAmount = $order->amountToCollect();
 
         // Clean BD phone number (e.g. 01XXXXXXXXX)
         $phone = preg_replace('/[^0-9]/', '', (string) $order->customer_phone);
@@ -78,6 +80,31 @@ class SteadfastService
                 'success' => false,
                 'message' => 'Steadfast connection error: ' . $e->getMessage(),
             ];
+        }
+    }
+
+    /** Current delivery status of a booked parcel, looked up by our invoice (order) number. */
+    public function trackOrder(Order $order): array
+    {
+        $apiKey = trim((string) setting('steadfast_api_key'));
+        $secretKey = trim((string) setting('steadfast_secret_key'));
+        if (! $apiKey || ! $secretKey) {
+            return ['success' => false, 'message' => 'Steadfast API keys are not configured.'];
+        }
+
+        try {
+            $response = Http::withHeaders(['Api-Key' => $apiKey, 'Secret-Key' => $secretKey, 'Accept' => 'application/json'])
+                ->timeout(15)
+                ->get($this->baseUrl . '/status_by_invoice/' . rawurlencode($order->order_number));
+            $data = $response->json() ?? [];
+
+            if ($response->successful() && ! empty($data['delivery_status'])) {
+                return ['success' => true, 'status' => (string) $data['delivery_status'], 'message' => null];
+            }
+
+            return ['success' => false, 'message' => 'Steadfast: ' . ($data['message'] ?? 'HTTP ' . $response->status())];
+        } catch (\Throwable $e) {
+            return ['success' => false, 'message' => 'Steadfast connection error: ' . $e->getMessage()];
         }
     }
 

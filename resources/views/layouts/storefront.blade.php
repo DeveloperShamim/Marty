@@ -156,6 +156,40 @@
       border-color: transparent !important;
     }
 
+    /* Phone promo bar: endless scroll (two identical copies, moved by half) */
+    .promo-track { animation: promo-scroll var(--promo-dur, 20s) linear infinite; }
+    .promo-marquee b, .promo-marquee strong { color: #fff !important; font-weight: 800; }
+    @keyframes promo-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* Phone header "Flash Sale" button: same shine sweep + breathing as the product page BUY NOW */
+    .flash-pill {
+      position: relative; overflow: hidden;
+      background: #0c0a09;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,.16), 0 2px 4px -2px rgba(0,0,0,.1);
+      animation: flash-pulse 3.2s ease-in-out infinite;
+    }
+    .flash-pill::after {
+      content: ""; position: absolute; top: 0; left: 0; width: 60%; height: 100%; pointer-events: none;
+      background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.35) 50%, rgba(255,255,255,0) 100%);
+      animation: flash-shine 3.2s cubic-bezier(.4, 0, .2, 1) infinite;
+    }
+    .flash-pill:active { transform: scale(.97); }
+    @keyframes flash-shine { 0% { transform: translateX(-160%) skewX(-20deg); } 26%, 100% { transform: translateX(260%) skewX(-20deg); } }
+    @keyframes flash-pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 4px 6px -1px rgba(0,0,0,.16), 0 2px 4px -2px rgba(0,0,0,.1); }
+      50% { transform: scale(1.04); box-shadow: 0 6px 10px -2px rgba(0,0,0,.22), 0 3px 6px -2px rgba(0,0,0,.12); }
+    }
+    /* Tap-to-copy coupon code + flash countdown inside the headlines */
+    .promo-code { cursor: pointer; padding: 1px 7px; margin: 0 2px; border: 1.5px dashed rgba(255,255,255,.75); border-radius: 6px; background: rgba(255,255,255,.14); font-weight: 800; letter-spacing: .03em; }
+    .promo-code:active, .promo-code.is-copied { background: #fff; color: var(--brand-primary) !important; border-style: solid; }
+    .ticker-clock { display: inline-block; margin-left: 4px; padding: 1px 6px; border-radius: 6px; background: rgba(0,0,0,.28); font-variant-numeric: tabular-nums; font-weight: 800; }
+    /* News-ticker label: slanted right edge + blinking "live" dot */
+    .ticker-label { clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%); }
+    .ticker-dot { animation: ticker-blink 1.2s ease-in-out infinite; box-shadow: 0 0 0 0 rgba(239,68,68,.7); }
+    @keyframes ticker-blink { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239,68,68,.7); } 50% { opacity: .45; box-shadow: 0 0 0 4px rgba(239,68,68,0); } }
+    .ticker-window { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 18px), transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 18px), transparent 100%); }
+    /* The ticker and Flash Sale button keep moving even with the phone's "Reduce motion" setting on (store owner's choice). */
+
     /* Selected Variant Button Styling & Hover Fix */
     .variant-btn.is-selected,
     .variant-btn.is-selected:hover,

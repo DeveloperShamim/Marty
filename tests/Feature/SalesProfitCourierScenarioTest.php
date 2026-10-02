@@ -22,15 +22,15 @@ use Tests\TestCase;
  *  #  Order                                   Counts as sale?  Revenue  COGS   Courier loss
  *  1  COD 2xA, scanned out, delivered         yes              2000     1200   0
  *  2  COD 1xB with 10% coupon, delivered      yes              450      200    0
- *  3  bKash prepaid 1xA, verified, shipped    yes (paid)       1000     600    0
+ *  3  bKash prepaid 1xA, verified, shipped    yes (paid)       1000     600    0   (free delivery for paying online: shop pays 60)
  *  4  COD 1xA, scanned out, returned UNPAID   no               -        -      60  (inside Dhaka)
  *  5  COD 1xB outside Dhaka, returned PAID    no               -        -      0   (customer paid delivery)
  *  6  COD 1xA, cancelled                      no               -        -      0
  *  7  COD 1xB, still pending                  no               -        -      0
  *  8  POS cash 1xB                            yes              500      200    0
- *  9  bKash prepaid 1xB, verified, returned   no (refunded)    -        -      60  (unpaid return, inside Dhaka)
- *                                                    Totals:   3950     2200   120
- *  Net profit = 3950 - 2200 - 120 = 1630
+ *  9  bKash prepaid 1xB, verified, returned   no (refunded)    -        -      60  (unpaid return; free-delivery fee counted once, here)
+ *                                                    Totals:   3950     2200   120   + free delivery cost 60
+ *  Net profit = 3950 - 2200 - 120 - 60 = 1570
  */
 class SalesProfitCourierScenarioTest extends TestCase
 {
@@ -179,7 +179,7 @@ class SalesProfitCourierScenarioTest extends TestCase
             ->assertOk()
             ->assertViewHas('revenue', fn ($v) => abs($v - 3950) < 0.01)
             ->assertViewHas('totalCogs', fn ($v) => abs($v - 2200) < 0.01)
-            ->assertViewHas('netProfit', fn ($v) => abs($v - 1630) < 0.01)
+            ->assertViewHas('netProfit', fn ($v) => abs($v - 1570) < 0.01)
             ->assertViewHas('totalSalesOrdersCount', 4)
             ->assertViewHas('returnedOrdersCount', 3)
             ->assertViewHas('cancelledOrdersCount', 1);
@@ -194,7 +194,8 @@ class SalesProfitCourierScenarioTest extends TestCase
             ->assertViewHas('grossRevenue', fn ($v) => abs($v - 3950) < 0.01)
             ->assertViewHas('cogs', fn ($v) => abs($v - 2200) < 0.01)
             ->assertViewHas('courierLoss', fn ($v) => abs($v - 120) < 0.01)
-            ->assertViewHas('netProfit', fn ($v) => abs($v - 1630) < 0.01)
+            ->assertViewHas('freeDeliveryCost', fn ($v) => abs($v - 60) < 0.01)
+            ->assertViewHas('netProfit', fn ($v) => abs($v - 1570) < 0.01)
             ->assertViewHas('totalOrdersCount', 4)
             ->assertViewHas('returnedCount', 3)
             ->assertViewHas('paidReturnsCount', 1)

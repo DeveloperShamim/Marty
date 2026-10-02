@@ -23,6 +23,14 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Never put demo data (fake orders, reviews, staff with password "password") on a live store.
+        // To seed demo data on a production server anyway, set SEED_DEMO=true.
+        if (app()->environment('production') && ! filter_var(env('SEED_DEMO', false), FILTER_VALIDATE_BOOL)) {
+            $this->seedProductionEssentials();
+
+            return;
+        }
+
         $this->seedUsers();
         $this->seedSettings();
         $this->seedAttributes();
@@ -104,9 +112,10 @@ class DatabaseSeeder extends Seeder
         );
     }
 
-    private function seedSettings(): void
+    /** Store settings as seeded for the demo shop. */
+    private function defaultSettings(): array
     {
-        $settings = [
+        return [
             'site_name' => 'Marty',
             'tagline' => 'Smartwatches, Trending Shoes & Premium Gadgets',
             'logo' => 'uploads/logo.webp',
@@ -178,12 +187,57 @@ class DatabaseSeeder extends Seeder
             'theme_dark_color'     => '#0F172A',
             'theme_surface_color'  => '#F8FAFC',
         ];
+    }
 
-        foreach ($settings as $key => $value) {
+    private function seedSettings(): void
+    {
+        foreach ($this->defaultSettings() as $key => $value) {
             Setting::updateOrCreate(['key' => $key], ['value' => $value]);
         }
 
         Setting::forgetCache();
+    }
+
+    /**
+     * Live site: an admin account, default settings and product option lists only.
+     * No demo products, orders, reviews, customers or staff accounts with the password "password".
+     * Existing settings and admins are never overwritten, so this is safe to run again.
+     */
+    private function seedProductionEssentials(): void
+    {
+        if (! User::where('role', 'admin')->exists()) {
+            $email = env('ADMIN_EMAIL') ?: 'admin@' . (parse_url((string) config('app.url'), PHP_URL_HOST) ?: 'example.com');
+            $password = env('ADMIN_PASSWORD') ?: Str::password(16, symbols: false);
+
+            User::create([
+                'name'              => 'Store Admin',
+                'email'             => $email,
+                'password'          => Hash::make($password),
+                'role'              => 'admin',
+                'email_verified_at' => now(),
+            ]);
+
+            $this->command?->warn("Admin account: {$email}" . (env('ADMIN_PASSWORD') ? ' (password from ADMIN_PASSWORD)' : "  password: {$password}  <- save it now, it is not shown again"));
+        }
+
+        // Sample contact, payment and social details must not go live; the shop owner fills them in.
+        $blank = [
+            'contact_phone', 'whatsapp_number', 'messenger_url', 'contact_email', 'contact_address',
+            'facebook_url', 'instagram_url', 'twitter_url', 'bkash_number', 'nagad_number', 'rocket_number',
+            'header_promo_text', 'header_promo_link', 'flash_sale_ends_at', 'mail_from_address',
+        ];
+        $settings = array_merge($this->defaultSettings(), array_fill_keys($blank, ''), [
+            'site_name'      => config('app.name') ?: 'My Store',
+            'mail_from_name' => config('app.name') ?: 'My Store',
+            'otp_enabled'    => '0', // needs a working mail server first
+        ]);
+
+        foreach ($settings as $key => $value) {
+            Setting::firstOrCreate(['key' => $key], ['value' => $value]);
+        }
+        Setting::forgetCache();
+
+        $this->seedAttributes();
     }
 
     private function seedCategories(): array

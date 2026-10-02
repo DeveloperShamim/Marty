@@ -1,5 +1,5 @@
 {{-- Quick Select Variation Modal --}}
-<div id="quickSelectModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 hidden opacity-0 transition-all duration-300 pointer-events-none" aria-hidden="true">
+<div id="quickSelectModal" class="fixed inset-0 z-[80] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 hidden opacity-0 transition-all duration-300 pointer-events-none" aria-hidden="true">
   <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-stone-200 transform scale-95 transition-all duration-300 flex flex-col max-h-[90vh]" data-modal-container>
     {{-- Modal Header --}}
     <div class="px-5 py-4 border-b border-stone-100 flex items-center justify-between bg-stone-50/80">

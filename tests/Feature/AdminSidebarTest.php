@@ -40,4 +40,22 @@ class AdminSidebarTest extends TestCase
             $labels
         );
     }
+
+    public function test_groups_and_courier_scan_badge(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        \App\Models\Order::create([
+            'order_number' => 'ORD-RET', 'customer_name' => 'K', 'customer_phone' => '01711000000', 'shipping_address' => 'House 1', 'city' => 'Dhaka', 'subtotal' => 1, 'total' => 1,
+            'payment_method' => 'cod', 'payment_status' => 'pending', 'status' => 'shipped',
+            'courier_name' => 'steadfast', 'courier_tracking_code' => 'SF1', 'courier_status' => 'returning',
+        ]);
+
+        $html = $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression('/data-group="Storefront".*Hero Banners.*Trust Strip.*Size Guide.*Media Library/s', $html);
+        $this->assertMatchesRegularExpression('/data-group="Marketing".*Coupons.*Flash Sale.*Abandoned Carts/s', $html);
+        $this->assertStringContainsString('Product Barcodes', $html);
+        $this->assertStringNotContainsString('data-label="My Account"', $html, 'Account is in the sidebar footer');
+        $this->assertMatchesRegularExpression('/data-label="Courier Scan".*?title="1 courier updates need you"/s', $html);
+    }
 }

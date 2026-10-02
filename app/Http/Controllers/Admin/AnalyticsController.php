@@ -62,8 +62,12 @@ class AnalyticsController extends Controller
         $paidReturnsCount = (clone $returnedOrders)->where('return_type', 'paid_delivery')->count();
         $unpaidReturnsCount = (clone $returnedOrders)->where('return_type', 'unpaid_delivery')->count();
 
-        // Net Profit (Factoring in Courier Loss)
-        $netProfit = $grossProfit - $courierLoss;
+        // Free delivery: the shop still pays the courier for these parcels.
+        $freeDeliveryCost = (float) (clone $deliveredOrVerified)->sum('shipping_waived');
+        $freeDeliveryOrders = (clone $deliveredOrVerified)->where('shipping_waived', '>', 0)->count();
+
+        // Net Profit (Factoring in Courier Loss and absorbed delivery fees)
+        $netProfit = $grossProfit - $courierLoss - $freeDeliveryCost;
         $profitMargin = $grossRevenue > 0 ? (($netProfit / $grossRevenue) * 100) : 0;
 
         // 4. Operating Expenses & Facebook Ads
@@ -129,7 +133,8 @@ class AnalyticsController extends Controller
                     DB::raw('DATE(created_at) as date_key'),
                     DB::raw("SUM(CASE WHEN status <> 'returned' AND (payment_status = 'verified' OR status = 'delivered') THEN (subtotal - discount_amount) ELSE 0 END) as day_revenue"),
                     DB::raw("COUNT(CASE WHEN status <> 'returned' AND (payment_status = 'verified' OR status = 'delivered') THEN 1 ELSE NULL END) as day_orders"),
-                    DB::raw('SUM(courier_loss_amount) as day_loss')
+                    DB::raw('SUM(courier_loss_amount) as day_loss'),
+                    DB::raw("SUM(CASE WHEN status <> 'returned' AND (payment_status = 'verified' OR status = 'delivered') THEN shipping_waived ELSE 0 END) as day_waived")
                 )
                 ->groupBy(DB::raw('DATE(created_at)'))
                 ->get()
@@ -154,7 +159,7 @@ class AnalyticsController extends Controller
                 $dayRev = $stat ? (float)$stat->day_revenue : 0;
                 $dayCount = $stat ? (int)$stat->day_orders : 0;
                 $dayC = $cogsRow ? (float)$cogsRow->day_cogs : 0;
-                $dayL = $stat ? (float)$stat->day_loss : 0;
+                $dayL = $stat ? (float)$stat->day_loss + (float)$stat->day_waived : 0;
                 $dayProfit = ($dayRev - $dayC) - $dayL;
 
                 $trendData[] = [
@@ -172,7 +177,8 @@ class AnalyticsController extends Controller
                     DB::raw($this->monthKey('created_at') . ' as date_key'),
                     DB::raw("SUM(CASE WHEN status <> 'returned' AND (payment_status = 'verified' OR status = 'delivered') THEN (subtotal - discount_amount) ELSE 0 END) as m_revenue"),
                     DB::raw("COUNT(CASE WHEN status <> 'returned' AND (payment_status = 'verified' OR status = 'delivered') THEN 1 ELSE NULL END) as m_orders"),
-                    DB::raw('SUM(courier_loss_amount) as m_loss')
+                    DB::raw('SUM(courier_loss_amount) as m_loss'),
+                    DB::raw("SUM(CASE WHEN status <> 'returned' AND (payment_status = 'verified' OR status = 'delivered') THEN shipping_waived ELSE 0 END) as m_waived")
                 )
                 ->groupBy(DB::raw($this->monthKey('created_at')))
                 ->get()
@@ -198,7 +204,7 @@ class AnalyticsController extends Controller
                 $mRev = $stat ? (float)$stat->m_revenue : 0;
                 $mCount = $stat ? (int)$stat->m_orders : 0;
                 $mC = $cogsRow ? (float)$cogsRow->m_cogs : 0;
-                $mL = $stat ? (float)$stat->m_loss : 0;
+                $mL = $stat ? (float)$stat->m_loss + (float)$stat->m_waived : 0;
                 $mProfit = ($mRev - $mC) - $mL;
 
                 $trendData[] = [
@@ -232,7 +238,7 @@ class AnalyticsController extends Controller
         return view('admin.analytics.index', compact(
             'range', 'channel', 'rangeLabel', 'startDate', 'endDate',
             'grossRevenue', 'netRevenue', 'totalDiscounts', 'cogs',
-            'grossProfit', 'netProfit', 'profitMargin', 'aov', 'totalOrdersCount',
+            'grossProfit', 'netProfit', 'freeDeliveryCost', 'freeDeliveryOrders', 'profitMargin', 'aov', 'totalOrdersCount',
             'returnedCount', 'courierLoss', 'paidReturnsCount', 'unpaidReturnsCount',
             'totalExpenses', 'marketingExpense', 'sourcingExpense', 'packagingExpense', 'operationsExpense',
             'trueNetProfit', 'trueProfitMargin',
@@ -262,7 +268,7 @@ class AnalyticsController extends Controller
                 'Order Number', 'Date', 'Channel', 'Customer Name', 'Customer Phone',
                 'Payment Method', 'Payment Status', 'Fulfillment Status',
                 'Subtotal', 'Discount', 'Shipping', 'Total Revenue',
-                'COGS (Cost)', 'Gross Profit', 'Courier Loss', 'Net Profit'
+                'COGS (Cost)', 'Gross Profit', 'Courier Loss', 'Free Delivery Cost', 'Net Profit'
             ]);
 
             Order::with('items.product')
@@ -278,7 +284,9 @@ class AnalyticsController extends Controller
                         $netProductSales = $isReturned ? 0.0 : (float) ($ord->subtotal - $ord->discount_amount);
                         $grossProfit = (float) ($netProductSales - $cogs);
                         $courierLoss = (float) ($ord->courier_loss_amount ?: 0);
-                        $netProfit = $grossProfit - $courierLoss;
+                        // A returned parcel's delivery fee is already in its courier loss.
+                        $freeDeliveryCost = $isReturned ? 0.0 : (float) $ord->shipping_waived;
+                        $netProfit = $grossProfit - $courierLoss - $freeDeliveryCost;
 
                         fputcsv($file, [
                             $ord->order_number,
@@ -296,6 +304,7 @@ class AnalyticsController extends Controller
                             $cogs,
                             $grossProfit,
                             $courierLoss,
+                            $freeDeliveryCost,
                             $netProfit,
                         ]);
                     }

@@ -28,28 +28,93 @@
   $dropdownCats = $moreCats->isNotEmpty() ? $moreCats : $navCats;
 @endphp
 
-@if($promoText !== '')
-  <div class="bg-gradient-to-r from-stone-950 via-stone-900 to-stone-950 text-stone-200 text-[11px] sm:text-xs text-center py-2 px-3 sm:px-4 font-semibold border-b border-stone-800/80 tracking-wide">
-    @if($promoLink !== '')
-      <a href="{{ $promoLink }}" class="hover:text-brand-400 transition inline-flex items-center justify-center gap-1.5 flex-wrap">{!! strip_tags($promoText, '<b><strong><span>') !!}</a>
-    @else
-      <span class="inline-flex items-center justify-center gap-1.5 flex-wrap">{!! strip_tags($promoText, '<b><strong><span>') !!}</span>
+@php
+  // Top news ticker (Admin → Store Settings → Homepage → Top News Ticker): one headline per line ("||" also works).
+  $promoMessages = collect(preg_split('/\R|\|\|/', $promoText))->map(fn ($m) => trim(strip_tags($m, '<b><strong><span>')))->filter()->values();
+
+  // Live coupon codes mentioned in a headline become tap-to-copy.
+  if ($promoMessages->isNotEmpty()) {
+      $liveCodes = \App\Models\Coupon::where('is_active', true)->get()
+          ->filter(fn ($c) => $c->isCurrentlyActive())->pluck('code')
+          ->filter(fn ($code) => preg_match('/^[A-Z0-9_-]{3,}$/', $code))->values();
+      if ($liveCodes->isNotEmpty()) {
+          $codeRe = '/(?<![\w-])(' . $liveCodes->map(fn ($c) => preg_quote($c, '/'))->implode('|') . ')(?![\w-])(?![^<]*>)/i';
+          $promoMessages = $promoMessages->map(fn ($m) => preg_replace_callback($codeRe, fn ($hit) =>
+              '<span role="button" tabindex="0" data-copy-code="' . e(strtoupper($hit[1])) . '" class="promo-code" title="Tap to copy">' . e($hit[1]) . '</span>', $m));
+      }
+  }
+
+  // Flash sale countdown headline, while a flash sale with an end time is running.
+  $flashEnds = null;
+  if (($hasFlashSale ?? false) && setting('ticker_show_countdown', '1') === '1' && ($rawEnd = setting('flash_sale_ends_at'))) {
+      try { $flashEnds = \Illuminate\Support\Carbon::parse($rawEnd); } catch (\Throwable) { $flashEnds = null; }
+      if ($flashEnds && $flashEnds->isPast()) $flashEnds = null;
+  }
+  // Each headline carries the promo link itself, so the countdown can link to the sale.
+  $tickerItems = $promoLink === '' ? $promoMessages
+      : $promoMessages->map(fn ($m) => '<a href="' . e($promoLink) . '">' . $m . '</a>');
+  if ($flashEnds) {
+      $tickerItems = collect([
+          '<a href="' . e(route('shop', ['flash' => 1])) . '" class="ticker-flash" data-countdown-end="' . $flashEnds->toIso8601String() . '" data-countdown-hide>'
+          . '&#9889; Flash Sale ends in '
+          . '<span class="ticker-clock"><span data-d-wrap><span data-d>00</span>d </span><span data-h>00</span>:<span data-m>00</span>:<span data-s>00</span></span></a>',
+      ])->merge($tickerItems);
+  }
+@endphp
+
+@if($tickerItems->isNotEmpty())
+  @php
+    // Each of the two copies must be wider than the widest screen, so short lists are repeated.
+    $tickerChars = max(1, mb_strlen(strip_tags($tickerItems->implode(' '))) + 6 * $tickerItems->count());
+    $promoLoop = collect(array_fill(0, max(1, (int) ceil(280 / $tickerChars)), $tickerItems))->flatten();
+    $tickerLabel = trim((string) setting('ticker_label', 'Hot Deals'));
+    $labelClass = match (setting('ticker_label_style', 'dark')) {
+        'red'   => 'bg-red-600 text-white',
+        'white' => 'bg-white text-ink',
+        default => 'bg-ink text-white',
+    };
+    $promoSeconds = max(14, (int) round(mb_strlen(strip_tags($promoLoop->implode(' '))) * 0.16));
+  @endphp
+  {{-- News-ticker bar (fixed label + scrolling headlines), all screen sizes --}}
+  <div class="promo-marquee flex items-stretch h-9 sm:h-10 bg-gradient-to-r from-brand-700 via-brand-600 to-brand-700 text-white overflow-hidden">
+    @if($tickerLabel !== '')
+      <span class="ticker-label relative z-10 shrink-0 flex items-center gap-1.5 pl-3 sm:pl-5 pr-5 sm:pr-7 {{ $labelClass }} text-[11px] sm:text-xs font-extrabold uppercase tracking-wider">
+        <span class="ticker-dot h-2 w-2 rounded-full {{ setting('ticker_label_style', 'dark') === 'red' ? 'bg-white' : 'bg-red-500' }}"></span>{{ $tickerLabel }}
+      </span>
     @endif
+    <span class="ticker-window relative flex-1 min-w-0 flex items-center overflow-hidden">
+      <span class="promo-track flex w-max" style="--promo-dur: {{ $promoSeconds }}s">
+        @foreach([1, 2] as $copy)
+          <span class="flex shrink-0 items-center" @if($copy === 2) aria-hidden="true" @endif>
+            @foreach($promoLoop as $msg)
+              <span class="text-[13px] sm:text-sm font-bold whitespace-nowrap">{!! $msg !!}</span>
+              <span class="mx-4 sm:mx-6 text-[9px] text-white/70" aria-hidden="true">&#9670;</span>
+            @endforeach
+          </span>
+        @endforeach
+      </span>
+    </span>
   </div>
 @endif
 
 <header class="site-header sticky top-0 z-40 bg-white">
   {{-- ROW 1: Logo + Modern Search + Actions --}}
   <div class="bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-2xs">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-3 flex items-center justify-between gap-2 sm:gap-6">
-      
-      {{-- Mobile Menu Toggle & Brand Logo --}}
-      <div class="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0">
-        <button type="button" data-open-menu class="lg:hidden text-stone-800 hover:text-brand-600 w-9 h-9 flex items-center justify-center rounded-xl hover:bg-stone-100 active:scale-95 transition-all shrink-0 cursor-pointer" aria-label="Open Menu">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
-        </button>
+    <div class="max-w-7xl mx-auto pl-1.5 pr-2.5 sm:px-6 py-1.5 sm:py-3 flex items-center justify-between gap-1 sm:gap-6">
 
-        @include('partials.brand')
+      {{-- Phones: menu + search on the left --}}
+      <div class="flex items-center shrink-0 lg:hidden">
+        <button type="button" data-open-menu class="text-ink hover:text-brand-600 w-9 h-9 min-[390px]:w-10 min-[390px]:h-10 sm:w-11 sm:h-11 flex items-center justify-center rounded-xl hover:bg-stone-100 active:scale-95 transition-all shrink-0 cursor-pointer" aria-label="Open Menu">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3.5 6h17M6.5 12h14M3.5 18h17"/></svg>
+        </button>
+        <button type="button" data-toggle-search class="md:hidden flex items-center justify-center w-9 h-9 min-[390px]:w-10 min-[390px]:h-10 rounded-xl text-ink hover:text-brand-600 hover:bg-stone-100 active:scale-95 transition-all cursor-pointer focus:outline-none" aria-label="Search" aria-expanded="false" aria-controls="mobileSearchPanel">
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </button>
+      </div>
+
+      {{-- Brand logo: centred between the icons on phones --}}
+      <div class="flex-1 md:flex-none flex justify-center md:justify-start min-w-0">
+        @include('partials.brand', ['logoClass' => 'max-[429px]:max-w-[112px] max-[389px]:max-w-[96px] max-[359px]:max-w-[80px] max-[429px]:h-7'])
       </div>
 
       {{-- Modern Search Bar --}}
@@ -63,13 +128,13 @@
       </form>
 
       {{-- Top Actions: Track Order, Account, Cart --}}
-      <div class="ml-auto flex items-center gap-1 sm:gap-4 lg:gap-6 shrink-0">
-        {{-- Mobile Search Trigger --}}
-        <button type="button" data-toggle-search class="md:hidden flex items-center justify-center w-9 h-9 rounded-xl text-stone-800 hover:text-brand-600 hover:bg-stone-100 active:scale-95 transition-all cursor-pointer focus:outline-none" aria-label="Search" aria-expanded="false" aria-controls="mobileSearchPanel">
-          <svg class="w-5 h-5 text-stone-800 hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/>
-          </svg>
-        </button>
+      <div class="ml-auto flex items-center gap-0.5 sm:gap-4 lg:gap-6 shrink-0">
+        {{-- Flash sale (phones) --}}
+        @if($hasFlashSale ?? false)
+          <a href="{{ route('shop', ['flash' => 1]) }}" class="flash-pill sm:hidden mr-1 inline-flex items-center h-8 px-2 min-[390px]:px-2.5 rounded-lg text-white text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
+            <span class="max-[359px]:hidden">Flash&nbsp;</span>Sale
+          </a>
+        @endif
 
         {{-- 1. Track Order (Desktop & Tablet) --}}
         <a href="{{ route('track') }}" class="hidden sm:flex flex-col items-center justify-center text-center group cursor-pointer py-0.5 px-1 min-w-[48px] text-stone-700 hover:text-brand-600 transition-colors" aria-label="Track Order">
@@ -80,18 +145,23 @@
           <span class="text-[11px] sm:text-xs font-medium text-stone-700 group-hover:text-brand-600 mt-0.5 tracking-tight whitespace-nowrap">Track Order</span>
         </a>
 
-        {{-- 2. My Account Dropdown --}}
-        @include('storefront.partials.account-dropdown', ['lightHeader' => false])
+        {{-- 2. My Account Dropdown (last on phones) --}}
+        <div class="order-last sm:order-none">
+          @include('storefront.partials.account-dropdown', ['lightHeader' => false])
+        </div>
 
         {{-- 3. Cart Button --}}
-        <button type="button" data-open-cart class="flex flex-col sm:flex-col items-center justify-center text-center group cursor-pointer focus:outline-none w-9 h-9 sm:w-auto sm:h-auto sm:min-w-[44px] rounded-xl sm:rounded-none hover:bg-stone-100 sm:hover:bg-transparent active:scale-95 transition-all text-stone-700 hover:text-brand-600" aria-label="Cart">
+        <button type="button" data-open-cart class="flex flex-col sm:flex-col items-center justify-center text-center group cursor-pointer focus:outline-none w-9 h-9 min-[390px]:w-10 min-[390px]:h-10 sm:w-auto sm:h-auto sm:min-w-[44px] rounded-xl sm:rounded-none hover:bg-stone-100 sm:hover:bg-transparent active:scale-95 transition-all text-stone-700 hover:text-brand-600" aria-label="Cart">
           <div class="relative inline-flex items-center justify-center">
-            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-stone-800 group-hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="sm:hidden w-[26px] h-[26px] text-ink group-hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 10h18l-1.6 8.4a2 2 0 0 1-2 1.6H6.6a2 2 0 0 1-2-1.6L3 10Z"/><path d="m8 10 3-6M16 10l-3-6M9 13.5v3M12 13.5v3M15 13.5v3"/>
+            </svg>
+            <svg class="hidden sm:block w-6 h-6 text-stone-800 group-hover:text-brand-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="9" cy="21" r="1"/>
               <circle cx="20" cy="21" r="1"/>
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
             </svg>
-            <span data-cart-count class="cart-count absolute -top-1 -right-1.5 sm:-top-1.5 sm:-right-2 bg-brand-500 text-white text-[10px] font-black h-4 min-w-4 px-1 rounded-full flex items-center justify-center shadow-xs ring-2 ring-white leading-none">
+            <span data-cart-count class="cart-count absolute -top-2 -left-2.5 sm:left-auto sm:-top-1.5 sm:-right-2 bg-ink sm:bg-brand-500 text-white text-[11px] sm:text-[10px] font-black h-5 min-w-5 sm:h-[18px] sm:min-w-[18px] px-1 rounded-full flex items-center justify-center shadow-xs ring-2 ring-white leading-none {{ $cartCount ? '' : 'hidden' }}">
               {{ $cartCount }}
             </span>
           </div>

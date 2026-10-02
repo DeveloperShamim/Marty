@@ -150,6 +150,29 @@ class CartService
         return (float) $this->items()->sum('line_total');
     }
 
+    /**
+     * "You May Also Like" for the cart drawer: in-stock products from the same categories as
+     * the cart, best sellers and featured first, then other best sellers to fill up.
+     */
+    public function recommendations(int $limit = 8): Collection
+    {
+        $inCart = collect($this->raw())->pluck('product_id')->unique()->values();
+        $categoryIds = $inCart->isEmpty() ? collect() : Product::whereIn('id', $inCart)->pluck('category_id')->filter()->unique();
+
+        $query = fn () => Product::published()
+            ->with(['images', 'skus', 'variants'])
+            ->whereNotIn('id', $inCart)
+            ->where('stock_quantity', '>', 0)
+            ->orderByDesc('is_best_seller')->orderByDesc('is_featured')->latest('id');
+
+        $picks = $categoryIds->isEmpty() ? collect() : $query()->whereIn('category_id', $categoryIds)->take($limit)->get();
+        if ($picks->count() < $limit) {
+            $picks = $picks->concat($query()->whereNotIn('id', $picks->pluck('id'))->take($limit - $picks->count())->get());
+        }
+
+        return $picks->values();
+    }
+
     public function toArray(): array
     {
         return [

@@ -15,10 +15,8 @@
         ],
         'Sales' => [
             $item('orders', 'Orders', 'admin.orders.index', '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>', 'sales invoice'),
-            $item('pos', 'POS Register', 'admin.pos.index', '<rect width="16" height="20" x="4" y="2" rx="2"/><path d="M8 6h8"/><path d="M16 14v4"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/>', 'cash register point of sale counter'),
             $item('courier-scan', 'Courier Scan', 'admin.courier-scan.index', '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>', 'delivery dispatch return shipping in out'),
-            $item('abandoned-carts', 'Abandoned Carts', 'admin.abandoned-carts.index', '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>', 'cart recovery'),
-            $item('reviews', 'Reviews', 'admin.reviews.index', '<path d="M11.52 2.3a.53.53 0 0 1 .95 0l2.31 4.68a2.12 2.12 0 0 0 1.6 1.16l5.16.76a.53.53 0 0 1 .3.9l-3.74 3.64a2.12 2.12 0 0 0-.61 1.88l.88 5.14a.53.53 0 0 1-.77.56l-4.62-2.43a2.12 2.12 0 0 0-1.97 0L6.4 21.01a.53.53 0 0 1-.77-.56l.88-5.14a2.12 2.12 0 0 0-.61-1.88L2.16 9.79a.53.53 0 0 1 .3-.9l5.16-.76a2.12 2.12 0 0 0 1.6-1.16z"/>', 'customer ratings feedback'),
+            $item('pos', 'POS Register', 'admin.pos.index', '<rect width="16" height="20" x="4" y="2" rx="2"/><path d="M8 6h8"/><path d="M16 14v4"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/>', 'cash register point of sale counter'),
         ],
         'Catalog' => [
             $item('products', 'Products', 'admin.products.index', '<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>', 'items add product'),
@@ -26,15 +24,21 @@
             $item('categories', 'Categories', 'admin.categories.index', '<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>', 'collections'),
             $item('brands', 'Brands', 'admin.brands.index', '<path d="M12.59 2.59A2 2 0 0 0 11.17 2H4a2 2 0 0 0-2 2v7.17a2 2 0 0 0 .59 1.42l8.7 8.7a2.43 2.43 0 0 0 3.42 0l6.58-6.58a2.43 2.43 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>', 'manufacturer producer'),
             $item('variations', 'Variations', 'admin.variations.index', '<path d="M21 4h-7"/><path d="M10 4H3"/><path d="M21 12h-9"/><path d="M8 12H3"/><path d="M21 20h-5"/><path d="M12 20H3"/><path d="M14 2v4"/><path d="M8 10v4"/><path d="M16 18v4"/>', 'size color attributes options'),
-            $item('barcodes', 'Barcode Labels', 'admin.barcodes.index', '<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 7v10"/><path d="M12 7v10"/><path d="M17 7v10"/>', 'print sticker'),
-            $item('media', 'Media Library', 'admin.media.index', '<rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/>', 'images photos uploads files'),
+            $item('barcodes', 'Product Barcodes', 'admin.barcodes.index', '<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 7v10"/><path d="M12 7v10"/><path d="M17 7v10"/>', 'barcode labels print sticker'),
+            $item('reviews', 'Reviews', 'admin.reviews.index', '<path d="M11.52 2.3a.53.53 0 0 1 .95 0l2.31 4.68a2.12 2.12 0 0 0 1.6 1.16l5.16.76a.53.53 0 0 1 .3.9l-3.74 3.64a2.12 2.12 0 0 0-.61 1.88l.88 5.14a.53.53 0 0 1-.77.56l-4.62-2.43a2.12 2.12 0 0 0-1.97 0L6.4 21.01a.53.53 0 0 1-.77-.56l.88-5.14a2.12 2.12 0 0 0-.61-1.88L2.16 9.79a.53.53 0 0 1 .3-.9l5.16-.76a2.12 2.12 0 0 0 1.6-1.16z"/>', 'customer ratings feedback'),
+        ],
+        'Storefront' => [
+            $item('banners', 'Hero Banners', 'admin.banners.index', '<rect width="20" height="14" x="2" y="5" rx="2"/><path d="m2 15 5-4 4 3 4-5 7 6"/>', 'slider homepage'),
+            $item('features', 'Trust Strip', 'admin.features.index', '<path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/>', 'trust features badges'),
             $item('size-guide', 'Size Guide', 'admin.size-guide.index', '<path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/>', 'chart measurement'),
+            $item('media', 'Media Library', 'admin.media.index', '<rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/>', 'images photos uploads files'),
         ],
         'Marketing' => [
             $item('coupons', 'Coupons', 'admin.coupons.index', '<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/>', 'discount promo code'),
             $item('flash-sale', 'Flash Sale', 'admin.flash-sale.index', '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>', 'deal offer countdown'),
-            $item('banners', 'Hero Banners', 'admin.banners.index', '<rect width="20" height="14" x="2" y="5" rx="2"/><path d="m2 15 5-4 4 3 4-5 7 6"/>', 'slider homepage'),
-            $item('features', 'Trust Strip', 'admin.features.index', '<path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/>', 'trust features badges'),
+            $item('free-delivery', 'Free Delivery', 'admin.free-delivery.index', '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>', 'shipping offer courier charge waive'),
+            $item('news-ticker', 'News Ticker', 'admin.news-ticker.index', '<path d="M15 18h-5"/><path d="M18 14h-8"/><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0v-9a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="10" y="6" rx="1"/>', 'headline announcement promo bar top banner'),
+            $item('abandoned-carts', 'Abandoned Carts', 'admin.abandoned-carts.index', '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>', 'cart recovery'),
         ],
         'Finance' => [
             $item('analytics', 'Profit & Analytics', 'admin.analytics.index', '<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/>', 'report aov revenue sales profit'),
@@ -49,24 +53,20 @@
         'Settings' => [
             $item('settings', 'Store Settings', 'admin.settings.edit', '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>', 'configuration logo shipping payment'),
             $item('integrations', 'Integrations', 'admin.integrations.index', '<path d="M12 22v-5"/><path d="M9 8V2"/><path d="M15 8V2"/><path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/>', 'api courier steadfast pathao sms pixel'),
-            $item('profile', 'My Account', 'admin.profile.edit', '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.66V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.66"/>', 'profile password security'),
         ],
     ];
 
-    // Role-based navigation: staff roles only see the pages they work with.
-    $allowed = match ($user && ! $user->isAdmin() ? $user->role : null) {
-        'store_manager' => fn ($key) => ! in_array($key, ['staff', 'activity-logs', 'profile', 'integrations', 'settings'], true),
-        'order_manager' => fn ($key) => in_array($key, ['pos', 'courier-scan', 'orders', 'abandoned-carts', 'reviews', 'customers', 'blacklist'], true),
-        'inventory_manager' => fn ($key) => in_array($key, ['dashboard', 'reviews', 'products', 'barcodes', 'variations', 'inventory', 'categories', 'brands', 'media', 'size-guide', 'features'], true),
-        default => fn ($key) => true,
-    };
+    // Each role only sees the pages it may open (same rules as the routes: App\Support\StaffAccess).
+    $allowed = fn ($key) => \App\Support\StaffAccess::allows($user, $key);
     $nav = array_filter(array_map(fn ($items) => array_values(array_filter($items, fn ($i) => $allowed($i['key']))), $nav));
 
     // Counters, only queried for items this user can see.
     $badgeSources = [
-        'orders' => [fn () => \App\Models\Order::where('payment_status', 'pending')->count(), 'bg-amber-100 text-amber-800', 'awaiting payment'],
+        'orders' => [fn () => \App\Models\Order::needsReview()->count(), 'bg-amber-100 text-amber-800', 'to review'],
         'reviews' => [fn () => \App\Models\ProductReview::pending()->count(), 'bg-sky-100 text-sky-800', 'awaiting approval'],
         'abandoned-carts' => [fn () => \App\Models\AbandonedCart::abandoned()->count(), 'bg-gray-100 text-gray-700', 'to recover'],
+        'courier-scan' => [fn () => \App\Models\Order::where('status', 'shipped')
+            ->whereIn('courier_status', \App\Services\Courier\CourierStatusUpdater::ATTENTION)->count(), 'bg-amber-100 text-amber-800', 'courier updates need you'],
         'inventory' => [fn () => \App\Models\ProductSku::where('stock_quantity', '<=', 3)->count()
             + \App\Models\Product::whereDoesntHave('skus')->where('stock_quantity', '<=', 3)->count(), 'bg-rose-100 text-rose-800', 'low on stock'],
     ];
@@ -138,10 +138,13 @@
               @if($on)<span class="absolute -left-3 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-teal-600" aria-hidden="true"></span>@endif
               <svg class="w-[18px] h-[18px] shrink-0 {{ $on ? 'text-teal-700' : 'text-gray-400 group-hover:text-gray-600' }}" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $i['icon'] !!}</svg>
               <span class="sb-label flex-1 truncate">{{ $i['label'] }}</span>
-              @if($badge && $badge['count'] > 0)
+              {{-- The orders count is always rendered (hidden at 0) so the new-order poller can update it. --}}
+              @if($badge && ($badge['count'] > 0 || $i['key'] === 'orders'))
+                <span data-live-badge="{{ $i['key'] }}" style="display: {{ $badge['count'] > 0 ? 'contents' : 'none' }}">
                 <span class="sb-badge sb-label {{ $badge['class'] }} text-[11px] font-semibold tabular-nums min-w-5 h-5 px-1.5 rounded-full inline-flex items-center justify-center" title="{{ $badge['count'] }} {{ $badge['hint'] }}">{{ $badge['count'] > 99 ? '99+' : $badge['count'] }}</span>
                 <span class="sb-dot hidden absolute top-1.5 left-7 w-2 h-2 rounded-full ring-2 ring-white {{ str_replace(['bg-', '-100'], ['bg-', '-500'], explode(' ', $badge['class'])[0]) }}" aria-hidden="true"></span>
                 <span class="sr-only">({{ $badge['count'] }} {{ $badge['hint'] }})</span>
+                </span>
               @endif
             </a>
           @endforeach

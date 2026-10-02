@@ -47,6 +47,7 @@ Route::post('/product/{product}/reviews', [\App\Http\Controllers\ReviewControlle
     ->name('product.reviews.store');
 
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+Route::get('/cart/recommendations', [CartController::class, 'recommendations'])->name('cart.recommendations');
 Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
 Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
 Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
@@ -62,6 +63,13 @@ Route::get('/order/{order}', [CheckoutController::class, 'confirmation'])->name(
 // Order tracking (public)
 Route::get('/track', [TrackOrderController::class, 'show'])->name('track');
 Route::post('/track', [TrackOrderController::class, 'find'])->middleware('throttle:track')->name('track.find');
+
+// Courier status callbacks (Steadfast / Pathao / RedX). No CSRF: authenticated by the secret.
+Route::post('/webhooks/courier/{provider}/{token?}', [\App\Http\Controllers\CourierWebhookController::class, 'handle'])
+    ->whereIn('provider', ['steadfast', 'pathao', 'redx'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class])
+    ->middleware('throttle:120,1')
+    ->name('webhooks.courier');
 
 // Legal & pages
 Route::get('/terms', [PageController::class, 'terms'])->name('terms');
@@ -132,152 +140,167 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Protected (testing.readonly blocks save/delete/verify while TESTING_MODE=true)
     Route::middleware(['admin', 'testing.readonly'])->group(function () {
-        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-        Route::post('cache/clear', [DashboardController::class, 'clearCache'])->name('cache.clear');
+        Route::get('/', [DashboardController::class, 'index'])->middleware('area:dashboard')->name('dashboard');
+        Route::post('cache/clear', [DashboardController::class, 'clearCache'])->middleware('area:cache')->name('cache.clear');
 
         // POS (Point of Sale) & Cash Register
-        Route::get('pos', [\App\Http\Controllers\Admin\PosController::class, 'index'])->name('pos.index');
-        Route::get('pos/search', [\App\Http\Controllers\Admin\PosController::class, 'searchProducts'])->name('pos.search');
-        Route::get('pos/scan', [\App\Http\Controllers\Admin\PosController::class, 'scanBarcode'])->name('pos.scan');
-        Route::get('pos/customer', [\App\Http\Controllers\Admin\PosController::class, 'customerLookup'])->name('pos.customer');
-        Route::post('pos/order', [\App\Http\Controllers\Admin\PosController::class, 'storeOrder'])->name('pos.order');
-        Route::get('pos/receipt/{order}', [\App\Http\Controllers\Admin\PosController::class, 'receipt'])->name('pos.receipt');
+        Route::get('pos', [\App\Http\Controllers\Admin\PosController::class, 'index'])->middleware('area:pos')->name('pos.index');
+        Route::get('pos/search', [\App\Http\Controllers\Admin\PosController::class, 'searchProducts'])->middleware('area:pos')->name('pos.search');
+        Route::get('pos/scan', [\App\Http\Controllers\Admin\PosController::class, 'scanBarcode'])->middleware('area:pos')->name('pos.scan');
+        Route::get('pos/customer', [\App\Http\Controllers\Admin\PosController::class, 'customerLookup'])->middleware('area:pos')->name('pos.customer');
+        Route::post('pos/order', [\App\Http\Controllers\Admin\PosController::class, 'storeOrder'])->middleware('area:pos')->name('pos.order');
+        Route::get('pos/receipt/{order}', [\App\Http\Controllers\Admin\PosController::class, 'receipt'])->middleware('area:pos')->name('pos.receipt');
 
         // Barcode Generator & Print Labels
-        Route::get('barcodes', [\App\Http\Controllers\Admin\BarcodeController::class, 'index'])->name('barcodes.index');
-        Route::post('barcodes/print', [\App\Http\Controllers\Admin\BarcodeController::class, 'print'])->name('barcodes.print');
+        Route::get('barcodes', [\App\Http\Controllers\Admin\BarcodeController::class, 'index'])->middleware('area:barcodes')->name('barcodes.index');
+        Route::post('barcodes/print', [\App\Http\Controllers\Admin\BarcodeController::class, 'print'])->middleware('area:barcodes')->name('barcodes.print');
 
         // Courier In/Out Scan Station & Returns
-        Route::get('courier-scan', [\App\Http\Controllers\Admin\CourierScanController::class, 'index'])->name('courier-scan.index');
-        Route::post('courier-scan/dispatch', [\App\Http\Controllers\Admin\CourierScanController::class, 'dispatchScan'])->name('courier-scan.dispatch');
-        Route::get('courier-scan/return-lookup', [\App\Http\Controllers\Admin\CourierScanController::class, 'returnScanLookup'])->name('courier-scan.return-lookup');
-        Route::post('courier-scan/return-confirm', [\App\Http\Controllers\Admin\CourierScanController::class, 'returnScanConfirm'])->name('courier-scan.return-confirm');
-        Route::get('courier-scan/manifest', [\App\Http\Controllers\Admin\CourierScanController::class, 'printManifest'])->name('courier-scan.manifest');
+        Route::get('courier-scan', [\App\Http\Controllers\Admin\CourierScanController::class, 'index'])->middleware('area:courier-scan')->name('courier-scan.index');
+        Route::post('courier-scan/dispatch', [\App\Http\Controllers\Admin\CourierScanController::class, 'dispatchScan'])->middleware('area:courier-scan')->name('courier-scan.dispatch');
+        Route::get('courier-scan/return-lookup', [\App\Http\Controllers\Admin\CourierScanController::class, 'returnScanLookup'])->middleware('area:courier-scan')->name('courier-scan.return-lookup');
+        Route::post('courier-scan/return-confirm', [\App\Http\Controllers\Admin\CourierScanController::class, 'returnScanConfirm'])->middleware('area:courier-scan')->name('courier-scan.return-confirm');
+        Route::post('courier-scan/sync', [\App\Http\Controllers\Admin\CourierScanController::class, 'syncStatuses'])->middleware('area:courier-scan')->name('courier-scan.sync');
+        Route::get('courier-scan/manifest', [\App\Http\Controllers\Admin\CourierScanController::class, 'printManifest'])->middleware('area:courier-scan')->name('courier-scan.manifest');
 
         // Sales, Profit & AOV Analytics
-        Route::get('analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->name('analytics.index');
-        Route::get('analytics/export', [\App\Http\Controllers\Admin\AnalyticsController::class, 'exportCsv'])->name('analytics.export');
+        Route::get('analytics', [\App\Http\Controllers\Admin\AnalyticsController::class, 'index'])->middleware('area:analytics')->name('analytics.index');
+        Route::get('analytics/export', [\App\Http\Controllers\Admin\AnalyticsController::class, 'exportCsv'])->middleware('area:analytics')->name('analytics.export');
 
         // Expense & Marketing Ad Spend Tracking
-        Route::get('expenses', [\App\Http\Controllers\Admin\ExpenseController::class, 'index'])->name('expenses.index');
-        Route::post('expenses', [\App\Http\Controllers\Admin\ExpenseController::class, 'store'])->name('expenses.store');
-        Route::put('expenses/{expense}', [\App\Http\Controllers\Admin\ExpenseController::class, 'update'])->name('expenses.update');
-        Route::delete('expenses/{expense}', [\App\Http\Controllers\Admin\ExpenseController::class, 'destroy'])->name('expenses.destroy');
-        Route::get('expenses/export', [\App\Http\Controllers\Admin\ExpenseController::class, 'exportCsv'])->name('expenses.export');
+        Route::get('expenses', [\App\Http\Controllers\Admin\ExpenseController::class, 'index'])->middleware('area:expenses')->name('expenses.index');
+        Route::post('expenses', [\App\Http\Controllers\Admin\ExpenseController::class, 'store'])->middleware('area:expenses')->name('expenses.store');
+        Route::put('expenses/{expense}', [\App\Http\Controllers\Admin\ExpenseController::class, 'update'])->middleware('area:expenses')->name('expenses.update');
+        Route::delete('expenses/{expense}', [\App\Http\Controllers\Admin\ExpenseController::class, 'destroy'])->middleware('area:expenses')->name('expenses.destroy');
+        Route::get('expenses/export', [\App\Http\Controllers\Admin\ExpenseController::class, 'exportCsv'])->middleware('area:expenses')->name('expenses.export');
 
         // Order & Customer Management Routes (Order Managers & Admins)
-        Route::middleware(['role:order_manager'])->group(function () {
-            Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
-            Route::get('orders/labels', [AdminOrderController::class, 'labels'])->name('orders.labels');
-            Route::get('orders/invoices', [AdminOrderController::class, 'invoices'])->name('orders.invoices');
-            Route::post('orders/prints', [AdminOrderController::class, 'recordPrints'])->name('orders.prints.record');
-            Route::get('orders/prints', [AdminOrderController::class, 'printStatus'])->name('orders.prints.status');
-            Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
-            Route::get('orders/{order}/invoice', [AdminOrderController::class, 'invoice'])->name('orders.invoice');
-            Route::patch('orders/{order}', [AdminOrderController::class, 'update'])->name('orders.update');
-            Route::patch('orders/{order}/customer', [AdminOrderController::class, 'updateCustomer'])->name('orders.update-customer');
-            Route::delete('orders/{order}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');
-            Route::patch('orders/{order}/items/{item}', [AdminOrderController::class, 'updateItemVariant'])->name('orders.items.update-variant');
-            Route::post('orders/{order}/verify', [AdminOrderController::class, 'verify'])->name('orders.verify');
-            Route::post('orders/{order}/reject', [AdminOrderController::class, 'reject'])->name('orders.reject');
-            Route::post('orders/{order}/courier/{provider}', [AdminOrderController::class, 'dispatchCourier'])->name('orders.dispatch-courier');
+        Route::group([], function () { // access per route: middleware('area:…'), see App\Support\StaffAccess
+            Route::get('orders', [AdminOrderController::class, 'index'])->middleware('area:orders')->name('orders.index');
+            Route::get('orders/feed', [AdminOrderController::class, 'feed'])->middleware('area:orders')->name('orders.feed');
+            Route::get('orders/labels', [AdminOrderController::class, 'labels'])->middleware('area:orders')->name('orders.labels');
+            Route::get('orders/invoices', [AdminOrderController::class, 'invoices'])->middleware('area:orders')->name('orders.invoices');
+            Route::post('orders/prints', [AdminOrderController::class, 'recordPrints'])->middleware('area:orders')->name('orders.prints.record');
+            Route::get('orders/prints', [AdminOrderController::class, 'printStatus'])->middleware('area:orders')->name('orders.prints.status');
+            Route::get('orders/{order}', [AdminOrderController::class, 'show'])->middleware('area:orders')->name('orders.show');
+            Route::get('orders/{order}/invoice', [AdminOrderController::class, 'invoice'])->middleware('area:orders')->name('orders.invoice');
+            Route::patch('orders/{order}', [AdminOrderController::class, 'update'])->middleware('area:orders')->name('orders.update');
+            Route::patch('orders/{order}/customer', [AdminOrderController::class, 'updateCustomer'])->middleware('area:orders')->name('orders.update-customer');
+            Route::delete('orders/{order}', [AdminOrderController::class, 'destroy'])->middleware('area:orders')->name('orders.destroy');
+            Route::patch('orders/{order}/items/{item}', [AdminOrderController::class, 'updateItemVariant'])->middleware('area:orders')->name('orders.items.update-variant');
+            Route::post('orders/{order}/verify', [AdminOrderController::class, 'verify'])->middleware('area:orders')->name('orders.verify');
+            Route::post('orders/{order}/switch-to-cod', [AdminOrderController::class, 'switchToCod'])->middleware('area:orders')->name('orders.switch-to-cod');
+            Route::post('orders/{order}/reject', [AdminOrderController::class, 'reject'])->middleware('area:orders')->name('orders.reject');
+            Route::post('orders/{order}/courier-history', [AdminOrderController::class, 'courierHistory'])->middleware('area:orders')->name('orders.courier-history');
+            Route::post('orders/{order}/courier-status', [AdminOrderController::class, 'refreshCourierStatus'])->middleware('area:orders')->name('orders.courier-status');
+            Route::post('orders/{order}/courier/{provider}', [AdminOrderController::class, 'dispatchCourier'])->middleware('area:orders')->name('orders.dispatch-courier');
 
             // Abandoned Carts Recovery
-            Route::get('abandoned-carts', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'index'])->name('abandoned-carts.index');
-            Route::post('abandoned-carts/prune-recovered', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'pruneRecovered'])->name('abandoned-carts.prune-recovered');
-            Route::post('abandoned-carts/prune-old', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'pruneOld'])->name('abandoned-carts.prune-old');
-            Route::post('abandoned-carts/{cart}/send-reminder', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'sendReminder'])->name('abandoned-carts.send-reminder');
-            Route::post('abandoned-carts/{cart}/mark-recovered', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'markRecovered'])->name('abandoned-carts.mark-recovered');
-            Route::delete('abandoned-carts/{cart}', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'destroy'])->name('abandoned-carts.destroy');
+            Route::get('abandoned-carts', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'index'])->middleware('area:abandoned-carts')->name('abandoned-carts.index');
+            Route::post('abandoned-carts/prune-recovered', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'pruneRecovered'])->middleware('area:abandoned-carts')->name('abandoned-carts.prune-recovered');
+            Route::post('abandoned-carts/prune-old', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'pruneOld'])->middleware('area:abandoned-carts')->name('abandoned-carts.prune-old');
+            Route::post('abandoned-carts/{cart}/send-reminder', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'sendReminder'])->middleware('area:abandoned-carts')->name('abandoned-carts.send-reminder');
+            Route::post('abandoned-carts/{cart}/mark-recovered', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'markRecovered'])->middleware('area:abandoned-carts')->name('abandoned-carts.mark-recovered');
+            Route::delete('abandoned-carts/{cart}', [\App\Http\Controllers\Admin\AbandonedCartController::class, 'destroy'])->middleware('area:abandoned-carts')->name('abandoned-carts.destroy');
 
             // Fraud Blacklist & Customers
-            Route::get('blacklist', [\App\Http\Controllers\Admin\BlacklistController::class, 'index'])->name('blacklist.index');
-            Route::post('blacklist', [\App\Http\Controllers\Admin\BlacklistController::class, 'store'])->name('blacklist.store');
-            Route::delete('blacklist/{blacklist}', [\App\Http\Controllers\Admin\BlacklistController::class, 'destroy'])->name('blacklist.destroy');
-            Route::get('customers/export', [AdminCustomerController::class, 'export'])->name('customers.export');
-            Route::get('customers', [AdminCustomerController::class, 'index'])->name('customers.index');
-            Route::get('customers/{phone}', [AdminCustomerController::class, 'show'])->name('customers.show');
-            Route::post('customers/{phone}/toggle-blacklist', [AdminCustomerController::class, 'toggleBlacklist'])->name('customers.toggle-blacklist');
-            Route::post('customers/{phone}/segment-tag', [AdminCustomerController::class, 'updateSegmentTag'])->name('customers.update-segment-tag');
+            Route::get('blacklist', [\App\Http\Controllers\Admin\BlacklistController::class, 'index'])->middleware('area:blacklist')->name('blacklist.index');
+            Route::post('blacklist', [\App\Http\Controllers\Admin\BlacklistController::class, 'store'])->middleware('area:blacklist')->name('blacklist.store');
+            Route::delete('blacklist/{blacklist}', [\App\Http\Controllers\Admin\BlacklistController::class, 'destroy'])->middleware('area:blacklist')->name('blacklist.destroy');
+            Route::get('customers/export', [AdminCustomerController::class, 'export'])->middleware('area:customers')->name('customers.export');
+            Route::get('customers', [AdminCustomerController::class, 'index'])->middleware('area:customers')->name('customers.index');
+            Route::get('customers/{phone}', [AdminCustomerController::class, 'show'])->middleware('area:customers')->name('customers.show');
+            Route::post('customers/{phone}/toggle-blacklist', [AdminCustomerController::class, 'toggleBlacklist'])->middleware('area:customers')->name('customers.toggle-blacklist');
+            Route::post('customers/{phone}/segment-tag', [AdminCustomerController::class, 'updateSegmentTag'])->middleware('area:customers')->name('customers.update-segment-tag');
 
             // Reviews
-            Route::get('reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
-            Route::post('reviews/{review}/approve', [AdminReviewController::class, 'approve'])->name('reviews.approve');
-            Route::post('reviews/{review}/reject', [AdminReviewController::class, 'reject'])->name('reviews.reject');
-            Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
+            Route::get('reviews', [AdminReviewController::class, 'index'])->middleware('area:reviews')->name('reviews.index');
+            Route::post('reviews/{review}/approve', [AdminReviewController::class, 'approve'])->middleware('area:reviews')->name('reviews.approve');
+            Route::post('reviews/{review}/reject', [AdminReviewController::class, 'reject'])->middleware('area:reviews')->name('reviews.reject');
+            Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->middleware('area:reviews')->name('reviews.destroy');
 
 
         });
 
         // Catalog & Inventory Routes (Inventory Managers, Store Managers & Admins)
-        Route::middleware(['role:inventory_manager,store_manager'])->group(function () {
-            Route::get('variations', [\App\Http\Controllers\Admin\VariationController::class, 'index'])->name('variations.index');
-            Route::post('variations/types', [\App\Http\Controllers\Admin\VariationController::class, 'storeType'])->name('variations.types.store');
-            Route::patch('variations/types/{type}', [\App\Http\Controllers\Admin\VariationController::class, 'updateType'])->name('variations.types.update');
-            Route::delete('variations/types/{type}', [\App\Http\Controllers\Admin\VariationController::class, 'destroyType'])->name('variations.types.destroy');
-            Route::post('variations/types/{type}/values', [\App\Http\Controllers\Admin\VariationController::class, 'storeValue'])->name('variations.values.store');
-            Route::delete('variations/values/{value}', [\App\Http\Controllers\Admin\VariationController::class, 'destroyValue'])->name('variations.values.destroy');
+        Route::group([], function () { // access per route: middleware('area:…'), see App\Support\StaffAccess
+            Route::get('variations', [\App\Http\Controllers\Admin\VariationController::class, 'index'])->middleware('area:variations')->name('variations.index');
+            Route::post('variations/types', [\App\Http\Controllers\Admin\VariationController::class, 'storeType'])->middleware('area:variations')->name('variations.types.store');
+            Route::patch('variations/types/{type}', [\App\Http\Controllers\Admin\VariationController::class, 'updateType'])->middleware('area:variations')->name('variations.types.update');
+            Route::delete('variations/types/{type}', [\App\Http\Controllers\Admin\VariationController::class, 'destroyType'])->middleware('area:variations')->name('variations.types.destroy');
+            Route::post('variations/types/{type}/values', [\App\Http\Controllers\Admin\VariationController::class, 'storeValue'])->middleware('area:variations')->name('variations.values.store');
+            Route::delete('variations/values/{value}', [\App\Http\Controllers\Admin\VariationController::class, 'destroyValue'])->middleware('area:variations')->name('variations.values.destroy');
 
-            Route::get('inventory', [AdminInventoryController::class, 'index'])->name('inventory.index');
-            Route::post('inventory/update-stock', [AdminInventoryController::class, 'updateStock'])->name('inventory.update-stock');
-            Route::post('inventory/add-stock', [AdminInventoryController::class, 'addStock'])->name('inventory.add-stock');
-            Route::delete('products/{product}/images/{image}', [AdminProductController::class, 'destroyImage'])->name('products.images.destroy');
-            Route::get('products/export', [AdminProductController::class, 'export'])->name('products.export');
-            Route::get('products/sample-csv', [AdminProductController::class, 'sampleCsv'])->name('products.sample-csv');
-            Route::post('products/import', [AdminProductController::class, 'import'])->name('products.import');
-            Route::post('products/bulk-delete', [AdminProductController::class, 'bulkDelete'])->name('products.bulk-delete');
-            Route::post('products/upload-description-media', [AdminProductController::class, 'uploadDescriptionMedia'])->name('products.upload-description-media');
-            Route::resource('products', AdminProductController::class)->except('show');
-            Route::patch('categories/{category}/toggle-featured', [AdminCategoryController::class, 'toggleFeatured'])->name('categories.toggle-featured');
-            Route::resource('categories', AdminCategoryController::class)->except('show');
-            Route::patch('brands/{brand}/toggle-featured', [AdminBrandController::class, 'toggleFeatured'])->name('brands.toggle-featured');
-            Route::resource('brands', AdminBrandController::class)->except('show');
-            Route::patch('banners/{banner}/toggle', [AdminBannerController::class, 'toggle'])->name('banners.toggle');
-            Route::resource('banners', AdminBannerController::class)->except('show');
-            Route::resource('features', AdminFeatureController::class)->except('show');
-            Route::resource('coupons', AdminCouponController::class)->except('show');
+            Route::get('inventory', [AdminInventoryController::class, 'index'])->middleware('area:inventory')->name('inventory.index');
+            Route::post('inventory/update-stock', [AdminInventoryController::class, 'updateStock'])->middleware('area:inventory')->name('inventory.update-stock');
+            Route::post('inventory/add-stock', [AdminInventoryController::class, 'addStock'])->middleware('area:inventory')->name('inventory.add-stock');
+            Route::delete('products/{product}/images/{image}', [AdminProductController::class, 'destroyImage'])->middleware('area:products')->name('products.images.destroy');
+            Route::get('products/export', [AdminProductController::class, 'export'])->middleware('area:products')->name('products.export');
+            Route::get('products/sample-csv', [AdminProductController::class, 'sampleCsv'])->middleware('area:products')->name('products.sample-csv');
+            Route::post('products/import', [AdminProductController::class, 'import'])->middleware('area:products')->name('products.import');
+            Route::post('products/bulk-delete', [AdminProductController::class, 'bulkDelete'])->middleware('area:products')->name('products.bulk-delete');
+            Route::post('products/upload-description-media', [AdminProductController::class, 'uploadDescriptionMedia'])->middleware('area:products')->name('products.upload-description-media');
+            Route::resource('products', AdminProductController::class)->except('show')->middleware('area:products');
+            Route::patch('categories/{category}/toggle-featured', [AdminCategoryController::class, 'toggleFeatured'])->middleware('area:categories')->name('categories.toggle-featured');
+            Route::resource('categories', AdminCategoryController::class)->except('show')->middleware('area:categories');
+            Route::patch('brands/{brand}/toggle-featured', [AdminBrandController::class, 'toggleFeatured'])->middleware('area:brands')->name('brands.toggle-featured');
+            Route::resource('brands', AdminBrandController::class)->except('show')->middleware('area:brands');
+            Route::patch('banners/{banner}/toggle', [AdminBannerController::class, 'toggle'])->middleware('area:banners')->name('banners.toggle');
+            Route::resource('banners', AdminBannerController::class)->except('show')->middleware('area:banners');
+            Route::resource('features', AdminFeatureController::class)->except('show')->middleware('area:features');
+            Route::resource('coupons', AdminCouponController::class)->except('show')->middleware('area:coupons');
 
             // Media Library
-            Route::get('media', [\App\Http\Controllers\Admin\MediaController::class, 'index'])->name('media.index');
-            Route::post('media/upload', [\App\Http\Controllers\Admin\MediaController::class, 'upload'])->name('media.upload');
-            Route::post('media/optimize', [\App\Http\Controllers\Admin\MediaController::class, 'optimizeSingle'])->name('media.optimize');
-            Route::post('media/bulk-optimize', [\App\Http\Controllers\Admin\MediaController::class, 'bulkOptimize'])->name('media.bulk-optimize');
-            Route::post('media/quality', [\App\Http\Controllers\Admin\MediaController::class, 'saveQuality'])->name('media.quality');
-            Route::post('media/metadata', [\App\Http\Controllers\Admin\MediaController::class, 'updateMetadata'])->name('media.metadata');
-            Route::delete('media/destroy', [\App\Http\Controllers\Admin\MediaController::class, 'destroy'])->name('media.destroy');
-            Route::post('media/bulk-delete', [\App\Http\Controllers\Admin\MediaController::class, 'bulkDelete'])->name('media.bulk-delete');
+            Route::get('media', [\App\Http\Controllers\Admin\MediaController::class, 'index'])->middleware('area:media')->name('media.index');
+            Route::post('media/upload', [\App\Http\Controllers\Admin\MediaController::class, 'upload'])->middleware('area:media')->name('media.upload');
+            Route::post('media/optimize', [\App\Http\Controllers\Admin\MediaController::class, 'optimizeSingle'])->middleware('area:media')->name('media.optimize');
+            Route::post('media/bulk-optimize', [\App\Http\Controllers\Admin\MediaController::class, 'bulkOptimize'])->middleware('area:media')->name('media.bulk-optimize');
+            Route::post('media/quality', [\App\Http\Controllers\Admin\MediaController::class, 'saveQuality'])->middleware('area:media')->name('media.quality');
+            Route::post('media/metadata', [\App\Http\Controllers\Admin\MediaController::class, 'updateMetadata'])->middleware('area:media')->name('media.metadata');
+            Route::delete('media/destroy', [\App\Http\Controllers\Admin\MediaController::class, 'destroy'])->middleware('area:media')->name('media.destroy');
+            Route::post('media/bulk-delete', [\App\Http\Controllers\Admin\MediaController::class, 'bulkDelete'])->middleware('area:media')->name('media.bulk-delete');
 
             // Flash sale
-            Route::get('flash-sale', [AdminFlashSaleController::class, 'index'])->name('flash-sale.index');
-            Route::put('flash-sale/ends-at', [AdminFlashSaleController::class, 'updateEndsAt'])->name('flash-sale.ends-at');
-            Route::put('flash-sale/reorder', [AdminFlashSaleController::class, 'reorder'])->name('flash-sale.reorder');
-            Route::put('flash-sale/{product}/progress', [AdminFlashSaleController::class, 'updateProgress'])->name('flash-sale.progress');
-            Route::post('flash-sale/{product}', [AdminFlashSaleController::class, 'add'])->name('flash-sale.add');
-            Route::delete('flash-sale/{product}', [AdminFlashSaleController::class, 'remove'])->name('flash-sale.remove');
+            Route::get('flash-sale', [AdminFlashSaleController::class, 'index'])->middleware('area:flash-sale')->name('flash-sale.index');
+            Route::put('flash-sale/ends-at', [AdminFlashSaleController::class, 'updateEndsAt'])->middleware('area:flash-sale')->name('flash-sale.ends-at');
+            Route::put('flash-sale/reorder', [AdminFlashSaleController::class, 'reorder'])->middleware('area:flash-sale')->name('flash-sale.reorder');
+            Route::put('flash-sale/{product}/progress', [AdminFlashSaleController::class, 'updateProgress'])->middleware('area:flash-sale')->name('flash-sale.progress');
+            Route::post('flash-sale/{product}', [AdminFlashSaleController::class, 'add'])->middleware('area:flash-sale')->name('flash-sale.add');
+            Route::delete('flash-sale/{product}', [AdminFlashSaleController::class, 'remove'])->middleware('area:flash-sale')->name('flash-sale.remove');
+
+            // Free delivery offer
+            Route::get('free-delivery', [\App\Http\Controllers\Admin\FreeDeliveryController::class, 'index'])->middleware('area:free-delivery')->name('free-delivery.index');
+            Route::put('free-delivery', [\App\Http\Controllers\Admin\FreeDeliveryController::class, 'update'])->middleware('area:free-delivery')->name('free-delivery.update');
+            Route::put('free-delivery/{product}', [\App\Http\Controllers\Admin\FreeDeliveryController::class, 'toggle'])->middleware('area:free-delivery')->name('free-delivery.toggle');
+
+            // News ticker (top headline bar)
+            Route::get('news-ticker', [\App\Http\Controllers\Admin\NewsTickerController::class, 'index'])->middleware('area:news-ticker')->name('news-ticker.index');
+            Route::put('news-ticker', [\App\Http\Controllers\Admin\NewsTickerController::class, 'update'])->middleware('area:news-ticker')->name('news-ticker.update');
 
             // Size Guide
-            Route::get('size-guide', [\App\Http\Controllers\Admin\SizeGuideController::class, 'index'])->name('size-guide.index');
-            Route::put('size-guide', [\App\Http\Controllers\Admin\SizeGuideController::class, 'update'])->name('size-guide.update');
+            Route::get('size-guide', [\App\Http\Controllers\Admin\SizeGuideController::class, 'index'])->middleware('area:size-guide')->name('size-guide.index');
+            Route::put('size-guide', [\App\Http\Controllers\Admin\SizeGuideController::class, 'update'])->middleware('area:size-guide')->name('size-guide.update');
         });
 
         // Super Admin Only Routes (Staff, Audit Logs, Settings, Integrations)
-        Route::middleware(['role:admin'])->group(function () {
-            Route::get('staff', [\App\Http\Controllers\Admin\StaffController::class, 'index'])->name('staff.index');
-            Route::post('staff', [\App\Http\Controllers\Admin\StaffController::class, 'store'])->name('staff.store');
-            Route::patch('staff/{staff}/toggle', [\App\Http\Controllers\Admin\StaffController::class, 'toggleStatus'])->name('staff.toggle');
-            Route::delete('staff/{staff}', [\App\Http\Controllers\Admin\StaffController::class, 'destroy'])->name('staff.destroy');
-            Route::get('activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
-            Route::delete('activity-logs/clear', [\App\Http\Controllers\Admin\ActivityLogController::class, 'clearLogs'])->name('activity-logs.clear');
+        Route::group([], function () { // access per route: middleware('area:…'), see App\Support\StaffAccess
+            Route::get('staff', [\App\Http\Controllers\Admin\StaffController::class, 'index'])->middleware('area:staff')->name('staff.index');
+            Route::post('staff', [\App\Http\Controllers\Admin\StaffController::class, 'store'])->middleware('area:staff')->name('staff.store');
+            Route::patch('staff/{staff}/toggle', [\App\Http\Controllers\Admin\StaffController::class, 'toggleStatus'])->middleware('area:staff')->name('staff.toggle');
+            Route::delete('staff/{staff}', [\App\Http\Controllers\Admin\StaffController::class, 'destroy'])->middleware('area:staff')->name('staff.destroy');
+            Route::get('activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->middleware('area:activity-logs')->name('activity-logs.index');
+            Route::delete('activity-logs/clear', [\App\Http\Controllers\Admin\ActivityLogController::class, 'clearLogs'])->middleware('area:activity-logs')->name('activity-logs.clear');
             
             // API Integrations
-            Route::get('integrations', [AdminIntegrationController::class, 'index'])->name('integrations.index');
-            Route::put('integrations/{section}', [AdminIntegrationController::class, 'update'])->name('integrations.update');
-            Route::post('integrations/test-mail', [AdminIntegrationController::class, 'testMail'])->name('integrations.test-mail');
+            Route::get('integrations', [AdminIntegrationController::class, 'index'])->middleware('area:integrations')->name('integrations.index');
+            Route::get('integrations/bdcourier-plan', [AdminIntegrationController::class, 'bdCourierPlan'])->middleware('area:integrations')->name('integrations.bdcourier-plan');
+            Route::put('integrations/{section}', [AdminIntegrationController::class, 'update'])->middleware('area:integrations')->name('integrations.update');
+            Route::post('integrations/test-mail', [AdminIntegrationController::class, 'testMail'])->middleware('area:integrations')->name('integrations.test-mail');
 
             // System Settings
-            Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
-            Route::put('settings/{section}', [SettingController::class, 'updateSection'])->name('settings.update-section');
-            Route::post('settings/test-mail', [SettingController::class, 'testMail'])->name('settings.test-mail');
+            Route::get('settings', [SettingController::class, 'edit'])->middleware('area:settings')->name('settings.edit');
+            Route::put('settings/{section}', [SettingController::class, 'updateSection'])->middleware('area:settings')->name('settings.update-section');
+            Route::post('settings/test-mail', [SettingController::class, 'testMail'])->middleware('area:settings')->name('settings.test-mail');
         });
 
         // Admin Profile & Security Credentials
