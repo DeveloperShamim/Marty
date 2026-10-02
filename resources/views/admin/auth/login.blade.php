@@ -21,7 +21,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <style>body { font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; }</style>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', 'Hind Siliguri', sans-serif; }
+    /* Prevent mobile auto-zoom on input focus (iOS zooms in if font-size < 16px) */
+    @media screen and (max-width: 768px) { input:not([type="checkbox"]), select, textarea { font-size: 16px !important; } }
+  </style>
 </head>
 <body class="bg-[#F5F8F7] min-h-screen flex items-center justify-center p-4 text-ink">
   <div class="w-full max-w-md">
