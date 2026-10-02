@@ -50,19 +50,19 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Super Admin
         User::updateOrCreate(
-            ['email' => 'admin@marty.com'],
+            ['email' => 'admin@vantbd.com'],
             [
-                'name' => 'Marty Super Admin',
+                'name' => 'Vant Admin',
                 'password' => Hash::make('password'),
                 'role' => 'admin',
-                'phone' => '+880 1700-000000',
+                'phone' => '01775-075543',
                 'email_verified_at' => now(),
             ]
         );
 
         // 2. Store Manager
         User::updateOrCreate(
-            ['email' => 'manager@marty.com'],
+            ['email' => 'manager@vantbd.com'],
             [
                 'name' => 'Tanvir Alam (Store Manager)',
                 'password' => Hash::make('password'),
@@ -74,7 +74,7 @@ class DatabaseSeeder extends Seeder
 
         // 3. Order Manager
         User::updateOrCreate(
-            ['email' => 'orders@marty.com'],
+            ['email' => 'orders@vantbd.com'],
             [
                 'name' => 'Rafi Ahmed (Order Manager)',
                 'password' => Hash::make('password'),
@@ -86,7 +86,7 @@ class DatabaseSeeder extends Seeder
 
         // 4. Inventory Manager
         User::updateOrCreate(
-            ['email' => 'inventory@marty.com'],
+            ['email' => 'inventory@vantbd.com'],
             [
                 'name' => 'Kalam Hossain (Inventory Manager)',
                 'password' => Hash::make('password'),
@@ -98,13 +98,13 @@ class DatabaseSeeder extends Seeder
 
         // 5. Customer Account
         User::updateOrCreate(
-            ['email' => 'customer@marty.com'],
+            ['email' => 'customer@vantbd.com'],
             [
                 'name' => 'Nusrat Jahan',
                 'password' => Hash::make('password'),
                 'role' => 'customer',
                 'phone' => '01700-111111',
-                'address' => 'House 24, Road 7, Dhanmondi',
+                'address' => 'House 12, Road 3, Green Model Town',
                 'city' => 'Dhaka',
                 'postal_code' => '1209',
                 'email_verified_at' => now(),
@@ -116,31 +116,33 @@ class DatabaseSeeder extends Seeder
     private function defaultSettings(): array
     {
         return [
-            'site_name' => 'Marty',
-            'tagline' => 'Smartwatches, Trending Shoes & Premium Gadgets',
-            'logo' => 'uploads/logo.webp',
-            'favicon' => 'uploads/favicon.webp',
-            'footer_text' => 'Marty is your premier destination for 100% authentic smartwatches, trending sneakers, handcrafted leather shoes, and cutting-edge tech gadgets in Bangladesh with fast nationwide delivery.',
-            'contact_phone' => '+880 1700-000000',
-            'whatsapp_number' => '+880 1700-000000',
-            'messenger_url' => 'https://m.me/martybd',
+            'site_name' => 'Vant Bangladesh',
+            'tagline' => 'Genuine Leather. Timeless Style.',
+            'logo' => '',     // no logo yet: the site name is shown instead
+            'favicon' => '',
+            'footer_text' => 'Vant Bangladesh brings you genuine leather wallets, belts, watches, shoes and desk accessories, made to last and delivered anywhere in Bangladesh with cash on delivery.',
+            'contact_phone' => '01775-075543',
+            'whatsapp_number' => '01775-075543',
+            'order_hotline' => '01775-075543',
+            'messenger_url' => '',
             'size_guide_enabled' => '0',
-            'contact_email' => 'support@marty.com',
-            'contact_address' => 'Level 5, Bashundhara City Shopping Mall, Panthapath, Dhaka 1205, Bangladesh',
-            'contact_hours' => 'Saturday–Thursday, 10:00 AM – 9:00 PM',
+            'contact_email' => 'help@vantbd.com',
+            'contact_address' => 'Online store — warehouse: Green Model Town, Dhaka, Bangladesh',
+            'contact_hours' => '9:00 AM – 6:00 PM',
             'contact_title' => 'Customer Support',
-            'contact_intro' => 'Need help choosing a smartwatch, sizing shoes, or tracking an order? Our Marty customer care team is happy to assist.',
-            'search_placeholder' => 'Search smartwatches, sneakers, loafers, earbuds, power banks...',
-            'facebook_url' => 'https://facebook.com/',
-            'instagram_url' => 'https://instagram.com/',
-            'twitter_url' => 'https://twitter.com/',
-            'bkash_number' => '01700-000000',
-            'nagad_number' => '01800-000000',
-            'rocket_number' => '01900-000000',
+            'contact_intro' => 'Need help choosing a wallet, finding your belt or shoe size, or tracking an order? Call or WhatsApp the Vant team.',
+            'search_placeholder' => 'Type your product...',
+            'facebook_url' => '',
+            'instagram_url' => '',
+            'twitter_url' => '',
+            'bkash_number' => '01521-311052',
+            'bkash_account_type' => 'personal',
+            'nagad_number' => '',
+            'rocket_number' => '',
             'pay_cod_enabled' => '1',
             'pay_bkash_enabled' => '1',
-            'pay_nagad_enabled' => '1',
-            'pay_rocket_enabled' => '1',
+            'pay_nagad_enabled' => '0',
+            'pay_rocket_enabled' => '0',
             'show_cards_in_footer' => '1',
             'shipping_inside_dhaka' => '70',
             'shipping_outside_dhaka' => '130',
@@ -149,30 +151,33 @@ class DatabaseSeeder extends Seeder
             'shipping_outside_label' => 'Outside Dhaka',
             'currency_symbol' => '৳',
             'currency_code' => 'BDT',
-            'default_meta_title' => 'Marty — Smartwatches, Shoes & Smart Gadgets Store in Bangladesh',
-            'default_meta_description' => 'Buy 100% authentic Apple Watches, Nike & Adidas shoes, TWS earbuds, and smart gadgets in Bangladesh with warranty and fast delivery.',
-            'default_meta_keywords' => 'Marty, Smartwatches, Nike Shoes, Adidas Sneakers, Apple Watch, AirPods, TWS Earbuds, Gadgets Bangladesh',
+            'default_meta_title' => 'Vant Bangladesh — Genuine Leather Wallets, Belts, Watches & Shoes',
+            'default_meta_description' => 'Shop genuine leather wallets, belts, watches, shoes and desk mats at Vant Bangladesh. Cash on delivery and fast delivery across Bangladesh.',
+            'default_meta_keywords' => 'Vant Bangladesh, vantbd, leather wallet Bangladesh, leather belt, card holder, men\'s watch, leather shoes, leather desk mat, mouse pad',
             'tracking_gtm_id' => '',
             'tracking_ga4_id' => '',
             'tracking_meta_pixel_id' => '',
             'otp_enabled' => '1',
-            'header_promo_text' => 'New Season Drops — Use code <b class="text-amber-300">MARTY10</b> for <b class="text-amber-300">10% OFF</b>',
-            'header_promo_link' => '/shop?flash=1',
-            'shop_subtitle' => 'Our latest smartwatches, trending shoes, audio gear & smart tech arrivals',
-            'flash_sale_ends_at' => now()->addDays(3)->format('Y-m-d H:i:s'),
+            'header_promo_text' => "Cash on delivery all over Bangladesh\nUse code VANT10 for 10% OFF\nFree delivery when you pay with bKash",
+            'header_promo_link' => '/shop',
+            'ticker_label' => 'Hot Deals',
+            'ticker_label_style' => 'dark',
+            'ticker_show_countdown' => '1',
+            'shop_subtitle' => 'Genuine leather wallets, belts, watches, shoes and desk accessories',
             'delivery_eta_text' => 'Estimated delivery within 1–3 business days',
-            'home_categories_title' => 'Explore Product Categories',
+            'home_categories_title' => 'Shop by Category',
+            'home_categories_subtitle' => 'Genuine leather wallets, belts, watches, shoes and desk mats',
             'home_hot_deal_title' => 'Flash Sale Deals',
-            'home_featured_title' => 'Featured Trending Collection',
-            'home_reviews_title' => 'Customer Reviews & Feedback',
+            'home_featured_title' => 'Best of Vant',
+            'home_reviews_title' => 'What Our Customers Say',
             'home_view_more_label' => 'View All Products',
             'default_cta_text' => 'Add to Cart',
-            'hero_fallback_badge' => 'Marty Lifestyle & Tech Store',
-            'hero_fallback_title' => "100% Authentic Smartwatches,\nShoes & Tech Essentials",
-            'hero_fallback_subtitle' => 'Official Apple & Samsung smartwatches, Nike & Adidas sneakers, and smart gadgets delivered to your door with genuine warranty.',
-            'show_featured_brands' => '1',
-            'home_featured_brands_title' => 'Featured Top Brands',
-            'home_featured_brands_subtitle' => 'Shop authentic products directly from globally trusted brands',
+            'hero_fallback_badge' => 'Vant Bangladesh',
+            'hero_fallback_title' => "Genuine Leather,\nMade to Last",
+            'hero_fallback_subtitle' => 'Wallets, belts, watches, shoes and desk mats in real leather, delivered to your door with cash on delivery.',
+            'show_featured_brands' => '0', // one house brand: no brand carousel
+            'home_featured_brands_title' => 'Our Brands',
+            'home_featured_brands_subtitle' => 'Quality leather goods you can trust',
             'terms_content' => '',
             'privacy_content' => '',
             'mail_mailer' => 'log',
@@ -181,11 +186,12 @@ class DatabaseSeeder extends Seeder
             'mail_username' => '',
             'mail_password' => '',
             'mail_encryption' => 'tls',
-            'mail_from_address' => 'no-reply@marty.com',
-            'mail_from_name'    => 'Marty',
-            'theme_primary_color'  => '#2563EB',
-            'theme_dark_color'     => '#0F172A',
-            'theme_surface_color'  => '#F8FAFC',
+            'mail_from_address' => 'no-reply@vantbd.com',
+            'mail_from_name'    => 'Vant Bangladesh',
+            // Leather theme: saddle brown, espresso, warm cream
+            'theme_primary_color'  => '#8B5A2B',
+            'theme_dark_color'     => '#2B1D14',
+            'theme_surface_color'  => '#FAF7F2',
         ];
     }
 
@@ -206,11 +212,11 @@ class DatabaseSeeder extends Seeder
     private function seedProductionEssentials(): void
     {
         if (! User::where('role', 'admin')->exists()) {
-            $email = env('ADMIN_EMAIL') ?: 'admin@' . (parse_url((string) config('app.url'), PHP_URL_HOST) ?: 'example.com');
+            $email = env('ADMIN_EMAIL') ?: 'admin@vantbd.com';
             $password = env('ADMIN_PASSWORD') ?: Str::password(16, symbols: false);
 
             User::create([
-                'name'              => 'Store Admin',
+                'name'              => 'Vant Admin',
                 'email'             => $email,
                 'password'          => Hash::make($password),
                 'role'              => 'admin',
@@ -220,15 +226,12 @@ class DatabaseSeeder extends Seeder
             $this->command?->warn("Admin account: {$email}" . (env('ADMIN_PASSWORD') ? ' (password from ADMIN_PASSWORD)' : "  password: {$password}  <- save it now, it is not shown again"));
         }
 
-        // Sample contact, payment and social details must not go live; the shop owner fills them in.
+        // The defaults are Vant Bangladesh's real details. Only things not set up yet stay blank.
         $blank = [
-            'contact_phone', 'whatsapp_number', 'messenger_url', 'contact_email', 'contact_address',
-            'facebook_url', 'instagram_url', 'twitter_url', 'bkash_number', 'nagad_number', 'rocket_number',
-            'header_promo_text', 'header_promo_link', 'flash_sale_ends_at', 'mail_from_address',
+            'messenger_url', 'facebook_url', 'instagram_url', 'twitter_url',
+            'nagad_number', 'rocket_number', 'flash_sale_ends_at',
         ];
         $settings = array_merge($this->defaultSettings(), array_fill_keys($blank, ''), [
-            'site_name'      => config('app.name') ?: 'My Store',
-            'mail_from_name' => config('app.name') ?: 'My Store',
             'otp_enabled'    => '0', // needs a working mail server first
         ]);
 
@@ -245,41 +248,11 @@ class DatabaseSeeder extends Seeder
         Category::query()->delete();
 
         $data = [
-            [
-                'Smartwatches & Watches',
-                'watches',
-                '⌚',
-                'Apple Watch, Samsung Galaxy Watch, Amazfit & classic chronograph timepieces.',
-                'https://adminapi.applegadgetsbd.com/storage/media/large/Apple-Watch-Series-10-Aluminum-Silver-7765.jpg',
-            ],
-            [
-                'Shoes & Footwear',
-                'shoes',
-                '👟',
-                'Trending sneakers, running shoes, loafers, and handcrafted leather footwear.',
-                'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&h=600&q=80',
-            ],
-            [
-                'Audio & Earbuds',
-                'audio-gadgets',
-                '🎧',
-                'High-fidelity TWS earbuds, noise-canceling headphones & portable Bluetooth speakers.',
-                'https://adminapi.applegadgetsbd.com/storage/media/large/AirPods-Pro-(2nd-generation)-USB‐C1a-9576.png',
-            ],
-            [
-                'Smart Gadgets & Power',
-                'gadgets',
-                '⚡',
-                'MagSafe wireless chargers, GaN fast adapters, and high-capacity power banks.',
-                'https://adminapi.applegadgetsbd.com/storage/media/thumb/Maxco-MW11-Geometry-Series-3-in-1-Magsafe-Wireless-Charger-3-6253.jpg',
-            ],
-            [
-                'Bags & Accessories',
-                'accessories',
-                '👜',
-                'The Patchee luxury tote bags, crossbody side bags & genuine leather wallets.',
-                'https://cdn.shopify.com/s/files/1/0916/6736/6162/files/Patchee-Logo-2025_4.png?v=1747217855&width=600',
-            ],
+            ['Wallets & Card Holders', 'wallets', '👛', 'Genuine leather bifold, trifold and long wallets, plus slim card holders.', 'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Belts', 'belts', '🪢', 'Formal and casual leather belts with solid metal buckles.', 'https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Watches', 'watches', '⌚', 'Classic leather-strap and stainless steel watches for men and women.', 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Shoes', 'shoes', '👞', 'Leather oxfords, monk straps, derbies, boots and sandals.', 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Leather Mouse Pads', 'mouse-pads', '🖱️', 'Leather mouse pads and desk mats for a clean, premium workspace.', 'https://images.unsplash.com/photo-1629429407759-01cd3d7cfb38?auto=format&fit=crop&w=600&h=600&q=80'],
         ];
 
         $categories = [];
@@ -294,8 +267,8 @@ class DatabaseSeeder extends Seeder
                     'position' => $index,
                     'is_active' => true,
                     'is_featured' => true,
-                    'meta_title' => "{$name} — Marty Online Store",
-                    'meta_description' => "Shop 100% authentic {$name} in Bangladesh with warranty and fast delivery.",
+                    'meta_title' => "{$name} — Vant Bangladesh",
+                    'meta_description' => "Shop genuine leather {$name} in Bangladesh at Vant. Cash on delivery and fast delivery.",
                 ]
             );
         }
@@ -307,108 +280,21 @@ class DatabaseSeeder extends Seeder
     {
         Brand::query()->delete();
 
-        $brandList = [
-            [
-                'name' => 'Apple',
-                'slug' => 'apple',
-                'logo' => 'https://adminapi.applegadgetsbd.com/storage/media/large/logo-3717.png',
-                'banner' => 'https://images.unsplash.com/photo-1510519138161-5844a492711f?auto=format&fit=crop&w=800&h=800&q=80',
-                'description' => 'Official Apple Watch, AirPods Pro, MagSafe accessories and premium tech devices.',
-                'website' => 'https://apple.com',
-                'is_featured' => true,
-                'position' => 1,
-            ],
-            [
-                'name' => 'Samsung',
-                'slug' => 'samsung',
-                'logo' => 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=400&h=400&q=80',
-                'banner' => 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&h=800&q=80',
-                'description' => 'Galaxy Watch, Galaxy Buds, and smart wearables with advanced health monitoring.',
-                'website' => 'https://samsung.com',
-                'is_featured' => true,
-                'position' => 2,
-            ],
-            [
-                'name' => 'Nike',
-                'slug' => 'nike',
-                'logo' => 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&h=400&q=80',
-                'banner' => 'https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=800&h=800&q=80',
-                'description' => 'World-renowned footwear brand delivering iconic Air Force 1, Pegasus, and running shoes.',
-                'website' => 'https://nike.com',
-                'is_featured' => true,
-                'position' => 3,
-            ],
-            [
-                'name' => 'Adidas',
-                'slug' => 'adidas',
-                'logo' => 'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?auto=format&fit=crop&w=400&h=400&q=80',
-                'banner' => 'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?auto=format&fit=crop&w=800&h=800&q=80',
-                'description' => 'Trending lifestyle sneakers and high-performance athletic footwear including Ultraboost and Samba.',
-                'website' => 'https://adidas.com',
-                'is_featured' => true,
-                'position' => 4,
-            ],
-            [
-                'name' => 'Anker',
-                'slug' => 'anker',
-                'logo' => 'https://images.unsplash.com/photo-1628149455678-16f37bc392f4?auto=format&fit=crop&w=400&h=400&q=80',
-                'banner' => 'https://images.unsplash.com/photo-1628149455678-16f37bc392f4?auto=format&fit=crop&w=800&h=800&q=80',
-                'description' => 'Global leader in smart charging technology, GaN adapters, and Soundcore audio gear.',
-                'website' => 'https://anker.com',
-                'is_featured' => true,
-                'position' => 5,
-            ],
-            [
-                'name' => 'The Patchee',
-                'slug' => 'the-patchee',
-                'logo' => 'https://thepatchee.com/cdn/shop/files/The_Patchee-Logo-05.png',
-                'banner' => 'https://thepatchee.com/cdn/shop/files/Patchee-Logo-2025_4.png',
-                'description' => 'Chic, premium tote bags, crossbody side bags, and handcrafted leather accessories.',
-                'website' => 'https://thepatchee.com',
-                'is_featured' => true,
-                'position' => 6,
-            ],
-            [
-                'name' => 'Amazfit',
-                'slug' => 'amazfit',
-                'logo' => 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&h=400&q=80',
-                'banner' => 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&h=800&q=80',
-                'description' => 'High-precision GPS fitness smartwatches with ultra-long battery life and AMOLED displays.',
-                'website' => 'https://amazfit.com',
-                'is_featured' => true,
-                'position' => 7,
-            ],
-            [
-                'name' => 'JBL',
-                'slug' => 'jbl',
-                'logo' => 'https://adminapi.applegadgetsbd.com/storage/media/thumb/JBL-GO-4-Portable-Waterproof-Speaker-Blue-3987.jpg',
-                'banner' => 'https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&h=800&q=80',
-                'description' => 'Legendary pro sound, waterproof portable Bluetooth speakers, and high-bass wireless audio.',
-                'website' => 'https://jbl.com',
-                'is_featured' => true,
-                'position' => 8,
-            ],
-        ];
+        $vant = Brand::create([
+            'name' => 'Vant',
+            'slug' => 'vant',
+            'logo' => null,
+            'banner' => 'https://images.unsplash.com/photo-1606503825008-909a67e63c3d?auto=format&fit=crop&w=800&h=800&q=80',
+            'description' => 'Vant Bangladesh house brand: genuine leather goods made for everyday use.',
+            'website' => 'https://vantbd.com',
+            'position' => 0,
+            'is_active' => true,
+            'is_featured' => true,
+            'meta_title' => 'Vant Leather Products — Vant Bangladesh',
+            'meta_description' => 'Shop Vant genuine leather wallets, belts, watches, shoes and desk mats in Bangladesh.',
+        ]);
 
-        $brands = [];
-        foreach ($brandList as $b) {
-            $brand = Brand::create([
-                'name' => $b['name'],
-                'slug' => $b['slug'],
-                'logo' => $b['logo'],
-                'banner' => $b['banner'],
-                'description' => $b['description'],
-                'website' => $b['website'],
-                'position' => $b['position'],
-                'is_active' => true,
-                'is_featured' => $b['is_featured'],
-                'meta_title' => "Buy {$b['name']} Products Online in Bangladesh — Marty",
-                'meta_description' => "Shop 100% authentic {$b['name']} products at best prices in Bangladesh with warranty and fast delivery.",
-            ]);
-            $brands[$b['name']] = $brand;
-        }
-
-        return $brands;
+        return ['Vant' => $vant];
     }
 
     private function seedFeatures(): void
@@ -416,30 +302,14 @@ class DatabaseSeeder extends Seeder
         Feature::query()->delete();
 
         $features = [
-            [
-                'Nationwide Delivery',
-                'Fast, tracked shipping in Bangladesh',
-                'M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0',
-                0,
-            ],
-            [
-                '100% Genuine Products',
-                'Direct source & genuine warranty',
-                'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-                1,
-            ],
-            [
-                'Flexible Payments',
-                'Cash on delivery & mobile banking',
-                'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z',
-                2,
-            ],
-            [
-                'Dedicated Support',
-                'Sat–Thu: 10:00 AM – 9:00 PM',
-                'M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z',
-                3,
-            ],
+            ['Genuine Leather', 'Real leather, checked by hand',
+                'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z', 0],
+            ['Cash on Delivery', 'Pay when your parcel arrives',
+                'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 1],
+            ['Nationwide Delivery', 'Tracked parcels to all 64 districts',
+                'M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0', 2],
+            ['Help 9 AM – 6 PM', 'Call or WhatsApp 01775-075543',
+                'M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z', 3],
         ];
 
         foreach ($features as [$title, $subtitle, $icon, $position]) {
@@ -458,35 +328,25 @@ class DatabaseSeeder extends Seeder
         Coupon::query()->delete();
 
         Coupon::create([
-            'code' => 'MARTY10',
-            'description' => '10% Off New Season Collection',
+            'code' => 'VANT10',
+            'description' => '10% off orders of ৳1,500 or more',
             'type' => 'percentage',
             'value' => 10,
-            'min_order_amount' => 2000,
+            'min_order_amount' => 1500,
+            'max_discount' => 500,
             'starts_at' => now()->subDay(),
             'expires_at' => now()->addMonth(),
             'is_active' => true,
         ]);
 
         Coupon::create([
-            'code' => 'LUXE500',
-            'description' => '৳500 Flat Discount on Orders ৳5000+',
+            'code' => 'LEATHER300',
+            'description' => '৳300 off orders of ৳4,000 or more',
             'type' => 'fixed',
-            'value' => 500,
-            'min_order_amount' => 5000,
+            'value' => 300,
+            'min_order_amount' => 4000,
             'starts_at' => now()->subDay(),
             'expires_at' => now()->addMonths(2),
-            'is_active' => true,
-        ]);
-
-        Coupon::create([
-            'code' => 'FREESHIP',
-            'description' => 'Free Shipping Special Offer',
-            'type' => 'fixed',
-            'value' => 130,
-            'min_order_amount' => 3000,
-            'starts_at' => now()->subDay(),
-            'expires_at' => now()->addWeeks(3),
             'is_active' => true,
         ]);
     }
@@ -496,423 +356,350 @@ class DatabaseSeeder extends Seeder
         Product::query()->delete();
 
         $productsData = [
-            // ================= 1. WATCHES & SMARTWATCHES =================
+            // ================= WALLETS & CARD HOLDERS =================
             [
-                'name' => 'Apple Watch Series 10 (GPS) - Aluminum Case with Sport Band',
-                'slug' => 'apple-watch-series-10-aluminum',
-                'brand' => 'Apple',
-                'category' => 'watches',
-                'regular_price' => 52000,
-                'sale_price' => 48500,
-                'unit' => 'Piece',
-                'variant_type' => 'Case Size',
-                'options' => ['42mm', '46mm'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://adminapi.applegadgetsbd.com/storage/media/large/Apple-Watch-Series-10-Aluminum-Silver-7765.jpg',
-                    'https://adminapi.applegadgetsbd.com/storage/media/medium/Apple-Watch-Series-12d-5661.png',
-                ],
-            ],
-            [
-                'name' => 'Apple Watch Ultra 2 (GPS + Cellular) - Titanium Case',
-                'slug' => 'apple-watch-ultra-2-titanium',
-                'brand' => 'Apple',
-                'category' => 'watches',
-                'regular_price' => 98000,
-                'sale_price' => 92500,
-                'unit' => 'Piece',
-                'variant_type' => 'Band Color',
-                'options' => ['Orange Ocean Band', 'Midnight Trail Loop', 'Blue Ocean Band'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://adminapi.applegadgetsbd.com/storage/media/medium/Apple-Watch-Ultra-4jjj-4058.png',
-                    'https://adminapi.applegadgetsbd.com/storage/media/large/Apple-Watch-Series-10-Aluminum-Silver-7765.jpg',
-                ],
-            ],
-            [
-                'name' => 'Samsung Galaxy Watch 6 Classic - Rotating Bezel Smartwatch',
-                'slug' => 'samsung-galaxy-watch-6-classic',
-                'brand' => 'Samsung',
-                'category' => 'watches',
-                'regular_price' => 38000,
-                'sale_price' => 34500,
-                'unit' => 'Piece',
-                'variant_type' => 'Case Size',
-                'options' => ['43mm', '47mm'],
-                'is_featured' => true,
-                'is_new' => false,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'Amazfit Balance Smartwatch - AMOLED GPS Health & Fitness Watch',
-                'slug' => 'amazfit-balance-smartwatch',
-                'brand' => 'Amazfit',
-                'category' => 'watches',
-                'regular_price' => 24500,
-                'sale_price' => 21900,
+                'name' => 'Vant Classic Bifold Leather Wallet',
+                'slug' => 'vant-classic-bifold-wallet',
+                'brand' => 'Vant',
+                'category' => 'wallets',
+                'regular_price' => 1450,
+                'sale_price' => 1190,
                 'unit' => 'Piece',
                 'variant_type' => 'Color',
-                'options' => ['Midnight Black', 'Sunset Grey'],
-                'is_featured' => false,
-                'is_new' => true,
-                'is_best_seller' => false,
-                'images' => [
-                    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-
-            // ================= 2. SHOES & FOOTWEAR =================
-            [
-                'name' => "Nike Air Force 1 '07 Classic Triple White Sneakers",
-                'slug' => 'nike-air-force-1-07-triple-white',
-                'brand' => 'Nike',
-                'category' => 'shoes',
-                'regular_price' => 14500,
-                'sale_price' => 12800,
-                'unit' => 'Pair',
-                'variant_type' => 'Shoe Size',
-                'options' => ['EU 40', 'EU 41', 'EU 42', 'EU 43', 'EU 44'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'Nike Air Zoom Pegasus 40 Road Running Shoes',
-                'slug' => 'nike-air-zoom-pegasus-40',
-                'brand' => 'Nike',
-                'category' => 'shoes',
-                'regular_price' => 15800,
-                'sale_price' => 13900,
-                'unit' => 'Pair',
-                'variant_type' => 'Shoe Size',
-                'options' => ['EU 41', 'EU 42', 'EU 43', 'EU 44'],
-                'is_featured' => true,
-                'is_new' => false,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'Adidas Ultraboost Light Running Shoes - Core Black',
-                'slug' => 'adidas-ultraboost-light-core-black',
-                'brand' => 'Adidas',
-                'category' => 'shoes',
-                'regular_price' => 18500,
-                'sale_price' => 16200,
-                'unit' => 'Pair',
-                'variant_type' => 'Shoe Size',
-                'options' => ['EU 40', 'EU 41', 'EU 42', 'EU 43', 'EU 44'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'Adidas Samba OG Classic Leather Sneakers - White & Black',
-                'slug' => 'adidas-samba-og-classic',
-                'brand' => 'Adidas',
-                'category' => 'shoes',
-                'regular_price' => 13500,
-                'sale_price' => 11900,
-                'unit' => 'Pair',
-                'variant_type' => 'Shoe Size',
-                'options' => ['EU 40', 'EU 41', 'EU 42', 'EU 43'],
-                'is_featured' => true,
-                'is_new' => false,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1518002171953-a080ee817e1f?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'Handcrafted Premium Leather Chelsea Boots - Cognac Tan',
-                'slug' => 'handcrafted-premium-leather-chelsea-boots',
-                'brand' => 'The Patchee',
-                'category' => 'shoes',
-                'regular_price' => 8500,
-                'sale_price' => 7400,
-                'unit' => 'Pair',
-                'variant_type' => 'Shoe Size',
-                'options' => ['EU 40', 'EU 41', 'EU 42', 'EU 43', 'EU 44'],
-                'is_featured' => false,
-                'is_new' => true,
-                'is_best_seller' => false,
-                'images' => [
-                    'https://images.unsplash.com/photo-1638247025967-b4e38f787b76?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-
-            // ================= 3. AUDIO & EARBUDS =================
-            [
-                'name' => 'Apple AirPods Pro (2nd Generation) with MagSafe Case (USB-C)',
-                'slug' => 'apple-airpods-pro-2nd-gen-usbc',
-                'brand' => 'Apple',
-                'category' => 'audio-gadgets',
-                'regular_price' => 31000,
-                'sale_price' => 28500,
-                'unit' => 'Piece',
-                'variant_type' => 'Color',
-                'options' => ['Glossy White'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://adminapi.applegadgetsbd.com/storage/media/large/AirPods-Pro-(2nd-generation)-USB‐C1a-9576.png',
-                    'https://adminapi.applegadgetsbd.com/storage/media/medium/Apple-AirPods-5-2202.png',
-                ],
-            ],
-            [
-                'name' => 'Anker Soundcore Liberty 4 NC True Wireless Noise Canceling Earbuds',
-                'slug' => 'anker-soundcore-liberty-4-nc',
-                'brand' => 'Anker',
-                'category' => 'audio-gadgets',
-                'regular_price' => 9500,
-                'sale_price' => 8400,
-                'unit' => 'Piece',
-                'variant_type' => 'Color',
-                'options' => ['Velvet Black', 'Clear White', 'Navy Blue'],
-                'is_featured' => true,
-                'is_new' => false,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'Samsung Galaxy Buds2 Pro - 24-bit Hi-Fi Sound & ANC',
-                'slug' => 'samsung-galaxy-buds2-pro',
-                'brand' => 'Samsung',
-                'category' => 'audio-gadgets',
-                'regular_price' => 19500,
-                'sale_price' => 17400,
-                'unit' => 'Piece',
-                'variant_type' => 'Color',
-                'options' => ['Graphite', 'White', 'Bora Purple'],
-                'is_featured' => false,
-                'is_new' => false,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'JBL Flip 6 Portable Waterproof Bluetooth Speaker',
-                'slug' => 'jbl-flip-6-portable-bluetooth-speaker',
-                'brand' => 'JBL',
-                'category' => 'audio-gadgets',
-                'regular_price' => 13500,
-                'sale_price' => 11800,
-                'unit' => 'Piece',
-                'variant_type' => 'Color',
-                'options' => ['Midnight Black', 'Ocean Blue', 'Squad Camo'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://adminapi.applegadgetsbd.com/storage/media/thumb/JBL-GO-4-Portable-Waterproof-Speaker-Blue-3987.jpg',
-                    'https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-
-            // ================= 4. SMART GADGETS & POWER =================
-            [
-                'name' => 'Anker 737 Power Bank (PowerCore 24K 140W Fast Charging)',
-                'slug' => 'anker-737-power-bank-24k-140w',
-                'brand' => 'Anker',
-                'category' => 'gadgets',
-                'regular_price' => 15500,
-                'sale_price' => 13800,
-                'unit' => 'Piece',
-                'variant_type' => 'Color',
-                'options' => ['Space Gray'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1628149455678-16f37bc392f4?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1609592424109-dd9892f1b177?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'Maxco MW11 Geometry 3-in-1 MagSafe Fast Wireless Charger',
-                'slug' => 'maxco-mw11-3in1-magsafe-charger',
-                'brand' => 'Apple',
-                'category' => 'gadgets',
-                'regular_price' => 4500,
-                'sale_price' => 3800,
-                'unit' => 'Piece',
-                'variant_type' => 'Color',
-                'options' => ['Matte Black', 'Arctic White'],
-                'is_featured' => true,
-                'is_new' => false,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://adminapi.applegadgetsbd.com/storage/media/thumb/Maxco-MW11-Geometry-Series-3-in-1-Magsafe-Wireless-Charger-3-6253.jpg',
-                    'https://images.unsplash.com/photo-1628149455678-16f37bc392f4?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'Apple 20W USB-C Fast Power Adapter (Original)',
-                'slug' => 'apple-20w-usbc-power-adapter',
-                'brand' => 'Apple',
-                'category' => 'gadgets',
-                'regular_price' => 3200,
-                'sale_price' => 2650,
-                'unit' => 'Piece',
-                'variant_type' => 'Plug Type',
-                'options' => ['UK 3-Pin', 'US 2-Pin'],
-                'is_featured' => false,
-                'is_new' => false,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://images.unsplash.com/photo-1609592424109-dd9892f1b177?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://images.unsplash.com/photo-1628149455678-16f37bc392f4?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'Apple iPhone 18 Pro Max — Titanium Edition',
-                'slug' => 'apple-iphone-18-pro-max',
-                'brand' => 'Apple',
-                'category' => 'gadgets',
-                'regular_price' => 189000,
-                'sale_price' => 175000,
-                'unit' => 'Piece',
-                'variant_type' => 'Storage',
-                'options' => ['256GB', '512GB', '1TB'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'uploads/banners/hero_slider_iphone_18_pro.jpg',
-                ],
-            ],
-            [
-                'name' => 'Apple Mac Mini M6 & M5 Pro — The Mini Reinvented',
-                'slug' => 'apple-mac-mini-m6-pro',
-                'brand' => 'Apple',
-                'category' => 'gadgets',
-                'regular_price' => 98000,
-                'sale_price' => 89500,
-                'unit' => 'Piece',
-                'variant_type' => 'Configuration',
-                'options' => ['M6 Chip (16GB/512GB)', 'M5 Pro (24GB/1TB)'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'uploads/banners/hero_slider_mac_mini_m6.jpg',
-                ],
-            ],
-            [
-                'name' => 'Samsung Galaxy S26 Ultra 5G — Galaxy AI Flagship',
-                'slug' => 'samsung-galaxy-s26-ultra',
-                'brand' => 'Samsung',
-                'category' => 'gadgets',
-                'regular_price' => 165000,
-                'sale_price' => 155000,
-                'unit' => 'Piece',
-                'variant_type' => 'Storage',
-                'options' => ['12GB / 256GB', '12GB / 512GB'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => false,
-                'images' => [
-                    'uploads/banners/hero_slider_samsung_s26.jpg',
-                ],
-            ],
-            [
-                'name' => 'Apple MacBook Neo — Liquid Retina 13-inch',
-                'slug' => 'apple-macbook-neo',
-                'brand' => 'Apple',
-                'category' => 'gadgets',
-                'regular_price' => 92000,
-                'sale_price' => 85999,
-                'unit' => 'Piece',
-                'variant_type' => 'Color',
-                'options' => ['Silver', 'Space Gray', 'Midnight Blue', 'Starlight Gold'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'uploads/banners/hero_promo_macbook_neo.jpg',
-                ],
-            ],
-
-            // ================= 5. BAGS & ACCESSORIES =================
-            [
-                'name' => 'The Patchee Elegant Canvas & Leather Work Tote Bag',
-                'slug' => 'the-patchee-elegant-canvas-leather-tote',
-                'brand' => 'The Patchee',
-                'category' => 'accessories',
-                'regular_price' => 4200,
-                'sale_price' => 3650,
-                'unit' => 'Piece',
-                'variant_type' => 'Color',
-                'options' => ['Classic Tan', 'Midnight Black', 'Espresso Brown'],
-                'is_featured' => true,
-                'is_new' => true,
-                'is_best_seller' => true,
-                'images' => [
-                    'https://thepatchee.com/cdn/shop/files/Patchee-Logo-2025_4.png',
-                    'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&h=800&q=80',
-                ],
-            ],
-            [
-                'name' => 'The Patchee Handcrafted Genuine Leather Crossbody Side Bag',
-                'slug' => 'the-patchee-leather-crossbody-bag',
-                'brand' => 'The Patchee',
-                'category' => 'accessories',
-                'regular_price' => 3800,
-                'sale_price' => 3200,
-                'unit' => 'Piece',
-                'variant_type' => 'Color',
-                'options' => ['Vintage Brown', 'Matte Black'],
-                'is_featured' => false,
-                'is_new' => true,
-                'is_best_seller' => false,
-                'images' => [
-                    'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://thepatchee.com/cdn/shop/files/Patchee-Logo-2025_4.png',
-                ],
-            ],
-            [
-                'name' => 'The Patchee Slim Bifold RFID Protected Leather Wallet',
-                'slug' => 'the-patchee-slim-bifold-rfid-wallet',
-                'brand' => 'The Patchee',
-                'category' => 'accessories',
-                'regular_price' => 1950,
-                'sale_price' => 1650,
-                'unit' => 'Piece',
-                'variant_type' => 'Color',
-                'options' => ['Dark Brown', 'Pitch Black'],
+                'options' => ['Brown', 'Black', 'Tan'],
                 'is_featured' => true,
                 'is_new' => false,
                 'is_best_seller' => true,
                 'images' => [
                     'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80',
-                    'https://thepatchee.com/cdn/shop/files/Patchee-Logo-2025_4.png',
+                    'https://images.unsplash.com/photo-1606503825008-909a67e63c3d?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Slim Leather Card Holder',
+                'slug' => 'vant-slim-card-holder',
+                'brand' => 'Vant',
+                'category' => 'wallets',
+                'regular_price' => 750,
+                'sale_price' => 650,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Brown', 'Black'],
+                'is_featured' => false,
+                'is_new' => true,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1606503825008-909a67e63c3d?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Long Zip Leather Wallet',
+                'slug' => 'vant-long-zip-wallet',
+                'brand' => 'Vant',
+                'category' => 'wallets',
+                'regular_price' => 1850,
+                'sale_price' => 1590,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Brown', 'Black'],
+                'is_featured' => true,
+                'is_new' => true,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1606503825008-909a67e63c3d?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Trifold Leather Wallet',
+                'slug' => 'vant-trifold-wallet',
+                'brand' => 'Vant',
+                'category' => 'wallets',
+                'regular_price' => 1350,
+                'sale_price' => 1150,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Brown', 'Black', 'Tan'],
+                'is_featured' => false,
+                'is_new' => false,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1606503825008-909a67e63c3d?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            // ================= BELTS =================
+            [
+                'name' => 'Vant Formal Leather Belt (Pin Buckle)',
+                'slug' => 'vant-formal-leather-belt',
+                'brand' => 'Vant',
+                'category' => 'belts',
+                'regular_price' => 1650,
+                'sale_price' => 1390,
+                'unit' => 'Piece',
+                'variant_type' => 'Waist Size',
+                'options' => ['32', '34', '36', '38', '40'],
+                'is_featured' => true,
+                'is_new' => false,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1666723043169-22e29545675c?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Casual Tan Leather Belt',
+                'slug' => 'vant-casual-tan-belt',
+                'brand' => 'Vant',
+                'category' => 'belts',
+                'regular_price' => 1550,
+                'sale_price' => 1290,
+                'unit' => 'Piece',
+                'variant_type' => 'Waist Size',
+                'options' => ['32', '34', '36', '38', '40'],
+                'is_featured' => false,
+                'is_new' => true,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1666723043169-22e29545675c?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Reversible Black & Brown Belt',
+                'slug' => 'vant-reversible-belt',
+                'brand' => 'Vant',
+                'category' => 'belts',
+                'regular_price' => 1850,
+                'sale_price' => 1590,
+                'unit' => 'Piece',
+                'variant_type' => 'Waist Size',
+                'options' => ['32', '34', '36', '38', '40'],
+                'is_featured' => false,
+                'is_new' => false,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1666723043169-22e29545675c?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            // ================= WATCHES =================
+            [
+                'name' => 'Vant Classic Leather Strap Watch',
+                'slug' => 'vant-classic-leather-watch',
+                'brand' => 'Vant',
+                'category' => 'watches',
+                'regular_price' => 3450,
+                'sale_price' => 2990,
+                'unit' => 'Piece',
+                'variant_type' => 'Strap Color',
+                'options' => ['Brown', 'Black'],
+                'is_featured' => true,
+                'is_new' => false,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Rose Dial Ladies Watch',
+                'slug' => 'vant-rose-dial-ladies-watch',
+                'brand' => 'Vant',
+                'category' => 'watches',
+                'regular_price' => 3250,
+                'sale_price' => 2850,
+                'unit' => 'Piece',
+                'variant_type' => 'Strap Color',
+                'options' => ['Brown', 'Tan'],
+                'is_featured' => false,
+                'is_new' => true,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Chronograph Steel Watch',
+                'slug' => 'vant-chronograph-steel-watch',
+                'brand' => 'Vant',
+                'category' => 'watches',
+                'regular_price' => 5450,
+                'sale_price' => 4790,
+                'unit' => 'Piece',
+                'variant_type' => 'Dial Color',
+                'options' => ['Black', 'White'],
+                'is_featured' => true,
+                'is_new' => true,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1539874754764-5a96559165b0?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Diver Stainless Steel Watch',
+                'slug' => 'vant-diver-steel-watch',
+                'brand' => 'Vant',
+                'category' => 'watches',
+                'regular_price' => 4950,
+                'sale_price' => 4450,
+                'unit' => 'Piece',
+                'variant_type' => 'Dial Color',
+                'options' => ['Black', 'Silver'],
+                'is_featured' => false,
+                'is_new' => false,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1587836374828-4dbafa94cf0e?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            // ================= SHOES =================
+            [
+                'name' => 'Vant Leather Oxford Shoes',
+                'slug' => 'vant-leather-oxford-shoes',
+                'brand' => 'Vant',
+                'category' => 'shoes',
+                'regular_price' => 4250,
+                'sale_price' => 3690,
+                'unit' => 'Piece',
+                'variant_type' => 'Size',
+                'options' => ['39', '40', '41', '42', '43', '44'],
+                'is_featured' => true,
+                'is_new' => false,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1449505278894-297fdb3edbc1?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Double Monk Strap Shoes',
+                'slug' => 'vant-double-monk-strap',
+                'brand' => 'Vant',
+                'category' => 'shoes',
+                'regular_price' => 4650,
+                'sale_price' => 3990,
+                'unit' => 'Piece',
+                'variant_type' => 'Size',
+                'options' => ['39', '40', '41', '42', '43', '44'],
+                'is_featured' => false,
+                'is_new' => true,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Classic Derby Shoes',
+                'slug' => 'vant-classic-derby-shoes',
+                'brand' => 'Vant',
+                'category' => 'shoes',
+                'regular_price' => 3950,
+                'sale_price' => 3450,
+                'unit' => 'Piece',
+                'variant_type' => 'Size',
+                'options' => ['39', '40', '41', '42', '43', '44'],
+                'is_featured' => false,
+                'is_new' => false,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1449505278894-297fdb3edbc1?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Brogue Leather Boots',
+                'slug' => 'vant-brogue-leather-boots',
+                'brand' => 'Vant',
+                'category' => 'shoes',
+                'regular_price' => 5450,
+                'sale_price' => 4790,
+                'unit' => 'Piece',
+                'variant_type' => 'Size',
+                'options' => ['39', '40', '41', '42', '43', '44'],
+                'is_featured' => true,
+                'is_new' => true,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1638609348722-aa2a3a67db26?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1531310197839-ccf54634509e?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Leather Chelsea Boots',
+                'slug' => 'vant-chelsea-boots',
+                'brand' => 'Vant',
+                'category' => 'shoes',
+                'regular_price' => 5250,
+                'sale_price' => 4590,
+                'unit' => 'Piece',
+                'variant_type' => 'Size',
+                'options' => ['39', '40', '41', '42', '43', '44'],
+                'is_featured' => false,
+                'is_new' => false,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1531310197839-ccf54634509e?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1638609348722-aa2a3a67db26?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Leather Comfort Sandals',
+                'slug' => 'vant-leather-sandals',
+                'brand' => 'Vant',
+                'category' => 'shoes',
+                'regular_price' => 1850,
+                'sale_price' => 1590,
+                'unit' => 'Piece',
+                'variant_type' => 'Size',
+                'options' => ['39', '40', '41', '42', '43', '44'],
+                'is_featured' => false,
+                'is_new' => false,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1603487742131-4160ec999306?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            // ================= LEATHER MOUSE PADS =================
+            [
+                'name' => 'Vant Leather Desk Mat (80 x 40 cm)',
+                'slug' => 'vant-leather-desk-mat',
+                'brand' => 'Vant',
+                'category' => 'mouse-pads',
+                'regular_price' => 1650,
+                'sale_price' => 1390,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Brown', 'Black', 'Tan'],
+                'is_featured' => true,
+                'is_new' => true,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://images.unsplash.com/photo-1629429407759-01cd3d7cfb38?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1593062096033-9a26b09da705?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Leather Mouse Pad (30 x 25 cm)',
+                'slug' => 'vant-leather-mouse-pad',
+                'brand' => 'Vant',
+                'category' => 'mouse-pads',
+                'regular_price' => 650,
+                'sale_price' => 550,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Brown', 'Black'],
+                'is_featured' => false,
+                'is_new' => false,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1616400619175-5beda3a17896?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1629429407759-01cd3d7cfb38?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
         ];
@@ -933,10 +720,10 @@ class DatabaseSeeder extends Seeder
                     'category_id' => $category->id,
                     'brand_id'    => $brandObj?->id,
                     'name' => $pData['name'],
-                    'sku' => 'MARTY-' . strtoupper(Str::substr(md5($pData['slug']), 0, 6)),
+                    'sku' => 'VANT-' . strtoupper(Str::substr(md5($pData['slug']), 0, 6)),
                     'brand' => $pData['brand'],
-                    'short_description' => "100% authentic, verified {$pData['name']} by {$pData['brand']}. Guaranteed genuine quality with warranty.",
-                    'description' => "Experience the original {$pData['name']} by {$pData['brand']}. Crafted with premium grade materials and certified authenticity. Backed by fast nationwide delivery and dedicated customer support across Bangladesh.",
+                    'short_description' => "Genuine leather {$pData['name']}: neat stitching, solid finish, made for everyday use.",
+                    'description' => "The {$pData['name']} is part of the Vant Bangladesh leather collection. Every piece is checked by hand before it ships. Order with cash on delivery and get it anywhere in Bangladesh.",
                     'regular_price' => $pData['regular_price'],
                     'sale_price' => $pData['sale_price'],
                     'cost_price' => round(($pData['sale_price'] ?: $pData['regular_price']) * 0.65, 2),
@@ -952,8 +739,8 @@ class DatabaseSeeder extends Seeder
                     'flash_sale_progress' => 50,
                     'rating' => $ratings[array_rand($ratings)],
                     'reviews_count' => random_int(14, 52),
-                    'meta_title' => "Buy {$pData['name']} Online in Bangladesh — Marty",
-                    'meta_description' => "Order authentic {$pData['name']} by {$pData['brand']} at best price in Bangladesh with fast home delivery and warranty.",
+                    'meta_title' => "Buy {$pData['name']} Online in Bangladesh — Vant",
+                    'meta_description' => "Order the {$pData['name']} at Vant Bangladesh. Genuine leather, cash on delivery and fast delivery across Bangladesh.",
                 ]
             );
 
@@ -1016,7 +803,7 @@ class DatabaseSeeder extends Seeder
                 foreach ($combo as $k => $v) {
                     $skuSuffix .= preg_replace('/[^A-Za-z0-9]/', '', explode(' ', $v)[0]);
                 }
-                $priceAdj = $comboIdx * 150;
+                $priceAdj = 0; // every colour and size costs the same
                 $skuReg = $baseReg > 0 ? ($baseReg + $priceAdj) : null;
                 $skuSale = $baseSale > 0 ? ($baseSale + $priceAdj) : null;
 
@@ -1038,7 +825,8 @@ class DatabaseSeeder extends Seeder
         }
 
         // Set flash sale products
-        $flashProducts = Product::take(6)->get();
+        $firstPerCategory = Product::orderBy('id')->get()->groupBy('category_id')->map->first()->values();
+        $flashProducts = $firstPerCategory->concat(Product::whereNotIn('id', $firstPerCategory->pluck('id'))->orderBy('id')->get())->take(6);
         foreach ($flashProducts as $pos => $fp) {
             $fp->update([
                 'is_flash_sale' => true,
@@ -1055,9 +843,9 @@ class DatabaseSeeder extends Seeder
         $reviews = [
             ['Tanvir Ahmed', 'tanvir@example.com', 5, 'Super premium quality and 100% authentic! Delivered within 2 days in Dhaka.'],
             ['Sabrina Akter', 'sabrina@example.com', 5, 'Loved the packaging and build quality. Highly recommended store!'],
-            ['Mahmudul Hasan', 'mahmud@example.com', 5, 'Great item! Leather and build finish is top-notch.'],
+            ['Mahmudul Hasan', 'mahmud@example.com', 5, 'Great item! The leather and stitching are top-notch.'],
             ['Farhana Yeasmin', 'farhana@example.com', 5, 'Elegant design and smooth order process. Will buy again!'],
-            ['Asif Chowdhury', 'asif@example.com', 5, 'Completely genuine product with official serial tags. 10/10 service.'],
+            ['Asif Chowdhury', 'asif@example.com', 5, 'Real leather, smells and feels premium. Cash on delivery was easy. 10/10 service.'],
         ];
 
         $products = Product::take(12)->get();
@@ -1091,13 +879,13 @@ class DatabaseSeeder extends Seeder
 
         $insideFee = (float) setting('shipping_inside_dhaka', 70);
         $outsideFee = (float) setting('shipping_outside_dhaka', 130);
-        $customerUser = User::where('email', 'customer@marty.com')->first();
+        $customerUser = User::where('email', 'customer@vantbd.com')->first();
         $adminUser = User::where('role', 'admin')->first();
 
         $customerPool = [
             ['Nusrat Jahan', '01711-223344', 'nusrat@gmail.com', 'House 24, Road 7, Dhanmondi', 'Dhaka', 'inside_dhaka'],
             ['Tanvir Ahmed', '01822-334455', 'tanvir@gmail.com', 'Flat 5A, GEC Circle', 'Chattogram', 'outside_dhaka'],
-            ['Mim Islam', '01933-445566', 'customer@marty.com', 'House 8, Sector 11, Uttara', 'Dhaka', 'inside_dhaka'],
+            ['Mim Islam', '01933-445566', 'customer@vantbd.com', 'House 8, Sector 11, Uttara', 'Dhaka', 'inside_dhaka'],
             ['Sakib Hasan', '01644-556677', 'sakib@gmail.com', 'Zindabazar Main Road', 'Sylhet', 'outside_dhaka'],
             ['Farhana Akter', '01755-667788', 'farhana@yahoo.com', 'College Road', 'Rajshahi', 'outside_dhaka'],
             ['Kazi Mahmud', '01866-778899', 'mahmud@gmail.com', 'Shibbari More', 'Khulna', 'outside_dhaka'],
@@ -1141,7 +929,7 @@ class DatabaseSeeder extends Seeder
             $orderDate = now()->subDays($daysAgo)->subHours(random_int(1, 8));
 
             $order = Order::create([
-                'user_id'               => $cEmail === 'customer@marty.com' ? $customerUser?->id : null,
+                'user_id'               => $cEmail === 'customer@vantbd.com' ? $customerUser?->id : null,
                 'order_number'          => 'MARTY-' . $orderDate->format('ymd') . '-' . strtoupper(Str::random(4)),
                 'order_type'            => 'online',
                 'customer_name'         => $cName,
@@ -1281,10 +1069,10 @@ class DatabaseSeeder extends Seeder
         $logs = [
             [
                 'user_id'     => $superAdmin?->id,
-                'staff_name'  => $superAdmin?->name ?? 'Marty Super Admin',
+                'staff_name'  => $superAdmin?->name ?? 'Vant Admin',
                 'staff_role'  => 'admin',
                 'action'      => 'System Initialization',
-                'description' => 'Configured Marty multi-category catalog, 8 brand profiles, categories, and payment gateways.',
+                'description' => 'Configured the Vant Bangladesh leather catalog, categories and payment methods.',
                 'ip_address'  => '127.0.0.1',
                 'created_at'  => now()->subDays(3),
             ],

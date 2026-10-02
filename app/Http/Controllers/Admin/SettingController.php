@@ -128,6 +128,7 @@ class SettingController extends Controller
                 'shop_subtitle'       => ['nullable', 'string', 'max:255'],
                 'delivery_eta_text'   => ['nullable', 'string', 'max:120'],
                 'home_categories_title' => ['nullable', 'string', 'max:80'],
+                'home_categories_subtitle' => ['nullable', 'string', 'max:160'],
                 'home_hot_deal_title'   => ['nullable', 'string', 'max:80'],
                 'home_featured_title'   => ['nullable', 'string', 'max:80'],
                 'show_home_reviews'     => ['nullable', 'boolean'],
@@ -230,7 +231,7 @@ class SettingController extends Controller
             ],
             'homepage' => [
                 'shop_subtitle', 'delivery_eta_text',
-                'home_categories_title', 'home_hot_deal_title', 'home_featured_title',
+                'home_categories_title', 'home_categories_subtitle', 'home_hot_deal_title', 'home_featured_title',
                 'home_reviews_title', 'home_reviews_subtitle',
                 'home_featured_brands_title', 'home_featured_brands_subtitle',
                 'home_view_more_label', 'default_cta_text',

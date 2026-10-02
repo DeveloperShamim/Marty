@@ -36,12 +36,12 @@
                     @if($slide->image)
                       <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->title }}" class="w-full h-full object-cover object-center" loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
                     @else
-                      <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center p-6 sm:p-12 text-white">
+                      <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-14 sm:py-12 sm:px-20 text-white">
                         <div class="max-w-md">
                           @if($slide->badge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $slide->badge }}</span>@endif
-                          @if($slide->title)<h2 class="text-2xl sm:text-4xl font-extrabold leading-tight">{{ $slide->title }}</h2>@endif
-                          @if($slide->subtitle)<p class="text-xs sm:text-sm text-white/80 mt-2">{{ $slide->subtitle }}</p>@endif
-                          @if($slide->button_text)<span class="inline-block mt-4 px-5 py-2 rounded-full bg-blue-600 text-white text-xs sm:text-sm font-bold">{{ $slide->button_text }}</span>@endif
+                          @if($slide->title)<h2 class="text-xl sm:text-4xl font-extrabold leading-tight">{{ $slide->title }}</h2>@endif
+                          @if($slide->subtitle)<p class="max-[389px]:hidden text-[11px] sm:text-sm text-white/80 mt-1.5 sm:mt-2 line-clamp-2">{{ $slide->subtitle }}</p>@endif
+                          @if($slide->button_text)<span class="inline-block mt-3 sm:mt-4 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-brand-600 text-white text-xs sm:text-sm font-bold">{{ $slide->button_text }}</span>@endif
                         </div>
                       </div>
                     @endif
@@ -71,24 +71,24 @@
                 @if($mainHero->image)
                   <img src="{{ $mainHero->imageUrl() }}" alt="{{ $mainHero->title }}" class="w-full h-full object-cover object-center">
                 @else
-                  <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center p-6 sm:p-12 text-white">
+                  <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-14 sm:py-12 sm:px-20 text-white">
                     <div class="max-w-md">
                       @if($heroBadge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $heroBadge }}</span>@endif
-                      @if($heroTitle)<h2 class="text-2xl sm:text-4xl font-extrabold leading-tight">{{ $heroTitle }}</h2>@endif
-                      @if($heroSubtitle)<p class="text-xs sm:text-sm text-white/80 mt-2">{{ $heroSubtitle }}</p>@endif
-                      @if($showHeroCta)<span class="inline-block mt-4 px-5 py-2 rounded-full bg-blue-600 text-white text-xs sm:text-sm font-bold">{{ $mainHero->button_text ?: $ctaDefault }}</span>@endif
+                      @if($heroTitle)<h2 class="text-xl sm:text-4xl font-extrabold leading-tight">{{ $heroTitle }}</h2>@endif
+                      @if($heroSubtitle)<p class="max-[389px]:hidden text-[11px] sm:text-sm text-white/80 mt-1.5 sm:mt-2 line-clamp-2">{{ $heroSubtitle }}</p>@endif
+                      @if($showHeroCta)<span class="inline-block mt-3 sm:mt-4 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-brand-600 text-white text-xs sm:text-sm font-bold">{{ $mainHero->button_text ?: $ctaDefault }}</span>@endif
                     </div>
                   </div>
                 @endif
               </a>
             </div>
           @else
-            <div class="relative w-full h-full aspect-[15/8] overflow-hidden bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center p-6 sm:p-12 text-white">
+            <div class="relative w-full h-full aspect-[15/8] overflow-hidden bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-14 sm:py-12 sm:px-20 text-white">
               <div class="max-w-md">
                 @if($heroBadge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $heroBadge }}</span>@endif
-                <h2 class="text-2xl sm:text-4xl font-extrabold leading-tight">{{ $heroTitle ?: site_name() }}</h2>
-                @if($heroSubtitle)<p class="text-xs sm:text-sm text-white/80 mt-2">{{ $heroSubtitle }}</p>@endif
-                <a href="{{ route('shop') }}" class="inline-block mt-4 px-5 py-2 rounded-full bg-blue-600 text-white text-xs sm:text-sm font-bold">{{ $ctaDefault }}</a>
+                <h2 class="text-xl sm:text-4xl font-extrabold leading-tight">{{ $heroTitle ?: site_name() }}</h2>
+                @if($heroSubtitle)<p class="max-[389px]:hidden text-[11px] sm:text-sm text-white/80 mt-1.5 sm:mt-2 line-clamp-2">{{ $heroSubtitle }}</p>@endif
+                <a href="{{ route('shop') }}" class="inline-block mt-3 sm:mt-4 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-brand-600 text-white text-xs sm:text-sm font-bold">{{ $ctaDefault }}</a>
               </div>
             </div>
           @endif
@@ -105,7 +105,7 @@
                   @if($sideCard->badge)<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-brand-500 text-white uppercase">{{ $sideCard->badge }}</span>@endif
                   <h3 class="font-extrabold text-sm sm:text-base mt-2 line-clamp-2">{{ $sideCard->title }}</h3>
                 </div>
-                @if($sideCard->button_text)<span class="text-xs font-semibold text-brand-400 mt-2 inline-flex items-center gap-1">{{ $sideCard->button_text }} &rarr;</span>@endif
+                @if($sideCard->button_text)<span class="hidden sm:inline-flex text-xs font-semibold text-brand-400 mt-2 items-center gap-1">{{ $sideCard->button_text }} &rarr;</span>@endif
               </div>
             @endif
           </a>
@@ -155,7 +155,7 @@
             <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-none">
               {{ setting('home_categories_title', 'Explore Categories') }}
             </h2>
-            <p class="text-[11px] sm:text-xs text-stone-500 mt-1">Discover curated lifestyle essentials &amp; smart tech</p>
+            @if(setting('home_categories_subtitle', 'Shop our collection by category'))<p class="text-[11px] sm:text-xs text-stone-500 mt-1">{{ setting('home_categories_subtitle', 'Shop our collection by category') }}</p>@endif
           </div>
           <div class="flex items-center gap-1.5 sm:gap-2">
             <button type="button" id="catPrev" class="h-7 w-7 sm:h-8 sm:w-8 rounded-full border border-stone-200 bg-white hover:bg-brand-500 hover:text-white hover:border-brand-500 text-stone-600 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Previous Category">

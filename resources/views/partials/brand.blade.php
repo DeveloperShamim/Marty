@@ -23,7 +23,12 @@
   @if($custom)
     <img src="{{ logo_url() }}" alt="{{ $name }}" class="{{ $customClass }} {{ $logoClass ?? '' }} object-contain" />
   @else
-    <span class="h-10 w-10 rounded-lg {{ $light ? 'bg-white text-brand-700' : 'bg-brand-600 text-white' }} flex items-center justify-center shrink-0">
+    @php
+      // Phones (header only): a long name like "Vant Bangladesh" becomes a stacked wordmark, VANT / BANGLADESH.
+      $nameParts = ($compactMobile ?? false) ? explode(' ', trim($name), 2) : [$name];
+      $stacked = count($nameParts) === 2;
+    @endphp
+    <span class="h-10 w-10 {{ $stacked ? 'max-sm:h-8 max-sm:w-8 max-[389px]:hidden' : '' }} rounded-lg {{ $light ? 'bg-white text-brand-700' : 'bg-brand-600 text-white' }} flex items-center justify-center shrink-0">
       <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M6 7h13l-1.2 8H7.5L6 7Zm0 0-.8-3H3"/>
         <path d="M10 11v2M14 11v2"/>
@@ -31,7 +36,13 @@
       </svg>
     </span>
     @unless($iconOnly)
-      <span class="leading-tight">
+      @if($stacked)
+        <span class="sm:hidden leading-none {{ $light ? 'text-white' : 'text-brand-700' }}">
+          <span class="block text-[19px] font-extrabold tracking-tight uppercase">{{ $nameParts[0] }}</span>
+          <span class="block text-[7.5px] font-bold tracking-[0.28em] uppercase mt-0.5 {{ $light ? 'text-white/70' : 'text-stone-500' }}">{{ $nameParts[1] }}</span>
+        </span>
+      @endif
+      <span class="leading-tight {{ $stacked ? 'hidden sm:block' : '' }}">
         <span class="block {{ $textClass }} font-extrabold tracking-tight {{ $light ? 'text-white' : 'text-brand-700' }}">{{ $name }}</span>
         @if(setting('tagline') && $size !== 'sm')
           <span class="hidden xl:block text-[9px] font-bold tracking-wider {{ $light ? 'text-white/70' : 'text-stone-400' }} uppercase truncate max-w-[220px]">{{ setting('tagline') }}</span>
