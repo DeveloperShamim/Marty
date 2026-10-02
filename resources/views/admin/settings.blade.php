@@ -491,9 +491,30 @@
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 border-t border-stone-100">
-        <div><label class="text-xs font-bold text-stone-700 block mb-1">bKash Personal/Merchant No.</label><input name="bkash_number" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl" value="{{ $settings['bkash_number'] ?? '' }}" placeholder="01700000000" /></div>
-        <div><label class="text-xs font-bold text-stone-700 block mb-1">Nagad Personal/Merchant No.</label><input name="nagad_number" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl" value="{{ $settings['nagad_number'] ?? '' }}" placeholder="01700000000" /></div>
-        <div><label class="text-xs font-bold text-stone-700 block mb-1">Rocket Personal/Merchant No.</label><input name="rocket_number" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl" value="{{ $settings['rocket_number'] ?? '' }}" placeholder="01700000000" /></div>
+        @foreach(['bkash' => 'bKash', 'nagad' => 'Nagad', 'rocket' => 'Rocket'] as $w => $wName)
+          @php $wType = $settings[$w . '_account_type'] ?? 'personal'; @endphp
+          <div class="space-y-2 rounded-xl border border-stone-200 p-3">
+            <div>
+              <label class="text-xs font-bold text-stone-700 block mb-1">{{ $wName }} number</label>
+              <input name="{{ $w }}_number" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl" value="{{ $settings[$w . '_number'] ?? '' }}" placeholder="01700000000" />
+            </div>
+            <div>
+              <label class="text-xs font-bold text-stone-700 block mb-1">Account type</label>
+              <select name="{{ $w }}_account_type" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl">
+                @foreach(\App\Support\PaymentInstructions::TYPES as $tKey => $tLabel)
+                  <option value="{{ $tKey }}" @selected($wType === $tKey)>{{ $tLabel }}</option>
+                @endforeach
+              </select>
+            </div>
+          </div>
+        @endforeach
+      </div>
+      <p class="text-[11px] text-stone-500 -mt-1">The account type changes the steps customers see at checkout: <b>Personal</b> → “Send Money”, <b>Merchant</b> → “Payment / Merchant Pay” with their mobile number as reference, <b>Agent</b> → “Cash Out”.</p>
+
+      <div class="pt-3 border-t border-stone-100">
+        <label class="text-xs font-bold text-stone-700 block mb-1">Order help hotline</label>
+        <input name="order_hotline" class="w-full sm:w-80 text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl" value="{{ $settings['order_hotline'] ?? '' }}" placeholder="{{ $settings['contact_phone'] ?? '01700000000' }}" />
+        <p class="text-[11px] text-stone-500 mt-1">Shown at checkout and after ordering as “Need help? Call …”. Empty = your contact phone ({{ $settings['contact_phone'] ?? 'not set' }}).</p>
       </div>
     </div>
   </form>

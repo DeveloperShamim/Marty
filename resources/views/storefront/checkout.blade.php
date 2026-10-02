@@ -252,6 +252,9 @@
               'nagad' => $nagad,
               'rocket' => $rocket,
             ];
+            $paySteps = collect(['bkash', 'nagad', 'rocket'])->mapWithKeys(fn ($m) => [$m => \App\Support\PaymentInstructions::steps($m)]);
+            $payActions = collect(['bkash', 'nagad', 'rocket'])->mapWithKeys(fn ($m) => [$m => \App\Support\PaymentInstructions::action($m)]);
+            $hotline = \App\Support\PaymentInstructions::hotline();
           @endphp
           <div class="rounded-2xl bg-white p-3.5 sm:p-5 border border-slate-200/80 shadow-2xs space-y-2.5 sm:space-y-3">
             <div class="flex items-center justify-between">
@@ -326,7 +329,7 @@
             <div id="manualFields" class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5 {{ $method==='cod' ? 'hidden' : '' }}">
               <div class="flex items-center justify-between gap-2 bg-white p-2 sm:p-2.5 rounded-lg border border-slate-200">
                 <div class="min-w-0">
-                  <span class="text-[11px] text-slate-500 block leading-tight">Send <b id="manualPayAmount" class="text-brand-700 font-extrabold">{{ money($totals['total']) }}</b> to:</span>
+                  <span class="text-[11px] text-slate-500 block leading-tight"><span id="manualPayAction">{{ $payActions[$method] ?? 'Send Money' }}</span> <b id="manualPayAmount" class="text-brand-700 font-extrabold">{{ money($totals['total']) }}</b> to:</span>
                   <span id="manualPayNumber" class="font-mono font-bold text-slate-900 text-xs sm:text-sm tracking-wider">{{ $payNumbers[$method] ?? "—" }}</span>
                 </div>
                 <button type="button" id="copyPayNumberBtn" class="flex items-center gap-1 text-[11px] font-bold text-brand-600 hover:text-brand-700 bg-brand-50 px-2.5 py-1 rounded-md border border-brand-200 transition cursor-pointer select-none shrink-0" title="Copy Number">
@@ -334,6 +337,12 @@
                   <span id="copyBtnText">Copy</span>
                 </button>
               </div>
+
+              <ol id="paySteps" class="space-y-1 text-[11px] sm:text-xs text-slate-600 leading-snug list-none">
+                @foreach($paySteps[$method] ?? [] as $i => $step)
+                  <li class="flex gap-2"><span class="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-brand-600 text-white text-[9px] font-bold mt-px">{{ $i + 1 }}</span><span>{!! str_replace('{amount}', e(money($totals['total'])), $step) !!}</span></li>
+                @endforeach
+              </ol>
 
               <div class="grid grid-cols-2 gap-2">
                 <div>
@@ -347,6 +356,12 @@
               </div>
             </div>
           </div>
+
+          @if($hotline !== '')
+            <p class="text-center text-[11px] sm:text-xs text-slate-500">
+              Need help ordering? Call <a href="{{ \App\Support\PaymentInstructions::hotlineHref() }}" class="font-bold text-brand-700 underline whitespace-nowrap">📞 {{ $hotline }}</a>
+            </p>
+          @endif
 
           {{-- Desktop Place Order Button on Left Side (Hidden on mobile) --}}
           <div class="hidden lg:block pt-2 space-y-2.5">
@@ -593,6 +608,20 @@
     return null;
   }
 
+  // Wallet steps (Store Settings → Payments → account type); "{amount}" is the live total.
+  var paySteps = @json($paySteps);
+  var payActions = @json($payActions);
+  function renderPaySteps(method, amountText) {
+    var list = document.getElementById('paySteps');
+    var action = document.getElementById('manualPayAction');
+    if (action && payActions[method]) action.textContent = payActions[method];
+    if (!list) return;
+    var esc = String(amountText).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    list.innerHTML = (paySteps[method] || []).map(function (step, i) {
+      return '<li class="flex gap-2"><span class="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-brand-600 text-white text-[9px] font-bold mt-px">' + (i + 1) + '</span><span>' + step.replace('{amount}', esc) + '</span></li>';
+    }).join('');
+  }
+
   function recalc() {
     var fee = parseFloat(zone.options[zone.selectedIndex].dataset.fee) || 0;
     var taxable = Math.max(0, subtotal - discount);
@@ -617,6 +646,7 @@
 
     var manualAmt = document.getElementById('manualPayAmount');
     if (manualAmt) manualAmt.textContent = money(total);
+    renderPaySteps(method, money(total));
 
     // Offer note + "Free delivery" tags on bKash / Nagad / Rocket
     var unconditional = reason === 'product' || reason === 'order_total';

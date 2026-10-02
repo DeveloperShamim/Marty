@@ -83,6 +83,40 @@
     @endif
   </div>
 
+  {{-- What happens next + hotline --}}
+  @php
+    $hotline = \App\Support\PaymentInstructions::hotline();
+    $isOnline = $order->isMobileBanking();
+    $nextSteps = $isOnline
+      ? [
+          'We check your <b>' . e($order->paymentMethodLabel()) . '</b> payment' . ($order->payment_txn_id ? ' (TrxID <b class="font-mono">' . e($order->payment_txn_id) . '</b>)' : '') . '.',
+          'Once it is confirmed we pack your order and hand it to the courier.',
+          'Nothing more to pay when the parcel arrives.',
+        ]
+      : [
+          'We call you on <b>' . e($order->customer_phone) . '</b> to confirm the order. Please keep your phone on.',
+          'We pack your order and hand it to the courier.',
+          'Pay <b>' . e(money($order->total)) . '</b> in cash to the delivery person.',
+        ];
+  @endphp
+  <div class="mt-8 rounded-2xl border border-brand-100 bg-brand-50/60 p-5">
+    <h2 class="font-display font-extrabold text-ink">What happens next</h2>
+    <ol class="mt-3 space-y-2 text-sm text-slate-700">
+      @foreach($nextSteps as $i => $step)
+        <li class="flex gap-2.5"><span class="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-600 text-white text-[11px] font-bold">{{ $i + 1 }}</span><span>{!! $step !!}</span></li>
+      @endforeach
+    </ol>
+    <p class="mt-3 text-xs text-slate-500">Keep your order number <b class="text-ink">{{ $order->order_number }}</b> to track it any time.</p>
+    @if($hotline !== '')
+      <a href="{{ \App\Support\PaymentInstructions::hotlineHref() }}" class="mt-4 flex items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm py-3 transition">
+        📞 Need help? Call {{ $hotline }}
+      </a>
+      @if(setting('contact_hours'))
+        <p class="mt-1.5 text-center text-[11px] text-slate-500">{{ setting('contact_hours') }}</p>
+      @endif
+    @endif
+  </div>
+
   <div class="mt-10 rounded-2xl border border-slate-100 bg-white shadow-soft overflow-hidden">
     <div class="p-5 border-b border-slate-100 flex items-center justify-between">
       <h2 class="font-display font-extrabold">Order summary</h2>

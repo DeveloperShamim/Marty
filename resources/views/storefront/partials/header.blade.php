@@ -114,7 +114,7 @@
 
       {{-- Brand logo: centred between the icons on phones --}}
       <div class="flex-1 md:flex-none flex justify-center md:justify-start min-w-0">
-        @include('partials.brand', ['logoClass' => 'max-[429px]:max-w-[112px] max-[389px]:max-w-[96px] max-[359px]:max-w-[80px] max-[429px]:h-7'])
+        @include('partials.brand', ['logoClass' => 'max-[429px]:max-w-[112px] max-[389px]:max-w-[88px] max-[359px]:max-w-[80px] max-[429px]:h-7'])
       </div>
 
       {{-- Modern Search Bar --}}
@@ -131,7 +131,7 @@
       <div class="ml-auto flex items-center gap-0.5 sm:gap-4 lg:gap-6 shrink-0">
         {{-- Flash sale (phones) --}}
         @if($hasFlashSale ?? false)
-          <a href="{{ route('shop', ['flash' => 1]) }}" class="flash-pill sm:hidden mr-1 inline-flex items-center h-8 px-2 min-[390px]:px-2.5 rounded-lg text-white text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
+          <a href="{{ route('shop', ['flash' => 1]) }}" class="flash-pill sm:hidden mr-2 min-[390px]:mr-3.5 inline-flex items-center h-8 px-2 min-[390px]:px-2.5 rounded-lg text-white text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
             <span class="max-[359px]:hidden">Flash&nbsp;</span>Sale
           </a>
         @endif

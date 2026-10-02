@@ -146,6 +146,10 @@ class SettingController extends Controller
                 'bkash_number'  => ['nullable', 'string', 'max:40'],
                 'nagad_number'  => ['nullable', 'string', 'max:40'],
                 'rocket_number' => ['nullable', 'string', 'max:40'],
+                'bkash_account_type'  => ['nullable', 'in:personal,merchant,agent'],
+                'nagad_account_type'  => ['nullable', 'in:personal,merchant,agent'],
+                'rocket_account_type' => ['nullable', 'in:personal,merchant,agent'],
+                'order_hotline' => ['nullable', 'string', 'max:40'],
                 'pay_cod_enabled' => ['nullable', 'boolean'],
                 'pay_bkash_enabled' => ['nullable', 'boolean'],
                 'pay_nagad_enabled' => ['nullable', 'boolean'],
@@ -232,7 +236,10 @@ class SettingController extends Controller
                 'home_view_more_label', 'default_cta_text',
                 'hero_fallback_badge', 'hero_fallback_title', 'hero_fallback_subtitle',
             ],
-            'payments' => ['bkash_number', 'nagad_number', 'rocket_number'],
+            'payments' => [
+                'bkash_number', 'nagad_number', 'rocket_number',
+                'bkash_account_type', 'nagad_account_type', 'rocket_account_type', 'order_hotline',
+            ],
             'shipping' => [
                 'shipping_inside_dhaka', 'shipping_outside_dhaka', 'tax_percent',
                 'shipping_inside_label', 'shipping_outside_label',
