@@ -4,7 +4,7 @@
 @section('content')
 @php
   $couriersActive = (($settings['steadfast_enabled'] ?? '0') === '1') || (($settings['pathao_enabled'] ?? '0') === '1') || (($settings['redx_enabled'] ?? '0') === '1');
-  $googleActive = !empty($settings['google_client_id'] ?? env('GOOGLE_CLIENT_ID'));
+  $googleActive = !empty($settings['google_client_id'] ?? config('services.google.client_id'));
   $trackingActive = !empty($settings['tracking_gtm_id']) || !empty($settings['tracking_ga4_id']) || !empty($settings['tracking_meta_pixel_id']);
   $mailActive = ($settings['mail_mailer'] ?? 'log') === 'smtp';
 @endphp
@@ -429,7 +429,7 @@
         </div>
 
         @php
-          $redirectUri = $settings['google_redirect_uri'] ?? env('GOOGLE_REDIRECT_URI', url('/auth/google/callback'));
+          $redirectUri = $settings['google_redirect_uri'] ?? (config('services.google.redirect') ?: url('/auth/google/callback'));
         @endphp
         <div class="space-y-1 pt-1">
           <label class="text-xs font-black text-stone-800 block">Google OAuth Redirect URI / Callback URL</label>

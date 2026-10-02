@@ -115,28 +115,28 @@
     </section>
   @endif
 
-  {{-- 2. TRUST & GUARANTEE BAR (Managed dynamically via https://marty.test/admin/features) --}}
+  {{-- 2. TRUST STRIP (Admin → Storefront → Trust Strip): 4 across on desktop, 2 x 2 on tablets and phones --}}
   @if(isset($features) && $features->isNotEmpty())
+    @php $featureCount = $features->count(); @endphp
     <section class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 mt-3 sm:mt-4" data-reveal>
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 bg-white border border-stone-200/80 rounded-2xl p-2.5 sm:p-4 shadow-2xs">
+      <div class="grid grid-cols-2 lg:grid-cols-{{ min(4, $featureCount) }} overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200/70 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)]">
         @foreach($features as $index => $feature)
           @php
-            $palettes = [
-              ['bg' => 'bg-amber-50/90', 'border' => 'border-amber-200/90', 'text' => 'text-amber-600'],
-              ['bg' => 'bg-emerald-50/90', 'border' => 'border-emerald-200/90', 'text' => 'text-emerald-600'],
-              ['bg' => 'bg-amber-50/90', 'border' => 'border-amber-200/90', 'text' => 'text-amber-600'],
-              ['bg' => 'bg-sky-50/90', 'border' => 'border-sky-200/90', 'text' => 'text-sky-600'],
-            ];
-            $palette = $palettes[$index % count($palettes)];
+            // Thin dividers: between the 2 columns and rows on phones/tablets, between columns on desktop.
+            $lines = [];
+            if ($index % 2 === 0 && $index < $featureCount - 1) $lines[] = 'border-r';
+            if ($index < $featureCount - ($featureCount % 2 === 0 ? 2 : 1)) $lines[] = 'border-b';
+            $lines[] = 'lg:border-r-0 lg:border-b-0';
+            if ($index % 4 !== 0) $lines[] = 'lg:border-l';
           @endphp
-          <div class="flex items-center gap-2 sm:gap-3 p-1 sm:p-2 min-w-0">
-            <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl {{ $palette['bg'] }} {{ $palette['text'] }} flex items-center justify-center shrink-0 border {{ $palette['border'] }} shadow-2xs">
-              {!! $feature->renderIconHtml('w-4 h-4 sm:w-5 sm:h-5', $palette['text']) !!}
+          <div class="group flex items-center sm:items-start gap-2.5 sm:gap-3.5 px-3 py-3 sm:px-5 sm:py-5 border-stone-100 {{ implode(' ', $lines) }} min-w-0">
+            <div class="grid h-8 w-8 sm:h-11 sm:w-11 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600 ring-1 ring-brand-100 transition-transform duration-300 group-hover:scale-110 group-hover:bg-brand-600 group-hover:text-white">
+              {!! $feature->renderIconHtml('w-4 h-4 sm:w-5 sm:h-5', '') !!}
             </div>
-            <div class="min-w-0 flex-1">
-              <h4 class="text-[11px] sm:text-sm font-extrabold text-stone-900 truncate leading-snug">{{ $feature->title }}</h4>
+            <div class="min-w-0">
+              <h4 class="text-xs sm:text-[15px] font-bold text-ink leading-tight">{{ $feature->title }}</h4>
               @if($feature->subtitle)
-                <p class="text-[9px] sm:text-[11px] text-stone-500 truncate mt-0.5">{{ $feature->subtitle }}</p>
+                <p class="hidden sm:block mt-1 text-xs text-stone-500 leading-snug line-clamp-2">{{ preg_replace('/(\d)-(\d)/u', "\$1\u{2011}\$2", $feature->subtitle) }}</p>
               @endif
             </div>
           </div>
