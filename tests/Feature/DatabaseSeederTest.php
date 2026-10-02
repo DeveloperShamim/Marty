@@ -38,6 +38,8 @@ class DatabaseSeederTest extends TestCase
         // All seeded orders are within the last 30 days, so both pages must report the same totals.
         $this->assertEqualsWithDelta($dashboard['revenue'], $analytics['grossRevenue'], 0.01);
         $this->assertEqualsWithDelta($dashboard['totalCogs'], $analytics['cogs'], 0.01);
-        $this->assertEqualsWithDelta($dashboard['netProfit'], $analytics['netProfit'], 0.01);
+        $this->assertEqualsWithDelta($dashboard['profitBeforeExpenses'], $analytics['netProfit'], 0.01);
+        // Dashboard Net Profit is after every logged expense.
+        $this->assertEqualsWithDelta($dashboard['profitBeforeExpenses'] - \App\Models\Expense::sum('amount'), $dashboard['netProfit'], 0.01);
     }
 }
