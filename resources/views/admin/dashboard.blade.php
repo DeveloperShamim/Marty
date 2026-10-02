@@ -103,6 +103,11 @@
           <span>Profit Margin:</span>
           <span class="font-mono">{{ round($profitMargin, 1) }}%</span>
         </p>
+        @if($totalExpenses > 0)
+          <p class="text-[10px] sm:text-[11px] text-gray-500 truncate" title="Profit before expenses {{ money($profitBeforeExpenses) }}, expenses −{{ money($totalExpenses) }}">
+            <span class="hidden sm:inline">Before expenses {{ money($profitBeforeExpenses) }} · </span>Expenses <span class="text-rose-600">−{{ money($totalExpenses) }}</span>
+          </p>
+        @endif
       </div>
     </div>
 

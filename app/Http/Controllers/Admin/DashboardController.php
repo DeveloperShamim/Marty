@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Expense;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -46,8 +47,11 @@ class DashboardController extends Controller
         $courierLoss = (float) Order::where('status', 'returned')->sum('courier_loss_amount');
         // Delivery fees the shop paid for free-delivery orders.
         $freeDeliveryCost = (float) Order::query()->tap($validOrders)->sum('shipping_waived');
+        $profitBeforeExpenses = $revenue - $totalCogs - $courierLoss - $freeDeliveryCost;
+        // All logged expenses (ads, packaging, rent…), so Net Profit is what the shop actually keeps.
+        $totalExpenses = (float) Expense::sum('amount');
         // Can be negative: a loss must show as a loss, not as zero.
-        $netProfit = $revenue - $totalCogs - $courierLoss - $freeDeliveryCost;
+        $netProfit = $profitBeforeExpenses - $totalExpenses;
         $profitMargin = $revenue > 0 ? (($netProfit / $revenue) * 100) : 0;
 
         $verifiedOrdersCount = Order::query()
@@ -185,6 +189,8 @@ class DashboardController extends Controller
             'revenue'              => $revenue,
             'totalCogs'            => $totalCogs,
             'netProfit'            => $netProfit,
+            'profitBeforeExpenses' => $profitBeforeExpenses,
+            'totalExpenses'        => $totalExpenses,
             'profitMargin'         => $profitMargin,
             'todayRevenue'         => $todayRevenue,
             'yesterdayRevenue'    => $yesterdayRevenue,

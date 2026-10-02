@@ -94,7 +94,7 @@
     {{-- Card 3: Net Profit (Factoring in returns) --}}
     <div class="bg-white p-5 rounded-2xl border border-gray-200/90 shadow-2xs space-y-2">
       <div class="flex items-center justify-between text-xs text-gray-500">
-        <span class="font-bold uppercase tracking-wider">Net Profit</span>
+        <span class="font-bold uppercase tracking-wider">Profit Before Expenses</span>
         <span class="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-xs">
           {{ number_format($profitMargin, 1) }}% Margin
         </span>
@@ -279,12 +279,12 @@
     <div class="bg-white p-5 rounded-2xl border border-gray-200/90 shadow-2xs space-y-4">
       <div class="flex items-center justify-between border-b border-gray-100 pb-3">
         <h3 class="text-sm font-extrabold text-gray-900">Net Profit Margin</h3>
-        <span class="text-xs font-bold text-emerald-600">{{ number_format($profitMargin, 1) }}%</span>
+        <span class="text-xs font-bold {{ $trueProfitMargin >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">{{ number_format($trueProfitMargin, 1) }}%</span>
       </div>
 
       <div class="space-y-2">
         <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-          <div class="bg-emerald-500 h-3 rounded-full transition-all duration-500" style="width: {{ min(100, max(0, $profitMargin)) }}%"></div>
+          <div class="bg-emerald-500 h-3 rounded-full transition-all duration-500" style="width: {{ min(100, max(0, $trueProfitMargin)) }}%"></div>
         </div>
 
         <div class="grid grid-cols-2 gap-2 text-xs pt-2">
@@ -293,8 +293,8 @@
             <span class="font-black text-gray-900">৳{{ number_format($grossRevenue, 0) }}</span>
           </div>
           <div class="bg-gray-50 p-2.5 rounded-lg border border-gray-200">
-            <span class="text-gray-400 block text-[10px]">Net Profit</span>
-            <span class="font-black text-emerald-700">৳{{ number_format($netProfit, 0) }}</span>
+            <span class="text-gray-400 block text-[10px]">Net Profit (after expenses)</span>
+            <span class="font-black {{ $trueNetProfit >= 0 ? 'text-emerald-700' : 'text-rose-600' }}">৳{{ number_format($trueNetProfit, 0) }}</span>
           </div>
         </div>
       </div>
