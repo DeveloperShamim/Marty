@@ -28,6 +28,7 @@ class MediaOptimizeTest extends TestCase
             $this->markTestSkipped('GD with WebP is not installed.');
         }
 
+        File::ensureDirectoryExists(public_path('uploads/media'));
         $img = imagecreatetruecolor(40, 40);
         imagefill($img, 0, 0, imagecolorallocate($img, 139, 90, 43));
         imagepng($img, public_path($this->png));
