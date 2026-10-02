@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Banner;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductImage;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
@@ -18,7 +20,9 @@ class MediaOptimizeTest extends TestCase
 
     protected function tearDown(): void
     {
-        File::delete([public_path($this->png), public_path('uploads/media/optimize-test.webp')]);
+        File::delete([public_path($this->png), public_path('uploads/media/optimize-test.webp'),
+            storage_path('app/public/banners/optimize-test.png'), storage_path('app/public/banners/optimize-test.webp'),
+            storage_path('app/public/branding/optimize-logo.png'), storage_path('app/public/branding/optimize-logo.webp')]);
         parent::tearDown();
     }
 
@@ -45,6 +49,36 @@ class MediaOptimizeTest extends TestCase
         $this->assertFileExists(public_path('uploads/media/optimize-test.webp'));
         $this->assertFileDoesNotExist(public_path($this->png));
         $this->assertSame('/uploads/media/optimize-test.webp', $product->images()->value('path'));
+    }
+
+    public function test_banner_and_logo_show_in_the_library_and_stay_linked_after_optimizing(): void
+    {
+        if (!function_exists('imagewebp')) {
+            $this->markTestSkipped('GD with WebP is not installed.');
+        }
+
+        foreach (['banners/optimize-test.png', 'branding/optimize-logo.png'] as $file) {
+            File::ensureDirectoryExists(dirname(storage_path('app/public/' . $file)));
+            imagepng(imagecreatetruecolor(40, 40), storage_path('app/public/' . $file));
+        }
+        $banner = Banner::create(['title' => 'Sale', 'image' => 'banners/optimize-test.png', 'is_active' => true]);
+        Setting::put('logo', 'branding/optimize-logo.png');
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)->get(route('admin.media.index', ['type' => 'banners']))->assertOk()
+            ->assertSee('optimize-test.png')->assertSee('Hero Banner: Sale');
+        $this->actingAs($admin)->get(route('admin.media.index', ['type' => 'branding']))->assertOk()
+            ->assertSee('optimize-logo.png')->assertSee('Site Main Logo');
+
+        $this->actingAs($admin)->post(route('admin.media.bulk-optimize'), [
+            'paths' => ['storage/banners/optimize-test.png', 'storage/branding/optimize-logo.png'],
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('banners/optimize-test.webp', $banner->fresh()->image);
+        $this->assertSame('branding/optimize-logo.webp', Setting::where('key', 'logo')->value('value'));
+        $this->assertFileExists(storage_path('app/public/banners/optimize-test.webp'));
+        $this->assertFileDoesNotExist(storage_path('app/public/banners/optimize-test.png'));
+        $this->assertStringEndsWith('/storage/banners/optimize-test.webp', $banner->fresh()->imageUrl());
     }
 
     public function test_files_outside_the_media_library_cannot_be_deleted(): void

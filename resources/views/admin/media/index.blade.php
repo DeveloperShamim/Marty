@@ -130,6 +130,13 @@
         Logos &amp; Branding
       </a>
 
+      @foreach(['banners' => 'Banners', 'categories' => 'Categories'] as $type => $label)
+        <a href="{{ route('admin.media.index', ['type' => $type, 'search' => $currentSearch]) }}"
+           class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all {{ $currentFilter === $type ? 'bg-brand-600 text-white shadow-xs' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}">
+          {{ $label }}
+        </a>
+      @endforeach
+
       <a href="{{ route('admin.media.index', ['type' => 'unused', 'search' => $currentSearch]) }}"
          class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all {{ $currentFilter === 'unused' ? 'bg-brand-600 text-white shadow-xs' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}">
         Unused Files ({{ $unusedCount }})

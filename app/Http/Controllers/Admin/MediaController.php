@@ -14,6 +14,15 @@ use Illuminate\Support\Str;
 
 class MediaController extends Controller
 {
+    /** Folders of the public disk (storage/app/public) with shop images: banners, logo, categories, brands. */
+    private const STORAGE_FOLDERS = [
+        'banners' => 'banners',
+        'branding' => 'branding',
+        'categories' => 'categories',
+        'brands/logos' => 'branding',
+        'brands/banners' => 'branding',
+    ];
+
     public function index(Request $request)
     {
         $filterType = $request->query('type', 'all');
@@ -21,32 +30,32 @@ class MediaController extends Controller
 
         // 1. Gather database usage references
         $productImages = ProductImage::with('product')->get()->keyBy(function ($img) {
-            return $this->normalizeRelPath($img->path);
+            return $this->refKey($img->path);
         });
 
         $categories = Category::all();
         $categoryImages = [];
         foreach ($categories as $c) {
             if ($c->image) {
-                $categoryImages[$this->normalizeRelPath($c->image)] = $c->name;
+                $categoryImages[$this->refKey($c->image)] = $c->name;
             }
         }
 
         $brands = Brand::all();
         $brandImages = [];
         foreach ($brands as $b) {
-            if ($b->logo) $brandImages[$this->normalizeRelPath($b->logo)] = "Brand Logo: " . $b->name;
-            if ($b->banner) $brandImages[$this->normalizeRelPath($b->banner)] = "Brand Banner: " . $b->name;
+            if ($b->logo) $brandImages[$this->refKey($b->logo)] = "Brand Logo: " . $b->name;
+            if ($b->banner) $brandImages[$this->refKey($b->banner)] = "Brand Banner: " . $b->name;
         }
 
         $banners = Banner::all();
         $bannerImages = [];
         foreach ($banners as $bn) {
-            if ($bn->image) $bannerImages[$this->normalizeRelPath($bn->image)] = "Hero Banner: " . ($bn->title ?: 'Banner #' . $bn->id);
+            if ($bn->image) $bannerImages[$this->refKey($bn->image)] = "Hero Banner: " . ($bn->title ?: 'Banner #' . $bn->id);
         }
 
-        $logoPath = $this->normalizeRelPath((string) setting('logo', ''));
-        $faviconPath = $this->normalizeRelPath((string) setting('favicon', ''));
+        $logoPath = $this->refKey(setting('logo'));
+        $faviconPath = $this->refKey(setting('favicon'));
 
         // 2. Scan public upload directories
         $directories = [
@@ -55,13 +64,16 @@ class MediaController extends Controller
             public_path('uploads')          => 'branding',
             public_path('storage')          => 'storage',
         ];
+        foreach (self::STORAGE_FOLDERS as $folder => $category) {
+            $directories[public_path('storage/' . $folder)] = $category;
+        }
 
         $allFiles = [];
         $scannedPaths = [];
 
         foreach ($directories as $dirPath => $defaultCategory) {
-            if (!File::exists($dirPath)) {
-                File::makeDirectory($dirPath, 0777, true, true);
+            if (!File::isDirectory($dirPath)) {
+                continue;
             }
 
             $files = File::files($dirPath);
@@ -321,12 +333,12 @@ class MediaController extends Controller
             ->orWhere('path', $relPath)
             ->delete();
 
-        if ($this->normalizeRelPath(setting('logo')) === $relPath) {
+        if ($this->refKey(setting('logo')) === $relPath) {
             Setting::updateOrCreate(['key' => 'logo'], ['value' => '']);
             Setting::forgetCache();
         }
 
-        if ($this->normalizeRelPath(setting('favicon')) === $relPath) {
+        if ($this->refKey(setting('favicon')) === $relPath) {
             Setting::updateOrCreate(['key' => 'favicon'], ['value' => '']);
             Setting::forgetCache();
         }
@@ -397,18 +409,20 @@ class MediaController extends Controller
                 $newRel = $this->normalizeRelPath($targetAbsPath);
 
                 if ($isConvertWebP && $oldRel !== $newRel) {
-                    // Update database references to new WebP file
-                    ProductImage::where('path', '/' . $oldRel)->orWhere('path', $oldRel)->update(['path' => '/' . $newRel]);
-                    Category::where('image', '/' . $oldRel)->orWhere('image', $oldRel)->update(['image' => '/' . $newRel]);
-                    Brand::where('logo', '/' . $oldRel)->orWhere('logo', $oldRel)->update(['logo' => '/' . $newRel]);
-                    Brand::where('banner', '/' . $oldRel)->orWhere('banner', $oldRel)->update(['banner' => '/' . $newRel]);
-                    Banner::where('image', '/' . $oldRel)->orWhere('image', $oldRel)->update(['image' => '/' . $newRel]);
+                    // Update database references to the new WebP file, in the form each column stores it
+                    // ("/uploads/x.png" for uploads, "banners/x.png" for files on the public disk).
+                    $oldRefs = $this->refForms($oldRel);
+                    $newRef = $this->storedRef($newRel);
+                    ProductImage::whereIn('path', $oldRefs)->update(['path' => $newRef]);
+                    Category::whereIn('image', $oldRefs)->update(['image' => $newRef]);
+                    Brand::whereIn('logo', $oldRefs)->update(['logo' => $newRef]);
+                    Brand::whereIn('banner', $oldRefs)->update(['banner' => $newRef]);
+                    Banner::whereIn('image', $oldRefs)->update(['image' => $newRef]);
 
-                    if ($this->normalizeRelPath(setting('logo')) === $oldRel) {
-                        Setting::updateOrCreate(['key' => 'logo'], ['value' => $newRel]);
-                    }
-                    if ($this->normalizeRelPath(setting('favicon')) === $oldRel) {
-                        Setting::updateOrCreate(['key' => 'favicon'], ['value' => $newRel]);
+                    foreach (['logo', 'favicon'] as $key) {
+                        if ($this->refKey(setting($key)) === $oldRel) {
+                            Setting::updateOrCreate(['key' => $key], ['value' => $newRef]);
+                        }
                     }
 
                     Setting::forgetCache();
@@ -443,12 +457,45 @@ class MediaController extends Controller
      */
     private function mediaAbsPath(string $relPath): ?string
     {
-        if ($relPath === '' || str_contains($relPath, '..') || !str_starts_with($relPath, 'uploads/')
+        $inStorage = in_array(dirname($relPath), array_map(fn ($f) => 'storage/' . $f, array_keys(self::STORAGE_FOLDERS)), true);
+        if ($relPath === '' || str_contains($relPath, '..') || (!str_starts_with($relPath, 'uploads/') && !$inStorage)
             || !preg_match('/\.(png|jpe?g|webp|gif|svg|avif)$/i', $relPath)) {
             return null;
         }
 
         return public_path($relPath);
+    }
+
+    /**
+     * Library path ("uploads/x.png" or "storage/banners/x.png") of an image reference saved in the database.
+     * Public-disk uploads are saved without "storage/" (e.g. "banners/x.png").
+     */
+    private function refKey(?string $ref): string
+    {
+        $ref = ltrim(str_replace('\\', '/', (string) $ref), '/');
+        if ($ref === '' || str_starts_with($ref, 'http://') || str_starts_with($ref, 'https://')) {
+            return '';
+        }
+
+        return str_starts_with($ref, 'uploads/') || str_starts_with($ref, 'storage/') ? $ref : 'storage/' . $ref;
+    }
+
+    /** Every way a library path may be saved in the database. */
+    private function refForms(string $relPath): array
+    {
+        $forms = [$relPath, '/' . $relPath];
+        if (str_starts_with($relPath, 'storage/')) {
+            $disk = substr($relPath, strlen('storage/'));
+            array_push($forms, $disk, '/' . $disk);
+        }
+
+        return $forms;
+    }
+
+    /** How a library path is saved in the database. */
+    private function storedRef(string $relPath): string
+    {
+        return str_starts_with($relPath, 'storage/') ? substr($relPath, strlen('storage/')) : '/' . $relPath;
     }
 
     private function normalizeRelPath(?string $path): string
