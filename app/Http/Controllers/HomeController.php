@@ -62,7 +62,7 @@ class HomeController extends Controller
         $homeReviews = ProductReview::approved()
             ->with('product')
             ->latest()
-            ->take(4)
+            ->take(6) // 3 + 3 on desktop, 2 + 2 + 2 on tablets
             ->get();
 
         $featuredHomeCategories = Category::where('is_active', true)

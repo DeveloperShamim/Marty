@@ -516,10 +516,11 @@
           </p>
         </div>
 
-        {{-- Review Cards: Mobile Horizontal Snap Carousel, Tablet/Desktop 2-Column Grid --}}
-        <div class="flex md:grid md:grid-cols-2 gap-3.5 sm:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory no-scrollbar pb-3 pt-1 -mx-3 px-3 sm:mx-0 sm:px-0">
+        {{-- Review Cards: swipe row on phones, 2 columns on tablets, 3 on desktop --}}
+        @php $reviewCols = $homeReviews->count() % 3 === 0 ? 'lg:grid-cols-3' : 'lg:grid-cols-2'; @endphp
+        <div class="flex md:grid md:grid-cols-2 {{ $reviewCols }} gap-3.5 sm:gap-5 overflow-x-auto md:overflow-visible snap-x snap-mandatory no-scrollbar pb-3 pt-1 -mx-3 px-3 sm:mx-0 sm:px-0">
           @foreach($homeReviews as $review)
-            <div class="w-[85vw] max-w-[340px] sm:w-[380px] md:w-auto shrink-0 md:shrink snap-center relative overflow-hidden rounded-2xl border border-stone-200/80 bg-white p-4 sm:p-6 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between group">
+            <div class="w-[85vw] max-w-[340px] sm:w-[360px] md:w-auto md:max-w-none shrink-0 md:shrink min-w-0 snap-center relative overflow-hidden rounded-2xl border border-stone-200/80 bg-white p-4 sm:p-6 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between group">
               <div>
                 <div class="flex items-center justify-between gap-2 mb-2.5">
                   <div class="flex items-center gap-1 text-amber-400 text-sm">
@@ -534,9 +535,15 @@
                   <span class="text-[10px] sm:text-[11px] font-medium text-stone-400">{{ $review->created_at?->diffForHumans() ?? 'Verified' }}</span>
                 </div>
 
-                <p class="text-stone-700 text-xs sm:text-sm leading-relaxed line-clamp-4 sm:line-clamp-none">
+                <p class="text-stone-700 text-xs sm:text-sm leading-relaxed line-clamp-4">
                   “{{ $review->body }}”
                 </p>
+                @if($review->product)
+                  <a href="{{ route('product.show', $review->product) }}" class="mt-2.5 inline-flex max-w-full items-center gap-1 text-[11px] font-medium text-stone-500 hover:text-brand-700">
+                    <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    <span class="truncate">{{ $review->product->name }}</span>
+                  </a>
+                @endif
               </div>
 
               <div class="mt-4 pt-3 sm:pt-4 border-t border-stone-100 flex items-center justify-between gap-2">
@@ -549,18 +556,13 @@
                   </div>
                   <div class="min-w-0 flex-1">
                     <p class="font-bold text-xs sm:text-sm text-stone-900 truncate leading-tight">{{ $review->author_name }}</p>
-                    <span class="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-emerald-700">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 whitespace-nowrap">
                       <svg class="w-3 h-3 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
                       Verified Buyer
                     </span>
                   </div>
                 </div>
 
-                @if($review->product)
-                  <span class="inline-block text-[10px] sm:text-[11px] font-medium text-stone-500 truncate max-w-[120px] sm:max-w-[160px] bg-stone-50 px-2 py-0.5 rounded-md border border-stone-150 shrink-0">
-                    {{ $review->product->name }}
-                  </span>
-                @endif
               </div>
             </div>
           @endforeach
