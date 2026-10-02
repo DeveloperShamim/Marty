@@ -242,6 +242,24 @@ class DatabaseSeeder extends Seeder
         Setting::forgetCache();
 
         $this->seedAttributes();
+
+        // The real shop set-up (categories, Vant brand, trust strip, coupons, text banners) — only into
+        // empty tables, so anything edited in admin is never overwritten. Still no demo products.
+        if (Category::count() === 0) {
+            $this->seedCategories();
+        }
+        if (Brand::count() === 0) {
+            $this->seedBrands();
+        }
+        if (Feature::count() === 0) {
+            $this->seedFeatures();
+        }
+        if (Coupon::count() === 0) {
+            $this->seedCoupons();
+        }
+        if (\App\Models\Banner::count() === 0) {
+            $this->call(BannerSeeder::class);
+        }
     }
 
     private function seedCategories(): array

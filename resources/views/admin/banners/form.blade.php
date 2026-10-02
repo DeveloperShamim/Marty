@@ -172,7 +172,7 @@
 
         {{-- Preview Screen Container --}}
         <div class="rounded-2xl overflow-hidden bg-gray-900 border border-gray-800 shadow-sm relative group" id="previewContainer" style="aspect-ratio: 15/8;">
-          <img src="{{ $banner->image ? $banner->imageUrl() : asset('uploads/banners/hero_slider_iphone_18_pro.jpg') }}" id="livePreviewImg" class="w-full h-full object-cover object-center transition-all duration-300" alt="Banner Preview">
+          <img src="{{ $banner->image ? $banner->imageUrl() : asset('favicon.png') }}" id="livePreviewImg" class="w-full h-full object-cover object-center transition-all duration-300" alt="Banner Preview">
           
           {{-- Empty state fallback when no image --}}
           <div id="noImagePlaceholder" class="absolute inset-0 bg-neutral-900 flex flex-col items-center justify-center p-6 text-center text-white/50 hidden">

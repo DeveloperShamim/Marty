@@ -342,7 +342,7 @@ if (! function_exists('favicon_url')) {
             return asset('storage/' . ltrim($f, '/'));
         }
 
-        return asset('uploads/favicon.webp');
+        return asset('favicon.png'); // Vant mark; upload your own in Store Settings → Brand
     }
 }
 
@@ -364,7 +364,7 @@ if (! function_exists('logo_url')) {
             return asset('storage/' . ltrim($l, '/'));
         }
 
-        return asset('uploads/logo.webp');
+        return asset('favicon.png'); // until a logo is uploaded, use the Vant mark
     }
 }
 
