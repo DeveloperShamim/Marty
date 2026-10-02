@@ -63,7 +63,7 @@
       @if($product->images->count() > 0)
         <div class="flex lg:flex-col gap-2.5 sm:gap-3 overflow-x-auto lg:overflow-y-auto w-full lg:w-20 shrink-0 pb-1.5 lg:pb-0 max-h-[480px] no-scrollbar">
           @foreach($product->images as $img)
-            <button type="button" data-thumb="{{ $img->url() }}" data-color="{{ strtolower(trim($img->color ?? '')) }}" data-variation-tag="{{ strtolower(trim($img->color ?? '')) }}" data-alt="{{ strtolower(trim($img->alt ?? '')) }}" class="gallery-thumb-btn relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl sm:rounded-2xl {{ $loop->first ? 'opacity-100 shadow-md scale-100' : 'opacity-40 hover:opacity-80 scale-95 hover:scale-100' }} shrink-0 overflow-hidden transition-all duration-300 border-0 cursor-pointer p-0 block bg-transparent">
+            <button type="button" data-thumb="{{ $img->url() }}" data-color="{{ strtolower(trim($img->color ?? '')) }}" data-variation-tag="{{ strtolower(trim($img->color ?? '')) }}" data-alt="{{ strtolower(trim($img->alt ?? '')) }}" class="gallery-thumb-btn relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl sm:rounded-2xl {{ $loop->first ? 'opacity-100 shadow-md scale-100' : 'opacity-40 hover:opacity-80 scale-95 hover:scale-100' }} shrink-0 overflow-hidden transition-all duration-300 focus:outline-none focus:ring-0 active:outline-none border-0 outline-none cursor-pointer p-0 block bg-transparent">
               <img src="{{ $img->url() }}" loading="lazy" decoding="async" class="w-full h-full object-cover pointer-events-none block" alt="{{ $img->alt }}">
             </button>
           @endforeach

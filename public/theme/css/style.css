@@ -392,15 +392,29 @@ body {
   border-radius: 6px !important;
 }
 
-/* Modern Borderless Gallery Thumbnails — no borders or mouse-click outlines, keyboard focus ring kept */
-.gallery-thumb-btn {
+/* Modern Borderless Gallery Thumbnails — completely zero outlines & zero borders */
+.gallery-thumb-btn,
+button.gallery-thumb-btn,
+[data-thumb] {
   border: 0 !important;
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent !important;
 }
-.gallery-thumb-btn:focus-visible {
-  outline: 2px solid var(--brand-primary, #1D68FE);
-  outline-offset: -2px;
+
+.gallery-thumb-btn:focus,
+.gallery-thumb-btn:focus-visible,
+.gallery-thumb-btn:active,
+button.gallery-thumb-btn:focus,
+button.gallery-thumb-btn:focus-visible,
+button.gallery-thumb-btn:active,
+[data-thumb]:focus,
+[data-thumb]:focus-visible,
+[data-thumb]:active {
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-focus-ring-color: transparent !important;
 }
 
 /* Split Card Actions: View Details + Quick Bag Button */
