@@ -96,22 +96,22 @@
 
     {{-- Modern Split Action Buttons (View Details + Quick Add Bag) --}}
     @if($isOutOfStock)
-      <div class="flex items-center gap-1.5 sm:gap-2 mt-auto pt-1 w-full relative z-10">
-        <a href="{{ route('product.show', $product) }}" class="flex-1 min-w-0 h-10 sm:h-11 rounded-xl sm:rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 transition-all select-none">
-          <svg class="w-4 h-4 shrink-0 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-          <span class="truncate">View Details</span>
+      <div class="flex items-center gap-2 sm:gap-2.5 mt-auto pt-1 w-full relative z-10">
+        <a href="{{ route('product.show', $product) }}" class="flex-1 min-w-0 h-[42px] sm:h-12 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 transition-all select-none">
+          <svg class="w-4 h-4 shrink-0 text-stone-500 hidden min-[420px]:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          <span class="truncate px-1">View Details</span>
         </a>
-        <button type="button" disabled class="w-10 sm:w-11 h-10 sm:h-11 rounded-xl sm:rounded-2xl bg-stone-100 text-stone-400 flex items-center justify-center shrink-0 cursor-not-allowed border border-stone-200" title="Out of Stock">
+        <button type="button" disabled class="w-11 min-[420px]:w-12 sm:w-14 h-[42px] sm:h-12 rounded-2xl sm:rounded-[20px] bg-stone-100 text-stone-400 flex items-center justify-center shrink-0 cursor-not-allowed border border-stone-200" title="Out of Stock">
           <svg class="w-4 h-4 sm:w-5 sm:h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
         </button>
       </div>
     @else
-      <div class="flex items-center gap-1.5 sm:gap-2 mt-auto pt-1 w-full relative z-10">
-        <a href="{{ route('product.show', $product) }}" class="flex-1 min-w-0 h-10 sm:h-11 rounded-xl sm:rounded-2xl font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 text-white transition-all shadow-xs hover:shadow-md active:scale-[0.98] select-none btn-view-details" style="background-color: var(--brand-primary, #1D68FE);">
-          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-          <span class="truncate">View Details</span>
+      <div class="flex items-center gap-2 sm:gap-2.5 mt-auto pt-1 w-full relative z-10">
+        <a href="{{ route('product.show', $product) }}" class="flex-1 min-w-0 h-[42px] sm:h-12 rounded-full font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 text-white transition-all shadow-xs hover:shadow-md active:scale-[0.98] select-none btn-view-details" style="background-color: var(--brand-primary, #1D68FE);">
+          <svg class="w-4 h-4 shrink-0 hidden min-[420px]:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          <span class="truncate px-1">View Details</span>
         </a>
-        <button type="button" class="fk-add-btn fk-icon-only add-to-cart w-10 sm:w-11 h-10 sm:h-11 rounded-xl sm:rounded-2xl text-white flex items-center justify-center shrink-0 shadow-xs hover:shadow-md active:scale-95 transition-all cursor-pointer select-none touch-manipulation" 
+        <button type="button" class="fk-add-btn fk-icon-only add-to-cart w-11 min-[420px]:w-12 sm:w-14 h-[42px] sm:h-12 rounded-2xl sm:rounded-[20px] text-white flex items-center justify-center shrink-0 shadow-xs hover:shadow-md active:scale-95 transition-all cursor-pointer select-none touch-manipulation" 
                 aria-label="Add to Cart"
                 data-product-id="{{ $product->id }}" 
                 data-title="{{ $product->name }}" 
@@ -126,7 +126,7 @@
                 data-has-variants="{{ $hasVariants ? 'true' : 'false' }}"
                 data-variants="{{ json_encode($variantsGrouped) }}"
                 data-skus="{{ json_encode($product->skus ? $product->skus->map(fn($s) => ['id' => $s->id, 'attributes' => $s->getAttributesData(), 'stock' => (int) $s->stock_quantity, 'price_adjustment' => (float) $s->price_adjustment, 'regular_price' => $s->getCalculatedRegularPrice(), 'sale_price' => $s->getCalculatedSalePrice()])->values() : []) }}">
-          <svg class="w-4 h-4 sm:w-5 sm:h-5 shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          <svg class="w-[18px] h-[18px] sm:w-5 sm:h-5 shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
         </button>
       </div>
     @endif
