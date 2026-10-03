@@ -17,7 +17,7 @@
         <label class="block text-sm font-medium mb-1.5">Email</label>
         <input type="email" name="email" value="{{ old('email') }}" required autofocus class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
       </div>
-      <button class="btn-shine w-full rounded-full bg-brand-600 text-white font-bold py-3.5 hover:bg-brand-700 transition">Send reset code</button>
+      <button class="btn-shine w-full bg-brand-600 text-white font-bold py-3.5 hover:bg-brand-700 transition rounded-xl">Send reset code</button>
     </form>
 
     <p class="mt-6 text-center text-sm text-slate-500"><a href="{{ route('login') }}" class="text-brand-600 font-semibold hover:underline">Back to sign in</a></p>

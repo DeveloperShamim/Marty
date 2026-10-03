@@ -23,7 +23,7 @@
         <label class="block text-sm font-medium mb-1.5">Confirm password</label>
         <input type="password" name="password_confirmation" required class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-300" />
       </div>
-      <button class="btn-shine w-full rounded-full bg-brand-600 text-white font-bold py-3.5 hover:bg-brand-700 transition">Update password</button>
+      <button class="btn-shine w-full bg-brand-600 text-white font-bold py-3.5 hover:bg-brand-700 transition rounded-xl">Update password</button>
     </form>
   </div>
 </section>

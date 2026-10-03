@@ -22,7 +22,7 @@
   </button>
 
   {{-- Chat Window Panel (Dynamic Brand Color Mobile Shell) --}}
-  <div id="chatWindowPanel" class="hidden fixed bottom-32 right-4 sm:right-6 w-[calc(100vw-32px)] sm:w-[325px] h-[475px] max-h-[75vh] bg-gradient-to-b from-brand-600 via-brand-700 to-brand-800 rounded-[28px] shadow-2xl border border-brand-400/30 flex flex-col overflow-hidden transition-all duration-300 transform scale-95 opacity-0 z-[60] text-white">
+  <div id="chatWindowPanel" class="hidden fixed bottom-32 right-4 sm:right-6 w-[calc(100vw-32px)] sm:w-[325px] h-[475px] max-h-[75vh] bg-gradient-to-b from-brand-600 via-brand-700 to-brand-800 rounded-3xl shadow-2xl border border-brand-400/30 flex flex-col overflow-hidden transition-all duration-300 transform scale-95 opacity-0 z-[60] text-white">
     
     {{-- ======================================================== --}}
     {{-- VIEW 1: HOME LANDING VIEW (MATCHING BRAND THEME)         --}}
@@ -54,7 +54,7 @@
           <p class="text-sm font-medium text-white/90 leading-normal">
             How can we help you today?
           </p>
-          <button type="button" id="startChatBtn" class="mt-2 w-full py-3 px-4 bg-white hover:bg-brand-50 active:scale-98 text-brand-700 font-extrabold text-sm rounded-2xl shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2">
+          <button type="button" id="startChatBtn" class="mt-2 w-full py-3 px-4 bg-white hover:bg-brand-50 active:scale-98 text-brand-700 font-extrabold text-sm shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2 rounded-xl">
             <span>💬 Send Us a Message</span>
             <span>➔</span>
           </button>

@@ -177,11 +177,11 @@
         <div class="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-3">
           <h4 class="font-extrabold text-xs uppercase tracking-wider text-slate-400">Actions &amp; Terms</h4>
 
-          <button type="button" onclick="window.print()" class="w-full py-2.5 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs transition flex items-center justify-center gap-2 cursor-pointer">
+          <button type="button" onclick="window.print()" class="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs transition flex items-center justify-center gap-2 cursor-pointer rounded-xl">
             <span>🖨️</span> Print Privacy Policy
           </button>
 
-          <a href="{{ route('terms') }}" class="w-full py-2.5 px-4 rounded-2xl border border-slate-200 hover:border-brand-500 bg-white text-slate-700 hover:text-brand-600 font-extrabold text-xs transition flex items-center justify-between group">
+          <a href="{{ route('terms') }}" class="w-full py-2.5 px-4 border border-slate-200 hover:border-brand-500 bg-white text-slate-700 hover:text-brand-600 font-extrabold text-xs transition flex items-center justify-between group rounded-xl">
             <span class="flex items-center gap-2">
               <span>📜</span> Terms of Service
             </span>
@@ -438,10 +438,10 @@
       Shop with confidence knowing that your personal details and payment statements are handled with maximum care and protection.
     </p>
     <div class="pt-2 flex items-center justify-center gap-3 flex-wrap">
-      <a href="{{ route('shop') }}" class="px-6 py-3 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs transition shadow-md hover:shadow-lg">
+      <a href="{{ route('shop') }}" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs transition shadow-md hover:shadow-lg rounded-xl">
         Start Shopping &rarr;
       </a>
-      <a href="{{ route('contact') }}" class="px-6 py-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs transition">
+      <a href="{{ route('contact') }}" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs transition rounded-xl">
         Contact Customer Desk
       </a>
     </div>

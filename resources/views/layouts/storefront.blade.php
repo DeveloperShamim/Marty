@@ -21,6 +21,8 @@
     tailwind.config = {
       theme: {
         extend: {
+          // One corner scale for the whole shop: 6 tags · 10 buttons & inputs · 16 cards · 24 large panels · pill.
+          borderRadius: { sm: '6px', DEFAULT: '6px', md: '10px', lg: '10px', xl: '10px', '2xl': '16px', '3xl': '24px' },
           colors: {
             brand: {
               50:  '{{ $theme["primary_soft_bg"] }}',
@@ -135,7 +137,7 @@
       background-color: var(--brand-primary) !important;
       border: 1px solid var(--brand-primary) !important;
       color: #ffffff !important;
-      border-radius: 12px !important;
+      border-radius: 10px !important;
     }
 
     .fk-add-btn:hover,
@@ -182,6 +184,10 @@
       50% { transform: scale(1.04); box-shadow: 0 6px 10px -2px rgba(0,0,0,.22), 0 3px 6px -2px rgba(0,0,0,.12); }
     }
     /* Tap-to-copy coupon code + flash countdown inside the headlines */
+    /* Apple-style continuous corners in browsers that support it (others keep normal round corners). */
+    @supports (corner-shape: squircle) {
+      [class*="rounded-"]:not(.rounded-full):not(.rounded-none), .fk-card, .fk-add-btn, .btn-view-details, .toast { corner-shape: squircle; }
+    }
     .promo-code { cursor: pointer; padding: 1px 7px; margin: 0 2px; border: 1.5px dashed rgba(255,255,255,.75); border-radius: 6px; background: rgba(255,255,255,.14); font-weight: 800; letter-spacing: .03em; }
     .promo-code:active, .promo-code.is-copied { background: #fff; color: var(--brand-primary) !important; border-style: solid; }
     .ticker-clock { display: inline-block; margin-left: 4px; padding: 1px 6px; border-radius: 6px; background: rgba(0,0,0,.28); font-variant-numeric: tabular-nums; font-weight: 800; }

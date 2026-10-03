@@ -20,7 +20,7 @@
     <form method="POST" action="{{ route('verify.store') }}" class="mt-6 space-y-4">
       @csrf
       <input name="code" inputmode="numeric" maxlength="6" required autofocus placeholder="••••••" class="w-full text-center tracking-[0.5em] text-2xl font-bold rounded-xl border border-slate-200 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-300" />
-      <button class="btn-shine w-full rounded-full bg-brand-600 text-white font-bold py-3.5 hover:bg-brand-700 transition">Verify</button>
+      <button class="btn-shine w-full bg-brand-600 text-white font-bold py-3.5 hover:bg-brand-700 transition rounded-xl">Verify</button>
     </form>
 
     <form method="POST" action="{{ route('verify.resend') }}" class="mt-4">

@@ -94,7 +94,20 @@ class VariationController extends Controller
             ->with('status', $msg);
     }
 
-    public function destroyValue(ProductAttributeValue $value)
+    /** Exact shade for a colour option (empty = back to the built-in shade for that name). */
+    public function updateValue(Request $request, ProductAttributeValue $value)
+    {
+        $data = $request->validate([
+            'color_hex' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+        ]);
+
+        $value->update(['color_hex' => isset($data['color_hex']) ? strtolower($data['color_hex']) : null]);
+
+        return redirect()->route('admin.variations.index', ['selected' => $value->product_attribute_type_id])
+            ->with('status', $value->color_hex ? "Colour for '{$value->value}' saved." : "Colour for '{$value->value}' reset.");
+    }
+
+        public function destroyValue(ProductAttributeValue $value)
     {
         $typeId = $value->product_attribute_type_id;
         $valName = $value->value;

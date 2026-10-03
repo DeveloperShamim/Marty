@@ -45,6 +45,8 @@
 
 @section('content')
 <main class="max-w-7xl mx-auto px-3.5 sm:px-5 lg:px-6 py-4 sm:py-6 pb-28 lg:pb-8">
+  <style>[data-selected-val-hint]:empty::after { content: 'Choose one'; color: #a8a29e; font-weight: 500; }</style>
+
   {{-- Clean Breadcrumb --}}
   <nav class="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-stone-500 mb-4 sm:mb-6 flex-wrap">
     <a href="{{ route('home') }}" class="hover:text-brand-600 transition-colors">Home</a>
@@ -187,52 +189,6 @@
         </div>
       </div>
 
-      {{-- Refined Flash Sale Urgency Strip --}}
-      @if($product->is_flash_sale)
-        @php
-          $flashEndsAt = setting('flash_sale_ends_at');
-          $flashEndsIso = $flashEndsAt ? \Illuminate\Support\Carbon::parse($flashEndsAt)->toIso8601String() : null;
-          $progress = $product->calculatedFlashSaleProgress();
-          $flashStock = $product->skus()->exists() ? (int) $product->skus()->sum('stock_quantity') : (int) $product->stock_quantity;
-          $diffDays = $flashEndsAt ? now()->diffInDays(\Illuminate\Support\Carbon::parse($flashEndsAt), false) : -1;
-          $showLiveTimer = $diffDays >= 0 && $diffDays <= 14;
-        @endphp
-        <div class="rounded-xl bg-stone-50 border border-stone-200/80 p-3 space-y-2 my-2">
-          <div class="flex items-center justify-between gap-2 text-xs">
-            <span class="font-bold text-stone-900 flex items-center gap-1.5">
-              <span>⚡</span>
-              <span class="uppercase tracking-wider text-[11px]">Limited Time Deal</span>
-            </span>
-            @if($showLiveTimer)
-              <div class="flex items-center gap-1 text-[11px] font-mono text-stone-600 bg-white border border-stone-200/80 px-2 py-0.5 rounded-md" data-pdp-flash-timer data-ends-at="{{ $flashEndsIso }}">
-                <span class="text-stone-400 font-sans text-[10px] mr-0.5">Ends in:</span>
-                <span data-timer-days class="font-bold text-stone-900">00</span><span class="text-stone-400 text-[10px]">d</span> :
-                <span data-timer-hours class="font-bold text-stone-900">00</span><span class="text-stone-400 text-[10px]">h</span> :
-                <span data-timer-mins class="font-bold text-stone-900">00</span><span class="text-stone-400 text-[10px]">m</span> :
-                <span data-timer-secs class="font-bold text-brand-600">00</span><span class="text-stone-400 text-[10px]">s</span>
-              </div>
-            @else
-              <span class="text-xs font-semibold text-brand-600">Selling fast</span>
-            @endif
-          </div>
-          <div class="space-y-1">
-            <div class="flex justify-between items-center text-[11px]">
-              <span class="text-stone-500">{{ $progress }}% claimed</span>
-              <span class="text-stone-700 font-medium">
-                @if($flashStock > 0)
-                  Only {{ $flashStock }} left at this price
-                @else
-                  Limited stock
-                @endif
-              </span>
-            </div>
-            <div class="w-full h-1.5 bg-stone-200 rounded-full overflow-hidden">
-              <div class="h-full bg-brand-500 rounded-full transition-all duration-500" style="width: {{ $progress }}%"></div>
-            </div>
-          </div>
-        </div>
-      @endif
-
       <hr class="border-stone-100 my-3" />
 
       {{-- Dynamic Variants --}}
@@ -256,7 +212,8 @@
             </div>
             <div class="flex flex-wrap gap-2 sm:gap-2.5">
               @foreach($group->options as $optValue)
-                <button type="button" class="variant-btn min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all border border-stone-200 bg-stone-50/60 hover:bg-stone-100 text-stone-800 hover:text-stone-950 hover:border-stone-400 active:scale-95 cursor-pointer shadow-2xs flex items-center justify-center select-none" data-type="{{ $groupType }}" data-value="{{ $optValue }}">{{ $optValue }}</button>
+                @php $swatch = \App\Support\ColorSwatch::for($groupType, $optValue); @endphp
+                <button type="button" class="variant-btn min-h-[38px] px-3.5 py-1.5 gap-2 rounded-lg text-xs sm:text-sm font-semibold transition-all border border-stone-200 bg-stone-50/60 hover:bg-stone-100 text-stone-800 hover:text-stone-950 hover:border-stone-400 active:scale-95 cursor-pointer shadow-2xs flex items-center justify-center select-none" data-type="{{ $groupType }}" data-value="{{ $optValue }}">@if($swatch)<span class="w-4 h-4 rounded-full ring-1 ring-black/15 shrink-0" style="background: {{ $swatch }}" aria-hidden="true"></span>@endif{{ $optValue }}</button>
               @endforeach
             </div>
           </div>
@@ -295,62 +252,55 @@
         </div>
 
         @if($whatsapp)
-          <a href="https://wa.me/{{ $whatsapp }}?text={{ urlencode('Hi, I want to inquire about: '.$product->name.' - '.url()->current()) }}" target="_blank" rel="noopener" class="w-full h-10 sm:h-11 bg-emerald-50/60 hover:bg-emerald-100/70 border border-emerald-200/80 hover:border-emerald-300 text-emerald-900 font-bold rounded-xl transition-all flex items-center justify-center gap-2 text-xs shadow-2xs">
+          <a href="https://wa.me/{{ $whatsapp }}?text={{ urlencode('Hi, I want to inquire about: '.$product->name.' - '.url()->current()) }}" target="_blank" rel="noopener" class="w-full h-10 sm:h-11 bg-white hover:bg-stone-50 border border-stone-200 hover:border-stone-300 text-stone-800 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm">
             <svg class="w-4 h-4 text-emerald-600 fill-current shrink-0" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-1.147 4.19 4.18-1.096z"/></svg>
             <span>Order or Inquire on WhatsApp</span>
           </a>
         @endif
       </div>
 
-      {{-- Free delivery offers --}}
-      @php $fdOffer = \App\Services\FreeDelivery::config(); @endphp
-      @if($product->free_delivery)
-        <div class="flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-emerald-800">
-          <span class="text-base leading-none">🚚</span> Free delivery on this product — anywhere in Bangladesh.
-        </div>
-      @elseif($fdOffer['online_enabled'] && \App\Services\FreeDelivery::onlinePaymentAvailable())
-        <div class="flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-emerald-800">
-          <span class="text-base leading-none">🚚</span>
-          <span>Free delivery when you pay with bKash, Nagad or Rocket{{ $fdOffer['online_min'] > 0 ? ' on orders of ' . money($fdOffer['online_min']) . ' or more' : '' }}{{ $fdOffer['online_zones'] === 'inside_dhaka' ? ' (inside Dhaka)' : ($fdOffer['online_zones'] === 'outside_dhaka' ? ' (outside Dhaka)' : '') }}.</span>
-        </div>
-      @endif
-
-      {{-- Clean Trust Guarantee Strip --}}
-      <div class="pt-4 border-t border-stone-100">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5">
-          <div class="flex items-center gap-2 sm:gap-2.5 bg-stone-50/70 p-2.5 rounded-xl border border-stone-100/90">
-            <svg class="w-4 h-4 text-stone-800 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            <div class="min-w-0">
-              <p class="text-xs font-bold text-stone-900 leading-tight truncate">100% Genuine</p>
-              <p class="text-[10px] text-stone-400 mt-0.5 truncate">Authentic Item</p>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2 sm:gap-2.5 bg-stone-50/70 p-2.5 rounded-xl border border-stone-100/90">
-            <svg class="w-4 h-4 text-stone-800 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            <div class="min-w-0">
-              <p class="text-xs font-bold text-stone-900 leading-tight truncate">Fast Delivery</p>
-              <p class="text-[10px] text-stone-400 mt-0.5 truncate">24–48h Nationwide</p>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2 sm:gap-2.5 bg-stone-50/70 p-2.5 rounded-xl border border-stone-100/90">
-            <svg class="w-4 h-4 text-stone-800 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            <div class="min-w-0">
-              <p class="text-xs font-bold text-stone-900 leading-tight truncate">7 Days Return</p>
-              <p class="text-[10px] text-stone-400 mt-0.5 truncate">Easy Replacement</p>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2 sm:gap-2.5 bg-stone-50/70 p-2.5 rounded-xl border border-stone-100/90">
-            <svg class="w-4 h-4 text-stone-800 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-            <div class="min-w-0">
-              <p class="text-xs font-bold text-stone-900 leading-tight truncate">Cash on Delivery</p>
-              <p class="text-[10px] text-stone-400 mt-0.5 truncate">Pay on Arrival</p>
-            </div>
+      {{-- Delivery: charges, time and any free-delivery offer in one calm panel --}}
+      @php
+        $fdOffer = \App\Services\FreeDelivery::config();
+        $onlineFree = ! $product->free_delivery && $fdOffer['online_enabled'] && \App\Services\FreeDelivery::onlinePaymentAvailable();
+      @endphp
+      <div class="mt-1 rounded-xl border border-stone-200 divide-y divide-stone-100 text-xs sm:text-sm">
+        <div class="flex items-start gap-3 px-3.5 py-3">
+          <svg class="w-5 h-5 text-stone-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <div class="min-w-0 flex-1">
+            <p class="font-semibold text-stone-900">Delivery</p>
+            @if($product->free_delivery)
+              <p class="text-emerald-700 font-semibold mt-0.5">Free delivery on this product, anywhere in Bangladesh</p>
+            @else
+              <dl class="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-stone-600">
+                <dt>{{ setting('shipping_inside_label', 'Inside Dhaka') }}</dt><dd><b class="text-stone-900">{{ money(setting('shipping_inside_dhaka', 60)) }}</b> · 1–2 days</dd>
+                <dt>{{ setting('shipping_outside_label', 'Outside Dhaka') }}</dt><dd><b class="text-stone-900">{{ money(setting('shipping_outside_dhaka', 120)) }}</b> · 2–3 days</dd>
+              </dl>
+            @endif
           </div>
         </div>
+        @if($onlineFree)
+          <div class="flex items-start gap-3 px-3.5 py-2.5 text-emerald-800">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+            <span>Free delivery when you pay with bKash, Nagad or Rocket{{ $fdOffer['online_min'] > 0 ? ' on orders of ' . money($fdOffer['online_min']) . ' or more' : '' }}{{ $fdOffer['online_zones'] === 'inside_dhaka' ? ' (inside Dhaka)' : ($fdOffer['online_zones'] === 'outside_dhaka' ? ' (outside Dhaka)' : '') }}</span>
+          </div>
+        @endif
       </div>
+
+      {{-- Trust points: short, never cut off --}}
+      <ul class="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-2.5 pt-3 text-xs text-stone-700">
+        @foreach([
+          ['Genuine leather', 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'],
+          ['Cash on delivery', 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
+          ['7-day return', 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'],
+          ['Fast delivery', 'M13 10V3L4 14h7v7l9-11h-7z'],
+        ] as [$label, $path])
+          <li class="flex items-center gap-2 min-w-0">
+            <svg class="w-4 h-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $path }}"/></svg>
+            <span class="leading-tight">{{ $label }}</span>
+          </li>
+        @endforeach
+      </ul>
 
       {{-- Bullet Highlights --}}
       @if($bulletSpecs->isNotEmpty())
@@ -373,29 +323,23 @@
   <section id="productDetailsSection" class="bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 p-4 sm:p-7 lg:p-9 mt-6 sm:mt-8 shadow-xs space-y-5 sm:space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4 border-b border-stone-100 pb-4 sm:pb-5">
       <div>
-        <h2 class="text-base sm:text-xl md:text-2xl font-black text-stone-950 tracking-tight flex items-center gap-2 sm:gap-2.5">
-          <span class="w-1.5 h-4 sm:h-5 bg-stone-900 rounded-full shrink-0"></span>
-          <span>Product Overview &amp; Specifications</span>
-        </h2>
-        <p class="text-[11px] sm:text-xs md:text-sm text-stone-500 mt-1">Full breakdown of features, technical specs, authenticity and delivery coverage</p>
+        <h2 class="text-lg sm:text-xl font-bold text-stone-900 tracking-tight">Product details</h2>
+        <p class="text-xs sm:text-sm text-stone-500 mt-0.5">Description, specifications and delivery</p>
       </div>
 
       {{-- Modern Pill Tabs (Mobile Responsive: Single-row horizontal scroll / flex-nowrap) --}}
       <div class="w-full sm:w-auto overflow-x-auto scrollbar-none -mx-1 px-1 py-0.5">
         <div class="inline-flex p-1 bg-stone-100/90 rounded-2xl border border-stone-200/70 text-xs font-bold gap-1 min-w-full sm:min-w-0" data-pdp-tabs>
           <button type="button" data-pdp-tab="description" class="pdp-tab-btn active flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-xl bg-white text-stone-950 shadow-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap text-xs">
-            <span>📝</span>
             <span>Overview</span>
           </button>
           @if(! empty($specRows))
             <button type="button" data-pdp-tab="specs" class="pdp-tab-btn flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-xl text-stone-600 hover:text-stone-950 font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap text-xs">
-              <span>⚙️</span>
               <span>Specifications</span>
               <span class="ml-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-stone-200 text-stone-700">{{ count($specRows) }}</span>
             </button>
           @endif
           <button type="button" data-pdp-tab="delivery" class="pdp-tab-btn flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-xl text-stone-600 hover:text-stone-950 font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap text-xs">
-            <span>🛡️</span>
             <span>Shipping &amp; Warranty</span>
           </button>
         </div>
@@ -655,11 +599,8 @@
   <section id="reviews" class="mt-10 rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-8 shadow-2xs space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
       <div>
-        <div class="flex items-center gap-2.5">
-          <span class="w-1.5 h-5 bg-brand-600 rounded-full"></span>
-          <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900">Customer Reviews &amp; Feedback</h2>
-        </div>
-        <p class="text-xs sm:text-sm text-slate-500 mt-1">Authentic ratings from verified buyers who purchased this product</p>
+        <h2 class="text-lg sm:text-xl font-bold text-stone-900 tracking-tight">Customer reviews</h2>
+        <p class="text-xs sm:text-sm text-stone-500 mt-0.5">From buyers who purchased this product</p>
       </div>
 
       <div class="flex items-center gap-3">
@@ -681,7 +622,7 @@
     </div>
 
     @if(session('status'))
-      <div class="rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm p-3.5 font-semibold">
+      <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm p-3.5 font-semibold rounded-xl">
         ✓ {{ session('status') }}
       </div>
     @endif
@@ -762,7 +703,7 @@
             <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
             Verified purchase check enabled
           </span>
-          <button type="submit" class="rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm px-6 py-2.5 shadow-2xs transition-all cursor-pointer">
+          <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm px-6 py-2.5 shadow-2xs transition-all cursor-pointer rounded-xl">
             Submit Review
           </button>
         </div>
@@ -824,7 +765,7 @@
   @if($related->isNotEmpty())
     <section class="mt-10">
       <div class="flex items-center justify-between mb-6">
-        <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900">Related Products</h2>
+        <h2 class="text-lg sm:text-xl font-bold text-stone-900 tracking-tight">You may also like</h2>
         <a href="{{ route('shop') }}" class="inline-flex items-center gap-1 text-sm font-bold text-brand-600 hover:underline">
           See All <span class="text-base">→</span>
         </a>
@@ -849,13 +790,13 @@
   <div id="stickyMobileBar" class="lg:hidden fixed bottom-6 sm:bottom-7 left-4 right-4 sm:left-6 sm:right-6 z-50 pointer-events-none transition-all duration-300 ease-out transform translate-y-28 opacity-0" style="bottom: max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1.25rem));">
     <div class="max-w-md mx-auto grid grid-cols-2 gap-2.5 sm:gap-3 w-full pointer-events-auto">
       {{-- Add to Cart (Brand Orange Floating Pill Button) --}}
-      <button type="button" id="stickyBarAddToCart" class="h-12 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-white/10 select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
+      <button type="button" id="stickyBarAddToCart" class="h-12 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-white/10 select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none rounded-xl" @disabled($isOutOfStock)>
         <svg class="w-4 h-4 text-white shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
         <span id="stickyBarAddToCartText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : 'ADD TO CART' }}</span>
       </button>
 
       {{-- Buy Now (Solid Black Floating Pill Button) --}}
-      <button type="button" id="stickyBarBuyNow" class="buy-now-cta-effect h-12 bg-stone-950 hover:bg-black active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider rounded-2xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-white/10 select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
+      <button type="button" id="stickyBarBuyNow" class="buy-now-cta-effect h-12 bg-stone-950 hover:bg-black active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-white/10 select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none rounded-xl" @disabled($isOutOfStock)>
         <span id="stickyBarBuyNowText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : 'BUY NOW' }}</span>
       </button>
     </div>

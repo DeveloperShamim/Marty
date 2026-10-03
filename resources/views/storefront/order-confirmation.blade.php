@@ -161,7 +161,7 @@
   </div>
 
   <div class="mt-8 text-center">
-    <a href="{{ route('shop') }}" class="inline-flex rounded-full bg-brand-600 text-white text-sm font-semibold px-6 py-3 hover:bg-brand-700">Continue shopping</a>
+    <a href="{{ route('shop') }}" class="inline-flex bg-brand-600 text-white text-sm font-semibold px-6 py-3 hover:bg-brand-700 rounded-xl">Continue shopping</a>
   </div>
 </section>
 @endsection

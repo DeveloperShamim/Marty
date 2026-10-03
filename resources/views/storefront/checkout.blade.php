@@ -365,7 +365,7 @@
 
           {{-- Desktop Place Order Button on Left Side (Hidden on mobile) --}}
           <div class="hidden lg:block pt-2 space-y-2.5">
-            <button type="submit" class="place-order-cta-effect w-full rounded-2xl bg-brand-600 text-white font-bold py-3.5 sm:py-4 hover:bg-brand-700 transition cursor-pointer text-sm sm:text-base border border-white/20">
+            <button type="submit" class="place-order-cta-effect w-full bg-brand-600 text-white font-bold py-3.5 sm:py-4 hover:bg-brand-700 transition cursor-pointer text-sm sm:text-base border border-white/20 rounded-xl">
               Place Order · <span class="placeTotalText" id="placeTotal">{{ money($totals['total']) }}</span>
             </button>
             <p class="text-center text-[11px] sm:text-xs text-slate-400">By placing your order you agree to our <a href="{{ route('terms') }}" class="underline hover:text-brand-600">Terms</a> &amp; <a href="{{ route('privacy') }}" class="underline hover:text-brand-600">Privacy Policy</a>.</p>
@@ -425,7 +425,7 @@
                 <form method="POST" action="{{ route('checkout.coupon.apply') }}" class="flex gap-2">
                   @csrf
                   <input name="code" value="{{ old('code') }}" placeholder="Promo code" required class="flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-xs focus:outline-none focus:ring-2 focus:ring-brand-300 uppercase" />
-                  <button type="submit" class="rounded-xl bg-brand-600 text-white text-xs font-bold px-4 py-2 hover:bg-brand-700 transition cursor-pointer shrink-0">Apply</button>
+                  <button type="submit" class="bg-brand-600 text-white text-xs font-bold px-4 py-2 hover:bg-brand-700 transition cursor-pointer shrink-0 rounded-xl">Apply</button>
                 </form>
                 @error('coupon')<p class="text-[11px] text-red-600 font-semibold mt-1.5">⚠️ {{ $message }}</p>@enderror
               @endif
@@ -554,7 +554,7 @@
                 <form method="POST" action="{{ route('checkout.coupon.apply') }}" class="flex gap-2">
                   @csrf
                   <input name="code" value="{{ old('code') }}" placeholder="Promo code" required class="flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-xs focus:outline-none focus:ring-2 focus:ring-brand-300 uppercase" />
-                  <button type="submit" class="rounded-xl bg-brand-600 text-white text-xs font-bold px-4 py-2 hover:bg-brand-700 transition cursor-pointer shrink-0">Apply</button>
+                  <button type="submit" class="bg-brand-600 text-white text-xs font-bold px-4 py-2 hover:bg-brand-700 transition cursor-pointer shrink-0 rounded-xl">Apply</button>
                 </form>
                 @error('coupon')<p class="text-[11px] text-red-600 font-semibold mt-1.5">⚠️ {{ $message }}</p>@enderror
               @endif
@@ -569,7 +569,7 @@
   {{-- Floating "Place Order" Button for Mobile View (No background container below, floating up) --}}
   <div id="stickyMobilePlaceBar" class="lg:hidden fixed bottom-5 sm:bottom-6 left-3.5 right-3.5 sm:left-4 sm:right-4 z-40 pointer-events-none" style="bottom: max(1.25rem, env(safe-area-inset-bottom, 1.25rem));">
     <div class="max-w-md mx-auto pointer-events-auto">
-      <button type="button" id="stickyMobilePlaceBtn" class="place-order-cta-effect w-full flex items-center justify-center gap-2 rounded-2xl bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold py-3.5 px-6 transition-all duration-200 cursor-pointer text-sm sm:text-base tracking-wide border border-white/20">
+      <button type="button" id="stickyMobilePlaceBtn" class="place-order-cta-effect w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold py-3.5 px-6 transition-all duration-200 cursor-pointer text-sm sm:text-base tracking-wide border border-white/20 rounded-xl">
         <svg class="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
         <span>Place Order · <span id="stickyMobilePlaceTotal" class="sumTotal">{{ money($totals['total']) }}</span></span>
       </button>

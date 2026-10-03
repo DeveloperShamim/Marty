@@ -41,7 +41,7 @@
                           @if($slide->badge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $slide->badge }}</span>@endif
                           @if($slide->title)<h2 class="text-xl sm:text-4xl font-extrabold leading-tight">{{ $slide->title }}</h2>@endif
                           @if($slide->subtitle)<p class="max-[389px]:hidden text-[11px] sm:text-sm text-white/80 mt-1.5 sm:mt-2 line-clamp-2">{{ $slide->subtitle }}</p>@endif
-                          @if($slide->button_text)<span class="inline-block mt-3 sm:mt-4 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-brand-600 text-white text-xs sm:text-sm font-bold">{{ $slide->button_text }}</span>@endif
+                          @if($slide->button_text)<span class="inline-block mt-3 sm:mt-4 px-4 sm:px-5 py-1.5 sm:py-2 rounded-xl bg-brand-600 text-white text-xs sm:text-sm font-bold">{{ $slide->button_text }}</span>@endif
                         </div>
                       </div>
                     @endif
@@ -76,7 +76,7 @@
                       @if($heroBadge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $heroBadge }}</span>@endif
                       @if($heroTitle)<h2 class="text-xl sm:text-4xl font-extrabold leading-tight">{{ $heroTitle }}</h2>@endif
                       @if($heroSubtitle)<p class="max-[389px]:hidden text-[11px] sm:text-sm text-white/80 mt-1.5 sm:mt-2 line-clamp-2">{{ $heroSubtitle }}</p>@endif
-                      @if($showHeroCta)<span class="inline-block mt-3 sm:mt-4 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-brand-600 text-white text-xs sm:text-sm font-bold">{{ $mainHero->button_text ?: $ctaDefault }}</span>@endif
+                      @if($showHeroCta)<span class="inline-block mt-3 sm:mt-4 px-4 sm:px-5 py-1.5 sm:py-2 rounded-xl bg-brand-600 text-white text-xs sm:text-sm font-bold">{{ $mainHero->button_text ?: $ctaDefault }}</span>@endif
                     </div>
                   </div>
                 @endif
@@ -88,7 +88,7 @@
                 @if($heroBadge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $heroBadge }}</span>@endif
                 <h2 class="text-xl sm:text-4xl font-extrabold leading-tight">{{ $heroTitle ?: site_name() }}</h2>
                 @if($heroSubtitle)<p class="max-[389px]:hidden text-[11px] sm:text-sm text-white/80 mt-1.5 sm:mt-2 line-clamp-2">{{ $heroSubtitle }}</p>@endif
-                <a href="{{ route('shop') }}" class="inline-block mt-3 sm:mt-4 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-brand-600 text-white text-xs sm:text-sm font-bold">{{ $ctaDefault }}</a>
+                <a href="{{ route('shop') }}" class="inline-block mt-3 sm:mt-4 px-4 sm:px-5 py-1.5 sm:py-2 bg-brand-600 text-white text-xs sm:text-sm font-bold rounded-xl">{{ $ctaDefault }}</a>
               </div>
             </div>
           @endif

@@ -230,6 +230,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::patch('variations/types/{type}', [\App\Http\Controllers\Admin\VariationController::class, 'updateType'])->middleware('area:variations')->name('variations.types.update');
             Route::delete('variations/types/{type}', [\App\Http\Controllers\Admin\VariationController::class, 'destroyType'])->middleware('area:variations')->name('variations.types.destroy');
             Route::post('variations/types/{type}/values', [\App\Http\Controllers\Admin\VariationController::class, 'storeValue'])->middleware('area:variations')->name('variations.values.store');
+            Route::patch('variations/values/{value}', [\App\Http\Controllers\Admin\VariationController::class, 'updateValue'])->middleware('area:variations')->name('variations.values.update');
             Route::delete('variations/values/{value}', [\App\Http\Controllers\Admin\VariationController::class, 'destroyValue'])->middleware('area:variations')->name('variations.values.destroy');
 
             Route::get('inventory', [AdminInventoryController::class, 'index'])->middleware('area:inventory')->name('inventory.index');

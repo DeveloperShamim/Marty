@@ -107,6 +107,26 @@ class Product extends Model
         return min(99, max($baseline, $progress));
     }
 
+    /**
+     * Real flash-deal numbers for the shop: units sold (not cancelled or returned), stock left,
+     * and the sold share of all units (null before the first sale, so nothing is made up).
+     *
+     * @return array{sold: int, left: int, percent: int|null}
+     */
+    public function flashStats(): array
+    {
+        $left = $this->skus()->exists() ? (int) $this->skus()->sum('stock_quantity') : (int) $this->stock_quantity;
+        $sold = (int) OrderItem::where('product_id', $this->id)
+            ->whereHas('order', fn ($q) => $q->whereNotIn('status', ['cancelled', 'returned']))
+            ->sum('quantity');
+
+        return [
+            'sold'    => $sold,
+            'left'    => max(0, $left),
+            'percent' => $sold > 0 ? (int) round($sold / max(1, $sold + max(0, $left)) * 100) : null,
+        ];
+    }
+
     public function syncFlashSaleProgress(): int
     {
         $progress = $this->calculatedFlashSaleProgress();

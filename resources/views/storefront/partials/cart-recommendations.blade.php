@@ -45,7 +45,7 @@
               @endif
             </p>
             <button type="button"
-                    class="add-to-cart mt-1.5 inline-flex items-center gap-1 h-8 px-3.5 rounded-full bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold active:scale-95 transition"
+                    class="add-to-cart mt-1.5 inline-flex items-center gap-1 h-8 px-3.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold active:scale-95 transition rounded-xl"
                     aria-label="Add {{ $product->name }} to cart"
                     data-product-id="{{ $product->id }}"
                     data-title="{{ $product->name }}"

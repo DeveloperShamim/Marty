@@ -223,35 +223,36 @@
                   {{ $selectedType->values->count() }} total
                 </span>
               </h3>
-              <p class="text-xs text-gray-500 mt-0.5">Click the ✕ on any option chip to remove it.</p>
+              <p class="text-xs text-gray-500 mt-0.5">
+                @if($isColor)Tap a colour dot to pick the exact shade customers see (rainbow = not picked yet, ↺ = back to automatic). Click ✕ to remove an option.
+                @else Click the ✕ on any option chip to remove it.
+                @endif
+              </p>
             </div>
           </div>
 
           <!-- Option Chips Grid -->
           <div class="flex flex-wrap gap-2 min-h-[72px] p-3.5 bg-gray-50/70 rounded-xl border border-gray-200/60">
             @forelse($selectedType->values as $val)
-              @php
-                $valLower = strtolower(trim($val->value));
-                $colorHex = match($valLower) {
-                  'black' => '#09090b',
-                  'white' => '#ffffff',
-                  'brown' => '#78350f',
-                  'natural gold', 'gold' => '#d97706',
-                  'red' => '#dc2626',
-                  'blue' => '#2563eb',
-                  'green' => '#16a34a',
-                  'yellow' => '#eab308',
-                  'pink' => '#ec4899',
-                  'purple' => '#9333ea',
-                  'orange' => '#ea580c',
-                  'grey', 'gray' => '#6b7280',
-                  default => null,
-                };
-              @endphp
-
               <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white text-gray-800 border border-gray-200 shadow-2xs hover:border-gray-300 transition-colors group/opt">
-                @if($isColor && $colorHex)
-                  <span class="w-3.5 h-3.5 rounded-full border border-gray-300 shrink-0 shadow-2xs" style="background-color: {{ $colorHex }}"></span>
+                @if($isColor)
+                  {{-- Tap the square to pick the exact shade; it saves straight away. --}}
+                  @php $shade = $val->color_hex ?: \App\Support\ColorSwatch::fallback($val->value); @endphp
+                  <form method="POST" action="{{ route('admin.variations.values.update', $val) }}" class="inline-flex items-center gap-1">
+                    @csrf @method('PATCH')
+                    <label class="relative w-5 h-5 rounded-full shrink-0 cursor-pointer ring-1 ring-gray-300 overflow-hidden {{ $shade ? '' : 'bg-[conic-gradient(#f87171,#facc15,#4ade80,#60a5fa,#c084fc,#f87171)]' }}"
+                           style="{{ $shade ? 'background-color: ' . $shade : '' }}" title="{{ $val->color_hex ? 'Your colour ' . $val->color_hex . ' (click to change)' : 'Pick the exact colour' }}">
+                      <span class="sr-only">Colour for {{ $val->value }}</span>
+                      <input type="color" name="color_hex" value="{{ $shade ?: '#888888' }}" class="absolute inset-0 opacity-0 cursor-pointer" onchange="this.form.submit()">
+                    </label>
+                  </form>
+                  @if($val->color_hex)
+                    <form method="POST" action="{{ route('admin.variations.values.update', $val) }}" class="inline">
+                      @csrf @method('PATCH')
+                      <input type="hidden" name="color_hex" value="">
+                      <button type="submit" class="text-[10px] text-gray-400 hover:text-gray-700 cursor-pointer" title="Back to the automatic colour">↺</button>
+                    </form>
+                  @endif
                 @endif
                 <span class="font-medium font-mono">{{ $val->value }}</span>
                 <form method="POST" action="{{ route('admin.variations.values.destroy', $val) }}" class="inline">

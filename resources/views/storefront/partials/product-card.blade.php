@@ -78,40 +78,46 @@
       @endif
     </div>
 
-    {{-- Flash Sale Sold Urgency Bar --}}
+    {{-- Flash deal bar: real sales and stock only --}}
     @if($flashCard)
-      @php $progress = $product->calculatedFlashSaleProgress(); @endphp
+      @php $fs = $product->flashStats(); @endphp
       <div class="sold-container my-1 sm:my-1.5">
         <div class="flex items-center justify-between text-[9px] sm:text-[10px] font-bold text-stone-600 mb-1">
           <span class="flex items-center gap-1 text-amber-600 font-extrabold">
             <span>🔥</span> <span>Flash Deal</span>
           </span>
-          <span class="text-stone-500 font-mono">{{ $progress }}% Sold</span>
+          @if($fs['left'] > 0 && $fs['left'] <= 10)
+            <span class="text-rose-600">Only {{ $fs['left'] }} left</span>
+          @elseif($fs['sold'] > 0)
+            <span class="text-stone-500">{{ $fs['sold'] }} sold</span>
+          @endif
         </div>
-        <div class="relative w-full h-1.5 rounded-full bg-stone-100 overflow-hidden">
-          <div class="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 rounded-full transition-all duration-500" style="width:{{ $progress }}%"></div>
-        </div>
+        @if($fs['percent'] !== null)
+          <div class="relative w-full h-1.5 rounded-full bg-stone-100 overflow-hidden">
+            <div class="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 rounded-full transition-all duration-500" style="width:{{ $fs['percent'] }}%"></div>
+          </div>
+        @endif
       </div>
     @endif
 
     {{-- Modern Split Action Buttons (View Details + Quick Add Bag) --}}
     @if($isOutOfStock)
       <div class="flex items-center gap-2 sm:gap-2.5 mt-auto pt-1 w-full relative z-10">
-        <a href="{{ route('product.show', $product) }}" class="flex-1 min-w-0 h-[42px] sm:h-12 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 transition-all select-none">
+        <a href="{{ route('product.show', $product) }}" class="flex-1 min-w-0 h-[42px] sm:h-12 bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 transition-all select-none rounded-xl">
           <svg class="w-4 h-4 shrink-0 text-stone-500 hidden min-[420px]:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
           <span class="truncate px-1">View Details</span>
         </a>
-        <button type="button" disabled class="w-11 min-[420px]:w-12 sm:w-14 h-[42px] sm:h-12 rounded-2xl sm:rounded-[20px] bg-stone-100 text-stone-400 flex items-center justify-center shrink-0 cursor-not-allowed border border-stone-200" title="Out of Stock">
+        <button type="button" disabled class="w-11 min-[420px]:w-12 sm:w-14 h-[42px] sm:h-12 bg-stone-100 text-stone-400 flex items-center justify-center shrink-0 cursor-not-allowed border border-stone-200 rounded-xl" title="Out of Stock">
           <svg class="w-4 h-4 sm:w-5 sm:h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
         </button>
       </div>
     @else
       <div class="flex items-center gap-2 sm:gap-2.5 mt-auto pt-1 w-full relative z-10">
-        <a href="{{ route('product.show', $product) }}" class="flex-1 min-w-0 h-[42px] sm:h-12 rounded-full font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 text-white transition-all shadow-xs hover:shadow-md active:scale-[0.98] select-none btn-view-details" style="background-color: var(--brand-primary, #1D68FE);">
+        <a href="{{ route('product.show', $product) }}" class="flex-1 min-w-0 h-[42px] sm:h-12 font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 text-white transition-all shadow-xs hover:shadow-md active:scale-[0.98] select-none btn-view-details rounded-xl" style="background-color: var(--brand-primary, #1D68FE);">
           <svg class="w-4 h-4 shrink-0 hidden min-[420px]:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
           <span class="truncate px-1">View Details</span>
         </a>
-        <button type="button" class="fk-add-btn fk-icon-only add-to-cart w-11 min-[420px]:w-12 sm:w-14 h-[42px] sm:h-12 rounded-2xl sm:rounded-[20px] text-white flex items-center justify-center shrink-0 shadow-xs hover:shadow-md active:scale-95 transition-all cursor-pointer select-none touch-manipulation" 
+        <button type="button" class="fk-add-btn fk-icon-only add-to-cart w-11 min-[420px]:w-12 sm:w-14 h-[42px] sm:h-12 text-white flex items-center justify-center shrink-0 shadow-xs hover:shadow-md active:scale-95 transition-all cursor-pointer select-none touch-manipulation rounded-xl" 
                 aria-label="Add to Cart"
                 data-product-id="{{ $product->id }}" 
                 data-title="{{ $product->name }}" 

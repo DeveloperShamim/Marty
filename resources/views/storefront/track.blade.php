@@ -120,7 +120,7 @@
               placeholder="e.g. ORD-260912-XXXX" 
               required 
               autocomplete="off"
-              class="w-full rounded-2xl border border-stone-200/90 bg-stone-50/50 pl-9 pr-4 py-3 text-xs sm:text-sm font-medium text-stone-900 placeholder:text-stone-400 focus:outline-none focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all font-mono"
+              class="w-full border border-stone-200/90 bg-stone-50/50 pl-9 pr-4 py-3 text-xs sm:text-sm font-medium text-stone-900 placeholder:text-stone-400 focus:outline-none focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all font-mono rounded-xl"
             />
           </div>
         </div>
@@ -141,7 +141,7 @@
               placeholder="e.g. 017XXXXXXXX" 
               required 
               autocomplete="tel"
-              class="w-full rounded-2xl border border-stone-200/90 bg-stone-50/50 pl-10 pr-4 py-3 text-xs sm:text-sm font-medium text-stone-900 placeholder:text-stone-400 focus:outline-none focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all font-mono"
+              class="w-full border border-stone-200/90 bg-stone-50/50 pl-10 pr-4 py-3 text-xs sm:text-sm font-medium text-stone-900 placeholder:text-stone-400 focus:outline-none focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all font-mono rounded-xl"
             />
           </div>
         </div>
@@ -150,7 +150,7 @@
         <div class="sm:col-span-3">
           <button 
             type="submit" 
-            class="btn-shine w-full flex items-center justify-center gap-2 rounded-2xl bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold py-3 px-6 shadow-md shadow-brand-600/25 transition cursor-pointer text-xs sm:text-sm tracking-wide h-[46px]"
+            class="btn-shine w-full flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold py-3 px-6 shadow-md shadow-brand-600/25 transition cursor-pointer text-xs sm:text-sm tracking-wide h-[46px] rounded-xl"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             <span>Track Order</span>
@@ -578,7 +578,7 @@
                     href="{{ $orderWaUrl }}" 
                     target="_blank" 
                     rel="noopener noreferrer" 
-                    class="w-full flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-extrabold py-3 px-4 text-xs sm:text-sm shadow-md shadow-emerald-600/20 transition cursor-pointer"
+                    class="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-extrabold py-3 px-4 text-xs sm:text-sm shadow-md shadow-emerald-600/20 transition cursor-pointer rounded-xl"
                   >
                     <span>Inquire on WhatsApp</span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
@@ -597,7 +597,7 @@
               <span>Track Another Order</span>
             </a>
 
-            <a href="{{ route('shop') }}" class="inline-flex items-center gap-2 rounded-2xl bg-stone-900 hover:bg-stone-800 text-white text-xs sm:text-sm font-extrabold px-6 py-3 transition shadow-sm">
+            <a href="{{ route('shop') }}" class="inline-flex items-center gap-2 bg-stone-900 hover:bg-stone-800 text-white text-xs sm:text-sm font-extrabold px-6 py-3 transition shadow-sm rounded-xl">
               <span>Continue Shopping</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
             </a>
