@@ -34,15 +34,11 @@ class DatabaseSeeder extends Seeder
         $this->seedUsers();
         $this->seedSettings();
         $this->seedAttributes();
-        $categories = $this->seedCategories();
-        $brands = $this->seedBrands();
+        $this->seedCategories();
+        $this->seedBrands();
         $this->seedFeatures();
         $this->seedCoupons();
         $this->call(BannerSeeder::class);
-        $this->seedProducts($categories, $brands);
-        $this->seedReviews();
-        $this->seedOrders();
-        $this->seedExpenses();
         $this->seedStaffActivityLogs();
     }
 
