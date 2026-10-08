@@ -437,26 +437,32 @@ button.gallery-thumb-btn:active,
 }
 
 .fk-add-btn.fk-icon-only {
-  width: 44px !important;
-  height: 42px !important;
-  min-width: 44px !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
   padding: 0 !important;
   border-radius: 10px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
 }
-@media (min-width: 420px) {
-  .fk-add-btn.fk-icon-only { width: 48px !important; min-width: 48px !important; }
-}
 @media (min-width: 640px) {
-  .fk-add-btn.fk-icon-only {
-    width: 56px !important;
-    height: 48px !important;
-    min-width: 56px !important;
-    border-radius: 10px !important;
-  }
+  .fk-add-btn.fk-icon-only { width: 40px !important; height: 40px !important; min-width: 40px !important; }
 }
+/* Product card actions: a slim View Details button plus a soft square bag button that turns solid on hover.
+   They size to the card (container query), so 4- and 5-column grids on laptops stay tidy. */
+.product-card { container-type: inline-size; }
+.product-card .btn-view-details { letter-spacing: -.005em; }
+.product-card .fk-add-btn.fk-icon-only {
+  background-color: color-mix(in srgb, var(--brand-primary, #8B5A2B) 12%, #fff) !important;
+  border-color: transparent !important;
+  color: var(--brand-primary, #8B5A2B) !important;
+}
+.product-card .fk-add-btn.fk-icon-only:hover {
+  background-color: var(--brand-primary, #8B5A2B) !important;
+  color: #fff !important;
+}
+@container (max-width: 200px) { .product-card .pc-eye { display: none; } }
 
 /* Floating Customer Support Speed Dial - click-through fix */
 #chatSpeedDialRoot {
