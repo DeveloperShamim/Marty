@@ -36,7 +36,7 @@
                     @if($slide->image)
                       <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->title }}" class="w-full h-full object-cover object-center" loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
                     @else
-                      <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-14 sm:py-12 sm:px-20 text-white">
+                      <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
                         <div class="max-w-md">
                           @if($slide->badge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $slide->badge }}</span>@endif
                           @if($slide->title)<h2 class="text-xl sm:text-4xl font-extrabold leading-tight">{{ $slide->title }}</h2>@endif
@@ -50,11 +50,11 @@
               @endforeach
 
               {{-- Chevron Controls --}}
-              <button type="button" data-hero-arrow-prev class="absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-neutral-800 shadow-md flex items-center justify-center transition-all opacity-80 hover:opacity-100 hover:scale-105 active:scale-95 focus:outline-none" aria-label="Previous Slide">
+              <button type="button" data-hero-arrow-prev class="max-sm:hidden absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-neutral-800 shadow-md flex items-center justify-center transition-all opacity-80 hover:opacity-100 hover:scale-105 active:scale-95 focus:outline-none" aria-label="Previous Slide">
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></svg>
               </button>
 
-              <button type="button" data-hero-arrow-next class="absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-neutral-800 shadow-md flex items-center justify-center transition-all opacity-80 hover:opacity-100 hover:scale-105 active:scale-95 focus:outline-none" aria-label="Next Slide">
+              <button type="button" data-hero-arrow-next class="max-sm:hidden absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-neutral-800 shadow-md flex items-center justify-center transition-all opacity-80 hover:opacity-100 hover:scale-105 active:scale-95 focus:outline-none" aria-label="Next Slide">
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
               </button>
 
@@ -72,7 +72,7 @@
                 @if($mainHero->image)
                   <img src="{{ $mainHero->imageUrl() }}" alt="{{ $mainHero->title }}" class="w-full h-full object-cover object-center">
                 @else
-                  <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-14 sm:py-12 sm:px-20 text-white">
+                  <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
                     <div class="max-w-md">
                       @if($heroBadge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $heroBadge }}</span>@endif
                       @if($heroTitle)<h2 class="text-xl sm:text-4xl font-extrabold leading-tight">{{ $heroTitle }}</h2>@endif
@@ -84,7 +84,7 @@
               </a>
             </div>
           @else
-            <div class="relative w-full h-full aspect-[15/8] overflow-hidden bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-14 sm:py-12 sm:px-20 text-white">
+            <div class="relative w-full h-full aspect-[15/8] overflow-hidden bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
               <div class="max-w-md">
                 @if($heroBadge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $heroBadge }}</span>@endif
                 <h2 class="text-xl sm:text-4xl font-extrabold leading-tight">{{ $heroTitle ?: site_name() }}</h2>

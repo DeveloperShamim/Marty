@@ -1,4 +1,4 @@
-<aside id="mobileMenu" class="mobile-menu fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85vw] -translate-x-full flex-col bg-white shadow-2xl lg:hidden transition-transform duration-300 ease-in-out overscroll-contain">
+<aside id="mobileMenu" class="mobile-menu fixed inset-y-0 left-0 z-[60] flex w-80 max-w-[85vw] -translate-x-full flex-col bg-white shadow-2xl lg:hidden transition-transform duration-300 ease-in-out overscroll-contain">
   <div class="relative border-b border-stone-100 bg-stone-50 p-5 shrink-0">
     <button type="button" data-close-menu class="absolute top-4 right-4 p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 rounded-full transition cursor-pointer" aria-label="Close Menu">
       <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>

@@ -148,8 +148,8 @@
           <span class="text-[11px] sm:text-xs font-medium text-stone-700 group-hover:text-brand-600 mt-0.5 tracking-tight whitespace-nowrap">Track Order</span>
         </a>
 
-        {{-- 2. My Account Dropdown (last on phones) --}}
-        <div class="order-last sm:order-none">
+        {{-- 2. My Account Dropdown. Phones reach the account from the bottom tab bar, except on the product page which has no tab bar --}}
+        <div class="order-last sm:order-none {{ request()->routeIs('product.show') ? '' : 'max-md:hidden' }}">
           @include('storefront.partials.account-dropdown', ['lightHeader' => false])
         </div>
 

@@ -48,14 +48,14 @@
   <style>[data-selected-val-hint]:empty::after { content: 'Choose one'; color: #a8a29e; font-weight: 500; }</style>
 
   {{-- Clean Breadcrumb --}}
-  <nav class="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-stone-500 mb-4 sm:mb-6 flex-wrap">
+  <nav class="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-stone-500 mb-3 sm:mb-6 min-w-0 whitespace-nowrap sm:flex-wrap">
     <a href="{{ route('home') }}" class="hover:text-brand-600 transition-colors">Home</a>
     <span class="text-stone-300">/</span>
     @if($product->category)
       <a href="{{ route('shop.category', $product->category) }}" class="hover:text-brand-600 transition-colors">{{ $product->category->name }}</a>
       <span class="text-stone-300">/</span>
     @endif
-    <span class="text-stone-800 font-semibold truncate max-w-[180px] sm:max-w-xs md:max-w-md">{{ $product->name }}</span>
+    <span class="text-stone-800 font-semibold truncate min-w-0 sm:max-w-xs md:max-w-md">{{ $product->name }}</span>
   </nav>
 
   {{-- Main Product Card Container --}}

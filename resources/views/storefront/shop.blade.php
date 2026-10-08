@@ -23,7 +23,7 @@
   <div class="flex flex-col lg:flex-row gap-5 lg:gap-6">
 
     {{-- ===== FILTER SIDEBAR (drawer on phone) ===== --}}
-    <aside id="filterPanel" class="filter-panel fixed inset-y-0 left-0 z-50 w-[300px] max-w-[90%] -translate-x-full overflow-y-auto bg-white p-4 shadow-2xl lg:static lg:z-auto lg:w-[270px] lg:shrink-0 lg:translate-x-0 lg:overflow-visible lg:p-0 lg:shadow-none lg:bg-transparent">
+    <aside id="filterPanel" class="filter-panel fixed inset-y-0 left-0 z-[60] w-[300px] max-w-[90%] -translate-x-full overflow-y-auto bg-white p-4 shadow-2xl lg:static lg:z-auto lg:w-[270px] lg:shrink-0 lg:translate-x-0 lg:overflow-visible lg:p-0 lg:shadow-none lg:bg-transparent">
       <form method="GET" action="{{ $formAction }}" id="shopFilters" class="bg-white rounded-md border border-gray-200 p-4 space-y-5">
         @if($minRating)
           <input type="hidden" name="min_rating" id="minRatingField" value="{{ $minRating }}">
@@ -191,16 +191,32 @@
     </aside>
 
     {{-- ===== RESULTS ===== --}}
-    <div class="flex-1 min-w-0">
-      <div class="flex items-center gap-3 mb-4 lg:hidden">
-        <button type="button" data-open-filter class="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-ink shadow-sm">
-          <svg class="h-4 w-4 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M3 6h18M6 12h12M10 18h4"/></svg>
+    <div class="flex-1 min-w-0 max-lg:flex max-lg:flex-col">
+      {{-- Phones and tablets: Filters and Sort side by side (sort was desktop-only before) --}}
+      <div class="grid grid-cols-2 gap-2 mb-3 lg:hidden">
+        <button type="button" data-open-filter class="inline-flex items-center justify-center gap-2 h-10 rounded-lg border border-stone-200 bg-white text-sm font-semibold text-ink shadow-2xs cursor-pointer">
+          <svg class="h-4 w-4 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" d="M3 6h18M6 12h12M10 18h4"/></svg>
           Filters
         </button>
-        <p class="text-sm text-gray-500"><span class="font-semibold text-ink">{{ $total }}</span> products</p>
+        <form method="GET" action="{{ $formAction }}" class="relative">
+          @foreach(request()->except(['sort', 'page']) as $key => $val)
+            @if(is_scalar($val) && $val !== '')
+              <input type="hidden" name="{{ $key }}" value="{{ $val }}">
+            @endif
+          @endforeach
+          <label for="mobileSort" class="sr-only">Sort products</label>
+          <select id="mobileSort" name="sort" onchange="this.form.submit()" class="w-full h-10 appearance-none rounded-lg border border-stone-200 bg-white pl-9 pr-3 text-sm font-semibold text-ink shadow-2xs focus:outline-none focus:border-brand-600">
+            <option value="">Popular</option>
+            <option value="newest" @selected($sort==='newest')>Newest</option>
+            <option value="price_low" @selected($sort==='price_low')>Price: Low to High</option>
+            <option value="price_high" @selected($sort==='price_high')>Price: High to Low</option>
+            <option value="rating" @selected($sort==='rating')>Top Rated</option>
+          </select>
+          <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg>
+        </form>
       </div>
 
-      <div class="bg-white rounded-md border border-gray-100 px-4 py-3 mb-4 flex items-center justify-between gap-3">
+      <div class="lg:bg-white lg:rounded-md lg:border lg:border-gray-100 px-0.5 lg:px-4 py-0 lg:py-3 mb-3 lg:mb-4 flex items-center justify-between gap-3 max-lg:order-first">
         <div class="min-w-0">
           <h1 class="text-base sm:text-lg font-extrabold text-accent-500 truncate">
             @if($activeCategory)
