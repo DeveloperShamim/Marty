@@ -79,7 +79,7 @@ class StaffRoleAccessTest extends TestCase
         $this->assertStringNotContainsString('Net Profit', $html);
         $this->assertStringNotContainsString("Today's Sales", $html);
         $this->assertStringNotContainsString('Recent Orders', $html);
-        $this->assertStringContainsString('Stock Health', $html);
+        $this->assertStringContainsString('Stock health', $html);
         $this->assertStringNotContainsString('orderAlertsConfig', $html, 'No new-order popup');
         $this->assertStringNotContainsString(route('admin.cache.clear'), $html);
 

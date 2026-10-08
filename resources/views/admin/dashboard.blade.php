@@ -25,10 +25,6 @@
     ];
     $ringTotal = max(1, ($ordersCount ?? 0) + ($deliveredCount ?? 0) + ($returnedOrdersCount ?? 0) + ($cancelledOrdersCount ?? 0));
 
-    // Last six months for the compact bar card
-    $lastSix = $monthlySeries->take(-6)->values();
-    $sixMax = max(1, $lastSix->max('value'));
-
     // Delivery success gauge: delivered vs returned
     $finished = ($deliveredCount ?? 0) + ($returnedOrdersCount ?? 0);
     $successRate = $finished > 0 ? round(($deliveredCount ?? 0) / $finished * 100, 1) : 0;
@@ -116,64 +112,60 @@
       </div>
       @endif
 
-      {{-- Secondary Quick Stats (Compact 2-col or 4-col strip) --}}
-      <div class="grid grid-cols-2 gap-4">
+      {{-- Small numbers --}}
+      <div class="grid {{ $canMoney ? 'grid-cols-3' : 'grid-cols-1' }} gap-3 sm:gap-4">
         @if($canMoney)
-        <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
-          <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Today's Sales</span>
-          <div class="flex items-center justify-between flex-wrap gap-x-2 mt-1">
-            <p class="text-base sm:text-lg font-bold text-gray-900 font-mono truncate">{{ money($todayRevenue) }}</p>
-            <span class="text-[11px] text-gray-400 truncate">Yest: {{ money($yesterdayRevenue) }}</span>
-          </div>
+        <div class="panel px-3.5 py-3 min-w-0">
+          <span class="text-[11px] text-gray-500 block truncate">This month</span>
+          <p class="mt-1 text-[15px] sm:text-lg font-semibold text-gray-900 font-mono truncate">{{ money($thisMonthRevenue) }}</p>
         </div>
-        <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
-          <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">This Month ({{ date('M Y') }})</span>
-          <p class="text-base sm:text-lg font-bold text-gray-900 font-mono mt-1 truncate">{{ money($thisMonthRevenue) }}</p>
-        </div>
-        <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
-          <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Avg. Order Value</span>
-          <p class="text-base sm:text-lg font-bold text-gray-900 font-mono mt-1 truncate">{{ money($avgOrderValue) }}</p>
+        <div class="panel px-3.5 py-3 min-w-0">
+          <span class="text-[11px] text-gray-500 block truncate">Avg. order</span>
+          <p class="mt-1 text-[15px] sm:text-lg font-semibold text-gray-900 font-mono truncate">{{ money($avgOrderValue) }}</p>
         </div>
         @endif
-        
-        <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
-          <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Stock Health</span>
-          <div class="flex items-center justify-between flex-wrap gap-x-2 mt-1">
-            <p class="text-base sm:text-lg font-bold text-gray-900 font-mono">{{ number_format($totalStockUnits) }}</p>
-            <a href="{{ route('admin.inventory.index') }}" class="text-[11px] font-semibold px-2 py-0.5 rounded-md {{ $lowStockCount > 0 ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200' }}">
-              {{ $lowStockCount > 0 ? $lowStockCount . ' Low' : 'In Stock' }}
-            </a>
-          </div>
-        </div>
+        <a href="{{ route('admin.inventory.index') }}" class="panel px-3.5 py-3 min-w-0 hover:bg-gray-50 transition-colors">
+          <span class="text-[11px] text-gray-500 block truncate">Stock health</span>
+          <p class="mt-1 flex items-baseline flex-wrap gap-x-1.5 min-w-0">
+            <span class="text-[15px] sm:text-lg font-semibold text-gray-900 font-mono">{{ number_format($totalStockUnits) }}</span>
+            <span class="text-[11px] font-semibold {{ $lowStockCount > 0 ? 'text-rose-600' : 'text-emerald-600' }}">{{ $lowStockCount > 0 ? $lowStockCount . ' low' : 'all good' }}</span>
+          </p>
+        </a>
       </div>
 
     </div>
 
     <div class="xl:col-span-5 grid grid-cols-1 gap-4 min-w-0">
-      @if($canMoney)
-      {{-- Last six months --}}
+      @if($canOrders)
+      {{-- Risky orders to call before shipping --}}
       <div class="panel p-4 flex flex-col">
         <div class="flex items-start justify-between gap-3">
-          <div>
-            <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Sales Report</h2>
-            <p class="text-xs text-gray-500 mt-0.5">Revenue over the last six months</p>
+          <div class="min-w-0">
+            <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Risky orders to call</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Not shipped yet, flagged by fraud check or courier history</p>
           </div>
-          <a href="{{ route('admin.analytics.index') }}" class="grid h-9 w-9 place-items-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50" aria-label="Open analytics"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></a>
+          @if($riskyCount > 0)
+            <span class="shrink-0 inline-flex items-center h-6 px-2.5 rounded-full bg-rose-50 text-rose-700 text-[11px] font-semibold">{{ $riskyCount }} to call</span>
+          @endif
         </div>
-        <div class="mt-4 flex items-end gap-3 sm:gap-4 h-32 sm:h-40">
-          @foreach($lastSix as $point)
-            @php $h = $point['value'] > 0 ? max(10, round($point['value'] / $sixMax * 100)) : 4; @endphp
-            <div class="flex-1 h-full flex flex-col items-center justify-end gap-2" title="{{ $point['full_label'] }}: {{ money($point['value']) }}">
-              <div class="w-full max-w-[46px] flex flex-col justify-end" style="height: {{ $h }}%;">
-                @if($point['value'] > 0)
-                  <div class="w-full h-full rounded-[12px]" style="background: {{ $point['is_current'] ? 'var(--brand)' : 'color-mix(in srgb, var(--brand) 40%, #fff)' }};"></div>
-                @else
-                  <div class="w-full h-full rounded-[10px] bg-gray-100"></div>
-                @endif
-              </div>
-              <span class="text-[11px] {{ $point['is_current'] ? 'font-semibold text-gray-900' : 'text-gray-500' }}">{{ $point['label'] }}</span>
+        <div class="mt-3 divide-y divide-gray-100">
+          @forelse($riskyOrders as $o)
+            <div class="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
+              <span class="h-2 w-2 shrink-0 rounded-full {{ $o->risk >= 2 ? 'bg-rose-500' : 'bg-amber-400' }}" title="{{ $o->risk >= 2 ? 'High risk' : 'Medium risk' }}"></span>
+              <a href="{{ route('admin.orders.show', $o) }}" class="min-w-0 flex-1 group">
+                <span class="flex items-baseline gap-2 min-w-0">
+                  <span class="text-[13px] font-semibold text-gray-900 truncate group-hover:underline">{{ $o->customer_name }}</span>
+                  <span class="text-[11px] text-gray-400 shrink-0">{{ $o->order_number }} &middot; {{ money($o->total) }}</span>
+                </span>
+                <span class="block text-[11px] {{ $o->risk >= 2 ? 'text-rose-600' : 'text-amber-700' }} truncate">{{ $o->riskReason }}</span>
+              </a>
+              <a href="tel:{{ $o->customer_phone }}" class="shrink-0 grid h-8 w-8 place-items-center rounded-full text-white" style="background: var(--brand-dark);" aria-label="Call {{ $o->customer_name }}" title="Call {{ $o->customer_phone }}">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2Z"/></svg>
+              </a>
             </div>
-          @endforeach
+          @empty
+            <p class="py-6 text-center text-xs text-gray-500">No risky orders waiting. Everything not yet shipped looks safe.</p>
+          @endforelse
         </div>
       </div>
       @endif
@@ -397,25 +389,6 @@
         </div>
       </div>
 
-      {{-- Courier & Fulfillment Breakdown --}}
-      <div class="bg-gray-50/80 p-3 rounded-xl border border-gray-200/80 space-y-2">
-        <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-500 block">Fulfillment Overview</span>
-        <div class="grid grid-cols-3 gap-2 text-center">
-          <div class="bg-white p-2 rounded-lg border border-gray-200 shadow-2xs">
-            <span class="block text-[10px] text-gray-400 font-semibold">Dispatched</span>
-            <span class="font-bold text-gray-900 font-mono text-sm">{{ number_format($dispatchedCount ?? 0) }}</span>
-          </div>
-          <div class="bg-white p-2 rounded-lg border border-gray-200 shadow-2xs">
-            <span class="block text-[10px] text-gray-400 font-semibold">Shipped</span>
-            <span class="font-bold text-primary font-mono text-sm">{{ number_format($shippedCount ?? 0) }}</span>
-          </div>
-          <div class="bg-white p-2 rounded-lg border border-gray-200 shadow-2xs">
-            <span class="block text-[10px] text-gray-400 font-semibold">Delivered</span>
-            <span class="font-bold text-emerald-600 font-mono text-sm">{{ number_format($deliveredCount ?? 0) }}</span>
-          </div>
-        </div>
-      </div>
-
       @endif
 
       {{-- Low Stock Alerts Feed --}}
@@ -452,6 +425,112 @@
     </div>
 
   </div>
+
+  @php
+    $canCarts = \App\Support\StaffAccess::allows(auth()->user(), 'abandoned-carts');
+    $returnRate = $finishedRecent > 0 ? round($returnedRecent / $finishedRecent * 100, 1) : 0;
+    $costPerOrder = $thisMonthOrders > 0 ? $adSpend / $thisMonthOrders : null;
+    $roas = $adSpend > 0 ? $thisMonthRevenue / $adSpend : null;
+    $waNumber = fn ($phone) => ($n = \App\Services\Courier\BdCourierService::normalizePhone($phone)) ? '88' . $n : null;
+  @endphp
+  @if($canCarts || $canMoney)
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    @if($canCarts)
+    {{-- Carts to call back --}}
+    <div class="panel p-4 flex flex-col">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Carts to call back</h2>
+          <p class="text-xs text-gray-500 mt-0.5">Left in the last 3 days, with a phone number</p>
+        </div>
+        <a href="{{ route('admin.abandoned-carts.index') }}" class="shrink-0 text-xs font-semibold text-gray-600 hover:text-gray-900">{{ $callbackCount > 5 ? 'All ' . $callbackCount : 'Open' }} &rarr;</a>
+      </div>
+      <div class="mt-3 divide-y divide-gray-100">
+        @forelse($callbackCarts as $cart)
+          @php $wa = $waNumber($cart->customer_phone); @endphp
+          <div class="flex items-center gap-2.5 py-2.5 first:pt-0 last:pb-0">
+            <div class="min-w-0 flex-1">
+              <p class="text-[13px] font-semibold text-gray-900 truncate">{{ $cart->customer_name ?: $cart->customer_phone }}</p>
+              <p class="text-[11px] text-gray-500 truncate">{{ money($cart->total) }} &middot; {{ $cart->created_at->diffForHumans() }}</p>
+            </div>
+            @if($wa)
+              <a href="https://wa.me/{{ $wa }}" target="_blank" rel="noopener" class="shrink-0 grid h-8 w-8 place-items-center rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100" aria-label="WhatsApp {{ $cart->customer_phone }}" title="WhatsApp">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3Z"/></svg>
+              </a>
+            @endif
+            <a href="tel:{{ $cart->customer_phone }}" class="shrink-0 grid h-8 w-8 place-items-center rounded-full text-white" style="background: var(--brand-dark);" aria-label="Call {{ $cart->customer_phone }}" title="Call {{ $cart->customer_phone }}">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2Z"/></svg>
+            </a>
+          </div>
+        @empty
+          <p class="py-6 text-center text-xs text-gray-500">No carts to call back right now.</p>
+        @endforelse
+      </div>
+    </div>
+    @endif
+
+    @if($canMoney)
+    {{-- Return loss --}}
+    <div class="panel p-4 flex flex-col">
+      <div class="min-w-0">
+        <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Return loss</h2>
+        <p class="text-xs text-gray-500 mt-0.5">Parcels finished in the last 30 days</p>
+      </div>
+      <div class="mt-3 flex items-baseline gap-2 flex-wrap">
+        <p class="text-xl sm:text-2xl leading-none font-semibold tracking-tight font-mono {{ $returnLoss > 0 ? 'text-rose-600' : 'text-gray-900' }}">{{ money($returnLoss) }}</p>
+        <span class="text-xs text-gray-500">lost on {{ $returnedRecent }} {{ \Illuminate\Support\Str::plural('return', $returnedRecent) }} &middot; {{ $returnRate }}% return rate</span>
+      </div>
+      <div class="mt-4 space-y-2.5">
+        <p class="text-[11px] font-medium text-gray-500">Most returns by city</p>
+        @forelse($returnCities as $c)
+          @php $cityRate = $c->finished > 0 ? round($c->returned / $c->finished * 100) : 0; @endphp
+          <div>
+            <div class="flex items-center justify-between gap-2 text-xs">
+              <span class="font-medium text-gray-800 truncate">{{ $c->city ?: 'Unknown' }}</span>
+              <span class="shrink-0 text-gray-500">{{ $c->returned }} of {{ $c->finished }} &middot; <span class="font-semibold text-gray-800">{{ $cityRate }}%</span></span>
+            </div>
+            <div class="mt-1 h-1.5 rounded-full bg-gray-100 overflow-hidden"><div class="h-full rounded-full bg-rose-400" style="width: {{ max(4, $cityRate) }}%"></div></div>
+          </div>
+        @empty
+          <p class="py-3 text-xs text-gray-500">No returns in the last 30 days.</p>
+        @endforelse
+      </div>
+    </div>
+
+    {{-- Ad spend vs sales --}}
+    <div class="panel p-4 flex flex-col">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Ad spend vs sales</h2>
+          <p class="text-xs text-gray-500 mt-0.5">{{ date('F') }}, from Marketing &amp; Facebook Ads expenses</p>
+        </div>
+        <a href="{{ route('admin.expenses.index') }}" class="shrink-0 text-xs font-semibold text-gray-600 hover:text-gray-900">Expenses &rarr;</a>
+      </div>
+      <div class="mt-3 grid grid-cols-2 gap-2.5">
+        <div class="rounded-xl bg-gray-50 px-3 py-2.5 min-w-0">
+          <span class="block text-[11px] text-gray-500">Ad spend</span>
+          <span class="block mt-0.5 text-[15px] font-semibold text-gray-900 font-mono truncate">{{ money($adSpend) }}</span>
+        </div>
+        <div class="rounded-xl bg-gray-50 px-3 py-2.5 min-w-0">
+          <span class="block text-[11px] text-gray-500">Sales</span>
+          <span class="block mt-0.5 text-[15px] font-semibold text-gray-900 font-mono truncate">{{ money($thisMonthRevenue) }}</span>
+        </div>
+        <div class="rounded-xl bg-gray-50 px-3 py-2.5 min-w-0">
+          <span class="block text-[11px] text-gray-500">Cost per order</span>
+          <span class="block mt-0.5 text-[15px] font-semibold text-gray-900 font-mono truncate">{{ $adSpend > 0 && $costPerOrder !== null ? money($costPerOrder) : '—' }}</span>
+        </div>
+        <div class="rounded-xl bg-gray-50 px-3 py-2.5 min-w-0">
+          <span class="block text-[11px] text-gray-500">Sales per {{ currency_symbol() }}1 of ads</span>
+          <span class="block mt-0.5 text-[15px] font-semibold font-mono truncate {{ $roas === null ? 'text-gray-900' : ($roas >= 3 ? 'text-emerald-600' : ($roas >= 1.5 ? 'text-amber-600' : 'text-rose-600')) }}">{{ $roas === null ? '—' : currency_symbol() . number_format($roas, 1) }}</span>
+        </div>
+      </div>
+      @if($adSpend <= 0)
+        <p class="mt-3 text-[11px] text-gray-500">Log this month's ad spend under Expenses (Marketing &amp; Facebook Ads) to see cost per order.</p>
+      @endif
+    </div>
+    @endif
+  </div>
+  @endif
 
   @if($canMoney)
   {{-- Top Products Leaderboard --}}

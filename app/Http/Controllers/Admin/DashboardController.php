@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AbandonedCart;
+use App\Models\CustomerCourierCheck;
 use App\Models\Expense;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Services\Courier\BdCourierService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -179,6 +182,42 @@ class DashboardController extends Controller
         $returnedOrdersCount = $countOf('returned');
         $deliveredOrdersCount = $countOf('delivered');
 
+        // Risky orders to call: not shipped yet, flagged by the order fraud score or the customer's courier history.
+        $unshipped = Order::whereIn('status', ['pending', 'confirmed', 'processing'])->latest()->take(60)->get();
+        $courierChecks = CustomerCourierCheck::whereIn('phone', $unshipped->map(fn ($o) => BdCourierService::normalizePhone($o->customer_phone))->filter()->unique())
+            ->get()->keyBy('phone');
+        $rank = ['low' => 0, 'new' => 0, 'medium' => 1, 'high' => 2];
+        $riskyOrders = $unshipped->map(function ($order) use ($courierChecks, $rank) {
+            $check = $courierChecks->get(BdCourierService::normalizePhone($order->customer_phone));
+            $fraud = $order->fraudRiskLevel();
+            $courier = $check?->riskLevel() ?? 'new';
+            $order->risk = max($rank[$fraud] ?? 0, $rank[$courier] ?? 0);
+            $order->riskReason = match (true) {
+                $courier === 'high' || ($courier === 'medium' && $rank[$fraud] < 2) => $check->riskLabel() . ' (' . round($check->success_ratio) . '% delivered)',
+                $fraud !== 'low' => $order->fraud_flags[0] ?? 'Fraud score ' . (int) $order->fraud_score,
+                default => '',
+            };
+            return $order;
+        })->filter(fn ($o) => $o->risk > 0)->sortByDesc('risk')->values();
+
+        // Return loss over the last 30 days: delivery charges lost on returned parcels, and the cities returning most.
+        $since = Carbon::now()->subDays(30);
+        $recentFinished = Order::whereIn('status', ['delivered', 'returned'])->where('updated_at', '>=', $since);
+        $returnStats = (clone $recentFinished)->selectRaw("SUM(CASE WHEN status = 'returned' THEN 1 ELSE 0 END) as returned, COUNT(*) as finished, SUM(CASE WHEN status = 'returned' THEN courier_loss_amount ELSE 0 END) as loss")->first();
+        $returnCities = (clone $recentFinished)->selectRaw("city, SUM(CASE WHEN status = 'returned' THEN 1 ELSE 0 END) as returned, COUNT(*) as finished")
+            ->groupBy('city')->havingRaw("SUM(CASE WHEN status = 'returned' THEN 1 ELSE 0 END) > 0")
+            ->orderByDesc('returned')->take(3)->get();
+
+        // Ad spend vs sales this month (Marketing & Facebook Ads expenses).
+        $adSpend = (float) Expense::where('category', 'marketing')
+            ->whereBetween('expense_date', [Carbon::now()->startOfMonth()->toDateString(), Carbon::now()->endOfMonth()->toDateString()])
+            ->sum('amount');
+        $thisMonthOrders = Order::whereMonth('created_at', Carbon::now()->month)->whereYear('created_at', Carbon::now()->year)->tap($validOrders)->count();
+
+        // Carts to call back: abandoned in the last 3 days with a phone number.
+        $callbackCarts = AbandonedCart::abandoned()->whereNotNull('customer_phone')->where('customer_phone', '!=', '')
+            ->where('created_at', '>=', Carbon::now()->subDays(3));
+
         return view('admin.dashboard', [
             'ordersCount'          => $activeOrdersCount,
             'totalSalesOrdersCount'=> $verifiedOrdersCount,
@@ -202,7 +241,7 @@ class DashboardController extends Controller
             'lowStockCount'       => $lowStockCount,
             'outOfStockCount'     => $outOfStockCount,
             'pendingOrders'       => Order::needsReview()->latest()->take(6)->get(),
-            'recentOrders'        => Order::latest()->take(8)->get(),
+            'recentOrders'        => Order::latest()->take(5)->get(),
             'topProducts'         => $topProducts,
             'selectedYear'        => $selectedYear,
             'availableYears'      => $availableYears,
@@ -212,10 +251,19 @@ class DashboardController extends Controller
             'lastMonthLabel'      => $monthlySeries->last()['full_label'] ?? '',
             'peakMonth'           => $peakMonth,
             'totalSeriesRevenue'  => $totalSeriesRevenue,
-            'dispatchedCount'     => Order::whereNotNull('courier_name')->count(),
             'shippedCount'        => $countOf('shipped'),
             'todayOrdersCount'    => Order::whereDate('created_at', Carbon::today())->tap($validOrders)->count(),
             'yesterdayOrdersCount'=> Order::whereDate('created_at', Carbon::yesterday())->tap($validOrders)->count(),
+            'riskyOrders'         => $riskyOrders->take(5),
+            'riskyCount'          => $riskyOrders->count(),
+            'returnedRecent'      => (int) ($returnStats->returned ?? 0),
+            'finishedRecent'      => (int) ($returnStats->finished ?? 0),
+            'returnLoss'          => (float) ($returnStats->loss ?? 0),
+            'returnCities'        => $returnCities,
+            'adSpend'             => $adSpend,
+            'thisMonthOrders'     => $thisMonthOrders,
+            'callbackCarts'       => (clone $callbackCarts)->latest()->take(5)->get(),
+            'callbackCount'       => $callbackCarts->count(),
         ]);
     }
 
