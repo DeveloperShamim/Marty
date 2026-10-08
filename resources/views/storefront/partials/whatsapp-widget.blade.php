@@ -32,7 +32,8 @@
 @endphp
 
 @if($hasChat)
-<aside id="chatSpeedDialRoot" aria-label="Customer Support Chat" class="fixed {{ request()->routeIs('checkout.*') ? 'bottom-24 right-4 sm:right-6' : (request()->routeIs('product.show') ? 'bottom-28 right-4 sm:right-6' : 'bottom-20 right-5 sm:right-6') }} z-50 select-none font-sans flex flex-col items-end gap-2.5 pointer-events-none">
+{{-- On checkout, phones and tablets skip the chat bubble: it sat on top of the form fields (the page has its own call-for-help line) --}}
+<aside id="chatSpeedDialRoot" aria-label="Customer Support Chat" class="fixed {{ request()->routeIs('checkout.*') ? 'max-lg:!hidden bottom-24 right-4 sm:right-6' : (request()->routeIs('product.show') ? 'bottom-28 right-4 sm:right-6' : 'bottom-20 right-5 sm:right-6') }} z-50 select-none font-sans flex flex-col items-end gap-2.5 pointer-events-none">
   
   {{-- Popped Icons Container (Vertically stacked above the trigger button) --}}
   <div id="chatSpeedDialIcons" class="flex flex-col items-end gap-2.5 pointer-events-none">

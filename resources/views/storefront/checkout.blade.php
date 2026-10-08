@@ -10,7 +10,7 @@
 
 @section('checkout_header')
   <header class="bg-white border-b border-slate-100">
-    <div class="mx-auto max-w-6xl px-3.5 sm:px-6 lg:px-8 h-14 sm:h-16 lg:h-20 flex items-center justify-between">
+    <div class="mx-auto max-w-7xl px-3.5 sm:px-4 lg:px-6 h-14 sm:h-16 lg:h-20 flex items-center justify-between">
       <div class="flex items-center gap-2 sm:gap-3">
         @include('partials.brand')
       </div>
@@ -24,7 +24,7 @@
 
 @section('content')
   {{-- Progress Stepper (100% Mobile Responsive) --}}
-  <div class="mx-auto w-full max-w-6xl px-3.5 sm:px-6 lg:px-8 pt-3 sm:pt-6">
+  <div class="mx-auto w-full max-w-7xl px-3.5 sm:px-4 lg:px-6 pt-3 sm:pt-6">
     <div class="bg-white rounded-2xl border border-stone-200/90 shadow-sm py-2.5 px-3 sm:py-3.5 sm:px-6">
       <div class="w-full flex items-center justify-center sm:justify-start gap-2 sm:gap-6 text-xs sm:text-sm">
         
@@ -64,7 +64,8 @@
     </div>
   </div>
 
-  <section class="mx-auto w-full max-w-6xl px-3.5 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 pb-28 lg:pb-8 overflow-hidden">
+  <section class="mx-auto w-full max-w-7xl px-3.5 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 pb-28 lg:pb-8 overflow-x-clip">
+    {{-- overflow-x-clip (not overflow-hidden): a hidden overflow made this section the scroll box, so the sticky order summary never stuck and sat 32px lower than the form --}}
     @if($errors->any())
       <div class="mb-4 sm:mb-6 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm px-4 py-3 shadow-2xs">
         <p class="font-semibold">Please fix the following:</p>
@@ -176,7 +177,7 @@
 
               <div class="sm:col-span-2">
                 <label class="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-1">Email <span class="text-slate-400 font-normal">(optional)</span></label>
-                <input type="email" name="customer_email" value="{{ old('customer_email', $user?->email) }}" placeholder="you@example.com (for order updates & receipt)" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
+                <input type="email" name="customer_email" value="{{ old('customer_email', $user?->email) }}" placeholder="you@example.com" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
               </div>
             </div>
           </div>
@@ -255,6 +256,7 @@
             $paySteps = collect(['bkash', 'nagad', 'rocket'])->mapWithKeys(fn ($m) => [$m => \App\Support\PaymentInstructions::steps($m)]);
             $payActions = collect(['bkash', 'nagad', 'rocket'])->mapWithKeys(fn ($m) => [$m => \App\Support\PaymentInstructions::action($m)]);
             $hotline = \App\Support\PaymentInstructions::hotline();
+            $walletNames = collect(['bKash' => $showBkash, 'Nagad' => $showNagad, 'Rocket' => $showRocket])->filter()->keys()->join(', ', ' or ') ?: 'online payment';
           @endphp
           <div class="rounded-2xl bg-white p-3.5 sm:p-5 border border-slate-200/80 shadow-2xs space-y-2.5 sm:space-y-3">
             <div class="flex items-center justify-between">
@@ -290,35 +292,43 @@
               @endif
 
               @if($showBkash || $showNagad || $showRocket)
-              {{-- Mobile Banking 3-Column Segmented Grid --}}
-              <div class="grid grid-cols-3 gap-2">
+              {{-- Mobile banking: tiles share the row; a single wallet gets a full-width row like Cash On Delivery --}}
+              @php
+                $walletCount = (int) $showBkash + (int) $showNagad + (int) $showRocket;
+                $walletRow = $walletCount === 1;
+                $walletGrid = $walletCount === 3 ? 'grid-cols-3' : ($walletCount === 2 ? 'grid-cols-2' : 'grid-cols-1');
+                $tileLayout = $walletRow ? 'flex-row items-center justify-start gap-2.5 sm:gap-3 p-2.5 sm:p-3 text-left' : 'flex-col items-center justify-center py-2 px-1.5 text-center';
+                $tileName = $walletRow ? 'text-xs sm:text-sm' : 'text-[11px]';
+                $tileCheck = $walletRow ? 'top-1/2 -translate-y-1/2 right-3 h-4 w-4 sm:h-5 sm:w-5 text-[10px] sm:text-xs' : 'top-1.5 right-1.5 h-3.5 w-3.5 text-[9px]';
+              @endphp
+              <div class="grid {{ $walletGrid }} gap-2">
                 @if($showBkash)
-                <label class="pay-opt relative flex flex-col items-center justify-center py-2 px-1.5 rounded-xl border transition-all text-center cursor-pointer select-none {{ $method==='bkash' ? 'border-brand-600 bg-brand-50/70 ring-1 ring-brand-600 font-bold shadow-2xs' : 'border-slate-200 bg-white hover:border-slate-300' }}">
-                  <span class="px-2 py-0.5 rounded-md bg-[#E2136E] text-white font-black text-[10px] leading-tight mb-1 shadow-2xs">bKash</span>
-                  <span class="text-[11px] font-bold text-slate-800 block leading-tight">bKash</span>
-                  <span class="online-free-tag hidden mt-0.5 text-[9px] font-extrabold uppercase tracking-wide text-emerald-700">Free delivery</span>
+                <label class="pay-opt relative flex {{ $tileLayout }} rounded-xl border transition-all cursor-pointer select-none {{ $method==='bkash' ? 'border-brand-600 bg-brand-50/70 ring-1 ring-brand-600 font-bold shadow-2xs' : 'border-slate-200 bg-white hover:border-slate-300' }}">
+                  <span class="px-2 py-0.5 rounded-md bg-[#E2136E] text-white font-black text-[10px] leading-tight {{ $walletRow ? '' : 'mb-1' }} shadow-2xs">bKash</span>
+                  <span class="{{ $tileName }} font-bold text-slate-800 block leading-tight">bKash</span>
+                  <span class="online-free-tag hidden {{ $walletRow ? '' : 'mt-0.5' }} text-[9px] font-extrabold uppercase tracking-wide text-emerald-700">Free delivery</span>
                   <input type="radio" name="payment_method" value="bkash" @checked($method==='bkash') class="pay-radio hidden" data-manual="1" data-pay-number="{{ $bkash }}" />
-                  <span class="pay-check absolute top-1.5 right-1.5 grid h-3.5 w-3.5 place-items-center rounded-full bg-brand-600 text-white text-[9px] font-bold {{ $method==='bkash' ? '' : 'hidden' }}">✓</span>
+                  <span class="pay-check absolute {{ $tileCheck }} grid place-items-center rounded-full bg-brand-600 text-white font-bold {{ $method==='bkash' ? '' : 'hidden' }}">✓</span>
                 </label>
                 @endif
 
                 @if($showNagad)
-                <label class="pay-opt relative flex flex-col items-center justify-center py-2 px-1.5 rounded-xl border transition-all text-center cursor-pointer select-none {{ $method==='nagad' ? 'border-brand-600 bg-brand-50/70 ring-1 ring-brand-600 font-bold shadow-2xs' : 'border-slate-200 bg-white hover:border-slate-300' }}">
-                  <span class="px-2 py-0.5 rounded-md bg-[#F7941D] text-white font-black text-[10px] leading-tight mb-1 shadow-2xs">Nagad</span>
-                  <span class="text-[11px] font-bold text-slate-800 block leading-tight">Nagad</span>
-                  <span class="online-free-tag hidden mt-0.5 text-[9px] font-extrabold uppercase tracking-wide text-emerald-700">Free delivery</span>
+                <label class="pay-opt relative flex {{ $tileLayout }} rounded-xl border transition-all cursor-pointer select-none {{ $method==='nagad' ? 'border-brand-600 bg-brand-50/70 ring-1 ring-brand-600 font-bold shadow-2xs' : 'border-slate-200 bg-white hover:border-slate-300' }}">
+                  <span class="px-2 py-0.5 rounded-md bg-[#F7941D] text-white font-black text-[10px] leading-tight {{ $walletRow ? '' : 'mb-1' }} shadow-2xs">Nagad</span>
+                  <span class="{{ $tileName }} font-bold text-slate-800 block leading-tight">Nagad</span>
+                  <span class="online-free-tag hidden {{ $walletRow ? '' : 'mt-0.5' }} text-[9px] font-extrabold uppercase tracking-wide text-emerald-700">Free delivery</span>
                   <input type="radio" name="payment_method" value="nagad" @checked($method==='nagad') class="pay-radio hidden" data-manual="1" data-pay-number="{{ $nagad }}" />
-                  <span class="pay-check absolute top-1.5 right-1.5 grid h-3.5 w-3.5 place-items-center rounded-full bg-brand-600 text-white text-[9px] font-bold {{ $method==='nagad' ? '' : 'hidden' }}">✓</span>
+                  <span class="pay-check absolute {{ $tileCheck }} grid place-items-center rounded-full bg-brand-600 text-white font-bold {{ $method==='nagad' ? '' : 'hidden' }}">✓</span>
                 </label>
                 @endif
 
                 @if($showRocket)
-                <label class="pay-opt relative flex flex-col items-center justify-center py-2 px-1.5 rounded-xl border transition-all text-center cursor-pointer select-none {{ $method==='rocket' ? 'border-brand-600 bg-brand-50/70 ring-1 ring-brand-600 font-bold shadow-2xs' : 'border-slate-200 bg-white hover:border-slate-300' }}">
-                  <span class="px-2 py-0.5 rounded-md bg-[#8C3494] text-white font-black text-[10px] leading-tight mb-1 shadow-2xs">Rocket</span>
-                  <span class="text-[11px] font-bold text-slate-800 block leading-tight">Rocket</span>
-                  <span class="online-free-tag hidden mt-0.5 text-[9px] font-extrabold uppercase tracking-wide text-emerald-700">Free delivery</span>
+                <label class="pay-opt relative flex {{ $tileLayout }} rounded-xl border transition-all cursor-pointer select-none {{ $method==='rocket' ? 'border-brand-600 bg-brand-50/70 ring-1 ring-brand-600 font-bold shadow-2xs' : 'border-slate-200 bg-white hover:border-slate-300' }}">
+                  <span class="px-2 py-0.5 rounded-md bg-[#8C3494] text-white font-black text-[10px] leading-tight {{ $walletRow ? '' : 'mb-1' }} shadow-2xs">Rocket</span>
+                  <span class="{{ $tileName }} font-bold text-slate-800 block leading-tight">Rocket</span>
+                  <span class="online-free-tag hidden {{ $walletRow ? '' : 'mt-0.5' }} text-[9px] font-extrabold uppercase tracking-wide text-emerald-700">Free delivery</span>
                   <input type="radio" name="payment_method" value="rocket" @checked($method==='rocket') class="pay-radio hidden" data-manual="1" data-pay-number="{{ $rocket }}" />
-                  <span class="pay-check absolute top-1.5 right-1.5 grid h-3.5 w-3.5 place-items-center rounded-full bg-brand-600 text-white text-[9px] font-bold {{ $method==='rocket' ? '' : 'hidden' }}">✓</span>
+                  <span class="pay-check absolute {{ $tileCheck }} grid place-items-center rounded-full bg-brand-600 text-white font-bold {{ $method==='rocket' ? '' : 'hidden' }}">✓</span>
                 </label>
                 @endif
               </div>
@@ -384,7 +394,7 @@
               <div class="flex justify-between text-brand-600"><dt>Discount ({{ $couponCode }})</dt><dd class="font-semibold sumDiscount">−{{ money($discount) }}</dd></div>
             @endif
             <div class="flex justify-between"><dt class="text-slate-500">Delivery</dt><dd class="font-semibold text-brand-600 sumShipping">{!! $totals['reason'] ? '<s class="text-slate-400 font-normal mr-1">' . e(money($totals['waived'])) . '</s><span class="text-emerald-600 font-extrabold">FREE</span>' : e(money($totals['shipping'])) !!}</dd></div>
-            <div class="flex justify-between"><dt class="text-slate-500">Tax ({{ rtrim(rtrim(number_format($taxPercent, 2), '0'), '.') }}%)</dt><dd class="font-semibold text-slate-800 sumTax">{{ money($totals['tax']) }}</dd></div>
+            @if($taxPercent > 0)<div class="flex justify-between"><dt class="text-slate-500">Tax ({{ rtrim(rtrim(number_format($taxPercent, 2), '0'), '.') }}%)</dt><dd class="font-semibold text-slate-800 sumTax">{{ money($totals['tax']) }}</dd></div>@endif
           </dl>
           <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
             <span class="text-xs sm:text-sm font-bold text-slate-700">Total Payable</span>
@@ -512,7 +522,7 @@
                 <div class="flex justify-between text-brand-600"><dt>Discount ({{ $couponCode }})</dt><dd class="font-semibold sumDiscount" id="sumDiscount">−{{ money($discount) }}</dd></div>
               @endif
               <div class="flex justify-between"><dt class="text-slate-500">Delivery</dt><dd class="font-semibold text-brand-600 sumShipping">{!! $totals['reason'] ? '<s class="text-slate-400 font-normal mr-1">' . e(money($totals['waived'])) . '</s><span class="text-emerald-600 font-extrabold">FREE</span>' : e(money($totals['shipping'])) !!}</dd></div>
-              <div class="flex justify-between"><dt class="text-slate-500">Tax ({{ rtrim(rtrim(number_format($taxPercent, 2), '0'), '.') }}%)</dt><dd class="font-semibold text-slate-800 sumTax" id="sumTax">{{ money($totals['tax']) }}</dd></div>
+              @if($taxPercent > 0)<div class="flex justify-between"><dt class="text-slate-500">Tax ({{ rtrim(rtrim(number_format($taxPercent, 2), '0'), '.') }}%)</dt><dd class="font-semibold text-slate-800 sumTax" id="sumTax">{{ money($totals['tax']) }}</dd></div>@endif
             </dl>
             <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
               <span class="text-xs sm:text-sm font-bold text-slate-700">Total Payable</span>
@@ -654,12 +664,14 @@
     var minReached = taxable >= fd.online_min;
     document.querySelectorAll('.online-free-tag').forEach(function(el) { el.classList.toggle('hidden', !(offerHere && minReached)); });
 
+    // Only name the wallets this store actually accepts
+    var walletNames = {!! json_encode($walletNames) !!};
     var note = document.getElementById('freeDeliveryNote'), text = document.getElementById('freeDeliveryText');
     var msg = '';
     if (reason === 'product') msg = 'Free delivery on this order — it includes a free-delivery product.';
     else if (reason === 'order_total') msg = 'Free delivery — your order is over ' + money(fd.over_amount) + '.';
     else if (reason === 'online_payment') msg = 'Free delivery applied for paying online. You save ' + money(fee) + '.';
-    else if (offerHere && minReached) msg = 'Pay with bKash, Nagad or Rocket and get FREE delivery (save ' + money(fee) + ').';
+    else if (offerHere && minReached) msg = 'Pay with ' + walletNames + ' and get FREE delivery (save ' + money(fee) + ').';
     else if (offerHere) msg = 'Add ' + money(fd.online_min - taxable) + ' more and pay online to get FREE delivery.';
     if (note && text) { text.textContent = msg; note.classList.toggle('hidden', !msg); }
   }
