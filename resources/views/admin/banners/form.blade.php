@@ -161,7 +161,7 @@
     {{-- RIGHT COLUMN: LIVE IMAGE PREVIEW (5 cols) --}}
     <div class="lg:col-span-5 space-y-6">
 
-      <div class="card p-5 sm:p-6 bg-white sticky top-6 shadow-sm border-gray-200 space-y-4">
+      <div class="card p-5 sm:p-6 bg-white sticky top-24 lg:top-[96px] shadow-sm border-gray-200 space-y-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>

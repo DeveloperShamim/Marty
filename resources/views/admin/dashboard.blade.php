@@ -9,191 +9,211 @@
     $canMoney = \App\Support\StaffAccess::allows(auth()->user(), 'analytics');
     $canOrders = \App\Support\StaffAccess::allows(auth()->user(), 'orders');
   @endphp
-  {{-- Welcome & Overview Header --}}
-  <div class="relative overflow-hidden rounded-3xl p-5 sm:p-7 text-white shadow-[0_18px_40px_-24px_rgba(28,25,23,.7)]" style="background: radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--brand) 55%, transparent) 0%, transparent 55%), linear-gradient(135deg, var(--brand-dark) 0%, color-mix(in srgb, var(--brand-dark) 82%, var(--brand)) 100%);">
-    <div class="pointer-events-none absolute -right-16 -bottom-24 h-64 w-64 rounded-full border border-white/[0.06]"></div>
-    <div class="pointer-events-none absolute -right-4 -bottom-36 h-64 w-64 rounded-full border border-white/[0.05]"></div>
-    <div class="relative flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-      <div class="space-y-1 min-w-0">
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-emerald-200 text-xs font-semibold border border-white/10">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            Store Active
-          </span>
-          <span class="text-xs text-white/50 font-medium">&middot; {{ date('l, d M Y') }}</span>
-        </div>
-        <h1 class="text-2xl sm:text-[30px] font-extrabold tracking-tight text-white !mt-2">
-          Welcome back, {{ auth()->user()->name ?? 'Admin' }}
-        </h1>
-        <p class="text-xs sm:text-sm text-white/60 max-w-2xl leading-relaxed">
-          Real-time summary of sales, orders, payment verifications, and store inventory.
-        </p>
-      </div>
+  @php
+    $trend = fn ($now, $before) => $before > 0 ? round(($now - $before) / $before * 100, 1) : null;
+    $salesTrend = $trend($todayRevenue ?? 0, $yesterdayRevenue ?? 0);
+    $ordersTrend = $trend($todayOrdersCount ?? 0, $yesterdayOrdersCount ?? 0);
 
-      {{-- Header Quick Actions: Orders is the one solid button, the rest are quiet so the page isn't a rainbow --}}
-      <div class="grid grid-cols-3 sm:flex sm:flex-wrap items-stretch gap-2 xl:justify-end xl:max-w-[560px]">
-        @if(\App\Support\StaffAccess::allows(auth()->user(), 'products'))
-        <a href="{{ route('admin.products.create') }}" class="px-2 sm:px-3.5 py-2.5 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white/[0.08] hover:bg-white/[0.16] text-white border border-white/10 transition-colors backdrop-blur-sm inline-flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-          Add Product
-        </a>
-        @endif
-        @if(\App\Support\StaffAccess::allows(auth()->user(), 'pos'))
-        <a href="{{ route('admin.pos.index') }}" class="px-2 sm:px-3.5 py-2.5 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white/[0.08] hover:bg-white/[0.16] text-white border border-white/10 transition-colors backdrop-blur-sm inline-flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-          POS Counter
-        </a>
-        @endif
-        @if(\App\Support\StaffAccess::allows(auth()->user(), 'courier-scan'))
-        <a href="{{ route('admin.courier-scan.index') }}" class="px-2 sm:px-3.5 py-2.5 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white/[0.08] hover:bg-white/[0.16] text-white border border-white/10 transition-colors backdrop-blur-sm inline-flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
-          Courier Scan
-        </a>
-        @endif
-        @if(\App\Support\StaffAccess::allows(auth()->user(), 'analytics'))
-        <a href="{{ route('admin.analytics.index') }}" class="px-2 sm:px-3.5 py-2.5 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white/[0.08] hover:bg-white/[0.16] text-white border border-white/10 transition-colors backdrop-blur-sm inline-flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-          Analytics
-        </a>
-        @endif
-        @if(\App\Support\StaffAccess::allows(auth()->user(), 'orders'))
-        <a href="{{ route('admin.orders.index') }}" class="px-2 sm:px-3.5 py-2.5 text-[11px] sm:text-xs text-center font-bold rounded-xl bg-white hover:bg-white/90 text-gray-900 transition-colors shadow-sm inline-flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-teal-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-          Orders
-        </a>
-        @endif
-        <a href="{{ route('home') }}" target="_blank" class="px-2 sm:px-3.5 py-2.5 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white/[0.08] hover:bg-white/[0.16] text-white border border-white/10 transition-colors backdrop-blur-sm inline-flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-          Storefront
-        </a>
-      </div>
-    </div>
-  </div>
+    // Order status rings: each status as a share of all orders
+    $statusRings = [
+      ['Active', $ordersCount ?? 0, 'var(--brand)'],
+      ['Shipped', $shippedCount ?? 0, 'var(--brand-dark)'],
+      ['Delivered', $deliveredCount ?? 0, '#10b981'],
+      ['To review', $pendingCount ?? 0, '#f59e0b'],
+      ['Returned', $returnedOrdersCount ?? 0, '#a8a29e'],
+      ['Cancelled', $cancelledOrdersCount ?? 0, '#d6d3d1'],
+    ];
+    $ringTotal = max(1, ($ordersCount ?? 0) + ($deliveredCount ?? 0) + ($returnedOrdersCount ?? 0) + ($cancelledOrdersCount ?? 0));
 
-  @if($canMoney)
-  {{-- Primary Financial & Order KPIs (2-col on mobile, 4-col on desktop) --}}
-  <div class="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+    // Last six months for the compact bar card
+    $lastSix = $monthlySeries->take(-6)->values();
+    $sixMax = max(1, $lastSix->max('value'));
 
-    {{-- 1. Total Sales Amount --}}
-    <div class="bg-white rounded-2xl border border-gray-200/90 p-3 sm:p-4 md:p-5 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between">
-      <div class="flex items-center justify-between gap-1.5">
-        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider truncate">Total Sales</span>
-        <div class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center shrink-0">
-          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-        </div>
-      </div>
-      <div class="mt-2 sm:mt-3 space-y-0.5 sm:space-y-1">
-        <p class="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 font-mono tracking-tight truncate">{{ money($revenue) }}</p>
-        <p class="text-[10px] sm:text-xs text-gray-500 flex items-center justify-between pt-0.5 truncate">
-          <span>Cost: <span class="font-semibold text-gray-700 font-mono">{{ money($totalCogs) }}</span></span>
-          <span class="text-gray-400 font-mono">{{ number_format($totalSalesOrdersCount ?? $ordersCount) }} ord</span>
-        </p>
-      </div>
-    </div>
+    // Delivery success gauge: delivered vs returned
+    $finished = ($deliveredCount ?? 0) + ($returnedOrdersCount ?? 0);
+    $successRate = $finished > 0 ? round(($deliveredCount ?? 0) / $finished * 100, 1) : 0;
+    $gaugeSegments = 28;
+    $gaugeOn = (int) round($successRate / 100 * $gaugeSegments);
+  @endphp
 
-    {{-- 2. Net Profit --}}
-    <div class="bg-white rounded-2xl border border-emerald-300/80 bg-emerald-50/15 p-3 sm:p-4 md:p-5 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between">
-      <div class="flex items-center justify-between gap-1.5">
-        <span class="text-[10px] sm:text-xs font-bold text-emerald-800 uppercase tracking-wider truncate">Net Profit</span>
-        <div class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center shrink-0">
-          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        </div>
-      </div>
-      <div class="mt-2 sm:mt-3 space-y-0.5 sm:space-y-1">
-        <p class="text-base sm:text-xl lg:text-2xl font-bold {{ $netProfit < 0 ? 'text-red-600' : 'text-emerald-700' }} font-mono tracking-tight truncate">{{ $netProfit < 0 ? '-' : '' }}{{ money(abs($netProfit)) }}</p>
-        <p class="text-[10px] sm:text-xs text-emerald-700 font-semibold flex items-center justify-between pt-0.5 truncate">
-          <span>Profit Margin:</span>
-          <span class="font-mono">{{ round($profitMargin, 1) }}%</span>
-        </p>
-        @if($totalExpenses > 0)
-          <p class="text-[10px] sm:text-[11px] text-gray-500 truncate" title="Profit before expenses {{ money($profitBeforeExpenses) }}, expenses −{{ money($totalExpenses) }}">
-            <span class="hidden sm:inline">Before expenses {{ money($profitBeforeExpenses) }} · </span>Expenses <span class="text-rose-600">−{{ money($totalExpenses) }}</span>
-          </p>
-        @endif
-      </div>
-    </div>
-
-    {{-- 3. Active Orders --}}
-    <div class="bg-white rounded-2xl border border-gray-200/90 p-3 sm:p-4 md:p-5 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between">
-      <div class="flex items-center justify-between gap-1.5">
-        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider truncate">Active Orders</span>
-        <div class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl bg-violet-50 text-violet-600 border border-violet-100 flex items-center justify-center shrink-0">
-          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-        </div>
-      </div>
-      <div class="mt-2 sm:mt-3 space-y-0.5 sm:space-y-1">
-        <p class="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 font-mono tracking-tight">{{ number_format($ordersCount) }}</p>
-        <p class="text-[10px] sm:text-xs text-gray-400 truncate pt-0.5">
-          {{ number_format($deliveredCount ?? 0) }} delivered &middot; {{ number_format(($cancelledOrdersCount ?? 0) + ($returnedOrdersCount ?? 0)) }} closed
-        </p>
-      </div>
-    </div>
-
-    {{-- 4. Pending Payment Approvals --}}
-    <div class="bg-white rounded-2xl border {{ $pendingCount > 0 ? 'border-amber-300/80 bg-amber-50/15' : 'border-gray-200/90' }} p-3 sm:p-4 md:p-5 shadow-2xs hover:shadow-sm transition-all flex flex-col justify-between">
-      <div class="flex items-center justify-between gap-1.5">
-        <span class="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider truncate">Pending Review</span>
-        <div class="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-lg sm:rounded-xl {{ $pendingCount > 0 ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-gray-100 text-gray-600' }} flex items-center justify-center shrink-0">
-          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        </div>
-      </div>
-      <div class="mt-2 sm:mt-3 flex items-center justify-between gap-1.5 flex-wrap">
-        <p class="text-base sm:text-xl lg:text-2xl font-bold {{ $pendingCount > 0 ? 'text-amber-800' : 'text-gray-900' }} font-mono tracking-tight">
-          {{ number_format($pendingCount) }}
-        </p>
-        @if($pendingCount > 0)
-          <a href="{{ route('admin.orders.index', ['status' => 'pending_verification']) }}" class="px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-bold rounded-lg bg-amber-600 hover:bg-amber-700 text-white transition-colors shadow-2xs">
-            Review &rarr;
-          </a>
-        @else
-          <span class="text-[10px] sm:text-xs font-medium text-emerald-600 flex items-center gap-0.5">
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-            Clear
-          </span>
-        @endif
-      </div>
-    </div>
-
-  </div>
-
-  @endif
-
-  {{-- Secondary Quick Stats (Compact 2-col or 4-col strip) --}}
-  <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+  @section('subtitle', 'Welcome back, ' . (auth()->user()->name ?? 'Admin') . '. Here is how the store is doing today.')
+  @section('page-actions')
+    <a href="{{ route('home') }}" target="_blank" class="pill-btn">
+      View store
+      <span class="pill-ico"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></span>
+    </a>
     @if($canMoney)
-    <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
-      <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Today's Sales</span>
-      <div class="flex items-center justify-between flex-wrap gap-x-2 mt-1">
-        <p class="text-base sm:text-lg font-bold text-gray-900 font-mono truncate">{{ money($todayRevenue) }}</p>
-        <span class="text-[11px] text-gray-400 truncate">Yest: {{ money($yesterdayRevenue) }}</span>
-      </div>
-    </div>
-    <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
-      <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">This Month ({{ date('M Y') }})</span>
-      <p class="text-base sm:text-lg font-bold text-gray-900 font-mono mt-1 truncate">{{ money($thisMonthRevenue) }}</p>
-    </div>
-    <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
-      <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Avg. Order Value</span>
-      <p class="text-base sm:text-lg font-bold text-gray-900 font-mono mt-1 truncate">{{ money($avgOrderValue) }}</p>
-    </div>
+      <a href="{{ route('admin.analytics.export', ['range' => 'this_month']) }}" class="pill-btn">
+        Export
+        <span class="pill-ico"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg></span>
+      </a>
     @endif
     @if($canOrders)
-    <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
-      <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Orders Today</span>
-      <div class="flex items-center justify-between flex-wrap gap-x-2 mt-1">
-        <p class="text-base sm:text-lg font-bold text-gray-900 font-mono">{{ number_format($todayOrdersCount) }}</p>
-        <span class="text-[11px] text-gray-400">Yest: {{ number_format($yesterdayOrdersCount) }}</span>
-      </div>
-    </div>
+      <a href="{{ route('admin.orders.index') }}" class="pill-btn pill-btn-dark">
+        <span class="pill-ico"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg></span>
+        Orders
+      </a>
     @endif
-    <div class="col-span-2 lg:col-span-1 bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
-      <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Stock Health</span>
-      <div class="flex items-center justify-between flex-wrap gap-x-2 mt-1">
-        <p class="text-base sm:text-lg font-bold text-gray-900 font-mono">{{ number_format($totalStockUnits) }}</p>
-        <a href="{{ route('admin.inventory.index') }}" class="text-[11px] font-semibold px-2 py-0.5 rounded-md {{ $lowStockCount > 0 ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200' }}">
-          {{ $lowStockCount > 0 ? $lowStockCount . ' Low' : 'In Stock' }}
-        </a>
+  @endsection
+
+  <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+    <div class="xl:col-span-7 space-y-4 min-w-0">
+      @if($canMoney)
+      {{-- Headline numbers --}}
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="panel p-5">
+          <div class="flex items-start justify-between gap-3">
+            <h2 class="text-[17px] font-medium text-gray-900">Total Sales</h2>
+            <span class="grid h-10 w-10 place-items-center rounded-full border border-gray-200 text-gray-600"><svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+          </div>
+          <div class="mt-4 flex items-center gap-2.5 flex-wrap">
+            <p class="text-[30px] sm:text-[34px] leading-none font-semibold tracking-tight text-gray-900 font-mono">{{ money($revenue) }}</p>
+            @if($salesTrend !== null)
+              <span class="inline-flex items-center gap-0.5 h-6 px-2 rounded-full text-[11px] font-semibold {{ $salesTrend >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700' }}">{{ $salesTrend >= 0 ? '↗' : '↘' }} {{ abs($salesTrend) }}%</span>
+            @endif
+          </div>
+          <p class="mt-3 text-xs text-gray-500">You made <span class="font-semibold" style="color: var(--brand);">{{ money($todayRevenue) }}</span> today &middot; {{ number_format($totalSalesOrdersCount ?? $ordersCount) }} paid orders</p>
+        </div>
+        <div class="panel p-5">
+          <div class="flex items-start justify-between gap-3">
+            <h2 class="text-[17px] font-medium text-gray-900">Net Profit</h2>
+            <span class="grid h-10 w-10 place-items-center rounded-full border border-gray-200 text-gray-600"><svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg></span>
+          </div>
+          <div class="mt-4 flex items-center gap-2.5 flex-wrap">
+            <p class="text-[30px] sm:text-[34px] leading-none font-semibold tracking-tight font-mono {{ $netProfit < 0 ? 'text-red-600' : 'text-gray-900' }}">{{ $netProfit < 0 ? '-' : '' }}{{ money(abs($netProfit)) }}</p>
+            <span class="inline-flex items-center gap-0.5 h-6 px-2 rounded-full text-[11px] font-semibold {{ $profitMargin >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700' }}">{{ round($profitMargin, 1) }}% margin</span>
+          </div>
+          <p class="mt-3 text-xs text-gray-500 truncate">Cost of goods <span class="font-semibold text-gray-700">{{ money($totalCogs) }}</span>@if($totalExpenses > 0) &middot; expenses <span class="font-semibold text-rose-600">{{ money($totalExpenses) }}</span>@endif</p>
+        </div>
       </div>
+      @endif
+
+      @if($canOrders)
+      {{-- Order status rings --}}
+      <div class="panel p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h2 class="text-[17px] font-medium text-gray-900">Order Breakdown</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Share of all {{ number_format($ringTotal) }} orders by status</p>
+          </div>
+          <a href="{{ route('admin.orders.index') }}" class="grid h-9 w-9 place-items-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50" aria-label="Open orders"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></a>
+        </div>
+        <div class="mt-5 grid grid-cols-3 sm:grid-cols-6 gap-y-5 gap-x-2">
+          @foreach($statusRings as [$label, $count, $color])
+            @php $pct = min(100, round($count / $ringTotal * 100)); @endphp
+            <div class="flex flex-col items-center text-center" title="{{ $label }}: {{ $count }} ({{ $pct }}%)">
+              <div class="relative h-[60px] w-[60px]">
+                <svg viewBox="0 0 40 40" class="h-full w-full -rotate-90" aria-hidden="true">
+                  <circle cx="20" cy="20" r="15.5" fill="none" stroke="#f0efed" stroke-width="4.5"/>
+                  <circle cx="20" cy="20" r="15.5" fill="none" stroke="{{ $color }}" stroke-width="4.5" stroke-linecap="round" pathLength="100" stroke-dasharray="{{ max($pct, $count > 0 ? 3 : 0) }} 100"/>
+                </svg>
+                <span class="absolute inset-0 grid place-items-center text-[12px] font-semibold text-gray-800 tabular-nums">{{ number_format($count) }}</span>
+              </div>
+              <span class="mt-2 text-xs text-gray-500">{{ $label }}</span>
+            </div>
+          @endforeach
+        </div>
+      </div>
+      @endif
+
+      {{-- Secondary Quick Stats (Compact 2-col or 4-col strip) --}}
+      <div class="grid grid-cols-2 gap-4">
+        @if($canMoney)
+        <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
+          <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Today's Sales</span>
+          <div class="flex items-center justify-between flex-wrap gap-x-2 mt-1">
+            <p class="text-base sm:text-lg font-bold text-gray-900 font-mono truncate">{{ money($todayRevenue) }}</p>
+            <span class="text-[11px] text-gray-400 truncate">Yest: {{ money($yesterdayRevenue) }}</span>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
+          <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">This Month ({{ date('M Y') }})</span>
+          <p class="text-base sm:text-lg font-bold text-gray-900 font-mono mt-1 truncate">{{ money($thisMonthRevenue) }}</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
+          <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Avg. Order Value</span>
+          <p class="text-base sm:text-lg font-bold text-gray-900 font-mono mt-1 truncate">{{ money($avgOrderValue) }}</p>
+        </div>
+        @endif
+        
+        <div class="bg-white rounded-xl border border-gray-200/80 p-3.5 sm:p-4 shadow-2xs">
+          <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide block">Stock Health</span>
+          <div class="flex items-center justify-between flex-wrap gap-x-2 mt-1">
+            <p class="text-base sm:text-lg font-bold text-gray-900 font-mono">{{ number_format($totalStockUnits) }}</p>
+            <a href="{{ route('admin.inventory.index') }}" class="text-[11px] font-semibold px-2 py-0.5 rounded-md {{ $lowStockCount > 0 ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200' }}">
+              {{ $lowStockCount > 0 ? $lowStockCount . ' Low' : 'In Stock' }}
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="xl:col-span-5 grid grid-cols-1 gap-4 min-w-0">
+      @if($canMoney)
+      {{-- Last six months --}}
+      <div class="panel p-5 flex flex-col">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h2 class="text-[17px] font-medium text-gray-900">Sales Report</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Revenue over the last six months</p>
+          </div>
+          <a href="{{ route('admin.analytics.index') }}" class="grid h-9 w-9 place-items-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50" aria-label="Open analytics"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></a>
+        </div>
+        <div class="mt-5 flex items-end gap-3 sm:gap-4 h-48">
+          @foreach($lastSix as $point)
+            @php $h = $point['value'] > 0 ? max(10, round($point['value'] / $sixMax * 100)) : 4; @endphp
+            <div class="flex-1 h-full flex flex-col items-center justify-end gap-2" title="{{ $point['full_label'] }}: {{ money($point['value']) }}">
+              <div class="w-full max-w-[46px] flex flex-col justify-end" style="height: {{ $h }}%;">
+                @if($point['value'] > 0)
+                  <div class="w-full h-full rounded-[12px]" style="background: {{ $point['is_current'] ? 'var(--brand)' : 'color-mix(in srgb, var(--brand) 40%, #fff)' }};"></div>
+                @else
+                  <div class="w-full h-full rounded-[10px] bg-gray-100"></div>
+                @endif
+              </div>
+              <span class="text-[11px] {{ $point['is_current'] ? 'font-semibold text-gray-900' : 'text-gray-500' }}">{{ $point['label'] }}</span>
+            </div>
+          @endforeach
+        </div>
+      </div>
+      @endif
+
+      @if($canOrders)
+      {{-- Delivery success gauge --}}
+      <div class="panel p-5">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h2 class="text-[17px] font-medium text-gray-900">Delivery Success</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Delivered vs returned parcels</p>
+          </div>
+          <a href="{{ route('admin.courier-scan.index') }}" class="grid h-9 w-9 place-items-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50" aria-label="Open courier scan"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></a>
+        </div>
+        <div class="relative mx-auto mt-2 w-full max-w-[300px]">
+          <svg viewBox="0 0 200 112" class="w-full" aria-hidden="true">
+            @for($k = 0; $k < $gaugeSegments; $k++)
+              @php
+                $ang = M_PI - ($k + .5) * M_PI / $gaugeSegments;
+                $x1 = 100 + cos($ang) * 70; $y1 = 104 - sin($ang) * 70;
+                $x2 = 100 + cos($ang) * 92; $y2 = 104 - sin($ang) * 92;
+                $mixPct = $gaugeOn > 1 ? round(35 + 65 * $k / max(1, $gaugeOn - 1)) : 100;
+              @endphp
+              <line x1="{{ round($x1, 2) }}" y1="{{ round($y1, 2) }}" x2="{{ round($x2, 2) }}" y2="{{ round($y2, 2) }}" stroke-width="7" stroke-linecap="round"
+                    stroke="{{ $k < $gaugeOn ? 'color-mix(in srgb, var(--brand) ' . $mixPct . '%, #fff)' : '#e7e5e4' }}"/>
+            @endfor
+          </svg>
+          <div class="absolute inset-x-0 bottom-1 text-center">
+            <p class="text-[34px] leading-none font-semibold tracking-tight text-gray-900 tabular-nums">{{ $successRate }}%</p>
+            <p class="mt-1 text-xs text-gray-500">{{ number_format($deliveredCount ?? 0) }} delivered &middot; {{ number_format($returnedOrdersCount ?? 0) }} returned</p>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center justify-between gap-2 rounded-full border border-gray-200 pl-4 pr-1.5 py-1.5">
+          <span class="text-xs text-gray-600 truncate">Orders today <span class="font-semibold text-gray-900">{{ number_format($todayOrdersCount) }}</span> &middot; yesterday {{ number_format($yesterdayOrdersCount) }}</span>
+          @if($ordersTrend !== null)
+            <span class="inline-flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-semibold shrink-0" style="background: var(--brand-soft); color: var(--brand-dark);">{{ $ordersTrend >= 0 ? '↑' : '↓' }} {{ abs($ordersTrend) }}%</span>
+          @endif
+        </div>
+      </div>
+      @endif
     </div>
   </div>
 
@@ -270,18 +290,18 @@
                 $heightPercent = $hasRevenue && $seriesMax > 0 ? max(8, (int) round(($point['value'] / $seriesMax) * 72)) : 0;
                 $isCurrent = $point['is_current'];
               @endphp
-              <div class="flex-1 flex flex-col items-center justify-end h-full relative cursor-default group {{ $isCurrent ? 'bg-primary/5 rounded-t-xl px-0.5 sm:px-1' : '' }}" title="{{ $point['full_label'] }}: {{ money($point['value']) }}">
+              <div class="flex-1 flex flex-col items-center justify-end h-full relative cursor-default group " title="{{ $point['full_label'] }}: {{ money($point['value']) }}">
                 
                 {{-- Direct Value Label Above Bar --}}
                 @if($hasRevenue)
-                  <span class="text-[9px] sm:text-[11px] font-bold font-mono text-emerald-700 mb-1 leading-none text-center truncate max-w-full">
+                  <span class="text-[9px] sm:text-[11px] font-semibold font-mono text-gray-500 mb-1.5 leading-none text-center truncate max-w-full">
                     {{ money($point['value']) }}
                   </span>
                 @endif
 
                 {{-- Bar Column --}}
                 @if($hasRevenue)
-                  <div class="w-full max-w-[18px] sm:max-w-[28px] mx-auto rounded-t-md sm:rounded-t-xl transition-all duration-300 {{ $isCurrent ? 'bg-gradient-to-t from-primary to-teal-500 shadow-sm ring-1 sm:ring-2 ring-teal-400/40' : 'bg-gray-800 hover:bg-primary transition-colors' }}" style="height: {{ $heightPercent }}%">
+                  <div class="w-full max-w-[16px] sm:max-w-[34px] mx-auto rounded-full transition-all duration-300 {{ $isCurrent ? 'shadow-[0_10px_20px_-10px_var(--brand)]' : 'bg-teal-200 hover:bg-teal-300' }}" style="height: {{ $heightPercent }}%;{{ $isCurrent ? ' background: var(--brand);' : '' }}">
                   </div>
                 @else
                   <div class="w-2 sm:w-3 h-0.5 bg-gray-200 rounded-full mx-auto mb-0.5"></div>

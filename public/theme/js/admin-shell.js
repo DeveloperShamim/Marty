@@ -4,7 +4,7 @@
   var bd = document.getElementById('backdrop');
   var btn = document.getElementById('menuBtn');
   var closeBtn = document.getElementById('sidebarClose');
-  var nav = sb ? sb.querySelector('.sidebar-nav') : null;
+  var nav = sb ? (sb.classList.contains('sb-cards') ? sb : sb.querySelector('.sidebar-nav')) : null;
 
   function openSidebar() {
     if (!sb) return;
@@ -210,4 +210,12 @@
       a.setAttribute('data-print-warning', 'This was opened for printing from this page at ' + time + '.');
     }
   }, true);
+})();
+
+/* Account menu in the top bar: close on outside click or Escape. */
+(function () {
+  var menu = document.querySelector('[data-account-menu]');
+  if (!menu) return;
+  document.addEventListener('click', function (e) { if (menu.open && !menu.contains(e.target)) menu.open = false; });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') menu.open = false; });
 })();

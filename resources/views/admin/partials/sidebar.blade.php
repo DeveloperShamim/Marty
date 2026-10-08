@@ -85,107 +85,87 @@
     };
 @endphp
 
-<aside id="sidebar" class="fixed lg:sticky lg:top-0 lg:self-start inset-y-0 left-0 z-50 w-64 max-w-[85vw] h-dvh text-white flex flex-col -translate-x-full lg:translate-x-0 transition-[transform,width] duration-200 shadow-2xl lg:shadow-none" style="background: linear-gradient(180deg, color-mix(in srgb, var(--brand-dark) 92%, var(--brand)) 0%, var(--brand-dark) 38%, var(--brand-dark) 100%);" aria-label="Admin navigation">
-  {{-- Brand --}}
-  <div class="sb-head h-16 flex items-center justify-between gap-2 px-4 border-b border-white/[0.07] shrink-0">
-    <a href="{{ route('admin.dashboard') }}" class="sb-brand flex items-center gap-2.5 min-w-0" aria-label="{{ $site }} admin home">
-      @if(has_custom_logo())
-        <span class="sb-label inline-flex items-center rounded-xl bg-white px-2.5 py-1.5 shadow-sm"><img src="{{ logo_url() }}" alt="{{ $site }}" class="max-h-7 max-w-[136px] w-auto object-contain" /></span>
-      @else
-        <span class="sb-label flex items-center gap-2.5 min-w-0"><span class="grid h-8 w-8 shrink-0 place-items-center rounded-xl text-white font-extrabold text-sm shadow-sm" style="background: var(--brand);">{{ mb_strtoupper(mb_substr($site, 0, 1)) }}</span><span class="font-bold text-[15px] text-white truncate tracking-tight">{{ $site }}</span></span>
-      @endif
-      <img src="{{ favicon_url() }}" alt="" class="sb-mark hidden h-8 w-8 rounded-lg object-contain" />
-    </a>
-    <button type="button" id="sidebarClose" class="lg:hidden h-9 w-9 -mr-1 rounded-lg text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center" aria-label="Close menu">
+@php
+    // "Settings" moves into the Support card; everything else stays in the main menu card.
+    $support = $nav['Settings'] ?? [];
+    unset($nav['Settings']);
+    $reviewWaiting = ($badges['orders']['count'] ?? 0);
+    $itemClass = fn ($on) => $on
+        ? 'text-white font-semibold shadow-[0_8px_18px_-10px_rgba(0,0,0,.7)]'
+        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900 font-medium';
+@endphp
+<aside id="sidebar" class="sb-cards fixed lg:sticky inset-y-0 left-0 lg:top-[96px] z-50 lg:z-auto w-[272px] lg:w-[236px] xl:w-[248px] max-w-[85vw] h-dvh lg:h-auto lg:max-h-[calc(100dvh-112px)] shrink-0 overflow-y-auto overscroll-contain no-scrollbar bg-[#F0EFED] lg:bg-transparent p-3 lg:p-0 flex flex-col gap-3 -translate-x-full lg:translate-x-0 transition-transform duration-200 shadow-2xl lg:shadow-none" aria-label="Admin navigation">
+  <div class="lg:hidden flex items-center justify-between px-2 pt-1 pb-1">
+    <span class="text-[15px] font-semibold text-gray-900 truncate">{{ $site }}</span>
+    <button type="button" id="sidebarClose" class="h-9 w-9 rounded-full bg-white text-gray-600 hover:text-gray-900 flex items-center justify-center shadow-sm" aria-label="Close menu">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
     </button>
   </div>
 
-  {{-- Search --}}
-  <div class="sb-search px-3 pt-3 pb-1 shrink-0">
-    <label class="relative block">
-      <span class="sr-only">Search menu</span>
-      <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input type="search" id="sidebarSearch" autocomplete="off" placeholder="Search menu"
-             class="w-full h-9 pl-8 pr-8 rounded-xl bg-white/[0.06] border border-white/10 text-[13px] text-white placeholder-white/40 focus:bg-white/10 focus:border-white/25 focus:ring-2 focus:ring-white/10 outline-none transition-colors" />
-      <kbd class="hidden lg:flex absolute right-2 top-1/2 -translate-y-1/2 h-5 min-w-5 px-1 items-center justify-center rounded border border-white/15 bg-white/5 text-[10px] font-semibold text-white/40 pointer-events-none">/</kbd>
-    </label>
-  </div>
-
-  {{-- Navigation --}}
-  <nav class="sidebar-nav flex-1 overflow-y-auto overscroll-contain px-3 pt-2 pb-4 no-scrollbar">
+  {{-- Main menu --}}
+  <nav class="sidebar-nav bg-white rounded-[24px] shadow-panel px-3 py-4">
     @foreach($nav as $group => $items)
       @php $groupActive = collect($items)->contains(fn ($i) => request()->routeIs($i['pattern'])); @endphp
-      <div class="sb-group {{ $group === '' ? '' : 'mt-3' }}" data-group="{{ $group }}" @if($groupActive) data-active @endif>
-        @if($group !== '')
-          <button type="button" class="sb-group-toggle w-full flex items-center justify-between h-7 px-2.5 rounded-md text-[10.5px] font-bold uppercase tracking-[0.12em] text-white/35 hover:text-white/60" aria-expanded="true">
-            <span class="sb-label">{{ $group }}</span>
-            <svg class="sb-chevron sb-label w-3.5 h-3.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-          </button>
-          <div class="sb-divider hidden mx-2 my-2 border-t border-white/10"></div>
-        @endif
-
-        <div class="sb-items space-y-0.5">
+      <div class="sb-group {{ $loop->first ? '' : 'mt-4' }}" data-group="{{ $group }}" @if($groupActive) data-active @endif>
+        <button type="button" class="sb-group-toggle w-full flex items-center justify-between h-6 px-3 mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-gray-400 hover:text-gray-600" aria-expanded="true">
+          <span class="sb-label">{{ $group === '' ? 'Home' : $group }}</span>
+          <svg class="sb-chevron sb-label w-3.5 h-3.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="sb-items space-y-1">
           @foreach($items as $i)
-            @php
-              $on = request()->routeIs($i['pattern']);
-              $badge = $badges[$i['key']] ?? null;
-            @endphp
-            <a href="{{ route($i['route']) }}"
-               class="sb-item group relative flex items-center gap-2.5 h-9 px-2.5 rounded-xl text-[13.5px] transition-all duration-150 {{ $on ? 'text-white font-semibold shadow-[0_6px_16px_-8px_rgba(0,0,0,.6),inset_0_1px_0_rgba(255,255,255,.14)]' : 'text-white/65 hover:bg-white/[0.06] hover:text-white font-medium' }}" @if($on) style="background: var(--brand);" @endif
-               data-label="{{ $i['label'] }}" data-search="{{ strtolower($i['label'] . ' ' . $i['keywords'] . ' ' . $group) }}"
-               @if($on) aria-current="page" @endif>
-                            <svg class="w-[18px] h-[18px] shrink-0 {{ $on ? 'text-white' : 'text-white/45 group-hover:text-white/80' }}" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $i['icon'] !!}</svg>
-              <span class="sb-label flex-1 truncate">{{ $i['label'] }}</span>
-              {{-- The orders count is always rendered (hidden at 0) so the new-order poller can update it. --}}
-              @if($badge && ($badge['count'] > 0 || $i['key'] === 'orders'))
-                <span data-live-badge="{{ $i['key'] }}" style="display: {{ $badge['count'] > 0 ? 'contents' : 'none' }}">
-                <span class="sb-badge sb-label {{ $badge['class'] }} text-[11px] font-semibold tabular-nums min-w-5 h-5 px-1.5 rounded-full inline-flex items-center justify-center" title="{{ $badge['count'] }} {{ $badge['hint'] }}">{{ $badge['count'] > 99 ? '99+' : $badge['count'] }}</span>
-                <span class="sb-dot hidden absolute top-1.5 left-7 w-2 h-2 rounded-full ring-2 ring-[color:var(--brand-dark)] {{ str_replace(['bg-', '-100'], ['bg-', '-500'], explode(' ', $badge['class'])[0]) }}" aria-hidden="true"></span>
-                <span class="sr-only">({{ $badge['count'] }} {{ $badge['hint'] }})</span>
-                </span>
-              @endif
-            </a>
+            @include('admin.partials.sidebar-item', ['i' => $i])
           @endforeach
         </div>
       </div>
     @endforeach
-
-    <p id="sidebarNoResults" class="hidden px-2.5 py-6 text-center text-[13px] text-white/40">No matching pages</p>
+    <p id="sidebarNoResults" class="hidden px-3 py-6 text-center text-[13px] text-gray-400">No matching pages</p>
   </nav>
 
-  {{-- Footer --}}
-  <div class="sb-foot border-t border-white/[0.07] p-3 shrink-0 space-y-1">
-    <a href="{{ route('shop') }}" target="_blank" rel="noopener" class="sb-item group flex items-center gap-2.5 h-9 px-2.5 rounded-xl text-[13.5px] font-medium text-white/65 hover:bg-white/[0.06] hover:text-white" data-label="View store">
-      <svg class="w-[18px] h-[18px] shrink-0 text-white/45 group-hover:text-white/80" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"/></svg>
-      <span class="sb-label flex-1">View store</span>
-      <svg class="sb-label w-3.5 h-3.5 text-white/35" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
-    </a>
-    <button type="button" id="sidebarCollapse" class="sb-item group hidden lg:flex w-full items-center gap-2.5 h-9 px-2.5 rounded-xl text-[13.5px] font-medium text-white/65 hover:bg-white/[0.06] hover:text-white" data-label="Expand sidebar" aria-label="Collapse sidebar">
-      <svg class="sb-collapse-icon w-[18px] h-[18px] shrink-0 text-white/45 group-hover:text-white/80 transition-transform" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>
-      <span class="sb-label">Collapse</span>
-    </button>
-
-    <div class="sb-user flex items-center gap-2.5 mt-2 p-2 rounded-2xl bg-white/[0.05] ring-1 ring-white/[0.06]">
-      <a href="{{ route('admin.profile.edit') }}" class="flex items-center gap-2.5 flex-1 min-w-0 rounded-xl -m-1 p-1 hover:bg-white/[0.06]" title="My account">
-        @if($user?->avatarUrl())
-          <img src="{{ $user->avatarUrl() }}" class="w-9 h-9 rounded-xl object-cover shrink-0 ring-2 ring-white/10" alt="">
-        @else
-          <span class="w-9 h-9 rounded-xl bg-teal-600 text-white font-semibold text-xs flex items-center justify-center shrink-0" aria-hidden="true">{{ $initials ?: 'A' }}</span>
-        @endif
-        <span class="sb-label min-w-0 flex-1">
-          <span class="block text-[13px] font-semibold text-white truncate leading-tight">{{ $adminName }}</span>
-          <span class="block text-[11.5px] text-white/45 truncate">{{ $userRoleTitle }}</span>
-        </span>
-      </a>
-      <form method="POST" action="{{ route('admin.logout') }}" class="sb-label shrink-0">
-        @csrf
-        <button type="submit" class="h-8 w-8 rounded-lg text-white/45 hover:text-rose-300 hover:bg-white/[0.08] flex items-center justify-center" title="Log out" aria-label="Log out">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
-        </button>
-      </form>
+  {{-- Support --}}
+  <div class="bg-white rounded-[24px] shadow-panel px-3 py-4">
+    <div class="sb-group" data-group="Support">
+      <p class="h-6 px-3 mb-1 flex items-center text-[11px] font-semibold uppercase tracking-[0.1em] text-gray-400">Support</p>
+      <div class="sb-items space-y-1">
+        @foreach($support as $i)
+          @include('admin.partials.sidebar-item', ['i' => $i])
+        @endforeach
+        <a href="{{ route('shop') }}" target="_blank" rel="noopener" class="sb-item group flex items-center gap-3 h-10 px-3 rounded-full text-[14px] font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors" data-label="View store" data-search="view store shop website support">
+          <svg class="w-[18px] h-[18px] shrink-0 text-gray-400 group-hover:text-gray-700" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14 21 3"/></svg>
+          <span class="sb-label flex-1">View store</span>
+        </a>
+        <form method="POST" action="{{ route('admin.logout') }}">
+          @csrf
+          <button type="submit" class="sb-item group w-full flex items-center gap-3 h-10 px-3 rounded-full text-[14px] font-medium text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer" data-label="Log out" data-search="log out sign out logout support">
+            <svg class="w-[18px] h-[18px] shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+            <span class="sb-label flex-1 text-left">Log out</span>
+          </button>
+        </form>
+      </div>
     </div>
   </div>
+
+  {{-- Highlight card --}}
+  @if(isset($badges['orders']))
+    <div class="relative overflow-hidden rounded-[24px] p-4 text-white shadow-panel" style="background: linear-gradient(145deg, var(--brand) 0%, color-mix(in srgb, var(--brand) 70%, var(--brand-dark)) 100%);">
+      <div class="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/10"></div>
+      <div class="pointer-events-none absolute right-6 -bottom-10 h-20 w-20 rounded-full bg-white/[0.07]"></div>
+      <div class="relative flex items-center gap-2.5">
+        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/15 ring-2 ring-white/25">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </span>
+        <span class="min-w-0">
+          <span class="block text-sm font-semibold leading-tight">{{ $reviewWaiting > 0 ? 'Orders to review' : 'All caught up' }}</span>
+          <span class="block text-[11px] text-white/70">{{ $adminName }}</span>
+        </span>
+      </div>
+      <p class="relative mt-3 text-xs leading-relaxed text-white/85">
+        {{ $reviewWaiting > 0 ? 'You have ' . $reviewWaiting . ' ' . \Illuminate\Support\Str::plural('order', $reviewWaiting) . ' waiting for payment or phone verification.' : 'No orders are waiting for verification right now.' }}
+      </p>
+      <a href="{{ route('admin.orders.index', $reviewWaiting > 0 ? ['status' => 'pending_verification'] : []) }}" class="relative mt-3 inline-flex items-center h-8 px-3.5 rounded-full text-[11px] font-semibold text-white transition hover:opacity-90" style="background: var(--brand-dark);">
+        {{ $reviewWaiting > 0 ? 'Review orders' : 'Open orders' }}
+      </a>
+    </div>
+  @endif
 </aside>
 <div id="sidebarTip" class="hidden fixed z-[60] px-2 py-1 rounded-md bg-gray-900 text-white text-xs font-medium pointer-events-none whitespace-nowrap" role="tooltip"></div>
 <script>
