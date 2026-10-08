@@ -26,7 +26,9 @@ class AdminSidebarTest extends TestCase
         foreach (['Dashboard', 'Orders', 'Products', 'Coupons', 'Profit & Analytics', 'Staff & Roles', 'Store Settings'] as $label) {
             $this->assertContains($label, $labels);
         }
-        $this->assertSame(1, substr_count($html, 'aria-current="page"'), 'Exactly one menu item should be marked current');
+        // One current item in the sidebar and one in the phone icon rail
+        $this->assertSame(2, substr_count($html, 'aria-current="page"'), 'Exactly one item per menu should be marked current');
+        $this->assertMatchesRegularExpression('/data-rail-current[^>]*aria-label="Products"/', $html);
         $this->assertMatchesRegularExpression('/data-label="Products"[^>]*aria-current="page"/', $html);
     }
 
