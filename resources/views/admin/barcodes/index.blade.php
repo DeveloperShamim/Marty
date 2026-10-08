@@ -1,157 +1,129 @@
 @extends('layouts.admin')
-@section('title', 'Barcode Label Generator')
+@section('title', 'Barcodes')
+@section('subtitle', 'Print scannable barcode stickers for products and packaging.')
+
+@section('page-actions')
+  <a href="{{ route('admin.pos.index') }}" class="pill-btn">
+    Open POS
+    <span class="pill-ico"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="18" x="5" y="3" rx="2"/><path d="M9 7h6M9 11h.01M12 11h.01M15 11h.01M9 14h.01M12 14h.01M15 14h.01M9 17h.01M12 17h3"/></svg></span>
+  </a>
+@endsection
 
 @section('content')
-<div class="space-y-6">
-
-  {{-- Header --}}
-  <div class="bg-white rounded-2xl border border-gray-200/90 shadow-2xs p-5 sm:p-6">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="p-2 rounded-xl bg-indigo-50 text-indigo-700">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-          </span>
-          <div>
-            <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">Barcode Label Generator</h1>
-            <p class="text-xs sm:text-sm text-gray-500">Generate & print scannable barcode stickers for products and packaging</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <a href="{{ route('admin.pos.index') }}" class="px-4 py-2.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs transition-colors flex items-center gap-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-          Open POS Counter
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <form action="{{ route('admin.barcodes.print') }}" method="POST" target="_blank" id="barcodePrintForm">
+<div class="space-y-4">
+  <form action="{{ route('admin.barcodes.print') }}" method="POST" target="_blank" id="barcodePrintForm" class="space-y-4">
     @csrf
 
-    {{-- Print Settings Bar --}}
-    <div class="bg-white rounded-2xl border border-gray-200/90 shadow-2xs p-5 mb-6 space-y-4">
-      <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
-        
+    {{-- Print settings --}}
+    <section class="panel p-4 sm:p-5">
+      <div class="flex flex-col lg:flex-row lg:items-end gap-3">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 flex-1">
           <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">Sticker / Paper Format</label>
-            <select name="format" class="w-full text-xs font-semibold px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:border-brand-500">
+            <label class="lbl" for="barcodeFormat">Sticker size</label>
+            <select id="barcodeFormat" name="format" class="w-full h-10 rounded-full bg-gray-100 border border-transparent px-4 text-sm text-gray-800 focus:bg-white focus:border-gray-200 outline-none">
               <option value="thermal_50x30">Thermal Roll (50mm × 30mm) - Standard</option>
               <option value="thermal_40x25">Thermal Roll (40mm × 25mm) - Compact</option>
               <option value="a4_3col">A4 Sheet (3 Columns - 24 per page)</option>
               <option value="a4_4col">A4 Sheet (4 Columns - 40 per page)</option>
             </select>
           </div>
-
-          <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">Store Branding</label>
-            <label class="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer">
-              <input type="checkbox" name="show_store_name" value="1" checked class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500">
-              <span class="text-xs font-semibold text-gray-700">Print Store Name</span>
-            </label>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">Price Tag</label>
-            <label class="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl cursor-pointer">
-              <input type="checkbox" name="show_price" value="1" checked class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500">
-              <span class="text-xs font-semibold text-gray-700">Print Selling Price (৳)</span>
-            </label>
-          </div>
+          <label class="flex items-center gap-2.5 h-10 px-4 rounded-full bg-gray-100 cursor-pointer sm:self-end">
+            <input type="checkbox" name="show_store_name" value="1" checked class="w-4 h-4 rounded">
+            <span class="text-[13px] text-gray-800">Print store name</span>
+          </label>
+          <label class="flex items-center gap-2.5 h-10 px-4 rounded-full bg-gray-100 cursor-pointer sm:self-end">
+            <input type="checkbox" name="show_price" value="1" checked class="w-4 h-4 rounded">
+            <span class="text-[13px] text-gray-800">Print selling price</span>
+          </label>
         </div>
+        <button type="submit" id="printSubmitBtn" class="h-10 px-5 rounded-full text-white text-[13px] font-semibold inline-flex items-center justify-center gap-2 cursor-pointer shrink-0" style="background: var(--brand-dark);">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+          <span>Print selected (<span id="selectedCountDisplay">0</span>)</span>
+        </button>
+      </div>
+    </section>
 
-        <div class="flex items-center gap-2 pt-2 lg:pt-0 shrink-0">
-          <button type="submit" id="printSubmitBtn" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-primary hover:bg-brand-700 text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-            Print Selected Stickers (<span id="selectedCountDisplay">0</span>)
-          </button>
+    {{-- Products --}}
+    <div class="card overflow-hidden">
+      <div class="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <label class="relative flex-1 sm:max-w-sm">
+          <span class="sr-only">Search products</span>
+          <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="filterSearch" placeholder="Search this page" onkeyup="filterTable(this.value)" class="w-full h-10 pl-10 pr-4 rounded-full bg-gray-100 border border-transparent text-sm text-gray-800 placeholder-gray-500 focus:bg-white focus:border-gray-200 outline-none transition">
+        </label>
+        <div class="flex items-center gap-1.5">
+          <button type="button" onclick="toggleSelectAll(true)" class="h-9 px-3.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-[13px] font-medium">Select all</button>
+          <button type="button" onclick="toggleSelectAll(false)" class="h-9 px-3.5 rounded-full text-gray-600 hover:bg-gray-100 text-[13px] font-medium">Clear</button>
         </div>
-
-      </div>
-    </div>
-
-    {{-- Filter & Search Form --}}
-    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-4">
-      <div class="flex items-center gap-2 flex-wrap">
-        <button type="button" onclick="toggleSelectAll(true)" class="px-3 py-1.5 text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50">Select All On Page</button>
-        <button type="button" onclick="toggleSelectAll(false)" class="px-3 py-1.5 text-xs font-bold text-gray-500 bg-white border border-gray-200 rounded-xl hover:bg-gray-50">Deselect All</button>
       </div>
 
-      <div class="flex items-center gap-2">
-        <input type="text" id="filterSearch" placeholder="Quick search in table..." onkeyup="filterTable(this.value)" class="text-xs px-3.5 py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-brand-500 w-full sm:w-64">
-      </div>
-    </div>
-
-    {{-- Table of Products --}}
-    <div class="bg-white rounded-2xl border border-gray-200/90 shadow-2xs overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-xs" id="productsBarcodeTable">
-          <thead class="bg-gray-50/80 border-b border-gray-200 text-gray-500 font-bold uppercase tracking-wider">
-            <tr>
-              <th class="py-3.5 px-4 w-12 text-center">
-                <input type="checkbox" id="masterCheckbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-brand-600 focus:ring-brand-500">
+      {{-- One table: rows stack into cards on phones (inputs must not be duplicated) --}}
+      <div class="md:overflow-x-auto">
+        <table class="w-full text-left text-[13px] border-collapse" id="productsBarcodeTable">
+          <thead class="hidden md:table-header-group">
+            <tr class="text-gray-500 text-xs font-medium whitespace-nowrap border-y border-gray-100 bg-gray-50/60">
+              <th class="py-3 px-4 w-12 text-center">
+                <input type="checkbox" id="masterCheckbox" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded" aria-label="Select all">
               </th>
-              <th class="py-3.5 px-4">Product Info</th>
-              <th class="py-3.5 px-4">SKU / Code</th>
-              <th class="py-3.5 px-4">Barcode Preview</th>
-              <th class="py-3.5 px-4 text-right">Price</th>
-              <th class="py-3.5 px-4 text-center w-32">Stickers to Print</th>
+              <th class="py-3 px-4">Product</th>
+              <th class="py-3 px-4">SKU</th>
+              <th class="py-3 px-4">Barcode</th>
+              <th class="py-3 px-4 text-right">Price</th>
+              <th class="py-3 px-4 text-center w-28">Stickers</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100">
+          <tbody class="block md:table-row-group px-3 pb-3 md:p-0 space-y-2.5 md:space-y-0 md:divide-y md:divide-gray-100">
             @forelse($products as $idx => $p)
               @php
                 $barcode = $p->getBarcode();
                 $price = $p->sale_price ?: $p->regular_price;
               @endphp
-              <tr class="hover:bg-gray-50/80 transition-colors barcode-row" data-search="{{ strtolower($p->name . ' ' . $p->sku . ' ' . $barcode) }}">
-                <td class="py-3 px-4 text-center">
-                  <input type="checkbox" name="items[{{ $idx }}][selected]" value="1" class="item-checkbox w-4 h-4 rounded text-brand-600 focus:ring-brand-500" onchange="updateSelectedCount()">
+              <tr class="barcode-row grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-2.5 rounded-2xl bg-gray-50/80 p-3.5 md:table-row md:rounded-none md:bg-transparent md:p-0 hover:bg-gray-50/70 transition-colors" data-search="{{ strtolower($p->name . ' ' . $p->sku . ' ' . $barcode) }}">
+                <td class="row-start-1 col-start-1 md:py-3 md:px-4 text-center">
+                  <input type="checkbox" name="items[{{ $idx }}][selected]" value="1" class="item-checkbox w-4 h-4 rounded" onchange="updateSelectedCount()" aria-label="Select {{ $p->name }}">
                   <input type="hidden" name="items[{{ $idx }}][id]" value="{{ $p->id }}">
                   <input type="hidden" name="items[{{ $idx }}][type]" value="product">
                 </td>
-                <td class="py-3 px-4">
+                <td class="row-start-1 col-start-2 min-w-0 md:py-3 md:px-4">
                   <div class="flex items-center gap-3">
-                    <img src="{{ $p->imageUrl() }}" alt="" loading="lazy" onerror="this.onerror=null;this.removeAttribute('src')" class="w-10 h-10 rounded-lg object-cover bg-gray-100 shrink-0 border border-gray-200">
-                    <div>
-                      <div class="font-bold text-gray-900 text-sm">{{ $p->name }}</div>
-                      <div class="text-[11px] text-gray-500">{{ $p->category?->name ?? 'Uncategorized' }}</div>
+                    <img src="{{ $p->imageUrl() }}" alt="" loading="lazy" onerror="this.onerror=null;this.removeAttribute('src')" class="w-10 h-10 rounded-xl object-cover bg-gray-100 shrink-0">
+                    <div class="min-w-0">
+                      <div class="font-semibold text-gray-900 truncate">{{ $p->name }}</div>
+                      <div class="text-[11px] text-gray-500 truncate">{{ $p->category?->name ?? 'Uncategorized' }}<span class="md:hidden"> · <span class="font-mono">{{ $p->sku ?: 'No SKU' }}</span></span></div>
                     </div>
                   </div>
                 </td>
-                <td class="py-3 px-4">
-                  <span class="font-mono text-xs font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-md">{{ $p->sku ?: 'No SKU' }}</span>
+                <td class="hidden md:table-cell md:py-3 md:px-4">
+                  <span class="font-mono text-xs text-gray-700">{{ $p->sku ?: 'No SKU' }}</span>
                 </td>
-                <td class="py-3 px-4">
-                  <div class="inline-block bg-white p-1 rounded border border-gray-200">
-                    <svg class="barcode-svg" data-barcode="{{ $barcode }}" jsbarcode-format="CODE128" jsbarcode-value="{{ $barcode }}" jsbarcode-textmargin="0" jsbarcode-fontoptions="bold" jsbarcode-width="1.2" jsbarcode-height="26" jsbarcode-fontsize="10"></svg>
+                <td class="row-start-2 col-start-1 col-span-2 md:py-3 md:px-4 overflow-hidden">
+                  <div class="inline-block bg-white p-1 rounded-lg ring-1 ring-gray-100 max-w-full">
+                    <svg class="barcode-svg max-w-full h-auto" data-barcode="{{ $barcode }}" jsbarcode-format="CODE128" jsbarcode-value="{{ $barcode }}" jsbarcode-textmargin="0" jsbarcode-fontoptions="bold" jsbarcode-width="1.2" jsbarcode-height="26" jsbarcode-fontsize="10"></svg>
                   </div>
                 </td>
-                <td class="py-3 px-4 text-right">
-                  <span class="font-extrabold text-gray-900 text-sm">৳{{ number_format($price, 2) }}</span>
+                <td class="row-start-1 col-start-3 text-right md:py-3 md:px-4 whitespace-nowrap">
+                  <span class="font-semibold text-gray-900 tabular-nums">৳{{ number_format($price, 2) }}</span>
                 </td>
-                <td class="py-3 px-4 text-center">
-                  <input type="number" name="items[{{ $idx }}][qty]" value="1" min="1" max="200" class="w-20 px-2.5 py-1.5 text-center text-xs font-bold text-gray-800 border border-gray-200 rounded-lg focus:outline-none focus:border-brand-500">
+                <td class="row-start-2 col-start-3 md:py-3 md:px-4 text-center">
+                  <input type="number" name="items[{{ $idx }}][qty]" value="1" min="1" max="200" aria-label="Stickers for {{ $p->name }}" class="w-16 md:w-20 h-8 px-2 text-center text-xs font-semibold tabular-nums text-gray-800 bg-white border border-gray-200 rounded-full focus:outline-none">
                 </td>
               </tr>
             @empty
-              <tr>
-                <td colspan="6" class="py-8 text-center text-gray-400">No products found.</td>
+              <tr class="block md:table-row">
+                <td colspan="6" class="block md:table-cell py-12 text-center text-gray-500 text-sm">No products found.</td>
               </tr>
             @endforelse
           </tbody>
         </table>
       </div>
 
-      <div class="p-4 border-t border-gray-100">
-        {{ $products->links() }}
-      </div>
+      @if($products->hasPages())
+        <div class="p-3.5 sm:p-4 border-t border-gray-100">
+          {{ $products->links() }}
+        </div>
+      @endif
     </div>
   </form>
-
 </div>
 
 @push('scripts')
