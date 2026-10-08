@@ -19,7 +19,7 @@
 @endphp
 
 @section('content')
-<main class="max-w-[1440px] mx-auto px-4 sm:px-5 py-5 sm:py-6">
+<main class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-5 sm:py-6">
   <div class="flex flex-col lg:flex-row gap-5 lg:gap-6">
 
     {{-- ===== FILTER SIDEBAR (drawer on phone) ===== --}}

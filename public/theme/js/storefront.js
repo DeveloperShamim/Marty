@@ -236,6 +236,8 @@
     $$(".cart-count-text").forEach((el) => {
       el.textContent = count + (count === 1 ? " Item" : " Items");
     });
+    // Side quick cart only shows (tablet and up) once the bag has items
+    $$("[data-quick-cart]").forEach((el) => el.classList.toggle("sm:flex", count > 0));
     $$(".cart-total").forEach((el) => (el.textContent = money(subtotal)));
 
     const list = $("#cartItems");

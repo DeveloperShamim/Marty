@@ -306,11 +306,11 @@
       @if($bulletSpecs->isNotEmpty())
         <div class="pt-3 border-t border-stone-100">
           <p class="text-xs font-bold uppercase tracking-wider text-stone-400 mb-2">Key Highlights</p>
-          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-stone-600">
+          <ul class="grid grid-cols-1 {{ count($bulletSpecs) > 1 ? 'sm:grid-cols-2' : '' }} gap-x-4 gap-y-2 text-[13px] sm:text-sm text-stone-700">
             @foreach($bulletSpecs as $bullet)
-              <li class="flex items-start gap-1.5">
-                <span class="text-stone-400 font-bold shrink-0">·</span>
-                <span class="leading-tight">{{ $bullet }}</span>
+              <li class="flex items-start gap-2">
+                <svg class="w-4 h-4 mt-px shrink-0 text-brand-600" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                <span class="leading-snug">{{ $bullet }}</span>
               </li>
             @endforeach
           </ul>

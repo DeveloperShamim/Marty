@@ -27,14 +27,14 @@
   @else
     <div class="absolute top-2.5 left-2.5 z-10 flex flex-wrap gap-1.5 items-center pointer-events-none">
       @if($product->is_flash_sale)
-        <span class="bg-gradient-to-r from-red-600 via-rose-600 to-amber-500 text-white font-black text-[9px] sm:text-[10px] tracking-wider uppercase px-2 py-1 rounded-lg shadow-sm flex items-center gap-1">
-          <span>⚡ FLASH SALE</span>
+        <span class="text-white font-extrabold text-[9px] sm:text-[10px] tracking-wider uppercase pl-2 pr-1 py-1 rounded-md shadow-sm flex items-center gap-1.5" style="background-color: var(--brand-dark, #1c1917);">
+          <span class="flex items-center gap-1"><svg class="w-2.5 h-2.5 text-amber-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>Flash Sale</span>
           @if($discount > 0)
-            <span class="bg-black/20 px-1 py-0.2 rounded font-black text-[9px]">· {{ $discount }}% OFF</span>
+            <span class="px-1.5 py-px rounded font-extrabold text-[9px] sm:text-[10px]" style="background-color: var(--brand-primary, #8B5A2B);">{{ $discount }}% OFF</span>
           @endif
         </span>
       @elseif($discount > 0)
-        <span class="bg-rose-600 text-white font-black text-[10px] sm:text-[11px] px-2 py-0.5 rounded-lg shadow-sm tracking-tight">
+        <span class="text-white font-extrabold text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md shadow-sm tracking-tight" style="background-color: var(--brand-dark, #1c1917);">
           -{{ $discount }}%
         </span>
       @endif
@@ -83,7 +83,7 @@
       @php $fs = $product->flashStats(); @endphp
       <div class="sold-container my-1 sm:my-1.5">
         <div class="flex items-center justify-between text-[9px] sm:text-[10px] font-bold text-stone-600 mb-1">
-          <span class="flex items-center gap-1 text-amber-600 font-extrabold">
+          <span class="flex items-center gap-1 text-brand-600 font-extrabold">
             <span>🔥</span> <span>Flash Deal</span>
           </span>
           @if($fs['left'] > 0 && $fs['left'] <= 10)
@@ -93,8 +93,8 @@
           @endif
         </div>
         @if($fs['percent'] !== null)
-          <div class="relative w-full h-1.5 rounded-full bg-stone-100 overflow-hidden">
-            <div class="absolute inset-y-0 left-0 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 rounded-full transition-all duration-500" style="width:{{ $fs['percent'] }}%"></div>
+          <div class="relative w-full h-1.5 rounded-full bg-stone-100 overflow-hidden" role="progressbar" aria-valuenow="{{ $fs['percent'] }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="absolute inset-y-0 left-0 rounded-full transition-all duration-500" style="width:{{ $fs['percent'] }}%; background: linear-gradient(90deg, var(--brand-border, #d6c4b0), var(--brand-primary, #8B5A2B));"></div>
           </div>
         @endif
       </div>

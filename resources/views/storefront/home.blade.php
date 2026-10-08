@@ -59,9 +59,10 @@
               </button>
 
               {{-- Indicator Dots --}}
-              <div class="absolute bottom-2.5 sm:bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-2 bg-black/15 backdrop-blur-[2px] px-2 py-1 rounded-full">
+              {{-- Phones: dots sit bottom-right so they never cover the slide button --}}
+              <div class="absolute bottom-2.5 right-3 sm:bottom-4 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-2 bg-black/25 backdrop-blur-[2px] px-2 py-1.5 rounded-full">
                 @foreach($heroBanners as $di => $dot)
-                  <button type="button" data-hero-dot="{{ $di }}" class="hero-slider-dot rounded-full transition-all duration-300 {{ $di === 0 ? 'w-7 sm:w-8 h-2 sm:h-2.5 bg-orange-500' : 'w-2 sm:w-2.5 h-2 sm:h-2.5 bg-white/70 hover:bg-white' }}" aria-label="Slide {{ $di + 1 }}"></button>
+                  <button type="button" data-hero-dot="{{ $di }}" class="hero-slider-dot rounded-full transition-all duration-300 {{ $di === 0 ? 'w-6 sm:w-8 h-1.5 sm:h-2 bg-white' : 'w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/50 hover:bg-white/80' }}" aria-label="Slide {{ $di + 1 }}"></button>
                 @endforeach
               </div>
             </div>
@@ -203,7 +204,7 @@
         <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-4 sm:mb-6 gap-3 flex-wrap">
           <div>
             <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span class="inline-flex items-center gap-1 bg-red-50 text-red-700 font-extrabold text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-red-200">
+              <span class="inline-flex items-center gap-1 bg-brand-50 text-brand-600 font-extrabold text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-brand-100">
                 ⚡ LIMITED TIME DROPS
               </span>
               @if($flashEndsIso)
@@ -612,9 +613,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         dots.forEach((dot, i) => {
           if (i === currentIndex) {
-            dot.className = 'hero-slider-dot rounded-full transition-all duration-300 w-7 sm:w-8 h-2 sm:h-2.5 bg-orange-500';
+            dot.className = 'hero-slider-dot rounded-full transition-all duration-300 w-6 sm:w-8 h-1.5 sm:h-2 bg-white';
           } else {
-            dot.className = 'hero-slider-dot rounded-full transition-all duration-300 w-2 sm:w-2.5 h-2 sm:h-2.5 bg-white/70 hover:bg-white';
+            dot.className = 'hero-slider-dot rounded-full transition-all duration-300 w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/50 hover:bg-white/80';
           }
         });
       }
@@ -694,6 +695,7 @@ document.addEventListener('DOMContentLoaded', function () {
   if (typeof Swiper !== 'undefined' && document.querySelector('.categoriesSwiper')) {
     new Swiper('.categoriesSwiper', {
       slidesPerView: 3.25,
+      centerInsufficientSlides: true,
       spaceBetween: 8,
       rewind: true,
       speed: 600,

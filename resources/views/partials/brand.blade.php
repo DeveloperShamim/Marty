@@ -25,10 +25,11 @@
   @else
     @php
       // Phones (header only): a long name like "Vant Bangladesh" becomes a stacked wordmark, VANT / BANGLADESH.
+      // Below 430px the square icon is dropped so the wordmark never runs under the Flash Sale button.
       $nameParts = ($compactMobile ?? false) ? explode(' ', trim($name), 2) : [$name];
       $stacked = count($nameParts) === 2;
     @endphp
-    <span class="h-10 w-10 {{ $stacked ? 'max-sm:h-8 max-sm:w-8 max-[389px]:hidden' : '' }} rounded-lg {{ $light ? 'bg-white text-brand-700' : 'bg-brand-600 text-white' }} flex items-center justify-center shrink-0">
+    <span class="h-10 w-10 {{ $stacked ? 'max-sm:h-8 max-sm:w-8 max-[429px]:hidden' : '' }} rounded-lg {{ $light ? 'bg-white text-brand-700' : 'bg-brand-600 text-white' }} flex items-center justify-center shrink-0">
       <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M6 7h13l-1.2 8H7.5L6 7Zm0 0-.8-3H3"/>
         <path d="M10 11v2M14 11v2"/>
