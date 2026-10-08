@@ -89,7 +89,6 @@
     // "Settings" moves into the Support card; everything else stays in the main menu card.
     $support = $nav['Settings'] ?? [];
     unset($nav['Settings']);
-    $reviewWaiting = ($badges['orders']['count'] ?? 0);
     $itemClass = fn ($on) => $on
         ? 'text-white font-semibold shadow-[0_8px_18px_-10px_rgba(0,0,0,.7)]'
         : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900 font-medium';
@@ -144,28 +143,6 @@
     </div>
   </div>
 
-  {{-- Highlight card --}}
-  @if(isset($badges['orders']))
-    <div class="relative overflow-hidden rounded-[24px] p-4 text-white shadow-panel" style="background: linear-gradient(145deg, var(--brand) 0%, color-mix(in srgb, var(--brand) 70%, var(--brand-dark)) 100%);">
-      <div class="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/10"></div>
-      <div class="pointer-events-none absolute right-6 -bottom-10 h-20 w-20 rounded-full bg-white/[0.07]"></div>
-      <div class="relative flex items-center gap-2.5">
-        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/15 ring-2 ring-white/25">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-        </span>
-        <span class="min-w-0">
-          <span class="block text-sm font-semibold leading-tight">{{ $reviewWaiting > 0 ? 'Orders to review' : 'All caught up' }}</span>
-          <span class="block text-[11px] text-white/70">{{ $adminName }}</span>
-        </span>
-      </div>
-      <p class="relative mt-3 text-xs leading-relaxed text-white/85">
-        {{ $reviewWaiting > 0 ? 'You have ' . $reviewWaiting . ' ' . \Illuminate\Support\Str::plural('order', $reviewWaiting) . ' waiting for payment or phone verification.' : 'No orders are waiting for verification right now.' }}
-      </p>
-      <a href="{{ route('admin.orders.index', $reviewWaiting > 0 ? ['status' => 'pending_verification'] : []) }}" class="relative mt-3 inline-flex items-center h-8 px-3.5 rounded-full text-[11px] font-semibold text-white transition hover:opacity-90" style="background: var(--brand-dark);">
-        {{ $reviewWaiting > 0 ? 'Review orders' : 'Open orders' }}
-      </a>
-    </div>
-  @endif
 </aside>
 
 {{-- Phones and tablets: a slim icon rail stays on the left so every page is one tap away. The menu button opens the full sidebar above. --}}
