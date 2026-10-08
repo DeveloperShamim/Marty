@@ -19,7 +19,7 @@
     @if(has_custom_logo())
       <img src="{{ logo_url() }}" alt="{{ site_name() }}" class="max-h-7 max-w-[140px] w-auto object-contain" />
     @else
-      <span class="lg:hidden grid h-8 w-8 shrink-0 place-items-center rounded-lg text-white text-sm font-extrabold shadow-sm" style="background: var(--brand);">{{ mb_strtoupper(mb_substr(site_name(), 0, 1)) }}</span>
+      <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-white text-sm font-extrabold shadow-sm" style="background: var(--brand);">{{ mb_strtoupper(mb_substr(site_name(), 0, 1)) }}</span>
       <span class="hidden sm:block text-[15px] font-semibold tracking-tight text-gray-900 truncate">{{ site_name() }}</span>
     @endif
   </a>
@@ -31,7 +31,6 @@
       <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
       <input type="search" id="sidebarSearch" autocomplete="off" placeholder="Search pages..."
              class="w-full h-9 pl-10 pr-10 rounded-full bg-gray-100 border border-transparent text-sm text-gray-800 placeholder-gray-500 focus:bg-white focus:border-gray-200 focus:ring-4 focus:ring-gray-900/5 outline-none transition" />
-      <div id="navSearchResults" class="hidden absolute left-0 right-0 top-[calc(100%+6px)] z-50 rounded-2xl bg-white p-1.5 shadow-[0_18px_40px_-16px_rgba(28,25,23,.35)] ring-1 ring-black/5" role="listbox"></div>
       <kbd class="hidden lg:flex absolute right-3 top-1/2 -translate-y-1/2 h-5 min-w-5 px-1 items-center justify-center rounded-md bg-white text-[10px] font-semibold text-gray-400 shadow-sm pointer-events-none">/</kbd>
     </label>
 

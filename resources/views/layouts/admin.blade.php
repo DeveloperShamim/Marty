@@ -73,12 +73,13 @@
       Testing mode is on &mdash; Save, Delete, and other write actions are disabled.
     </div>
   @endif
-  <div class="admin-shell min-h-screen min-h-[100dvh] px-3 pb-6 sm:px-4 lg:pl-[96px] lg:pr-5">
-    @include('admin.partials.sidebar')
+  <div class="admin-shell min-h-screen min-h-[100dvh] px-3 pb-6 sm:px-4 lg:px-5">
     @include('admin.partials.topbar')
 
-    <div class="mt-3 sm:mt-4">
-      <div class="admin-main flex flex-col min-w-0 w-full">
+    <div class="flex items-start gap-4 xl:gap-5 mt-3 sm:mt-4">
+      @include('admin.partials.sidebar')
+
+      <div class="admin-main flex-1 flex flex-col min-w-0 w-full">
         {{-- Page heading: title, optional subtitle and actions (sections "subtitle" and "page-actions") --}}
         <div class="page-head flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 px-0.5 pb-3 sm:pb-4">
           <div class="min-w-0">

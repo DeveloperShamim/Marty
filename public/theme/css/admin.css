@@ -81,26 +81,35 @@
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 
-/* ---- Sidebar: slim icon rail on desktop, slide-in drawer on phones ---- */
+/* ---- Sidebar ---- */
+#sidebar .sb-group.is-folded .sb-items { display: none; }
+#sidebar .sb-group.is-folded .sb-chevron { transform: rotate(-90deg); }
+#sidebar.is-searching .sb-group-toggle { pointer-events: none; }
+#sidebar.is-searching .sb-group.is-folded .sb-items { display: block; }
 #sidebar .sb-item.is-hit { background: #f5f5f4; color: #1c1917; }
+
+/* Desktop icon rail (toggled with the Collapse button, remembered per browser) */
 @media (min-width: 1024px) {
-  #sidebar .sb-group { margin: 0; }
-  /* Dashboard and Log out sit on the rail as round icon buttons; their label shows as a tooltip */
-  #sidebar .sb-direct { width: 2.75rem; height: 2.75rem; padding: 0; justify-content: center; gap: 0; }
-  #sidebar .sb-direct .sb-label, #sidebar .sb-direct [data-live-badge] { display: none !important; }
-  #sidebar .sb-direct svg { width: 1.25rem; height: 1.25rem; }
-  /* Group pages open in a floating card beside the rail */
-  #sidebar .sb-flyout {
-    position: fixed; left: 92px; top: var(--fly-top, 80px); width: 236px; z-index: 60;
-    background: #fff; border-radius: 20px; padding: .625rem;
-    box-shadow: 0 1px 2px rgba(28,25,23,.05), 0 24px 48px -18px rgba(28,25,23,.35);
-    display: none;
-  }
-  #sidebar .sb-flyout::before { content: ""; position: absolute; left: -24px; top: 0; bottom: 0; width: 24px; } /* hover bridge */
-  #sidebar .sb-group.is-open .sb-flyout { display: block; animation: sb-fly-in .14s ease-out; }
-  @keyframes sb-fly-in { from { opacity: 0; transform: translateX(-6px); } }
-  #sidebar .sb-group.is-open .sb-rail-btn:not([style]) { background: #f5f5f4; color: #1c1917; }
+  .sb-collapsed #sidebar { width: 4.25rem; }
+  .sb-collapsed #sidebar .sb-label,
+  .sb-collapsed #sidebar .sb-search,
+  .sb-collapsed #sidebar .sb-group-toggle { display: none !important; }
+  .sb-collapsed #sidebar .sb-mark,
+  .sb-collapsed #sidebar .sb-divider,
+  .sb-collapsed #sidebar .sb-dot { display: block; }
+  .sb-collapsed #sidebar .sb-group { margin-top: 0; }
+  .sb-collapsed #sidebar .sb-group.is-folded .sb-items { display: block; }
+  .sb-collapsed #sidebar .sb-head { justify-content: center; padding: 0; }
+  .sb-collapsed #sidebar .sb-item { justify-content: center; padding: 0; }
+  .sb-collapsed #sidebar .sb-user { justify-content: center; }
+  .sb-collapsed #sidebar .sb-user > a { flex: none; }
+  .sb-collapsed #sidebar .sb-collapse-icon { transform: scaleX(-1); }
+  .sb-collapsed #sidebar .sb-dot { left: auto; right: .55rem; }
 }
+#sidebar .sb-chevron { opacity: 0; transition: opacity .15s, transform .15s; }
+#sidebar .sb-group-toggle:hover .sb-chevron,
+#sidebar .sb-group-toggle:focus-visible .sb-chevron,
+#sidebar .sb-group.is-folded .sb-chevron { opacity: 1; }
 
 /* Pill buttons used in page headings (dashboard etc.) */
 .pill-btn { display: inline-flex; align-items: center; gap: .5rem; height: 2.375rem; padding: 0 1rem; border-radius: 9999px; background: #fff; color: #1c1917; font-size: .8125rem; font-weight: 500; box-shadow: 0 1px 2px rgba(28,25,23,.04), 0 8px 20px -14px rgba(28,25,23,.25); transition: background-color .15s ease; }
