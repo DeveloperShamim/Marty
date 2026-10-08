@@ -34,6 +34,14 @@ class OrderController extends Controller
             }
         }
 
+        // Courier filter: what the courier last reported for parcels still out (updated nightly by couriers:sync).
+        $courier = (string) $request->input('courier', '');
+        if (isset(self::COURIER_FILTERS[$courier])) {
+            self::applyCourierFilter($query, $courier);
+        } else {
+            $courier = '';
+        }
+
         if ($term = trim((string) $request->input('q'))) {
             $query->where(function ($q) use ($term) {
                 $q->where('order_number', 'like', "%{$term}%")
@@ -58,7 +66,41 @@ class OrderController extends Controller
             'cancelled'            => Order::where('status', 'cancelled')->count(),
         ];
 
-        return view('admin.orders.index', compact('orders', 'status', 'counts') + ['method' => $request->input('method'), 'q' => $term]);
+        $courierCounts = [];
+        foreach (array_keys(self::COURIER_FILTERS) as $key) {
+            $courierCounts[$key] = self::applyCourierFilter(Order::query(), $key)->count();
+        }
+        $lastSync = json_decode((string) setting('courier_last_sync', ''), true) ?: null;
+        $autoSync = setting('courier_auto_sync', '1') === '1';
+        // Matches the dailyAt('21:00') schedule in routes/console.php.
+        $nextSync = now()->setTime(21, 0);
+        if ($nextSync->isPast()) {
+            $nextSync->addDay();
+        }
+
+        return view('admin.orders.index', compact('orders', 'status', 'counts', 'courier', 'courierCounts', 'lastSync', 'autoSync', 'nextSync')
+            + ['method' => $request->input('method'), 'q' => $term]);
+    }
+
+    /** Courier status groups shown above the order list. */
+    public const COURIER_FILTERS = [
+        'in_transit' => 'On the way',
+        'attention'  => 'Needs attention',
+        'unchecked'  => 'Not checked yet',
+        'delivered'  => 'Delivered by courier',
+    ];
+
+    private static function applyCourierFilter($query, string $key)
+    {
+        $booked = fn ($q) => $q->whereIn('courier_name', \App\Services\Courier\CourierStatusUpdater::PROVIDERS)->whereNotNull('courier_tracking_code');
+
+        return match ($key) {
+            'in_transit' => $booked($query)->where('status', 'shipped')
+                ->where(fn ($q) => $q->whereIn('courier_status', ['in_transit', 'unknown'])->orWhereNull('courier_status')),
+            'attention'  => $booked($query)->where('status', 'shipped')->whereIn('courier_status', \App\Services\Courier\CourierStatusUpdater::ATTENTION),
+            'unchecked'  => $booked($query)->where('status', 'shipped')->whereNull('courier_synced_at'),
+            'delivered'  => $booked($query)->where('courier_status', 'delivered'),
+        };
     }
 
     public function show(Order $order, SteadfastService $steadfast, PathaoService $pathao, RedxService $redx, Request $request)

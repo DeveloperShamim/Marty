@@ -379,6 +379,18 @@ class Order extends Model
         };
     }
 
+    /** Tailwind badge classes for the last status the courier reported (see couriers:sync). */
+    public function courierStatusBadge(): string
+    {
+        return match ($this->courier_status) {
+            'in_transit'                => 'bg-sky-50 text-sky-700 ring-1 ring-sky-200',
+            'delivered'                 => 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
+            'partial_delivered', 'hold' => 'bg-amber-50 text-amber-800 ring-1 ring-amber-200',
+            'returning', 'returned', 'cancelled' => 'bg-rose-50 text-rose-700 ring-1 ring-rose-200',
+            default                     => 'bg-gray-100 text-gray-600',
+        };
+    }
+
     public function fraudRiskLevel(): string
     {
         $score = (int) $this->fraud_score;
