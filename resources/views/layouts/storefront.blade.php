@@ -364,7 +364,7 @@
   {{-- Floating Side Quick Cart Widget: tablets and up, only once the bag has something in it.
        Phones already have the cart in the sticky header, and the cart/checkout pages don't need it. --}}
   @if(!request()->routeIs('checkout.*') && !request()->routeIs('cart.index'))
-    <button type="button" data-open-cart data-quick-cart class="{{ ($cartCount ?? 0) > 0 ? 'sm:flex' : '' }} hidden fixed right-0 top-1/2 -translate-y-1/2 z-50 flex-col items-center rounded-l-xl shadow-2xl overflow-hidden focus:outline-none bg-white border border-r-0 border-brand-500/40 min-w-[58px] sm:min-w-[72px] transition-transform active:scale-95 cursor-pointer" aria-label="Quick Cart">
+    <button type="button" data-open-cart data-quick-cart class="{{ ($cartCount ?? 0) > 0 ? '' : 'qc-empty' }} hidden sm:flex fixed right-0 top-1/2 -translate-y-1/2 z-50 flex-col items-center rounded-l-xl shadow-2xl overflow-hidden focus:outline-none bg-white border border-r-0 border-brand-500/40 min-w-[58px] sm:min-w-[72px] transition-transform active:scale-95 cursor-pointer" aria-label="Quick Cart">
       <div class="bg-brand-500 text-white p-2 sm:p-2.5 px-2.5 sm:px-3.5 flex flex-col items-center text-center w-full">
         <svg class="w-4 h-4 sm:w-5 sm:h-5 mb-0.5 sm:mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
         <span class="cart-count-text text-[10px] sm:text-xs font-black tracking-tight leading-none whitespace-nowrap">{{ ($cartCount ?? 0) }} {{ Str::plural('Item', ($cartCount ?? 0)) }}</span>

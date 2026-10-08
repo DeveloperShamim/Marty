@@ -480,3 +480,6 @@ button.gallery-thumb-btn:active,
 #chatSpeedDialIcons.is-open a {
   pointer-events: auto !important;
 }
+
+/* Side quick cart stays hidden while the bag is empty (toggled by storefront.js, no runtime Tailwind class needed) */
+[data-quick-cart].qc-empty { display: none !important; }

@@ -108,7 +108,7 @@ class CartController extends Controller
     {
         $data = $request->validate([
             'key' => ['required', 'string'],
-            'qty' => ['required', 'integer', 'min:0', 'max:3'],
+            'qty' => ['required', 'integer', 'min:0', 'max:99'], // the 3-per-item and stock limits below answer with a clear message
         ]);
 
         $lines = session('cart', []);
@@ -123,11 +123,6 @@ class CartController extends Controller
                 if ((int) $data['qty'] > $maxAllowed) {
                     $label = $sku ? "{$product->name} ({$sku->attributeLabel()})" : $product->name;
                     $message = $maxStock < 3 ? "Only {$maxStock} of \"{$label}\" available in stock." : "Maximum 3 items allowed per product variant.";
-                    if ($request->wantsJson() || $request->ajax()) {
-                        return response()->json(['ok' => false, 'message' => $message], 422);
-                    }
-
-                    return back()->withErrors(['cart' => $message]);
                     if ($request->wantsJson() || $request->ajax()) {
                         return response()->json(['ok' => false, 'message' => $message], 422);
                     }

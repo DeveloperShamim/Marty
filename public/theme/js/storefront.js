@@ -44,7 +44,7 @@
     if (window.closeLiveChatPanel) window.closeLiveChatPanel();
     const chatRoot = document.getElementById("liveChatRoot");
     if (chatRoot) chatRoot.style.visibility = "";
-    const sideCartBtn = document.querySelector("[data-open-cart]");
+    const sideCartBtn = document.querySelector("[data-quick-cart]");
     if (sideCartBtn) sideCartBtn.style.visibility = "";
     cartDrawer && cartDrawer.classList.add("translate-x-full");
     mobileMenu && mobileMenu.classList.add("-translate-x-full");
@@ -58,7 +58,7 @@
     if (window.closeLiveChatPanel) window.closeLiveChatPanel();
     const chatRoot = document.getElementById("liveChatRoot");
     if (chatRoot) chatRoot.style.visibility = "hidden";
-    const sideCartBtn = document.querySelector("[data-open-cart]");
+    const sideCartBtn = document.querySelector("[data-quick-cart]");
     if (sideCartBtn) sideCartBtn.style.visibility = "hidden";
     cartDrawer && cartDrawer.classList.remove("translate-x-full"); 
     openOverlay(); 
@@ -67,7 +67,7 @@
   function closeCart() { 
     const chatRoot = document.getElementById("liveChatRoot");
     if (chatRoot) chatRoot.style.visibility = "";
-    const sideCartBtn = document.querySelector("[data-open-cart]");
+    const sideCartBtn = document.querySelector("[data-quick-cart]");
     if (sideCartBtn) sideCartBtn.style.visibility = "";
     cartDrawer && cartDrawer.classList.add("translate-x-full"); 
     maybeClose(); 
@@ -267,7 +267,7 @@
       el.textContent = count + (count === 1 ? " Item" : " Items");
     });
     // Side quick cart only shows (tablet and up) once the bag has items
-    $$("[data-quick-cart]").forEach((el) => el.classList.toggle("sm:flex", count > 0));
+    $$("[data-quick-cart]").forEach((el) => el.classList.toggle("qc-empty", count === 0));
     $$(".cart-total").forEach((el) => (el.textContent = money(subtotal)));
 
     const list = $("#cartItems");
@@ -291,9 +291,15 @@
   function bindDrawer() {
     $$("[data-cart-inc]").forEach((b) => b.addEventListener("click", () => changeQty(b.dataset.key, (+b.dataset.qty || 1) + 1)));
     $$("[data-cart-dec]").forEach((b) => b.addEventListener("click", () => changeQty(b.dataset.key, (+b.dataset.qty || 1) - 1)));
-    $$("[data-cart-remove]").forEach((b) => b.addEventListener("click", async () => { applyCart(await api("/cart/remove", { key: b.dataset.key })); }));
+    $$("[data-cart-remove]").forEach((b) => b.addEventListener("click", async () => {
+      try { applyCart(await api("/cart/remove", { key: b.dataset.key })); } catch (err) { toast(err.message || "Could not update your cart. Please try again."); }
+    }));
   }
-  async function changeQty(key, qty) { applyCart(await api("/cart/update", { key, qty: Math.max(0, qty) })); }
+  // Stock and the 3-per-item limit come back as a message (422): show it instead of failing silently.
+  async function changeQty(key, qty) {
+    try { applyCart(await api("/cart/update", { key, qty: Math.max(0, qty) })); }
+    catch (err) { toast(err.message || "Could not update your cart. Please try again."); }
+  }
   bindDrawer();
 
   // Instant, fail-safe navigation for Cart Drawer Checkout button
@@ -1505,7 +1511,10 @@
   let toastTimer;
   function toast(msg) {
     let t = $("#toast") || $("#StyleHub-toast");
-    if (!t) { t = document.createElement("div"); t.id = "StyleHub-toast"; t.className = "fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] bg-ink text-white text-sm px-5 py-3 rounded-xl shadow-lg opacity-0 transition-opacity duration-300"; document.body.appendChild(t); }
+    if (!t) { t = document.createElement("div"); t.id = "StyleHub-toast"; t.setAttribute("role", "status");
+      // Inline styles: the toast is created after load, so it can't rely on Tailwind classes being generated for it.
+      t.style.cssText = "position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:9999;max-width:calc(100vw - 32px);width:max-content;background:var(--brand-dark,#2B1D14);color:#fff;font-size:14px;font-weight:500;line-height:1.4;text-align:center;padding:12px 18px;border-radius:14px;box-shadow:0 12px 30px -10px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .25s ease";
+      document.body.appendChild(t); }
     t.textContent = msg;
     t.style.opacity = "1";
     clearTimeout(toastTimer);
