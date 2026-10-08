@@ -55,7 +55,7 @@
   @if($editing) @method('PUT') @endif
 
   {{-- Sticky action bar: one Save, one Cancel --}}
-  <div class="sticky top-[72px] lg:top-[96px] z-10 bg-white/90 backdrop-blur-xl rounded-[20px] shadow-panel px-3 sm:px-5 py-3 flex items-center justify-between gap-3">
+  <div class="sticky top-[64px] lg:top-[80px] z-10 bg-white/90 backdrop-blur-xl rounded-[16px] shadow-panel px-3 sm:px-5 py-3 flex items-center justify-between gap-3">
     <div class="flex items-center gap-3 min-w-0">
       <a href="{{ route('admin.products.index') }}" class="h-9 w-9 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 flex items-center justify-center text-stone-500 hover:text-stone-900 shrink-0" title="Back to products" aria-label="Back to products">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
@@ -588,7 +588,7 @@
     </div>
 
     {{-- Right Sidebar Column (Sticky on Desktop: Publish Box, Organization, Badges & SEO - 4 cols on Desktop) --}}
-    <div class="order-first lg:order-none lg:col-span-4 lg:sticky lg:top-[172px] space-y-5">
+    <div class="order-first lg:order-none lg:col-span-4 lg:sticky lg:top-[150px] space-y-5">
 
       {{-- Status & storefront badges --}}
       <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 space-y-1">

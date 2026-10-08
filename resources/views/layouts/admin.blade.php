@@ -73,19 +73,18 @@
       Testing mode is on &mdash; Save, Delete, and other write actions are disabled.
     </div>
   @endif
-  <div class="admin-shell min-h-screen min-h-[100dvh] px-3 pb-6 sm:px-4 lg:px-5">
+  <div class="admin-shell min-h-screen min-h-[100dvh] px-3 pb-6 sm:px-4 lg:pl-[96px] lg:pr-5">
+    @include('admin.partials.sidebar')
     @include('admin.partials.topbar')
 
-    <div class="flex items-start gap-4 xl:gap-5 mt-3 sm:mt-4">
-      @include('admin.partials.sidebar')
-
-      <div class="admin-main flex-1 flex flex-col min-w-0 w-full">
-        {{-- Page heading: big title, optional subtitle and actions (sections "subtitle" and "page-actions") --}}
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 px-1 pt-1 pb-4 sm:pb-5">
+    <div class="mt-3 sm:mt-4">
+      <div class="admin-main flex flex-col min-w-0 w-full">
+        {{-- Page heading: title, optional subtitle and actions (sections "subtitle" and "page-actions") --}}
+        <div class="page-head flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 px-0.5 pb-3 sm:pb-4">
           <div class="min-w-0">
-            <h1 class="text-[26px] sm:text-[32px] leading-tight font-semibold tracking-tight text-gray-900 truncate">@yield('title', 'Dashboard')</h1>
+            <h1 class="text-xl sm:text-[22px] leading-tight font-semibold tracking-tight text-gray-900 truncate">@yield('title', 'Dashboard')</h1>
             @hasSection('subtitle')
-              <p class="mt-1 text-sm text-gray-500">@yield('subtitle')</p>
+              <p class="mt-0.5 text-[13px] text-gray-500">@yield('subtitle')</p>
             @endif
           </div>
           @hasSection('page-actions')
@@ -94,18 +93,18 @@
         </div>
 
         @if(session('status'))
-          <div class="pb-4">
-            <div class="flex items-center gap-2.5 bg-white text-emerald-800 text-sm font-semibold px-4 py-3 rounded-2xl shadow-panel"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span>{{ session('status') }}</div>
+          <div class="pb-3">
+            <div class="flex items-center gap-2.5 bg-white text-emerald-800 text-sm font-semibold px-3.5 py-2.5 rounded-xl shadow-panel"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-700"><svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></span>{{ session('status') }}</div>
           </div>
         @endif
         @if(session('error'))
-          <div class="pb-4">
-            <div class="flex items-center gap-2.5 bg-white text-red-700 text-sm font-semibold px-4 py-3 rounded-2xl shadow-panel"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-red-100 text-red-600 font-black text-xs">!</span>{{ session('error') }}</div>
+          <div class="pb-3">
+            <div class="flex items-center gap-2.5 bg-white text-red-700 text-sm font-semibold px-3.5 py-2.5 rounded-xl shadow-panel"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-red-100 text-red-600 font-black text-xs">!</span>{{ session('error') }}</div>
           </div>
         @endif
         @if($errors->any())
-          <div class="pb-4">
-            <div class="bg-white text-red-700 text-sm px-4 py-3 rounded-2xl shadow-panel">
+          <div class="pb-3">
+            <div class="bg-white text-red-700 text-sm px-3.5 py-2.5 rounded-xl shadow-panel">
               <ul class="list-disc list-inside">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
             </div>
           </div>

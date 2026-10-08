@@ -8,7 +8,7 @@
   <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
       <div class="flex items-center gap-2">
-        <h2 class="text-xl sm:text-2xl font-bold text-gray-900">Homepage Banners</h2>
+        <h2 class="page-title text-xl sm:text-2xl font-bold text-gray-900">Homepage Banners</h2>
         <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
           Hero &amp; Promo
         </span>

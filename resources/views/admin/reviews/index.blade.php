@@ -4,7 +4,7 @@
 @section('content')
 <div class="space-y-6">
   <div>
-    <h2 class="text-xl font-bold">Product reviews</h2>
+    <h2 class="page-title text-xl font-bold">Product reviews</h2>
     <p class="text-sm text-gray-500 mt-1">Approve or reject customer reviews. Approved reviews update product star ratings.</p>
   </div>
 

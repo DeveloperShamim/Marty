@@ -1,170 +1,151 @@
-/* StyleHub Laravel admin shell — mobile sidebar + scroll chaining */
+/* Admin shell: phone menu drawer */
 (function () {
   var sb = document.getElementById('sidebar');
   var bd = document.getElementById('backdrop');
   var btn = document.getElementById('menuBtn');
   var closeBtn = document.getElementById('sidebarClose');
-  var nav = sb ? (sb.classList.contains('sb-cards') ? sb : sb.querySelector('.sidebar-nav')) : null;
 
   function openSidebar() {
     if (!sb) return;
     sb.classList.remove('-translate-x-full');
     if (bd) bd.classList.remove('hidden');
-    document.body.classList.add('admin-sidebar-open');
+    document.body.classList.add('admin-sidebar-open', 'overflow-hidden');
+    var cur = sb.querySelector('[aria-current="page"]');
+    if (cur) cur.scrollIntoView({ block: 'center' });
   }
 
   function closeSidebar() {
     if (!sb) return;
     sb.classList.add('-translate-x-full');
     if (bd) bd.classList.add('hidden');
-    document.body.classList.remove('admin-sidebar-open');
+    document.body.classList.remove('admin-sidebar-open', 'overflow-hidden');
   }
 
   if (btn) btn.addEventListener('click', openSidebar);
   if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
   if (bd) bd.addEventListener('click', closeSidebar);
-
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') closeSidebar();
-  });
-
-  window.addEventListener('resize', function () {
-    if (window.innerWidth >= 1024) closeSidebar();
-  });
-
-  // When the pointer is over the sidebar and the nav can't scroll further
-  // (or has nothing to scroll), forward the wheel to the page.
-  if (sb) {
-    sb.addEventListener('wheel', function (e) {
-      if (document.body.classList.contains('admin-sidebar-open')) return;
-
-      var target = nav && nav.contains(e.target) ? nav : null;
-      if (!target) {
-        window.scrollBy({ top: e.deltaY, left: 0, behavior: 'auto' });
-        e.preventDefault();
-        return;
-      }
-
-      var atTop = target.scrollTop <= 0;
-      var atBottom = target.scrollTop + target.clientHeight >= target.scrollHeight - 1;
-      var scrollingDown = e.deltaY > 0;
-      var scrollingUp = e.deltaY < 0;
-
-      if ((scrollingDown && atBottom) || (scrollingUp && atTop) || target.scrollHeight <= target.clientHeight + 1) {
-        window.scrollBy({ top: e.deltaY, left: 0, behavior: 'auto' });
-        e.preventDefault();
-      }
-    }, { passive: false });
-  }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSidebar(); });
+  window.addEventListener('resize', function () { if (window.innerWidth >= 1024) closeSidebar(); });
 })();
 
-/* Sidebar: group folding, menu search, desktop icon rail */
+/* Desktop icon rail: each group button opens a flyout with its pages; Dashboard / Log out get tooltips. */
 (function () {
   var sb = document.getElementById('sidebar');
   if (!sb) return;
-  var root = document.documentElement;
-  var nav = sb.querySelector('.sidebar-nav');
-  var search = document.getElementById('sidebarSearch');
-  var empty = document.getElementById('sidebarNoResults');
   var tip = document.getElementById('sidebarTip');
-  var collapseBtn = document.getElementById('sidebarCollapse');
-  var groups = Array.prototype.slice.call(sb.querySelectorAll('.sb-group'));
+  var desktop = function () { return window.innerWidth >= 1024; };
+  var groups = Array.prototype.slice.call(sb.querySelectorAll('.sb-group')).filter(function (g) { return g.querySelector('.sb-flyout'); });
+  var openGroup = null, closeTimer = null, openTimer = null;
 
-  function store(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
+  function place(g) {
+    var btn = g.querySelector('.sb-rail-btn');
+    var fly = g.querySelector('.sb-flyout');
+    var r = btn.getBoundingClientRect();
+    var h = fly.offsetHeight || 200;
+    var top = Math.max(12, Math.min(r.top - 8, window.innerHeight - h - 12));
+    fly.style.setProperty('--fly-top', top + 'px');
+  }
+  function open(g) {
+    clearTimeout(closeTimer);
+    if (openGroup && openGroup !== g) close(openGroup);
+    openGroup = g;
+    g.classList.add('is-open');
+    place(g);
+    g.querySelector('.sb-rail-btn').setAttribute('aria-expanded', 'true');
+    if (tip) tip.classList.add('hidden');
+  }
+  function close(g) {
+    if (!g) return;
+    g.classList.remove('is-open');
+    g.querySelector('.sb-rail-btn').setAttribute('aria-expanded', 'false');
+    if (openGroup === g) openGroup = null;
+  }
 
-  // Fold / unfold a group and remember it.
-  sb.querySelectorAll('.sb-group-toggle').forEach(function (btn) {
+  groups.forEach(function (g) {
+    var btn = g.querySelector('.sb-rail-btn');
     btn.addEventListener('click', function () {
-      var g = btn.closest('.sb-group');
-      var folded = g.classList.toggle('is-folded');
-      btn.setAttribute('aria-expanded', folded ? 'false' : 'true');
-      store('admin.sidebar.folded', JSON.stringify(groups.filter(function (x) {
-        return x.classList.contains('is-folded');
-      }).map(function (x) { return x.dataset.group; })));
+      if (g.classList.contains('is-open')) close(g); else { open(g); var first = g.querySelector('.sb-flyout .sb-item'); if (first && document.activeElement === btn && !btn.matches(':hover')) first.focus(); }
     });
+    g.addEventListener('mouseenter', function () {
+      if (!desktop()) return;
+      clearTimeout(closeTimer); clearTimeout(openTimer);
+      openTimer = setTimeout(function () { open(g); }, openGroup ? 0 : 80);
+    });
+    g.addEventListener('mouseleave', function () {
+      if (!desktop()) return;
+      clearTimeout(openTimer);
+      closeTimer = setTimeout(function () { close(g); }, 180);
+    });
+    g.addEventListener('focusout', function (e) { if (!g.contains(e.relatedTarget)) close(g); });
   });
-
-  // Keep the current page visible in a long menu.
-  var current = nav && nav.querySelector('[aria-current="page"]');
-  if (current && nav.scrollHeight > nav.clientHeight) {
-    var top = current.offsetTop - nav.offsetTop;
-    if (top + current.offsetHeight > nav.clientHeight) nav.scrollTop = top - nav.clientHeight / 2;
-  }
-
-  // Search filters the menu; Enter opens the first match.
-  function hits() { return Array.prototype.slice.call(nav.querySelectorAll('.sb-item:not(.hidden)')); }
-  function filter() {
-    var q = search.value.trim().toLowerCase();
-    sb.classList.toggle('is-searching', q !== '');
-    var any = false;
-    groups.forEach(function (g) {
-      var shown = 0;
-      g.querySelectorAll('.sb-item').forEach(function (a) {
-        var ok = !q || q.split(/\s+/).every(function (w) { return a.dataset.search.indexOf(w) !== -1; });
-        a.classList.toggle('hidden', !ok);
-        a.classList.remove('is-hit');
-        if (ok) shown++;
-      });
-      g.classList.toggle('hidden', shown === 0);
-      if (shown) any = true;
-    });
-    if (q && any) hits()[0].classList.add('is-hit');
-    if (empty) empty.classList.toggle('hidden', any);
-  }
-  if (search) {
-    search.addEventListener('input', filter);
-    search.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
-        var first = hits()[0];
-        if (search.value.trim() && first) { e.preventDefault(); window.location = first.href; }
-      } else if (e.key === 'Escape') {
-        e.stopPropagation();
-        if (search.value) { search.value = ''; filter(); } else { search.blur(); }
-      }
-    });
-  }
-
-  // "/" jumps to the menu search (desktop), unless the user is typing somewhere.
+  document.addEventListener('click', function (e) { if (openGroup && !openGroup.contains(e.target)) close(openGroup); });
   document.addEventListener('keydown', function (e) {
-    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey || !search || window.innerWidth < 1024) return;
+    if (e.key === 'Escape' && openGroup) { var b = openGroup.querySelector('.sb-rail-btn'); close(openGroup); b.focus(); }
+  });
+  window.addEventListener('resize', function () { if (openGroup) close(openGroup); });
+
+  if (tip) {
+    sb.querySelectorAll('.sb-direct').forEach(function (a) {
+      a.addEventListener('mouseenter', function () {
+        if (!desktop()) return;
+        var r = a.getBoundingClientRect();
+        tip.textContent = a.dataset.label;
+        tip.style.left = (r.right + 12) + 'px';
+        tip.style.top = (r.top + r.height / 2) + 'px';
+        tip.style.transform = 'translateY(-50%)';
+        tip.classList.remove('hidden');
+      });
+      a.addEventListener('mouseleave', function () { tip.classList.add('hidden'); });
+    });
+  }
+})();
+
+/* Page search in the top bar: lists matching menu pages; Enter opens the first, "/" focuses it. */
+(function () {
+  var search = document.getElementById('sidebarSearch');
+  var box = document.getElementById('navSearchResults');
+  var sb = document.getElementById('sidebar');
+  if (!search || !box || !sb) return;
+  var pages = Array.prototype.slice.call(sb.querySelectorAll('a.sb-item')).map(function (a) {
+    var g = a.closest('.sb-group');
+    return { href: a.href, label: a.dataset.label, search: a.dataset.search || '', group: g ? g.dataset.group : '', icon: (a.querySelector('svg') || {}).outerHTML || '' };
+  });
+  var hits = [], active = 0;
+  function esc(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+  function render() {
+    var q = search.value.trim().toLowerCase();
+    if (!q) { box.classList.add('hidden'); hits = []; return; }
+    hits = pages.filter(function (p) { return q.split(/\s+/).every(function (w) { return (p.search + ' ' + p.group.toLowerCase()).indexOf(w) !== -1; }); }).slice(0, 8);
+    active = 0;
+    box.innerHTML = hits.length ? hits.map(function (p, i) {
+      return '<a href="' + p.href + '" role="option" data-i="' + i + '" class="flex items-center gap-2.5 h-9 px-2.5 rounded-xl text-[13px] text-gray-700 hover:bg-gray-100' + (i === 0 ? ' bg-gray-100 text-gray-900' : '') + '">' +
+        '<span class="text-gray-400 [&>svg]:w-4 [&>svg]:h-4">' + p.icon + '</span><span class="flex-1 truncate font-medium">' + esc(p.label) + '</span>' +
+        '<span class="text-[11px] text-gray-400">' + esc(p.group) + '</span></a>';
+    }).join('') : '<p class="px-3 py-3 text-[13px] text-gray-400">No matching pages</p>';
+    box.classList.remove('hidden');
+  }
+  function highlight() {
+    box.querySelectorAll('[data-i]').forEach(function (a) {
+      var on = +a.dataset.i === active;
+      a.classList.toggle('bg-gray-100', on); a.classList.toggle('text-gray-900', on);
+    });
+  }
+  search.addEventListener('input', render);
+  search.addEventListener('focus', render);
+  search.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowDown' && hits.length) { e.preventDefault(); active = (active + 1) % hits.length; highlight(); }
+    else if (e.key === 'ArrowUp' && hits.length) { e.preventDefault(); active = (active - 1 + hits.length) % hits.length; highlight(); }
+    else if (e.key === 'Enter' && hits[active]) { e.preventDefault(); window.location = hits[active].href; }
+    else if (e.key === 'Escape') { e.stopPropagation(); if (search.value) { search.value = ''; render(); } else search.blur(); }
+  });
+  document.addEventListener('click', function (e) { if (!box.contains(e.target) && e.target !== search) box.classList.add('hidden'); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey || window.innerWidth < 768) return;
     var t = e.target;
     if (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
     e.preventDefault();
-    if (root.classList.contains('sb-collapsed')) setCollapsed(false);
     search.focus();
   });
-
-  // Desktop icon rail.
-  function setCollapsed(on) {
-    root.classList.toggle('sb-collapsed', on);
-    store('admin.sidebar.collapsed', on ? '1' : '0');
-    if (collapseBtn) collapseBtn.setAttribute('aria-label', on ? 'Expand sidebar' : 'Collapse sidebar');
-    if (on && search && search.value) { search.value = ''; filter(); }
-    if (tip) tip.classList.add('hidden');
-  }
-  if (collapseBtn) {
-    collapseBtn.setAttribute('aria-label', root.classList.contains('sb-collapsed') ? 'Expand sidebar' : 'Collapse sidebar');
-    collapseBtn.addEventListener('click', function () { setCollapsed(!root.classList.contains('sb-collapsed')); });
-  }
-
-  // Labels as tooltips while collapsed (the nav scrolls, so CSS tooltips would be clipped).
-  if (tip) {
-    sb.addEventListener('mouseover', function (e) {
-      var a = e.target.closest('.sb-item');
-      if (!a || !root.classList.contains('sb-collapsed') || window.innerWidth < 1024) return;
-      var r = a.getBoundingClientRect();
-      var badge = a.querySelector('.sb-badge');
-      tip.textContent = a.dataset.label + (badge ? ' (' + badge.textContent.trim() + ')' : '');
-      tip.style.left = (r.right + 10) + 'px';
-      tip.style.top = (r.top + r.height / 2) + 'px';
-      tip.style.transform = 'translateY(-50%)';
-      tip.classList.remove('hidden');
-    });
-    sb.addEventListener('mouseout', function (e) {
-      if (!e.relatedTarget || !sb.contains(e.relatedTarget) || !e.relatedTarget.closest('.sb-item')) tip.classList.add('hidden');
-    });
-    if (nav) nav.addEventListener('scroll', function () { tip.classList.add('hidden'); });
-  }
 })();
 
 /* Invoice format: chosen on the order page (or on the invoice itself) and used by every invoice link. */

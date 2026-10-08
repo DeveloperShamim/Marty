@@ -44,7 +44,7 @@
       <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div class="min-w-0 space-y-1.5">
           <div class="flex flex-wrap items-center gap-2">
-            <h2 class="text-xl sm:text-2xl font-bold text-slate-900 font-mono tracking-tight">#{{ $order->order_number }}</h2>
+            <h2 class="page-title text-xl sm:text-2xl font-bold text-slate-900 font-mono tracking-tight">#{{ $order->order_number }}</h2>
             <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->statusBadge() }}">{{ ucfirst($order->status) }}</span>
             <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->paymentBadge() }}">Payment: {{ ucfirst($order->payment_status) }}</span>
           </div>

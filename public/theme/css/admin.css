@@ -21,7 +21,7 @@
 .lbl { display: block; font-size: .75rem; font-weight: 600; color: #44403c; margin-bottom: .375rem; }
 
 .card {
-  background: #fff; border: 1px solid transparent; border-radius: 22px;
+  background: #fff; border: 1px solid transparent; border-radius: 16px;
   box-shadow: 0 1px 2px rgba(28,25,23,.03), 0 12px 32px -20px rgba(28,25,23,.18);
 }
 
@@ -41,12 +41,30 @@
 .admin-main main table tbody tr:hover { background-color: #fbf9f7; }
 /* White panels across pages become floating cards: bigger radius, no hard border, soft shadow */
 .admin-main main :is(.bg-white.border.rounded-xl, .bg-white.border.rounded-2xl, .bg-white.rounded-xl.border, .bg-white.rounded-2xl.border, .card) {
-  border-color: transparent; border-radius: 22px;
+  border-color: transparent; border-radius: 16px;
   box-shadow: 0 1px 2px rgba(28,25,23,.03), 0 12px 32px -20px rgba(28,25,23,.18);
 }
 /* ...but cards nested inside a card keep a hairline instead of a second shadow */
 .admin-main main :is(.bg-white, .card) :is(.bg-white.border.rounded-xl, .bg-white.border.rounded-2xl, .bg-white.rounded-xl.border, .bg-white.rounded-2xl.border) {
-  border-color: #eeebe8; border-radius: 16px; box-shadow: none;
+  border-color: #eeebe8; border-radius: 12px; box-shadow: none;
+}
+/* One heading per page: pages that bring their own title hide the layout one. Titles stay compact. */
+.admin-main:has(main :is(h1, .page-title)) > .page-head { display: none; }
+.admin-main main :is(h1, .page-title) { font-size: 1.25rem; line-height: 1.3; font-weight: 600; letter-spacing: -.015em; }
+@media (min-width: 640px) { .admin-main main :is(h1, .page-title) { font-size: 1.375rem; } }
+/* Compact scale: big numbers and roomy padding are toned down on every page */
+.admin-main main .text-4xl { font-size: 1.75rem; line-height: 2.1rem; }
+.admin-main main .text-3xl { font-size: 1.5rem; line-height: 1.9rem; }
+@media (min-width: 640px) {
+  .admin-main main .sm\:text-4xl { font-size: 1.75rem; line-height: 2.1rem; }
+  .admin-main main .sm\:text-3xl { font-size: 1.5rem; line-height: 1.9rem; }
+  .admin-main main :is(.p-8, .sm\:p-8) { padding: 1.5rem; }
+}
+@media (max-width: 639px) {
+  .admin-main main :is(.p-5, .p-6, .p-8) { padding: 1rem; }
+  .admin-main main .text-2xl { font-size: 1.25rem; line-height: 1.75rem; }
+  /* Wide tables scroll sideways instead of squashing their columns */
+  .admin-main main .overflow-x-auto > table { min-width: 620px; }
 }
 ::selection { background: color-mix(in srgb, var(--brand) 22%, transparent); }
 
@@ -63,41 +81,32 @@
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
 
-/* ---- Sidebar ---- */
-#sidebar .sb-group.is-folded .sb-items { display: none; }
-#sidebar .sb-group.is-folded .sb-chevron { transform: rotate(-90deg); }
-#sidebar.is-searching .sb-group-toggle { pointer-events: none; }
-#sidebar.is-searching .sb-group.is-folded .sb-items { display: block; }
+/* ---- Sidebar: slim icon rail on desktop, slide-in drawer on phones ---- */
 #sidebar .sb-item.is-hit { background: #f5f5f4; color: #1c1917; }
-
-/* Desktop icon rail (toggled with the Collapse button, remembered per browser) */
 @media (min-width: 1024px) {
-  .sb-collapsed #sidebar { width: 4.25rem; }
-  .sb-collapsed #sidebar .sb-label,
-  .sb-collapsed #sidebar .sb-search,
-  .sb-collapsed #sidebar .sb-group-toggle { display: none !important; }
-  .sb-collapsed #sidebar .sb-mark,
-  .sb-collapsed #sidebar .sb-divider,
-  .sb-collapsed #sidebar .sb-dot { display: block; }
-  .sb-collapsed #sidebar .sb-group { margin-top: 0; }
-  .sb-collapsed #sidebar .sb-group.is-folded .sb-items { display: block; }
-  .sb-collapsed #sidebar .sb-head { justify-content: center; padding: 0; }
-  .sb-collapsed #sidebar .sb-item { justify-content: center; padding: 0; }
-  .sb-collapsed #sidebar .sb-user { justify-content: center; }
-  .sb-collapsed #sidebar .sb-user > a { flex: none; }
-  .sb-collapsed #sidebar .sb-collapse-icon { transform: scaleX(-1); }
-  .sb-collapsed #sidebar .sb-dot { left: auto; right: .55rem; }
+  #sidebar .sb-group { margin: 0; }
+  /* Dashboard and Log out sit on the rail as round icon buttons; their label shows as a tooltip */
+  #sidebar .sb-direct { width: 2.75rem; height: 2.75rem; padding: 0; justify-content: center; gap: 0; }
+  #sidebar .sb-direct .sb-label, #sidebar .sb-direct [data-live-badge] { display: none !important; }
+  #sidebar .sb-direct svg { width: 1.25rem; height: 1.25rem; }
+  /* Group pages open in a floating card beside the rail */
+  #sidebar .sb-flyout {
+    position: fixed; left: 92px; top: var(--fly-top, 80px); width: 236px; z-index: 60;
+    background: #fff; border-radius: 20px; padding: .625rem;
+    box-shadow: 0 1px 2px rgba(28,25,23,.05), 0 24px 48px -18px rgba(28,25,23,.35);
+    display: none;
+  }
+  #sidebar .sb-flyout::before { content: ""; position: absolute; left: -24px; top: 0; bottom: 0; width: 24px; } /* hover bridge */
+  #sidebar .sb-group.is-open .sb-flyout { display: block; animation: sb-fly-in .14s ease-out; }
+  @keyframes sb-fly-in { from { opacity: 0; transform: translateX(-6px); } }
+  #sidebar .sb-group.is-open .sb-rail-btn:not([style]) { background: #f5f5f4; color: #1c1917; }
 }
-#sidebar .sb-chevron { opacity: 0; transition: opacity .15s, transform .15s; }
-#sidebar .sb-group-toggle:hover .sb-chevron,
-#sidebar .sb-group-toggle:focus-visible .sb-chevron,
-#sidebar .sb-group.is-folded .sb-chevron { opacity: 1; }
 
 /* Pill buttons used in page headings (dashboard etc.) */
-.pill-btn { display: inline-flex; align-items: center; gap: .5rem; height: 2.75rem; padding: 0 1.125rem; border-radius: 9999px; background: #fff; color: #1c1917; font-size: .875rem; font-weight: 500; box-shadow: 0 1px 2px rgba(28,25,23,.04), 0 8px 20px -14px rgba(28,25,23,.25); transition: background-color .15s ease; }
+.pill-btn { display: inline-flex; align-items: center; gap: .5rem; height: 2.375rem; padding: 0 1rem; border-radius: 9999px; background: #fff; color: #1c1917; font-size: .8125rem; font-weight: 500; box-shadow: 0 1px 2px rgba(28,25,23,.04), 0 8px 20px -14px rgba(28,25,23,.25); transition: background-color .15s ease; }
 .pill-btn:hover { background: #fafaf9; }
-.pill-btn .pill-ico { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; margin-right: -.6rem; border-radius: 9999px; background: #f5f5f4; }
-.pill-btn-dark { background: var(--brand-dark); color: #fff; padding-left: .375rem; }
+.pill-btn .pill-ico { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; margin-right: -.6rem; border-radius: 9999px; background: #f5f5f4; }
+.pill-btn-dark { background: var(--brand-dark); color: #fff; padding-left: .3125rem; }
 .pill-btn-dark:hover { background: color-mix(in srgb, var(--brand-dark) 88%, #fff); }
-.pill-btn-dark .pill-ico { margin: 0 .125rem 0 0; width: 2.125rem; height: 2.125rem; background: rgba(255,255,255,.14); }
-.panel { background: #fff; border-radius: 24px; box-shadow: 0 1px 2px rgba(28,25,23,.03), 0 12px 32px -20px rgba(28,25,23,.18); }
+.pill-btn-dark .pill-ico { margin: 0 .125rem 0 0; width: 1.75rem; height: 1.75rem; background: rgba(255,255,255,.14); }
+.panel { background: #fff; border-radius: 18px; box-shadow: 0 1px 2px rgba(28,25,23,.03), 0 12px 32px -20px rgba(28,25,23,.18); }

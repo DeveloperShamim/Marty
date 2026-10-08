@@ -2,7 +2,7 @@
 @section('title', 'POS Cash Register')
 
 @section('content')
-<div class="h-[calc(100dvh-10.5rem)] lg:h-[calc(100vh-11.5rem)] min-h-[560px] flex flex-col bg-slate-100 rounded-[24px] shadow-panel overflow-hidden select-none">
+<div class="h-[calc(100dvh-8.5rem)] lg:h-[calc(100vh-9.75rem)] min-h-[560px] flex flex-col bg-slate-100 rounded-[18px] shadow-panel overflow-hidden select-none">
 
   {{-- Top Navigation & Mobile View Switcher --}}
   <div class="bg-slate-900 text-white px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between shadow-md shrink-0">

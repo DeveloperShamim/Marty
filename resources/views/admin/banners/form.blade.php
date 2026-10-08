@@ -18,7 +18,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
       </a>
       <div>
-        <h2 class="text-xl sm:text-2xl font-bold text-gray-900">
+        <h2 class="page-title text-xl sm:text-2xl font-bold text-gray-900">
           {{ $editing ? 'Edit Banner: ' . ($banner->title ?: 'Banner #' . $banner->id) : 'Create New Banner' }}
         </h2>
         <p class="text-xs text-gray-500 mt-0.5">Upload banner graphic, set target link URL and placement.</p>
@@ -161,7 +161,7 @@
     {{-- RIGHT COLUMN: LIVE IMAGE PREVIEW (5 cols) --}}
     <div class="lg:col-span-5 space-y-6">
 
-      <div class="card p-5 sm:p-6 bg-white sticky top-24 lg:top-[96px] shadow-sm border-gray-200 space-y-4">
+      <div class="card p-5 sm:p-6 bg-white sticky top-24 lg:top-[80px] shadow-sm border-gray-200 space-y-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>

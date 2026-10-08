@@ -2,7 +2,7 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<div class="space-y-4 sm:space-y-6 max-w-full">
+<div class="space-y-4 max-w-full">
 
   @php
     // Inventory managers see the dashboard without money or order details (App\Support\StaffAccess).
@@ -60,40 +60,40 @@
     <div class="xl:col-span-7 space-y-4 min-w-0">
       @if($canMoney)
       {{-- Headline numbers --}}
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div class="panel p-5">
+      <div class="grid grid-cols-2 gap-3 sm:gap-4">
+        <div class="panel p-3.5 sm:p-4">
           <div class="flex items-start justify-between gap-3">
-            <h2 class="text-[17px] font-medium text-gray-900">Total Sales</h2>
-            <span class="grid h-10 w-10 place-items-center rounded-full border border-gray-200 text-gray-600"><svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
+            <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Total Sales</h2>
+            <span class="hidden sm:grid h-8 w-8 place-items-center rounded-full border border-gray-200 text-gray-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></span>
           </div>
-          <div class="mt-4 flex items-center gap-2.5 flex-wrap">
-            <p class="text-[30px] sm:text-[34px] leading-none font-semibold tracking-tight text-gray-900 font-mono">{{ money($revenue) }}</p>
+          <div class="mt-2.5 sm:mt-3 flex items-center gap-x-2 gap-y-1.5 flex-wrap">
+            <p class="text-xl sm:text-[26px] leading-none font-semibold tracking-tight text-gray-900 font-mono">{{ money($revenue) }}</p>
             @if($salesTrend !== null)
               <span class="inline-flex items-center gap-0.5 h-6 px-2 rounded-full text-[11px] font-semibold {{ $salesTrend >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700' }}">{{ $salesTrend >= 0 ? '↗' : '↘' }} {{ abs($salesTrend) }}%</span>
             @endif
           </div>
-          <p class="mt-3 text-xs text-gray-500">You made <span class="font-semibold" style="color: var(--brand);">{{ money($todayRevenue) }}</span> today &middot; {{ number_format($totalSalesOrdersCount ?? $ordersCount) }} paid orders</p>
+          <p class="mt-2 text-[11px] sm:text-xs text-gray-500">You made <span class="font-semibold" style="color: var(--brand);">{{ money($todayRevenue) }}</span> today &middot; {{ number_format($totalSalesOrdersCount ?? $ordersCount) }} paid orders</p>
         </div>
-        <div class="panel p-5">
+        <div class="panel p-3.5 sm:p-4">
           <div class="flex items-start justify-between gap-3">
-            <h2 class="text-[17px] font-medium text-gray-900">Net Profit</h2>
-            <span class="grid h-10 w-10 place-items-center rounded-full border border-gray-200 text-gray-600"><svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg></span>
+            <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Net Profit</h2>
+            <span class="hidden sm:grid h-8 w-8 place-items-center rounded-full border border-gray-200 text-gray-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg></span>
           </div>
-          <div class="mt-4 flex items-center gap-2.5 flex-wrap">
-            <p class="text-[30px] sm:text-[34px] leading-none font-semibold tracking-tight font-mono {{ $netProfit < 0 ? 'text-red-600' : 'text-gray-900' }}">{{ $netProfit < 0 ? '-' : '' }}{{ money(abs($netProfit)) }}</p>
+          <div class="mt-2.5 sm:mt-3 flex items-center gap-x-2 gap-y-1.5 flex-wrap">
+            <p class="text-xl sm:text-[26px] leading-none font-semibold tracking-tight font-mono {{ $netProfit < 0 ? 'text-red-600' : 'text-gray-900' }}">{{ $netProfit < 0 ? '-' : '' }}{{ money(abs($netProfit)) }}</p>
             <span class="inline-flex items-center gap-0.5 h-6 px-2 rounded-full text-[11px] font-semibold {{ $profitMargin >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700' }}">{{ round($profitMargin, 1) }}% margin</span>
           </div>
-          <p class="mt-3 text-xs text-gray-500 truncate">Cost of goods <span class="font-semibold text-gray-700">{{ money($totalCogs) }}</span>@if($totalExpenses > 0) &middot; expenses <span class="font-semibold text-rose-600">{{ money($totalExpenses) }}</span>@endif</p>
+          <p class="mt-2 text-[11px] sm:text-xs text-gray-500 truncate">Cost of goods <span class="font-semibold text-gray-700">{{ money($totalCogs) }}</span>@if($totalExpenses > 0) &middot; expenses <span class="font-semibold text-rose-600">{{ money($totalExpenses) }}</span>@endif</p>
         </div>
       </div>
       @endif
 
       @if($canOrders)
       {{-- Order status rings --}}
-      <div class="panel p-5">
+      <div class="panel p-4">
         <div class="flex items-start justify-between gap-3">
           <div>
-            <h2 class="text-[17px] font-medium text-gray-900">Order Breakdown</h2>
+            <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Order Breakdown</h2>
             <p class="text-xs text-gray-500 mt-0.5">Share of all {{ number_format($ringTotal) }} orders by status</p>
           </div>
           <a href="{{ route('admin.orders.index') }}" class="grid h-9 w-9 place-items-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50" aria-label="Open orders"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></a>
@@ -152,15 +152,15 @@
     <div class="xl:col-span-5 grid grid-cols-1 gap-4 min-w-0">
       @if($canMoney)
       {{-- Last six months --}}
-      <div class="panel p-5 flex flex-col">
+      <div class="panel p-4 flex flex-col">
         <div class="flex items-start justify-between gap-3">
           <div>
-            <h2 class="text-[17px] font-medium text-gray-900">Sales Report</h2>
+            <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Sales Report</h2>
             <p class="text-xs text-gray-500 mt-0.5">Revenue over the last six months</p>
           </div>
           <a href="{{ route('admin.analytics.index') }}" class="grid h-9 w-9 place-items-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50" aria-label="Open analytics"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></a>
         </div>
-        <div class="mt-5 flex items-end gap-3 sm:gap-4 h-48">
+        <div class="mt-4 flex items-end gap-3 sm:gap-4 h-32 sm:h-40">
           @foreach($lastSix as $point)
             @php $h = $point['value'] > 0 ? max(10, round($point['value'] / $sixMax * 100)) : 4; @endphp
             <div class="flex-1 h-full flex flex-col items-center justify-end gap-2" title="{{ $point['full_label'] }}: {{ money($point['value']) }}">
@@ -180,15 +180,15 @@
 
       @if($canOrders)
       {{-- Delivery success gauge --}}
-      <div class="panel p-5">
+      <div class="panel p-4">
         <div class="flex items-start justify-between gap-3">
           <div>
-            <h2 class="text-[17px] font-medium text-gray-900">Delivery Success</h2>
+            <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Delivery Success</h2>
             <p class="text-xs text-gray-500 mt-0.5">Delivered vs returned parcels</p>
           </div>
           <a href="{{ route('admin.courier-scan.index') }}" class="grid h-9 w-9 place-items-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50" aria-label="Open courier scan"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></a>
         </div>
-        <div class="relative mx-auto mt-2 w-full max-w-[300px]">
+        <div class="relative mx-auto mt-2 w-full max-w-[240px]">
           <svg viewBox="0 0 200 112" class="w-full" aria-hidden="true">
             @for($k = 0; $k < $gaugeSegments; $k++)
               @php
@@ -202,7 +202,7 @@
             @endfor
           </svg>
           <div class="absolute inset-x-0 bottom-1 text-center">
-            <p class="text-[34px] leading-none font-semibold tracking-tight text-gray-900 tabular-nums">{{ $successRate }}%</p>
+            <p class="text-[26px] leading-none font-semibold tracking-tight text-gray-900 tabular-nums">{{ $successRate }}%</p>
             <p class="mt-1 text-xs text-gray-500">{{ number_format($deliveredCount ?? 0) }} delivered &middot; {{ number_format($returnedOrdersCount ?? 0) }} returned</p>
           </div>
         </div>
@@ -218,7 +218,7 @@
   </div>
 
   {{-- Main Analytics Grid: 12-Month Performance Chart & Operations Column --}}
-  <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
 
     @if($canMoney)
     {{-- Left: Revenue Trend Chart (2 cols on desktop) --}}
@@ -227,7 +227,7 @@
       $currentMonthData = $monthlySeries->firstWhere('is_current', true) ?? ['value' => 0];
       $activeSalesMonths = $monthlySeries->where('value', '>', 0)->count();
     @endphp
-    <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-6 shadow-2xs xl:col-span-2 flex flex-col justify-between space-y-5 min-w-0">
+    <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-5 shadow-2xs xl:col-span-2 flex flex-col justify-between space-y-5 min-w-0">
       
       {{-- Card Header & Filter Bar --}}
       <div class="flex items-center justify-between gap-3 border-b border-gray-100 pb-3 sm:pb-4 flex-wrap">
@@ -260,7 +260,7 @@
       <div class="flex flex-wrap items-baseline justify-between gap-2 px-1">
         <div>
           <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 block">Total 12-Month Revenue</span>
-          <p class="text-2xl sm:text-3xl font-bold text-gray-900 font-mono tracking-tight mt-0.5">{{ money($totalSeriesRevenue) }}</p>
+          <p class="text-xl sm:text-2xl font-bold text-gray-900 font-mono tracking-tight mt-0.5">{{ money($totalSeriesRevenue) }}</p>
         </div>
         <div class="text-right">
           <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold {{ $activeSalesMonths > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-gray-50 text-gray-600 border border-gray-200' }}">
@@ -283,7 +283,7 @@
           </div>
 
           {{-- Bars Container (12 months fully scaled across available width) --}}
-          <div class="relative z-10 flex items-end gap-1 sm:gap-2.5 md:gap-3.5 h-44 sm:h-56 px-0.5 sm:px-2 pb-2">
+          <div class="relative z-10 flex items-end gap-1 sm:gap-2.5 md:gap-3.5 h-36 sm:h-44 px-0.5 sm:px-2 pb-2">
             @foreach($monthlySeries as $index => $point)
               @php
                 $hasRevenue = $point['value'] > 0;
@@ -353,7 +353,7 @@
     @endif
 
     {{-- Right: Action Items & Operations (1 col on desktop) --}}
-    <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-6 shadow-2xs flex flex-col space-y-5 min-w-0">
+    <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-5 shadow-2xs flex flex-col space-y-5 min-w-0">
       
       @if($canOrders)
       {{-- Pending Payments Action Feed --}}
@@ -455,7 +455,7 @@
 
   @if($canMoney)
   {{-- Top Products Leaderboard --}}
-  <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-6 shadow-2xs space-y-4">
+  <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-5 shadow-2xs space-y-4">
     <div class="flex items-center justify-between border-b border-gray-100 pb-3">
       <div>
         <h2 class="font-bold text-sm sm:text-base text-gray-900">Top Revenue Products</h2>
@@ -574,7 +574,7 @@
 
   @if($canOrders)
   {{-- Recent Orders Activity --}}
-  <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-6 shadow-2xs space-y-4">
+  <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-5 shadow-2xs space-y-4">
     <div class="flex items-center justify-between border-b border-gray-100 pb-3">
       <div>
         <h2 class="font-bold text-sm sm:text-base text-gray-900">Recent Orders</h2>

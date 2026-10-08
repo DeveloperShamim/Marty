@@ -5,7 +5,7 @@
 <div class="space-y-4 sm:space-y-6">
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
     <div>
-      <h2 class="text-lg sm:text-xl font-extrabold text-stone-900">Products</h2>
+      <h2 class="page-title text-lg sm:text-xl font-extrabold text-stone-900">Products</h2>
       <p class="text-xs text-stone-500 mt-0.5">Manage store catalog, stock quantities, and bulk operations.</p>
     </div>
 

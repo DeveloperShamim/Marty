@@ -6,7 +6,7 @@
   <!-- Header Title & Controls -->
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 pb-4">
     <div>
-      <h2 class="text-xl sm:text-2xl font-extrabold text-ink tracking-tight flex items-center gap-2">
+      <h2 class="page-title text-xl sm:text-2xl font-extrabold text-ink tracking-tight flex items-center gap-2">
         <span>🛡️</span> Fraud Blacklist Management
       </h2>
       <p class="text-xs text-gray-500 mt-0.5">Block malicious phone numbers, IP addresses, or emails from placing orders on your store.</p>
