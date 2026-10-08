@@ -10,20 +10,22 @@
     $canOrders = \App\Support\StaffAccess::allows(auth()->user(), 'orders');
   @endphp
   {{-- Welcome & Overview Header --}}
-  <div class="bg-white rounded-2xl border border-gray-200/90 shadow-2xs p-4 sm:p-6">
-    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+  <div class="relative overflow-hidden rounded-3xl p-5 sm:p-7 text-white shadow-[0_18px_40px_-24px_rgba(28,25,23,.7)]" style="background: radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--brand) 55%, transparent) 0%, transparent 55%), linear-gradient(135deg, var(--brand-dark) 0%, color-mix(in srgb, var(--brand-dark) 82%, var(--brand)) 100%);">
+    <div class="pointer-events-none absolute -right-16 -bottom-24 h-64 w-64 rounded-full border border-white/[0.06]"></div>
+    <div class="pointer-events-none absolute -right-4 -bottom-36 h-64 w-64 rounded-full border border-white/[0.05]"></div>
+    <div class="relative flex flex-col xl:flex-row xl:items-center justify-between gap-4">
       <div class="space-y-1 min-w-0">
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 text-emerald-200 text-xs font-semibold border border-white/10">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
             Store Active
           </span>
-          <span class="text-xs text-gray-400 font-medium">&middot; {{ date('l, d M Y') }}</span>
+          <span class="text-xs text-white/50 font-medium">&middot; {{ date('l, d M Y') }}</span>
         </div>
-        <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">
+        <h1 class="text-2xl sm:text-[30px] font-extrabold tracking-tight text-white !mt-2">
           Welcome back, {{ auth()->user()->name ?? 'Admin' }}
         </h1>
-        <p class="text-xs sm:text-sm text-gray-500 max-w-2xl leading-relaxed">
+        <p class="text-xs sm:text-sm text-white/60 max-w-2xl leading-relaxed">
           Real-time summary of sales, orders, payment verifications, and store inventory.
         </p>
       </div>
@@ -31,37 +33,37 @@
       {{-- Header Quick Actions: Orders is the one solid button, the rest are quiet so the page isn't a rainbow --}}
       <div class="grid grid-cols-3 sm:flex sm:flex-wrap items-stretch gap-2 xl:justify-end xl:max-w-[560px]">
         @if(\App\Support\StaffAccess::allows(auth()->user(), 'products'))
-        <a href="{{ route('admin.products.create') }}" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        <a href="{{ route('admin.products.create') }}" class="px-2 sm:px-3.5 py-2.5 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white/[0.08] hover:bg-white/[0.16] text-white border border-white/10 transition-colors backdrop-blur-sm inline-flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
           Add Product
         </a>
         @endif
         @if(\App\Support\StaffAccess::allows(auth()->user(), 'pos'))
-        <a href="{{ route('admin.pos.index') }}" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+        <a href="{{ route('admin.pos.index') }}" class="px-2 sm:px-3.5 py-2.5 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white/[0.08] hover:bg-white/[0.16] text-white border border-white/10 transition-colors backdrop-blur-sm inline-flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
           POS Counter
         </a>
         @endif
         @if(\App\Support\StaffAccess::allows(auth()->user(), 'courier-scan'))
-        <a href="{{ route('admin.courier-scan.index') }}" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+        <a href="{{ route('admin.courier-scan.index') }}" class="px-2 sm:px-3.5 py-2.5 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white/[0.08] hover:bg-white/[0.16] text-white border border-white/10 transition-colors backdrop-blur-sm inline-flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
           Courier Scan
         </a>
         @endif
         @if(\App\Support\StaffAccess::allows(auth()->user(), 'analytics'))
-        <a href="{{ route('admin.analytics.index') }}" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        <a href="{{ route('admin.analytics.index') }}" class="px-2 sm:px-3.5 py-2.5 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white/[0.08] hover:bg-white/[0.16] text-white border border-white/10 transition-colors backdrop-blur-sm inline-flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           Analytics
         </a>
         @endif
         @if(\App\Support\StaffAccess::allows(auth()->user(), 'orders'))
-        <a href="{{ route('admin.orders.index') }}" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-bold rounded-xl bg-primary hover:bg-brand-700 text-white transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-white/90" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        <a href="{{ route('admin.orders.index') }}" class="px-2 sm:px-3.5 py-2.5 text-[11px] sm:text-xs text-center font-bold rounded-xl bg-white hover:bg-white/90 text-gray-900 transition-colors shadow-sm inline-flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-teal-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
           Orders
         </a>
         @endif
-        <a href="{{ route('home') }}" target="_blank" class="px-2 sm:px-3.5 py-2 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 transition-colors shadow-2xs inline-flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        <a href="{{ route('home') }}" target="_blank" class="px-2 sm:px-3.5 py-2.5 text-[11px] sm:text-xs text-center font-semibold rounded-xl bg-white/[0.08] hover:bg-white/[0.16] text-white border border-white/10 transition-colors backdrop-blur-sm inline-flex items-center justify-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
           Storefront
         </a>
       </div>
@@ -279,7 +281,7 @@
 
                 {{-- Bar Column --}}
                 @if($hasRevenue)
-                  <div class="w-full max-w-[18px] sm:max-w-[28px] mx-auto rounded-t-md sm:rounded-t-xl transition-all duration-300 {{ $isCurrent ? 'bg-gradient-to-t from-primary to-teal-500 shadow-sm ring-1 sm:ring-2 ring-teal-400/40' : 'bg-slate-800 hover:bg-primary transition-colors' }}" style="height: {{ $heightPercent }}%">
+                  <div class="w-full max-w-[18px] sm:max-w-[28px] mx-auto rounded-t-md sm:rounded-t-xl transition-all duration-300 {{ $isCurrent ? 'bg-gradient-to-t from-primary to-teal-500 shadow-sm ring-1 sm:ring-2 ring-teal-400/40' : 'bg-gray-800 hover:bg-primary transition-colors' }}" style="height: {{ $heightPercent }}%">
                   </div>
                 @else
                   <div class="w-2 sm:w-3 h-0.5 bg-gray-200 rounded-full mx-auto mb-0.5"></div>
