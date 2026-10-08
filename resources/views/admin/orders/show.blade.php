@@ -19,7 +19,7 @@
   .op details > summary { list-style: none; } .op details > summary::-webkit-details-marker { display: none; }
 </style>
 
-<div class="op max-w-6xl mx-auto space-y-4">
+<div class="op max-w-full space-y-4">
 
   {{-- ================= Header ================= --}}
   <section class="card overflow-hidden">
@@ -29,7 +29,7 @@
           <x-oi name="arrow-left" class="w-3.5 h-3.5" /> All orders
         </a>
         <details class="relative">
-          <summary class="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 cursor-pointer" title="More actions">
+          <summary class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 cursor-pointer" title="More actions">
             <x-oi name="more" /><span class="sr-only">More actions</span>
           </summary>
           <div class="{{ $menu }}">
@@ -44,9 +44,9 @@
       <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
         <div class="min-w-0 space-y-1.5">
           <div class="flex flex-wrap items-center gap-2">
-            <h2 class="page-title text-xl sm:text-2xl font-bold text-slate-900 font-mono tracking-tight">#{{ $order->order_number }}</h2>
-            <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->statusBadge() }}">{{ ucfirst($order->status) }}</span>
-            <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->paymentBadge() }}">Payment: {{ ucfirst($order->payment_status) }}</span>
+            <h2 class="page-title text-lg sm:text-xl font-semibold text-slate-900 tracking-tight">#{{ $order->order_number }}</h2>
+            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full {{ $order->statusBadge() }}">{{ ucfirst($order->status) }}</span>
+            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full {{ $order->paymentBadge() }}">Payment {{ ucfirst($order->payment_status) }}</span>
           </div>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
             <span class="inline-flex items-center gap-1.5" title="{{ $order->created_at->diffForHumans() }}"><x-oi name="calendar" class="w-3.5 h-3.5" />{{ $order->created_at->format('d M Y, g:i A') }}</span>
@@ -55,13 +55,13 @@
           </div>
         </div>
         <div class="sm:text-right shrink-0">
-          <p class="text-[11px] font-medium uppercase tracking-wider text-slate-400">Total · {{ $qty }} {{ \Illuminate\Support\Str::plural('item', $qty) }}</p>
-          <p class="text-2xl font-bold text-slate-900 font-mono leading-tight">{{ money($order->total) }}</p>
+          <p class="text-xs text-slate-500">Total · {{ $qty }} {{ \Illuminate\Support\Str::plural('item', $qty) }}</p>
+          <p class="text-xl font-semibold text-slate-900 tabular-nums leading-tight">{{ money($order->total) }}</p>
         </div>
       </div>
 
       @if($order->auto_confirmed_reason)
-        <p class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 ring-1 ring-emerald-200 rounded-full px-2.5 py-1">
+        <p class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 rounded-full px-2.5 py-1">
           <x-oi name="zap" class="w-3.5 h-3.5" /> Auto-confirmed: {{ $order->auto_confirmed_reason }}
         </p>
       @endif
@@ -75,18 +75,18 @@
             @php $i = $loop->index; $done = $i < $stepIndex; $current = $i === $stepIndex; @endphp
             <li class="relative flex flex-col items-center text-center">
               @if(! $loop->first)
-                <span class="absolute top-3 right-1/2 w-full h-0.5 -z-0 {{ $i <= $stepIndex ? 'bg-brand-600' : 'bg-slate-200' }}" aria-hidden="true"></span>
+                <span class="absolute top-2.5 right-1/2 w-full h-0.5 -z-0 {{ $i <= $stepIndex ? 'bg-brand-600' : 'bg-slate-200' }}" aria-hidden="true"></span>
               @endif
-              <span class="relative z-10 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold
+              <span class="relative z-10 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-semibold
                 {{ $done ? 'bg-brand-600 text-white' : ($current ? 'bg-white text-brand-700 ring-2 ring-brand-600' : 'bg-white text-slate-400 ring-1 ring-slate-300') }}">
-                @if($done)<x-oi name="check" class="w-3.5 h-3.5" />@else{{ $i + 1 }}@endif
+                @if($done)<x-oi name="check" class="w-3 h-3" />@else{{ $i + 1 }}@endif
               </span>
-              <span class="mt-1.5 text-[10px] sm:text-xs {{ $current ? 'font-semibold text-slate-900' : 'text-slate-500' }}">{{ $label }}</span>
+              <span class="mt-1 text-[10px] sm:text-xs {{ $current ? 'font-semibold text-slate-900' : 'text-slate-500' }}">{{ $label }}</span>
             </li>
           @endforeach
         </ol>
       @else
-        <div class="flex items-center gap-2 rounded-xl bg-rose-50 ring-1 ring-rose-200 px-3 py-2 text-sm text-rose-700">
+        <div class="flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">
           <x-oi name="{{ $order->status === 'returned' ? 'undo' : 'x-circle' }}" />
           <span>This order was <b>{{ $order->status }}</b>.</span>
         </div>
@@ -95,7 +95,7 @@
 
     {{-- Next step --}}
     @if($order->isAwaitingReview())
-      <div class="mx-4 sm:mx-5 mb-4 rounded-xl bg-amber-50 ring-1 ring-amber-200 p-3 sm:p-4 flex flex-col md:flex-row md:items-center gap-3">
+      <div class="mx-4 sm:mx-5 mb-4 rounded-2xl bg-amber-50 p-3 sm:p-4 flex flex-col md:flex-row md:items-center gap-3">
         <div class="flex items-start gap-2.5 min-w-0 flex-1">
           <span class="w-8 h-8 shrink-0 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center"><x-oi name="{{ $isCod ? 'phone' : 'card' }}" /></span>
           <div class="min-w-0">
@@ -112,11 +112,11 @@
         <div class="grid grid-cols-2 md:flex gap-2 shrink-0">
           <form method="POST" action="{{ route('admin.orders.verify', $order) }}">
             @csrf
-            <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2.5 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition cursor-pointer whitespace-nowrap"><x-oi name="check" /> {{ $order->acceptLabel() }}</button>
+            <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 h-9 px-3 sm:px-4 text-[13px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-full transition cursor-pointer whitespace-nowrap"><x-oi name="check" /> {{ $order->acceptLabel() }}</button>
           </form>
           <form method="POST" action="{{ route('admin.orders.reject', $order) }}" onsubmit="return confirm('{{ $isCod ? 'Reject this order?' : 'Reject this payment?' }}')">
             @csrf
-            <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2.5 text-sm font-semibold bg-white text-rose-600 ring-1 ring-rose-200 hover:bg-rose-50 rounded-xl transition cursor-pointer whitespace-nowrap"><x-oi name="x" /> {{ $isCod ? 'Reject order' : 'Reject payment' }}</button>
+            <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 h-9 px-3 sm:px-4 text-[13px] font-semibold bg-white text-rose-700 hover:bg-rose-100 rounded-full transition cursor-pointer whitespace-nowrap"><x-oi name="x" /> {{ $isCod ? 'Reject order' : 'Reject payment' }}</button>
           </form>
         </div>
       </div>
@@ -127,13 +127,13 @@
       {{-- Invoice format is remembered per browser (admin-shell.js) and applied to every invoice link. --}}
       @php $short = ['a4' => 'A4', 'half' => 'Half A4', 'thermal' => '80mm', 'thermal58' => '58mm']; @endphp
       <div class="flex gap-2 w-full sm:w-auto">
-        <div class="flex-1 sm:flex-none flex items-stretch rounded-lg ring-1 ring-slate-300 bg-white overflow-hidden min-w-0">
-          <a href="{{ route('admin.orders.invoice', ['order' => $order, 'print' => 1]) }}" target="_blank" data-invoice-link data-print-link data-print-warning="{{ $order->printWarning('invoice') }}" class="flex-1 inline-flex items-center justify-center gap-1.5 pl-3 pr-2 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50 whitespace-nowrap">
+        <div class="flex-1 sm:flex-none flex items-stretch h-9 rounded-full ring-1 ring-slate-200 bg-white overflow-hidden min-w-0">
+          <a href="{{ route('admin.orders.invoice', ['order' => $order, 'print' => 1]) }}" target="_blank" data-invoice-link data-print-link data-print-warning="{{ $order->printWarning('invoice') }}" class="flex-1 inline-flex items-center justify-center gap-1.5 pl-3.5 pr-2 text-[13px] font-medium text-slate-800 hover:bg-slate-50 whitespace-nowrap">
             <x-oi name="printer" /> Invoice
           </a>
           <label class="shrink-0 flex items-center pr-2 border-l border-slate-200 bg-slate-50 hover:bg-slate-100 cursor-pointer" title="Invoice size">
             <span class="sr-only">Invoice size</span>
-            <select id="invoiceFormat" data-invoice-format class="appearance-none bg-transparent border-0 pl-2.5 pr-1 py-2 text-xs font-semibold text-slate-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-600 cursor-pointer">
+            <select id="invoiceFormat" data-invoice-format class="appearance-none bg-transparent border-0 pl-2.5 pr-1 py-0 text-xs font-medium text-slate-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-600 cursor-pointer">
               @foreach(\App\Http\Controllers\Admin\OrderController::INVOICE_FORMATS as $key => $label)
                 <option value="{{ $key }}" title="{{ $label }}">{{ $short[$key] ?? $label }}</option>
               @endforeach
@@ -141,7 +141,7 @@
             <x-oi name="chevron-down" class="!w-3 !h-3 text-slate-400 pointer-events-none" />
           </label>
         </div>
-        <a href="{{ route('admin.orders.labels', ['orders' => [$order->order_number], 'print' => 1]) }}" target="_blank" data-print-link data-print-warning="{{ $order->printWarning('label') }}" class="shrink-0 inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium text-slate-800 bg-white ring-1 ring-slate-300 hover:bg-slate-50 rounded-lg whitespace-nowrap">
+        <a href="{{ route('admin.orders.labels', ['orders' => [$order->order_number], 'print' => 1]) }}" target="_blank" data-print-link data-print-warning="{{ $order->printWarning('label') }}" class="shrink-0 inline-flex items-center justify-center gap-1.5 h-9 px-4 text-[13px] font-medium text-slate-800 bg-white ring-1 ring-slate-200 hover:bg-slate-50 rounded-full whitespace-nowrap">
           <x-oi name="barcode" /> Label
         </a>
       </div>
@@ -167,9 +167,9 @@
         <div class="{{ $head }}">
           <h3 class="{{ $title }}"><x-oi name="user" class="w-4 h-4 text-slate-400" /> Customer</h3>
           <div class="flex items-center gap-1.5">
-            <button type="button" onclick="openEditCustomerModal()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 rounded-lg cursor-pointer"><x-oi name="pencil" class="w-3.5 h-3.5" /> Edit</button>
+            <button type="button" onclick="openEditCustomerModal()" class="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full cursor-pointer"><x-oi name="pencil" class="w-3.5 h-3.5" /> Edit</button>
             <details class="relative">
-              <summary class="w-8 h-8 rounded-lg ring-1 ring-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 cursor-pointer" title="Block customer"><x-oi name="more" /><span class="sr-only">More</span></summary>
+              <summary class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 cursor-pointer" title="Block customer"><x-oi name="more" /><span class="sr-only">More</span></summary>
               <div class="{{ $menu }}">
                 <form method="POST" action="{{ route('admin.blacklist.store') }}">
                   @csrf
@@ -195,7 +195,7 @@
         <div class="p-4 sm:p-5 grid gap-4 md:grid-cols-2">
           <div class="min-w-0 space-y-3">
             <div class="flex items-center gap-3 min-w-0">
-              <span class="w-10 h-10 shrink-0 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center text-sm font-bold">{{ $initials ?: '?' }}</span>
+              <span class="w-10 h-10 shrink-0 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center text-sm font-semibold">{{ $initials ?: '?' }}</span>
               <div class="min-w-0">
                 <p class="font-semibold text-slate-900 break-words">{{ $order->customer_name }}</p>
                 @if($order->customer_email)
@@ -204,8 +204,8 @@
               </div>
             </div>
             <div class="grid grid-cols-[1fr_auto] sm:flex gap-2">
-              <a href="tel:{{ $order->customer_phone }}" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-900 hover:bg-slate-700 text-white text-sm font-medium font-mono"><x-oi name="phone" class="w-3.5 h-3.5" /> {{ $order->customer_phone }}</a>
-              <a href="https://wa.me/{{ $waPhone }}" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg ring-1 ring-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-medium"><x-oi name="chat" class="w-3.5 h-3.5" /> WhatsApp</a>
+              <a href="tel:{{ $order->customer_phone }}" class="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-full text-white text-[13px] font-medium tabular-nums" style="background: var(--brand-dark);"><x-oi name="phone" class="w-3.5 h-3.5" /> {{ $order->customer_phone }}</a>
+              <a href="https://wa.me/{{ $waPhone }}" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[13px] font-medium"><x-oi name="chat" class="w-3.5 h-3.5" /> WhatsApp</a>
             </div>
           </div>
           <div class="flex items-start gap-3 min-w-0 rounded-xl bg-slate-50 p-3">
@@ -228,7 +228,7 @@
           @foreach($order->items as $item)
             <li class="px-4 sm:px-5 py-3.5 space-y-3">
               <div class="flex items-start gap-3">
-                <img src="{{ $item->imageUrl() }}" class="h-14 w-14 object-cover bg-slate-100 rounded-xl ring-1 ring-slate-200 shrink-0" alt="{{ $item->product_name }}">
+                <img src="{{ $item->imageUrl() }}" class="h-12 w-12 object-cover bg-slate-100 rounded-xl shrink-0" alt="{{ $item->product_name }}">
                 <div class="flex-1 min-w-0">
                   <div class="flex items-start justify-between gap-3">
                     <p class="text-sm font-medium text-slate-900 leading-snug break-words">{{ $item->product_name }}</p>
@@ -291,7 +291,7 @@
           @endif
           <div class="flex justify-between items-center gap-3 pt-2 mt-1 border-t border-slate-100">
             <dt class="font-semibold text-slate-900">Total to collect</dt>
-            <dd class="text-lg font-bold text-slate-900 font-mono">{{ money($order->total) }}</dd>
+            <dd class="text-base font-semibold text-slate-900 tabular-nums">{{ money($order->total) }}</dd>
           </div>
         </dl>
 
@@ -329,7 +329,7 @@
             <form method="POST" action="{{ route('admin.orders.switch-to-cod', $order) }}"
                   onsubmit="return confirm('Money not received? The order becomes cash on delivery{{ $order->free_delivery_reason === 'online_payment' ? ' and the ' . money($order->shipping_waived) . ' delivery charge is added back' : '' }}.')">
               @csrf
-              <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-white text-slate-700 ring-1 ring-slate-300 hover:bg-slate-50 rounded-lg transition cursor-pointer">
+              <button type="submit" class="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 rounded-full transition cursor-pointer">
                 <x-oi name="cash" class="w-3.5 h-3.5" /> Payment not received: switch to cash on delivery
               </button>
               @if($order->free_delivery_reason === 'online_payment')
@@ -373,7 +373,7 @@
             <textarea id="internalNote" name="internal_note" rows="2" class="inp text-sm" placeholder="e.g. Call before delivery">{{ $order->internal_note }}</textarea>
             <p class="text-[11px] text-slate-500 mt-1">Printed on the invoice and sent to the courier. Private notes go in Calls &amp; staff notes.</p>
           </div>
-          <button type="submit" class="w-full btn-primary py-2.5">Save changes</button>
+          <button type="submit" class="w-full h-10 rounded-full text-white text-[13px] font-semibold" style="background: var(--brand-dark);">Save changes</button>
         </div>
       </form>
 
@@ -383,7 +383,7 @@
       <section class="card max-lg:order-5">
         <div class="{{ $head }}">
           <h3 class="{{ $title }}"><x-oi name="truck" class="w-4 h-4 text-slate-400" /> Courier</h3>
-          <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->isDispatchedToCourier() ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-slate-100 text-slate-600' }}">{{ $order->isDispatchedToCourier() ? 'Sent' : 'Not sent' }}</span>
+          <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->isDispatchedToCourier() ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">{{ $order->isDispatchedToCourier() ? 'Sent' : 'Not sent' }}</span>
         </div>
         <div class="p-4 sm:p-5 space-y-3 text-sm">
           @if($order->isDispatchedToCourier())
@@ -424,7 +424,7 @@
               </div>
             @endif
             @if($order->courierTrackingUrl())
-              <a href="{{ $order->courierTrackingUrl() }}" target="_blank" rel="noopener" class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg ring-1 ring-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50">
+              <a href="{{ $order->courierTrackingUrl() }}" target="_blank" rel="noopener" class="flex items-center justify-center gap-1.5 h-9 px-3 rounded-full bg-slate-100 hover:bg-slate-200 text-[13px] font-medium text-slate-800">
                 Track on {{ $order->courierLabel() }} <x-oi name="external" class="w-3.5 h-3.5" />
               </a>
             @endif
@@ -437,7 +437,7 @@
                   @if($info['configured'])
                     <form method="POST" action="{{ route('admin.orders.dispatch-courier', [$order, $key]) }}">
                       @csrf
-                      <button type="submit" class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg ring-1 ring-slate-200 hover:ring-brand-600 hover:bg-brand-50/40 text-sm font-medium text-slate-800 transition cursor-pointer group">
+                      <button type="submit" class="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl ring-1 ring-slate-200 hover:ring-brand-600 hover:bg-brand-50/40 text-sm font-medium text-slate-800 transition cursor-pointer group">
                         <span class="inline-flex items-center gap-2"><x-oi name="package" class="w-4 h-4 text-slate-400" /><span>{{ $info['name'] }}</span></span>
                         <span class="text-brand-700 text-xs group-hover:translate-x-0.5 transition-transform">Send →</span>
                       </button>
@@ -457,7 +457,7 @@
         <section class="card max-lg:order-6">
           <div class="{{ $head }}">
             <h3 class="{{ $title }}"><x-oi name="undo" class="w-4 h-4 text-slate-400" /> Return</h3>
-            <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->return_restocked ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200' : 'bg-amber-50 text-amber-800 ring-1 ring-amber-200' }}">{{ $order->return_restocked ? 'Restocked' : 'Not restocked' }}</span>
+            <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->return_restocked ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' }}">{{ $order->return_restocked ? 'Restocked' : 'Not restocked' }}</span>
           </div>
           <dl class="p-4 sm:p-5 space-y-2 text-sm">
             <div class="flex items-center justify-between gap-3"><dt class="text-slate-500">Returned</dt><dd class="text-slate-900 text-right">{{ $order->courier_returned_at ? $order->courier_returned_at->format('d M Y, g:i A') : 'Recorded' }}</dd></div>
@@ -476,84 +476,75 @@
 </div>
 
 <!-- Edit Customer Details Modal -->
-<div id="editCustomerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs">
-  <div class="bg-white rounded-3xl shadow-2xl border border-stone-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-    <div class="flex items-center justify-between px-6 py-4 border-b border-stone-100 bg-stone-50/70">
-      <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-2xl bg-brand-50 text-brand-700 flex items-center justify-center font-bold text-base border border-brand-100 shadow-2xs">
-          👤
-        </div>
-        <div>
-          <h3 class="font-black text-stone-900 text-sm sm:text-base">Edit Customer Details</h3>
-          <p class="text-[11px] text-stone-500 font-medium">Update recipient contact and delivery location</p>
-        </div>
+<div id="editCustomerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950/50">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
+    <div class="flex items-start justify-between gap-3 px-5 pt-5">
+      <div>
+        <h3 class="text-[15px] font-semibold text-gray-900">Edit customer details</h3>
+        <p class="text-xs text-gray-500 mt-0.5">Recipient contact and delivery address.</p>
       </div>
-      <button type="button" onclick="closeEditCustomerModal()" class="w-8 h-8 rounded-xl hover:bg-stone-200/60 flex items-center justify-center text-stone-400 hover:text-stone-700 font-bold transition cursor-pointer">
-        ✕
+      <button type="button" onclick="closeEditCustomerModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 shrink-0 cursor-pointer" aria-label="Close">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
       </button>
     </div>
 
-    <form method="POST" action="{{ route('admin.orders.update-customer', $order) }}" class="p-6 space-y-4">
+    <form method="POST" action="{{ route('admin.orders.update-customer', $order) }}" class="p-5 space-y-3">
       @csrf
       @method('PATCH')
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label class="block text-[11px] font-black text-stone-700 mb-1">Recipient Name <span class="text-rose-500">*</span></label>
-          <input type="text" name="customer_name" required value="{{ old('customer_name', $order->customer_name) }}" class="w-full text-xs font-bold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" placeholder="Full name" />
+          <label class="lbl">Recipient name <span class="text-rose-500">*</span></label>
+          <input type="text" name="customer_name" required value="{{ old('customer_name', $order->customer_name) }}" class="w-full h-10 rounded-xl border border-gray-200 px-3.5 text-sm" placeholder="Full name" />
           @error('customer_name')
-            <p class="text-rose-600 text-[10px] font-bold mt-1">{{ $message }}</p>
+            <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
           @enderror
         </div>
         <div>
-          <label class="block text-[11px] font-black text-stone-700 mb-1">Phone Number <span class="text-rose-500">*</span></label>
-          <input type="text" name="customer_phone" required value="{{ old('customer_phone', $order->customer_phone) }}" class="w-full text-xs font-mono font-bold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" placeholder="01XXXXXXXXX" />
+          <label class="lbl">Phone <span class="text-rose-500">*</span></label>
+          <input type="text" name="customer_phone" required value="{{ old('customer_phone', $order->customer_phone) }}" class="w-full h-10 rounded-xl border border-gray-200 px-3.5 text-sm tabular-nums" placeholder="01XXXXXXXXX" />
           @error('customer_phone')
-            <p class="text-rose-600 text-[10px] font-bold mt-1">{{ $message }}</p>
+            <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
           @enderror
         </div>
       </div>
 
       <div>
-        <label class="block text-[11px] font-black text-stone-700 mb-1">Email Address <span class="text-stone-400 font-normal">(Optional)</span></label>
-        <input type="email" name="customer_email" value="{{ old('customer_email', $order->customer_email) }}" class="w-full text-xs font-medium px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" placeholder="customer@example.com" />
+        <label class="lbl">Email <span class="text-gray-400 font-normal">(optional)</span></label>
+        <input type="email" name="customer_email" value="{{ old('customer_email', $order->customer_email) }}" class="w-full h-10 rounded-xl border border-gray-200 px-3.5 text-sm" placeholder="customer@example.com" />
         @error('customer_email')
-          <p class="text-rose-600 text-[10px] font-bold mt-1">{{ $message }}</p>
+          <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
         @enderror
       </div>
 
       <div>
-        <label class="block text-[11px] font-black text-stone-700 mb-1">Delivery Address <span class="text-rose-500">*</span></label>
-        <textarea name="shipping_address" required rows="2" class="w-full text-xs font-semibold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" placeholder="House, Road, Area, Landmark">{{ old('shipping_address', $order->shipping_address) }}</textarea>
+        <label class="lbl">Delivery address <span class="text-rose-500">*</span></label>
+        <textarea name="shipping_address" required rows="2" class="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm" placeholder="House, road, area, landmark">{{ old('shipping_address', $order->shipping_address) }}</textarea>
         @error('shipping_address')
-          <p class="text-rose-600 text-[10px] font-bold mt-1">{{ $message }}</p>
+          <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
         @enderror
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label class="block text-[11px] font-black text-stone-700 mb-1">City / District <span class="text-rose-500">*</span></label>
-          <input type="text" name="city" required value="{{ old('city', $order->city) }}" class="w-full text-xs font-bold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" placeholder="e.g. Dhaka, Chittagong" />
+          <label class="lbl">City or district <span class="text-rose-500">*</span></label>
+          <input type="text" name="city" required value="{{ old('city', $order->city) }}" class="w-full h-10 rounded-xl border border-gray-200 px-3.5 text-sm" placeholder="e.g. Dhaka, Chittagong" />
           @error('city')
-            <p class="text-rose-600 text-[10px] font-bold mt-1">{{ $message }}</p>
+            <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
           @enderror
         </div>
         <div>
-          <label class="block text-[11px] font-black text-stone-700 mb-1">Postal Code <span class="text-stone-400 font-normal">(Optional)</span></label>
-          <input type="text" name="postal_code" value="{{ old('postal_code', $order->postal_code) }}" class="w-full text-xs font-mono font-bold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" placeholder="e.g. 1212" />
+          <label class="lbl">Postal code <span class="text-gray-400 font-normal">(optional)</span></label>
+          <input type="text" name="postal_code" value="{{ old('postal_code', $order->postal_code) }}" class="w-full h-10 rounded-xl border border-gray-200 px-3.5 text-sm tabular-nums" placeholder="e.g. 1212" />
           @error('postal_code')
-            <p class="text-rose-600 text-[10px] font-bold mt-1">{{ $message }}</p>
+            <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
           @enderror
         </div>
       </div>
 
-      <div class="flex items-center justify-end gap-2.5 pt-3.5 border-t border-stone-100">
-        <button type="button" onclick="closeEditCustomerModal()" class="px-4 py-2.5 rounded-xl border border-stone-200 text-stone-600 font-extrabold text-xs hover:bg-stone-50 transition cursor-pointer">
-          Cancel
-        </button>
-        <button type="submit" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-black text-xs shadow-md transition cursor-pointer flex items-center gap-1.5">
-          <span>💾</span> Save Customer Details
-        </button>
+      <div class="flex items-center justify-end gap-2 pt-1">
+        <button type="button" onclick="closeEditCustomerModal()" class="h-9 px-3.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-[13px] font-medium cursor-pointer">Cancel</button>
+        <button type="submit" class="h-9 px-4 rounded-full text-white text-[13px] font-semibold cursor-pointer" style="background: var(--brand-dark);">Save details</button>
       </div>
     </form>
   </div>

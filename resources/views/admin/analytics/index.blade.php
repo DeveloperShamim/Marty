@@ -1,341 +1,272 @@
 @extends('layouts.admin')
-@section('title', 'Sales & Profit Analytics')
+@section('title', 'Analytics')
+@section('subtitle', 'Revenue, product cost, profit, order value and courier losses.')
+
+@section('page-actions')
+  <a href="{{ route('admin.analytics.export', request()->all()) }}" class="pill-btn">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+    Export CSV
+  </a>
+@endsection
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-4">
 
-  {{-- Page Header & Filters --}}
-  <div class="bg-white rounded-2xl border border-gray-200/90 shadow-2xs p-5 sm:p-6">
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="p-2 rounded-xl bg-emerald-50 text-emerald-700">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-          </span>
-          <div>
-            <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">Sales &amp; Profit Analytics</h1>
-            <p class="text-xs sm:text-sm text-gray-500">Real-time revenue, COGS, net profit, AOV and courier financial impact</p>
-          </div>
-        </div>
-      </div>
-
-      {{-- Filters Form --}}
-      <form action="{{ route('admin.analytics.index') }}" method="GET" class="flex items-center gap-2 flex-wrap" id="analyticsFilterForm">
-        
-        {{-- Channel Filter --}}
-        <select name="channel" onchange="this.form.submit()" class="text-xs font-semibold px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:border-brand-500">
-          <option value="all" @selected($channel === 'all')>All Channels</option>
-          <option value="online" @selected($channel === 'online')>🌐 Online Store</option>
-          <option value="pos" @selected($channel === 'pos')>🖥️ POS Counter</option>
-        </select>
-
-        {{-- Date Range Preset --}}
-        <select name="range" id="rangeSelect" onchange="handleRangeChange(this.value)" class="text-xs font-bold px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:border-brand-500">
-          <option value="today" @selected($range === 'today')>Today</option>
-          <option value="yesterday" @selected($range === 'yesterday')>Yesterday</option>
-          <option value="last_7_days" @selected($range === 'last_7_days')>Last 7 Days</option>
-          <option value="last_30_days" @selected($range === 'last_30_days')>Last 30 Days</option>
-          <option value="this_month" @selected($range === 'this_month')>This Month</option>
-          <option value="last_month" @selected($range === 'last_month')>Last Month</option>
-          <option value="this_year" @selected($range === 'this_year')>This Year</option>
-          <option value="custom" @selected($range === 'custom')>Custom Date Range...</option>
-        </select>
-
-        {{-- Custom Date Inputs (hidden unless custom selected) --}}
-        <div id="customDateWrap" class="{{ $range === 'custom' ? 'flex' : 'hidden' }} items-center gap-1.5">
-          <input type="date" name="start_date" value="{{ request('start_date', $startDate->format('Y-m-d')) }}" class="text-xs px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
-          <span class="text-xs text-gray-400">to</span>
-          <input type="date" name="end_date" value="{{ request('end_date', $endDate->format('Y-m-d')) }}" class="text-xs px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
-          <button type="submit" class="px-3 py-1.5 bg-brand-600 text-white text-xs font-bold rounded-lg hover:bg-brand-700">Apply</button>
-        </div>
-
-        {{-- Export CSV Button --}}
-        <a href="{{ route('admin.analytics.export', request()->all()) }}" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-gray-900 hover:bg-black text-white shadow-2xs transition-colors flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          Export CSV
-        </a>
-
-      </form>
+  {{-- Filters --}}
+  <form action="{{ route('admin.analytics.index') }}" method="GET" class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-wrap" id="analyticsFilterForm">
+    <div class="grid grid-cols-2 sm:flex items-center gap-2">
+      <label class="sr-only" for="channelSelect">Sales channel</label>
+      <select name="channel" id="channelSelect" onchange="this.form.submit()" class="h-10 rounded-full bg-white shadow-panel border-transparent px-4 text-sm text-gray-800 cursor-pointer">
+        <option value="all" @selected($channel === 'all')>All channels</option>
+        <option value="online" @selected($channel === 'online')>Online store</option>
+        <option value="pos" @selected($channel === 'pos')>POS counter</option>
+      </select>
+      <label class="sr-only" for="rangeSelect">Date range</label>
+      <select name="range" id="rangeSelect" onchange="handleRangeChange(this.value)" class="h-10 rounded-full bg-white shadow-panel border-transparent px-4 text-sm text-gray-800 cursor-pointer">
+        <option value="today" @selected($range === 'today')>Today</option>
+        <option value="yesterday" @selected($range === 'yesterday')>Yesterday</option>
+        <option value="last_7_days" @selected($range === 'last_7_days')>Last 7 days</option>
+        <option value="last_30_days" @selected($range === 'last_30_days')>Last 30 days</option>
+        <option value="this_month" @selected($range === 'this_month')>This month</option>
+        <option value="last_month" @selected($range === 'last_month')>Last month</option>
+        <option value="this_year" @selected($range === 'this_year')>This year</option>
+        <option value="custom" @selected($range === 'custom')>Custom range</option>
+      </select>
     </div>
 
-    <div class="mt-2 text-xs font-semibold text-brand-700 flex items-center gap-1.5">
-      <span class="w-2 h-2 rounded-full bg-brand-500"></span>
-      Showing report for: <strong>{{ $rangeLabel }}</strong>
+    <div id="customDateWrap" class="{{ $range === 'custom' ? 'flex' : 'hidden' }} items-center gap-1.5 flex-wrap">
+      <input type="date" name="start_date" value="{{ request('start_date', $startDate->format('Y-m-d')) }}" class="h-10 rounded-full bg-white shadow-panel border-transparent px-3.5 text-sm" aria-label="Start date">
+      <span class="text-xs text-gray-500">to</span>
+      <input type="date" name="end_date" value="{{ request('end_date', $endDate->format('Y-m-d')) }}" class="h-10 rounded-full bg-white shadow-panel border-transparent px-3.5 text-sm" aria-label="End date">
+      <button type="submit" class="h-10 px-4 rounded-full text-white text-[13px] font-semibold" style="background: var(--brand-dark);">Apply</button>
+    </div>
+
+    <p class="text-xs text-gray-500 sm:ml-auto">Showing <span class="font-medium text-gray-800">{{ $rangeLabel }}</span></p>
+  </form>
+
+  {{-- Primary stats --}}
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div class="panel p-3.5 sm:p-4 min-w-0">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-xs text-gray-500">Gross sales</span>
+        <span class="grid h-8 w-8 place-items-center rounded-xl bg-emerald-50 text-emerald-700 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
+        </span>
+      </div>
+      <p class="mt-1 text-lg sm:text-xl font-semibold text-gray-900 tabular-nums truncate">৳{{ number_format($grossRevenue, 2) }}</p>
+      <p class="text-[11px] text-gray-400 mt-0.5">{{ $totalOrdersCount }} confirmed orders</p>
+    </div>
+    <div class="panel p-3.5 sm:p-4 min-w-0">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-xs text-gray-500">Product cost</span>
+        <span class="grid h-8 w-8 place-items-center rounded-xl bg-gray-100 text-gray-700 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5V8z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg>
+        </span>
+      </div>
+      <p class="mt-1 text-lg sm:text-xl font-semibold text-gray-900 tabular-nums truncate">৳{{ number_format($cogs, 2) }}</p>
+      <p class="text-[11px] text-gray-400 mt-0.5">Wholesale buying cost</p>
+    </div>
+    <div class="panel p-3.5 sm:p-4 min-w-0">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-xs text-gray-500">Profit before expenses</span>
+        <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 shrink-0">{{ number_format($profitMargin, 1) }}%</span>
+      </div>
+      <p class="mt-1 text-lg sm:text-xl font-semibold tabular-nums truncate {{ $netProfit >= 0 ? 'text-gray-900' : 'text-rose-600' }}">৳{{ number_format($netProfit, 2) }}</p>
+      <p class="text-[11px] text-gray-400 mt-0.5">
+        Gross ৳{{ number_format($grossProfit, 0) }} &minus; courier loss ৳{{ number_format($courierLoss, 0) }}@if($freeDeliveryCost > 0) &minus; free delivery ৳{{ number_format($freeDeliveryCost, 0) }}@endif
+      </p>
+    </div>
+    <div class="panel p-3.5 sm:p-4 min-w-0">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-xs text-gray-500">Average order</span>
+        <span class="grid h-8 w-8 place-items-center rounded-xl bg-amber-50 text-amber-700 shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+        </span>
+      </div>
+      <p class="mt-1 text-lg sm:text-xl font-semibold text-gray-900 tabular-nums truncate">৳{{ number_format($aov, 2) }}</p>
+      <p class="text-[11px] text-gray-400 mt-0.5">Per checkout</p>
     </div>
   </div>
 
-  {{-- 4 Primary KPI Cards --}}
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    
-    {{-- Card 1: Gross Revenue --}}
-    <div class="bg-white p-5 rounded-2xl border border-gray-200/90 shadow-2xs space-y-2">
-      <div class="flex items-center justify-between text-xs text-gray-500">
-        <span class="font-bold uppercase tracking-wider">Gross Sales</span>
-        <span class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        </span>
-      </div>
-      <div class="text-2xl font-black text-gray-900">৳{{ number_format($grossRevenue, 2) }}</div>
-      <div class="text-[11px] text-gray-400 font-medium">From {{ $totalOrdersCount }} confirmed orders</div>
-    </div>
-
-    {{-- Card 2: Cost of Goods Sold (COGS) --}}
-    <div class="bg-white p-5 rounded-2xl border border-gray-200/90 shadow-2xs space-y-2">
-      <div class="flex items-center justify-between text-xs text-gray-500">
-        <span class="font-bold uppercase tracking-wider">COGS (Product Cost)</span>
-        <span class="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-        </span>
-      </div>
-      <div class="text-2xl font-black text-indigo-700">৳{{ number_format($cogs, 2) }}</div>
-      <div class="text-[11px] text-gray-400 font-medium">Actual wholesale buying cost</div>
-    </div>
-
-    {{-- Card 3: Net Profit (Factoring in returns) --}}
-    <div class="bg-white p-5 rounded-2xl border border-gray-200/90 shadow-2xs space-y-2">
-      <div class="flex items-center justify-between text-xs text-gray-500">
-        <span class="font-bold uppercase tracking-wider">Profit Before Expenses</span>
-        <span class="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-xs">
-          {{ number_format($profitMargin, 1) }}% Margin
-        </span>
-      </div>
-      <div class="text-2xl font-black {{ $netProfit >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
-        ৳{{ number_format($netProfit, 2) }}
-      </div>
-      <div class="text-[11px] text-gray-400 font-medium">
-        Gross ৳{{ number_format($grossProfit, 0) }} &minus; Courier Loss ৳{{ number_format($courierLoss, 0) }}@if($freeDeliveryCost > 0) &minus; Free Delivery ৳{{ number_format($freeDeliveryCost, 0) }}@endif
-      </div>
-    </div>
-
-    {{-- Card 4: Average Order Value (AOV) --}}
-    <div class="bg-white p-5 rounded-2xl border border-gray-200/90 shadow-2xs space-y-2">
-      <div class="flex items-center justify-between text-xs text-gray-500">
-        <span class="font-bold uppercase tracking-wider">Average Order Value</span>
-        <span class="p-1.5 rounded-lg bg-amber-50 text-amber-600">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-        </span>
-      </div>
-      <div class="text-2xl font-black text-amber-700">৳{{ number_format($aov, 2) }}</div>
-      <div class="text-[11px] text-gray-400 font-medium">Average spent per checkout</div>
-    </div>
-
-  </div>
-
-  {{-- TRUE IN-POCKET NET PROFIT & EXPENSE / ADS CARD (CLEAN LIGHT DESIGN) --}}
-  <div class="bg-white rounded-2xl border border-gray-200/90 shadow-2xs p-5 sm:p-6 space-y-5">
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+  {{-- True profit after expenses --}}
+  <section class="panel p-4 sm:p-5">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
       <div>
-        <div class="flex items-center gap-2">
-          <span class="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-extrabold uppercase tracking-wider border border-emerald-200">
-            True P&amp;L
-          </span>
-          <span class="text-xs text-gray-400">All Expenses &amp; Ad Spend Deducted</span>
-        </div>
-        <h2 class="text-xl sm:text-2xl font-black text-gray-900 mt-1">Real In-Pocket Net Profit</h2>
-        <p class="text-xs text-gray-500 mt-0.5">Calculated after Cost of Goods Sold (COGS), courier return losses, and logged operational costs</p>
+        <h2 class="text-[15px] font-semibold text-gray-900">Net profit after expenses</h2>
+        <p class="text-xs text-gray-500 mt-0.5">After product cost, courier return losses and logged expenses.</p>
       </div>
-
-      <div class="flex items-baseline gap-3">
-        <div class="text-2xl sm:text-3xl font-black tracking-tight {{ $trueNetProfit >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
-          ৳{{ number_format($trueNetProfit, 2) }}
-        </div>
-        <span class="px-2.5 py-1 rounded-full text-xs font-bold {{ $trueProfitMargin >= 15 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
-          {{ number_format($trueProfitMargin, 1) }}% Real Margin
-        </span>
+      <div class="flex items-center gap-2">
+        <p class="text-xl sm:text-2xl font-semibold tabular-nums {{ $trueNetProfit >= 0 ? 'text-gray-900' : 'text-rose-600' }}">৳{{ number_format($trueNetProfit, 2) }}</p>
+        <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $trueProfitMargin >= 15 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' }}">{{ number_format($trueProfitMargin, 1) }}% margin</span>
       </div>
     </div>
 
-    {{-- Expense & Ad ROAS Breakdown Grid (Light & Clean) --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-      
-      {{-- Facebook Ads & ROAS --}}
-      <div class="bg-blue-50/40 rounded-xl p-3.5 border border-blue-100/90 space-y-1">
-        <div class="text-[11px] text-blue-700 font-bold uppercase tracking-wider flex items-center justify-between">
-          <span>📣 Meta / Facebook Ads</span>
+    <div class="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+      <div class="rounded-2xl bg-gray-50 p-3 min-w-0">
+        <div class="flex items-center justify-between gap-x-2 gap-y-1 flex-wrap">
+          <span class="text-xs text-gray-500">Facebook ads</span>
           @if($marketingExpense > 0)
-            <span class="px-1.5 py-0.5 rounded text-[10px] font-black {{ $fbRoas >= 3 ? 'bg-emerald-100 text-emerald-800' : ($fbRoas >= 1.5 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800') }}">
-              {{ number_format($fbRoas, 1) }}x ROAS
-            </span>
+            <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 {{ $fbRoas >= 3 ? 'bg-emerald-50 text-emerald-700' : ($fbRoas >= 1.5 ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700') }}">{{ number_format($fbRoas, 1) }}x ROAS</span>
           @endif
         </div>
-        <div class="text-xl font-black text-blue-950">৳{{ number_format($marketingExpense, 2) }}</div>
-        <div class="text-[11px] text-gray-500">
+        <p class="mt-1 text-[15px] font-semibold text-gray-900 tabular-nums">৳{{ number_format($marketingExpense, 2) }}</p>
+        <p class="text-[11px] text-gray-400 mt-0.5">
           @if($fbOrdersCount > 0)
-            CPA: <strong class="text-gray-800">৳{{ number_format($fbCpa, 0) }}</strong> / order ({{ $fbOrdersCount }} orders)
+            ৳{{ number_format($fbCpa, 0) }} per order ({{ $fbOrdersCount }} orders)
           @else
-            No Facebook tagged orders yet
+            No Facebook orders yet
           @endif
-        </div>
+        </p>
       </div>
-
-      {{-- Sourcing & Travel Trips --}}
-      <div class="bg-amber-50/40 rounded-xl p-3.5 border border-amber-100/90 space-y-1">
-        <div class="text-[11px] text-amber-700 font-bold uppercase tracking-wider">🚗 Sourcing &amp; Travel</div>
-        <div class="text-xl font-black text-amber-950">৳{{ number_format($sourcingExpense, 2) }}</div>
-        <div class="text-[11px] text-gray-500">Market visits, fares &amp; sundries</div>
+      <div class="rounded-2xl bg-gray-50 p-3 min-w-0">
+        <span class="text-xs text-gray-500">Sourcing and travel</span>
+        <p class="mt-1 text-[15px] font-semibold text-gray-900 tabular-nums">৳{{ number_format($sourcingExpense, 2) }}</p>
+        <p class="text-[11px] text-gray-400 mt-0.5">Market visits and fares</p>
       </div>
-
-      {{-- Packaging Supplies --}}
-      <div class="bg-purple-50/40 rounded-xl p-3.5 border border-purple-100/90 space-y-1">
-        <div class="text-[11px] text-purple-700 font-bold uppercase tracking-wider">📦 Packaging Materials</div>
-        <div class="text-xl font-black text-purple-950">৳{{ number_format($packagingExpense, 2) }}</div>
-        <div class="text-[11px] text-gray-500">Poly bags, stickers &amp; boxes</div>
+      <div class="rounded-2xl bg-gray-50 p-3 min-w-0">
+        <span class="text-xs text-gray-500">Packaging</span>
+        <p class="mt-1 text-[15px] font-semibold text-gray-900 tabular-nums">৳{{ number_format($packagingExpense, 2) }}</p>
+        <p class="text-[11px] text-gray-400 mt-0.5">Bags, stickers, boxes</p>
       </div>
-
-      {{-- Total Operating Deductions --}}
-      <div class="bg-rose-50/40 rounded-xl p-3.5 border border-rose-100/90 flex flex-col justify-between space-y-2">
-        <div>
-          <div class="text-[11px] text-rose-700 font-bold uppercase tracking-wider">Total Operating Costs</div>
-          <div class="text-xl font-black text-rose-700 mt-1">-৳{{ number_format($totalExpenses, 2) }}</div>
-        </div>
-        <div>
-          <a href="{{ route('admin.expenses.index') }}" class="text-[11px] text-brand-700 hover:text-brand-900 underline font-bold flex items-center gap-1">
-            Manage Expenses &amp; Ads &rarr;
-          </a>
-        </div>
+      <div class="rounded-2xl bg-gray-50 p-3 min-w-0">
+        <span class="text-xs text-gray-500">Total costs</span>
+        <p class="mt-1 text-[15px] font-semibold text-rose-600 tabular-nums">-৳{{ number_format($totalExpenses, 2) }}</p>
+        <a href="{{ route('admin.expenses.index') }}" class="text-[11px] font-medium text-gray-600 hover:text-gray-900 hover:underline">Manage expenses</a>
       </div>
-
     </div>
-  </div>
+  </section>
 
-  {{-- Secondary Insight Breakdown Grid --}}
+  {{-- Insights --}}
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-    
-    {{-- Channel Performance (Online vs POS) --}}
-    <div class="bg-white p-5 rounded-2xl border border-gray-200/90 shadow-2xs space-y-4">
-      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-        <h3 class="text-sm font-extrabold text-gray-900">Sales Channel Split</h3>
-        <span class="text-xs text-gray-400">Online vs In-Store</span>
+
+    <section class="panel p-4 sm:p-5">
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="text-[15px] font-semibold text-gray-900">Sales channels</h2>
+        <span class="text-xs text-gray-500">Online vs in store</span>
       </div>
-
-      <div class="space-y-3">
-        <div class="p-3 rounded-xl bg-gray-50 border border-gray-200 space-y-1">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
-              🌐 Online Storefront
-            </span>
-            <strong class="text-sm font-black text-gray-900">৳{{ number_format($onlineRevenue, 2) }}</strong>
-          </div>
-          <div class="flex items-center justify-between text-[11px] text-gray-500">
-            <span>{{ $onlineOrdersCount }} orders</span>
-            <span>AOV: <strong>৳{{ number_format($onlineAov, 0) }}</strong></span>
-          </div>
-        </div>
-
-        <div class="p-3 rounded-xl bg-emerald-50/50 border border-emerald-200 space-y-1">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
-              🖥️ POS Counter Sale
-            </span>
-            <strong class="text-sm font-black text-emerald-800">৳{{ number_format($posRevenue, 2) }}</strong>
-          </div>
-          <div class="flex items-center justify-between text-[11px] text-emerald-700">
-            <span>{{ $posOrdersCount }} orders</span>
-            <span>AOV: <strong>৳{{ number_format($posAov, 0) }}</strong></span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {{-- Courier Returns Financial Impact --}}
-    <div class="bg-white p-5 rounded-2xl border border-gray-200/90 shadow-2xs space-y-4">
-      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-        <h3 class="text-sm font-extrabold text-gray-900">Courier Return Analysis</h3>
-        <span class="text-xs text-gray-400">Total Returns: {{ $returnedCount }}</span>
-      </div>
-
-      <div class="space-y-3 text-xs">
-        <div class="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
+      <div class="mt-3 divide-y divide-gray-100">
+        <div class="py-2.5 flex items-center justify-between gap-3">
           <div>
-            <div class="font-bold text-emerald-900">✓ Buyer Paid Delivery</div>
-            <div class="text-[10px] text-emerald-700">{{ $paidReturnsCount }} parcels (Delivery fee recovered)</div>
+            <p class="text-[13px] font-medium text-gray-800">Online store</p>
+            <p class="text-[11px] text-gray-500">{{ $onlineOrdersCount }} orders · avg ৳{{ number_format($onlineAov, 0) }}</p>
           </div>
-          <span class="font-extrabold text-emerald-800">৳0 Loss</span>
+          <p class="text-sm font-semibold text-gray-900 tabular-nums">৳{{ number_format($onlineRevenue, 2) }}</p>
         </div>
-
-        <div class="flex items-center justify-between p-2.5 rounded-xl bg-rose-50 border border-rose-200">
+        <div class="py-2.5 flex items-center justify-between gap-3">
           <div>
-            <div class="font-bold text-rose-900">❌ Failed Pickup (Unpaid)</div>
-            <div class="text-[10px] text-rose-700">{{ $unpaidReturnsCount }} parcels (Store bears shipping)</div>
+            <p class="text-[13px] font-medium text-gray-800">POS counter</p>
+            <p class="text-[11px] text-gray-500">{{ $posOrdersCount }} orders · avg ৳{{ number_format($posAov, 0) }}</p>
           </div>
-          <span class="font-black text-rose-700">-৳{{ number_format($courierLoss, 2) }}</span>
-        </div>
-
-        <div class="flex items-center justify-between p-2.5 rounded-xl bg-amber-50 border border-amber-200">
-          <div>
-            <div class="font-bold text-amber-900">🚚 Free Delivery Cost</div>
-            <div class="text-[10px] text-amber-700">{{ $freeDeliveryOrders }} {{ \Illuminate\Support\Str::plural('order', $freeDeliveryOrders) }} shipped free (store paid the courier)</div>
-          </div>
-          <span class="font-black text-amber-800">-৳{{ number_format($freeDeliveryCost, 2) }}</span>
-        </div>
-
-        <div class="text-[11px] text-gray-400 text-center">
-          Courier loss and free delivery cost are deducted automatically from Gross Profit.
+          <p class="text-sm font-semibold text-gray-900 tabular-nums">৳{{ number_format($posRevenue, 2) }}</p>
         </div>
       </div>
-    </div>
+    </section>
 
-    {{-- Profit Margin Progress --}}
-    <div class="bg-white p-5 rounded-2xl border border-gray-200/90 shadow-2xs space-y-4">
-      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-        <h3 class="text-sm font-extrabold text-gray-900">Net Profit Margin</h3>
-        <span class="text-xs font-bold {{ $trueProfitMargin >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">{{ number_format($trueProfitMargin, 1) }}%</span>
+    <section class="panel p-4 sm:p-5">
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="text-[15px] font-semibold text-gray-900">Courier returns</h2>
+        <span class="text-xs text-gray-500">{{ $returnedCount }} returned</span>
       </div>
-
-      <div class="space-y-2">
-        <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-          <div class="bg-emerald-500 h-3 rounded-full transition-all duration-500" style="width: {{ min(100, max(0, $trueProfitMargin)) }}%"></div>
+      <div class="mt-3 divide-y divide-gray-100">
+        <div class="py-2.5 flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-[13px] font-medium text-gray-800">Buyer paid delivery</p>
+            <p class="text-[11px] text-gray-500">{{ $paidReturnsCount }} parcels, fee recovered</p>
+          </div>
+          <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 shrink-0">৳0 loss</span>
         </div>
-
-        <div class="grid grid-cols-2 gap-2 text-xs pt-2">
-          <div class="bg-gray-50 p-2.5 rounded-lg border border-gray-200">
-            <span class="text-gray-400 block text-[10px]">Net Sales</span>
-            <span class="font-black text-gray-900">৳{{ number_format($grossRevenue, 0) }}</span>
+        <div class="py-2.5 flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-[13px] font-medium text-gray-800">Failed pickup (unpaid)</p>
+            <p class="text-[11px] text-gray-500">{{ $unpaidReturnsCount }} parcels, store paid shipping</p>
           </div>
-          <div class="bg-gray-50 p-2.5 rounded-lg border border-gray-200">
-            <span class="text-gray-400 block text-[10px]">Net Profit (after expenses)</span>
-            <span class="font-black {{ $trueNetProfit >= 0 ? 'text-emerald-700' : 'text-rose-600' }}">৳{{ number_format($trueNetProfit, 0) }}</span>
+          <span class="text-sm font-semibold text-rose-600 tabular-nums shrink-0">-৳{{ number_format($courierLoss, 2) }}</span>
+        </div>
+        <div class="py-2.5 flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-[13px] font-medium text-gray-800">Free delivery cost</p>
+            <p class="text-[11px] text-gray-500">{{ $freeDeliveryOrders }} {{ \Illuminate\Support\Str::plural('order', $freeDeliveryOrders) }} shipped free</p>
           </div>
+          <span class="text-sm font-semibold text-amber-700 tabular-nums shrink-0">-৳{{ number_format($freeDeliveryCost, 2) }}</span>
         </div>
       </div>
-    </div>
+      <p class="mt-2 text-[11px] text-gray-400">Both are deducted from gross profit automatically.</p>
+    </section>
+
+    <section class="panel p-4 sm:p-5">
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="text-[15px] font-semibold text-gray-900">Net profit margin</h2>
+        <span class="text-sm font-semibold tabular-nums {{ $trueProfitMargin >= 0 ? 'text-emerald-700' : 'text-rose-600' }}">{{ number_format($trueProfitMargin, 1) }}%</span>
+      </div>
+      <div class="mt-4 w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+        <div class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: {{ min(100, max(0, $trueProfitMargin)) }}%"></div>
+      </div>
+      <div class="mt-4 grid grid-cols-2 gap-2.5">
+        <div class="rounded-2xl bg-gray-50 p-3">
+          <span class="text-[11px] text-gray-500">Net sales</span>
+          <p class="text-sm font-semibold text-gray-900 tabular-nums">৳{{ number_format($grossRevenue, 0) }}</p>
+        </div>
+        <div class="rounded-2xl bg-gray-50 p-3">
+          <span class="text-[11px] text-gray-500">Net profit</span>
+          <p class="text-sm font-semibold tabular-nums {{ $trueNetProfit >= 0 ? 'text-gray-900' : 'text-rose-600' }}">৳{{ number_format($trueNetProfit, 0) }}</p>
+        </div>
+      </div>
+    </section>
 
   </div>
 
-  {{-- Visual Trend Chart: Revenue vs Profit over Time --}}
-  <div class="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200/90 shadow-2xs space-y-4">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3.5">
-      <div>
-        <h2 class="text-sm sm:text-base font-extrabold text-gray-900">Financial Trend (Revenue vs Net Profit)</h2>
-        <p class="text-xs text-gray-500">Historical performance across the selected date range</p>
-      </div>
-    </div>
-
-    <div class="h-72 w-full">
+  {{-- Trend chart --}}
+  <section class="panel p-4 sm:p-5">
+    <h2 class="text-[15px] font-semibold text-gray-900">Revenue and net profit</h2>
+    <p class="text-xs text-gray-500 mt-0.5">Across the selected date range.</p>
+    <div class="mt-3 h-64 sm:h-72 w-full">
       <canvas id="financialChart"></canvas>
     </div>
-  </div>
+  </section>
 
-  {{-- Top 10 Most Profitable Products Table --}}
-  <div class="bg-white rounded-2xl border border-gray-200/90 shadow-2xs overflow-hidden">
-    <div class="p-5 border-b border-gray-100 flex items-center justify-between">
-      <div>
-        <h3 class="text-sm sm:text-base font-extrabold text-gray-900">Top 10 Most Profitable Products</h3>
-        <p class="text-xs text-gray-500">Ranked by actual profit generated (Sales Price &minus; Buying Cost)</p>
-      </div>
+  {{-- Top products --}}
+  <div class="card overflow-hidden">
+    <div class="p-4 sm:p-5">
+      <h2 class="text-[15px] font-semibold text-gray-900">Most profitable products</h2>
+      <p class="text-xs text-gray-500 mt-0.5">Top 10 by profit (sale price minus buying cost).</p>
     </div>
 
-    <div class="overflow-x-auto">
-      <table class="w-full text-left text-xs">
-        <thead class="bg-gray-50 border-b border-gray-200 text-gray-500 font-bold uppercase tracking-wider">
-          <tr>
+    {{-- Phone list --}}
+    <div class="md:hidden px-3 pb-3 space-y-2">
+      @forelse($topProfitable as $idx => $tp)
+        @php
+          $rev = (float) $tp->total_revenue;
+          $profit = (float) $tp->total_profit;
+          $margin = $rev > 0 ? (($profit / $rev) * 100) : 0;
+        @endphp
+        <article class="rounded-2xl bg-gray-50/80 p-3 flex items-center gap-3">
+          <img src="{{ image_url($tp->image, $tp->product_name) }}" alt="" class="w-10 h-10 rounded-xl object-cover bg-gray-100 shrink-0">
+          <div class="min-w-0 flex-1">
+            <p class="text-[13px] font-semibold text-gray-900 truncate">{{ $tp->product_name }}</p>
+            <p class="text-[11px] text-gray-500 tabular-nums">{{ $tp->units_sold }} sold · ৳{{ number_format($rev, 0) }} revenue</p>
+          </div>
+          <div class="text-right shrink-0">
+            <p class="text-[13px] font-semibold text-emerald-700 tabular-nums">৳{{ number_format($profit, 0) }}</p>
+            <p class="text-[11px] text-gray-500 tabular-nums">{{ number_format($margin, 1) }}%</p>
+          </div>
+        </article>
+      @empty
+        <div class="py-8 text-center text-sm text-gray-500">No sales recorded for this date range.</div>
+      @endforelse
+    </div>
+
+    {{-- Desktop table --}}
+    <div class="hidden md:block overflow-x-auto">
+      <table class="w-full text-left text-[13px] border-collapse">
+        <thead>
+          <tr class="whitespace-nowrap border-y border-gray-100">
             <th class="py-3 px-4 w-12 text-center">#</th>
             <th class="py-3 px-4">Product</th>
-            <th class="py-3 px-4 text-center">Units Sold</th>
-            <th class="py-3 px-4 text-right">Revenue Generated</th>
-            <th class="py-3 px-4 text-right">Wholesale Cost</th>
-            <th class="py-3 px-4 text-right">Net Profit</th>
-            <th class="py-3 px-4 text-right">Profit Margin</th>
+            <th class="py-3 px-4 text-right">Sold</th>
+            <th class="py-3 px-4 text-right">Revenue</th>
+            <th class="py-3 px-4 text-right">Cost</th>
+            <th class="py-3 px-4 text-right">Profit</th>
+            <th class="py-3 px-4 text-right">Margin</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
@@ -345,28 +276,24 @@
               $profit = (float) $tp->total_profit;
               $margin = $rev > 0 ? (($profit / $rev) * 100) : 0;
             @endphp
-            <tr class="hover:bg-gray-50/80 transition-colors">
-              <td class="py-3 px-4 text-center font-bold text-gray-400">{{ $idx + 1 }}</td>
+            <tr>
+              <td class="py-3 px-4 text-center text-gray-400 tabular-nums">{{ $idx + 1 }}</td>
               <td class="py-3 px-4">
                 <div class="flex items-center gap-2.5">
-                  <img src="{{ image_url($tp->image, $tp->product_name) }}" class="w-9 h-9 rounded-lg object-cover bg-gray-100 border border-gray-200 shrink-0">
-                  <span class="font-bold text-gray-900">{{ $tp->product_name }}</span>
+                  <img src="{{ image_url($tp->image, $tp->product_name) }}" alt="" class="w-9 h-9 rounded-xl object-cover bg-gray-100 shrink-0">
+                  <span class="font-semibold text-gray-900">{{ $tp->product_name }}</span>
                 </div>
               </td>
-              <td class="py-3 px-4 text-center font-extrabold text-gray-700">{{ $tp->units_sold }}</td>
-              <td class="py-3 px-4 text-right font-extrabold text-gray-900">৳{{ number_format($rev, 2) }}</td>
-              <td class="py-3 px-4 text-right text-indigo-700 font-semibold">৳{{ number_format($tp->total_cost, 2) }}</td>
-              <td class="py-3 px-4 text-right font-black text-emerald-600">৳{{ number_format($profit, 2) }}</td>
+              <td class="py-3 px-4 text-right text-gray-700 tabular-nums">{{ $tp->units_sold }}</td>
+              <td class="py-3 px-4 text-right text-gray-900 tabular-nums">৳{{ number_format($rev, 2) }}</td>
+              <td class="py-3 px-4 text-right text-gray-500 tabular-nums">৳{{ number_format($tp->total_cost, 2) }}</td>
+              <td class="py-3 px-4 text-right font-semibold text-emerald-700 tabular-nums">৳{{ number_format($profit, 2) }}</td>
               <td class="py-3 px-4 text-right">
-                <span class="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  {{ number_format($margin, 1) }}%
-                </span>
+                <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700">{{ number_format($margin, 1) }}%</span>
               </td>
             </tr>
           @empty
-            <tr>
-              <td colspan="7" class="py-8 text-center text-gray-400">No sales recorded for this date range.</td>
-            </tr>
+            <tr><td colspan="7" class="py-8 text-center text-gray-500 text-sm">No sales recorded for this date range.</td></tr>
           @endforelse
         </tbody>
       </table>
@@ -429,7 +356,7 @@
         plugins: {
           legend: {
             position: 'top',
-            labels: { font: { weight: 'bold', size: 11 } }
+            labels: { font: { size: 11 }, boxWidth: 10 }
           }
         },
         scales: {

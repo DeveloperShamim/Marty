@@ -1,224 +1,171 @@
 @extends('layouts.admin')
-@section('title', 'Expense & Ad Spend Manager')
+@section('title', 'Expenses')
+@section('subtitle', 'Track ad spend, sourcing trips, packaging and store costs.')
+
+@section('page-actions')
+  <a href="{{ route('admin.expenses.export', request()->all()) }}" class="pill-btn">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+    Export CSV
+  </a>
+  <button type="button" onclick="openExpenseModal('marketing')" class="pill-btn cursor-pointer">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+    Log ad spend
+  </button>
+  <button type="button" onclick="openExpenseModal()" class="pill-btn pill-btn-dark cursor-pointer">
+    <span class="pill-ico"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span>
+    Add expense
+  </button>
+@endsection
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-4">
 
-  {{-- Top Header & Filters --}}
-  <div class="bg-white rounded-2xl border border-gray-200/90 shadow-2xs p-5 sm:p-6">
-    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="p-2 rounded-xl bg-rose-50 text-rose-600">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-          </span>
-          <div>
-            <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">Expense &amp; Ad Spend Manager</h1>
-            <p class="text-xs sm:text-sm text-gray-500">Track Facebook boost costs, sourcing runs, packaging materials, and store overhead</p>
-          </div>
-        </div>
-      </div>
-
-      {{-- Action Buttons & Date Range --}}
-      <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
-        {{-- Date Range Dropdown Form --}}
-        <form method="GET" action="{{ route('admin.expenses.index') }}" class="flex items-center gap-1.5" id="rangeForm">
-          <input type="hidden" name="category" value="{{ $category }}">
-          <select name="range" onchange="document.getElementById('rangeForm').submit()" class="text-xs font-bold px-3 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl focus:outline-none focus:border-brand-500 text-gray-800">
-            <option value="today" @selected($range === 'today')>Today</option>
-            <option value="yesterday" @selected($range === 'yesterday')>Yesterday</option>
-            <option value="this_week" @selected($range === 'this_week')>This Week</option>
-            <option value="last_week" @selected($range === 'last_week')>Last Week</option>
-            <option value="this_month" @selected($range === 'this_month')>This Month ({{ now()->format('M') }})</option>
-            <option value="last_month" @selected($range === 'last_month')>Last Month ({{ now()->subMonth()->format('M') }})</option>
-          </select>
-        </form>
-
-        <a href="{{ route('admin.expenses.export', request()->all()) }}" class="px-3 py-2 text-xs font-bold rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 transition-colors flex items-center gap-1.5 shadow-2xs">
-          <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-          Export CSV
-        </a>
-
-        {{-- Quick FB Boost Button --}}
-        <button type="button" onclick="openExpenseModal('marketing')" class="px-3.5 py-2 text-xs font-bold rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors flex items-center gap-1.5 shadow-2xs">
-          <span>📣</span>
-          Log FB Boost ($)
-        </button>
-
-        {{-- General Add Expense Button --}}
-        <button type="button" onclick="openExpenseModal()" class="px-4 py-2 text-xs font-bold rounded-xl bg-brand-600 hover:bg-brand-700 text-white transition-colors flex items-center gap-1.5 shadow-xs">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-          + Add Expense
-        </button>
-      </div>
-    </div>
-  </div>
-
-  {{-- Summary KPI Cards --}}
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    
-    {{-- Total Expenses --}}
-    <div class="bg-white p-5 rounded-2xl border border-gray-200/90 shadow-2xs">
-      <div class="flex items-center justify-between text-gray-500 mb-2">
-        <span class="text-xs font-bold uppercase tracking-wider">Total Expenses</span>
-        <span class="p-1.5 rounded-lg bg-rose-50 text-rose-600">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  {{-- Stats --}}
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div class="panel p-3.5 sm:p-4">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-xs text-gray-500">Total expenses</span>
+        <span class="grid h-8 w-8 place-items-center rounded-xl bg-rose-50 text-rose-700">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
         </span>
       </div>
-      <div class="text-2xl font-black text-gray-900 tracking-tight">৳{{ number_format($totalExpenses, 2) }}</div>
-      <div class="text-xs text-gray-500 mt-1">{{ $rangeLabel }} period</div>
+      <p class="mt-1 text-lg sm:text-xl font-semibold text-gray-900 tabular-nums">৳{{ number_format($totalExpenses, 2) }}</p>
+      <p class="text-[11px] text-gray-400 mt-0.5">{{ $rangeLabel }}</p>
     </div>
-
-    {{-- Facebook / Marketing Ad Spend --}}
-    <div class="bg-white p-5 rounded-2xl border border-blue-200/90 shadow-2xs bg-gradient-to-br from-white to-blue-50/20">
-      <div class="flex items-center justify-between text-blue-700 mb-2">
-        <span class="text-xs font-bold uppercase tracking-wider">Facebook &amp; Ads</span>
-        <span class="p-1.5 rounded-lg bg-blue-100 text-blue-700">📣</span>
+    <div class="panel p-3.5 sm:p-4">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-xs text-gray-500">Facebook and ads</span>
+        <span class="grid h-8 w-8 place-items-center rounded-xl bg-sky-50 text-sky-700">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+        </span>
       </div>
-      <div class="text-2xl font-black text-blue-900 tracking-tight">৳{{ number_format($marketingTotal, 2) }}</div>
-      <div class="text-xs text-blue-600 mt-1 flex items-center justify-between">
+      <p class="mt-1 text-lg sm:text-xl font-semibold text-gray-900 tabular-nums">৳{{ number_format($marketingTotal, 2) }}</p>
+      <p class="text-[11px] text-gray-400 mt-0.5 flex items-center justify-between gap-2">
         <span>≈ ${{ number_format($defaultUsdRate > 0 ? $marketingTotal / $defaultUsdRate : 0, 1) }} USD</span>
-        <a href="{{ route('admin.analytics.index') }}" class="underline font-bold hover:text-blue-800">View ROAS &rarr;</a>
-      </div>
+        <a href="{{ route('admin.analytics.index') }}" class="font-medium text-gray-600 hover:text-gray-900 hover:underline">View ROAS</a>
+      </p>
     </div>
-
-    {{-- Sourcing & Travel Trips --}}
-    <div class="bg-white p-5 rounded-2xl border border-amber-200/90 shadow-2xs bg-gradient-to-br from-white to-amber-50/20">
-      <div class="flex items-center justify-between text-amber-700 mb-2">
-        <span class="text-xs font-bold uppercase tracking-wider">Sourcing &amp; Travel</span>
-        <span class="p-1.5 rounded-lg bg-amber-100 text-amber-700">🚗</span>
+    <div class="panel p-3.5 sm:p-4">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-xs text-gray-500">Sourcing and travel</span>
+        <span class="grid h-8 w-8 place-items-center rounded-xl bg-amber-50 text-amber-700">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 17h14M6 17l1.5-6h9L18 17M8 11l1-4h6l1 4"/><circle cx="7.5" cy="18.5" r="1.5"/><circle cx="16.5" cy="18.5" r="1.5"/></svg>
+        </span>
       </div>
-      <div class="text-2xl font-black text-amber-900 tracking-tight">৳{{ number_format($sourcingTotal, 2) }}</div>
-      <div class="text-xs text-amber-600 mt-1">Market visits, fares &amp; sundries</div>
+      <p class="mt-1 text-lg sm:text-xl font-semibold text-gray-900 tabular-nums">৳{{ number_format($sourcingTotal, 2) }}</p>
+      <p class="text-[11px] text-gray-400 mt-0.5">Market visits and fares</p>
     </div>
-
-    {{-- Packaging Supplies --}}
-    <div class="bg-white p-5 rounded-2xl border border-purple-200/90 shadow-2xs bg-gradient-to-br from-white to-purple-50/20">
-      <div class="flex items-center justify-between text-purple-700 mb-2">
-        <span class="text-xs font-bold uppercase tracking-wider">Packaging Materials</span>
-        <span class="p-1.5 rounded-lg bg-purple-100 text-purple-700">📦</span>
+    <div class="panel p-3.5 sm:p-4">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-xs text-gray-500">Packaging</span>
+        <span class="grid h-8 w-8 place-items-center rounded-xl bg-violet-50 text-violet-700">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5V8z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg>
+        </span>
       </div>
-      <div class="text-2xl font-black text-purple-900 tracking-tight">৳{{ number_format($packagingTotal, 2) }}</div>
-      <div class="text-xs text-purple-600 mt-1">Poly bags, stickers, tape &amp; boxes</div>
+      <p class="mt-1 text-lg sm:text-xl font-semibold text-gray-900 tabular-nums">৳{{ number_format($packagingTotal, 2) }}</p>
+      <p class="text-[11px] text-gray-400 mt-0.5">Bags, stickers, tape, boxes</p>
     </div>
-
   </div>
 
-  {{-- Category Filter Pills & Search Bar --}}
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-    {{-- Category Pills --}}
-    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-      <a href="{{ route('admin.expenses.index', array_merge(request()->all(), ['category' => 'all'])) }}" class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 {{ $category === 'all' ? 'bg-slate-900 text-white shadow-xs' : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200' }}">
-        All Expenses
-      </a>
-      @foreach($categories as $catKey => $catLabel)
-        <a href="{{ route('admin.expenses.index', array_merge(request()->all(), ['category' => $catKey])) }}" class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 {{ $category === $catKey ? 'bg-slate-900 text-white shadow-xs' : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200' }}">
-          {{ $catLabel }}
-        </a>
+  {{-- Category tabs --}}
+  <nav class="-mx-3 sm:mx-0 px-3 sm:px-0 overflow-x-auto no-scrollbar" aria-label="Expense category">
+    <div class="inline-flex items-center gap-1 p-1 rounded-full bg-white shadow-panel whitespace-nowrap">
+      @foreach(['all' => 'All'] + $categories as $catKey => $catLabel)
+        @php $active = $category === $catKey; @endphp
+        <a href="{{ route('admin.expenses.index', array_merge(request()->all(), ['category' => $catKey])) }}"
+           class="h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium inline-flex items-center transition-colors {{ $active ? 'text-white' : 'text-gray-600 hover:bg-gray-100' }}"
+           @if($active) style="background: var(--brand-dark);" aria-current="page" @endif>{{ $catLabel }}</a>
       @endforeach
     </div>
+  </nav>
 
-    {{-- Search Input --}}
-    <form method="GET" action="{{ route('admin.expenses.index') }}" class="relative w-full sm:w-64 shrink-0">
-      <input type="hidden" name="range" value="{{ $range }}">
-      <input type="hidden" name="category" value="{{ $category }}">
-      <input type="text" name="search" value="{{ request('search') }}" placeholder="Search title or memo..." class="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-gray-200 rounded-xl focus:outline-none focus:border-brand-500 text-gray-800">
-      <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-      </div>
-    </form>
-  </div>
+  {{-- Expense list --}}
+  <div class="card overflow-hidden">
+    <div class="p-3 sm:p-4 flex flex-col sm:flex-row gap-2">
+      <form method="GET" action="{{ route('admin.expenses.index') }}" class="relative flex-1">
+        <input type="hidden" name="range" value="{{ $range }}">
+        <input type="hidden" name="category" value="{{ $category }}">
+        <span class="sr-only">Search expenses</span>
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search title or memo" class="w-full h-10 pl-10 pr-4 rounded-full bg-gray-100 border border-transparent text-sm focus:bg-white focus:border-gray-200 outline-none">
+      </form>
+      <form method="GET" action="{{ route('admin.expenses.index') }}" id="rangeForm">
+        <input type="hidden" name="category" value="{{ $category }}">
+        <label class="sr-only" for="expRange">Date range</label>
+        <select id="expRange" name="range" onchange="document.getElementById('rangeForm').submit()" class="w-full sm:w-auto h-10 rounded-full bg-gray-100 border border-transparent px-4 text-sm text-gray-800 cursor-pointer">
+          <option value="today" @selected($range === 'today')>Today</option>
+          <option value="yesterday" @selected($range === 'yesterday')>Yesterday</option>
+          <option value="this_week" @selected($range === 'this_week')>This week</option>
+          <option value="last_week" @selected($range === 'last_week')>Last week</option>
+          <option value="this_month" @selected($range === 'this_month')>This month ({{ now()->format('M') }})</option>
+          <option value="last_month" @selected($range === 'last_month')>Last month ({{ now()->subMonth()->format('M') }})</option>
+        </select>
+      </form>
+    </div>
 
-  {{-- Expenses Table --}}
-  <div class="bg-white rounded-2xl border border-gray-200/90 shadow-2xs overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="w-full text-left text-xs">
-        <thead class="bg-gray-50 border-b border-gray-200 text-gray-500 font-bold uppercase tracking-wider">
-          <tr>
+    {{-- Desktop table --}}
+    <div class="hidden md:block overflow-x-auto">
+      <table class="w-full text-left text-[13px] border-collapse">
+        <thead>
+          <tr class="whitespace-nowrap border-y border-gray-100">
             <th class="py-3 px-4">Date</th>
-            <th class="py-3 px-4">Title &amp; Notes</th>
+            <th class="py-3 px-4">Title</th>
             <th class="py-3 px-4">Category</th>
-            <th class="py-3 px-4">Target Product</th>
+            <th class="py-3 px-4">Product</th>
             <th class="py-3 px-4">Payment</th>
             <th class="py-3 px-4 text-right">Amount</th>
-            <th class="py-3 px-4 text-center">Receipt</th>
-            <th class="py-3 px-4 text-center">Action</th>
+            <th class="py-3 px-4 text-right">Actions</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
           @forelse($expenses as $exp)
-            <tr class="hover:bg-gray-50/80 transition-colors">
-              {{-- Date --}}
-              <td class="py-3 px-4 text-gray-600 font-mono whitespace-nowrap">
-                {{ $exp->expense_date->format('d M, Y') }}
-              </td>
-
-              {{-- Title & Notes --}}
+            <tr>
+              <td class="py-3 px-4 text-gray-600 whitespace-nowrap tabular-nums">{{ $exp->expense_date->format('d M Y') }}</td>
               <td class="py-3 px-4 max-w-xs">
-                <div class="font-bold text-gray-900">{{ $exp->title }}</div>
+                <p class="font-semibold text-gray-900">{{ $exp->title }}</p>
                 @if($exp->notes)
-                  <div class="text-[11px] text-gray-400 truncate mt-0.5">{{ $exp->notes }}</div>
+                  <p class="text-[11px] text-gray-500 truncate mt-0.5">{{ $exp->notes }}</p>
                 @endif
               </td>
-
-              {{-- Category --}}
               <td class="py-3 px-4 whitespace-nowrap">
-                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold border inline-flex items-center gap-1 {{ $exp->categoryBadge() }}">
-                  <span>{{ $exp->categoryIcon() }}</span>
-                  <span>{{ $exp->categoryLabel() }}</span>
-                </span>
+                <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $exp->categoryBadge() }}">{{ $exp->categoryLabel() }}</span>
               </td>
-
-              {{-- Target Product --}}
               <td class="py-3 px-4 text-gray-600 max-w-[180px] truncate">
                 @if($exp->product)
-                  <span class="font-semibold text-brand-700" title="{{ $exp->product->name }}">{{ $exp->product->name }}</span>
+                  <span class="font-medium text-gray-800" title="{{ $exp->product->name }}">{{ $exp->product->name }}</span>
                 @else
-                  <span class="text-gray-400">&mdash; Store Wide</span>
+                  <span class="text-gray-400">Store wide</span>
                 @endif
               </td>
-
-              {{-- Payment Method --}}
-              <td class="py-3 px-4 text-gray-600 uppercase text-[10px] font-mono font-bold whitespace-nowrap">
-                {{ $exp->payment_method ?: 'Cash' }}
-              </td>
-
-              {{-- Amount in BDT (+ USD if applicable) --}}
-              <td class="py-3 px-4 text-right whitespace-nowrap font-mono">
-                <div class="font-black text-sm text-gray-900">৳{{ number_format($exp->amount, 2) }}</div>
+              <td class="py-3 px-4 text-gray-600 whitespace-nowrap">{{ ucfirst($exp->payment_method ?: 'cash') }}</td>
+              <td class="py-3 px-4 text-right whitespace-nowrap">
+                <p class="font-semibold text-gray-900 tabular-nums">৳{{ number_format($exp->amount, 2) }}</p>
                 @if($exp->currency === 'USD' && $exp->currency_amount)
-                  <div class="text-[10px] text-blue-600 font-semibold">${{ number_format($exp->currency_amount, 2) }} @ ৳{{ number_format($exp->currency_rate ?: 125, 0) }}</div>
+                  <p class="text-[11px] text-gray-500 tabular-nums">${{ number_format($exp->currency_amount, 2) }} @ ৳{{ number_format($exp->currency_rate ?: 125, 0) }}</p>
                 @endif
               </td>
-
-              {{-- Receipt Voucher --}}
-              <td class="py-3 px-4 text-center whitespace-nowrap">
-                @if($exp->receipt_attachment)
-                  <button type="button" onclick="previewReceipt('{{ $exp->receiptUrl() }}', '{{ addslashes($exp->title) }}')" class="p-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors inline-block" title="View receipt">
-                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                  </button>
-                @else
-                  <span class="text-gray-300">&mdash;</span>
-                @endif
-              </td>
-
-              {{-- Action (Delete) --}}
-              <td class="py-3 px-4 text-center whitespace-nowrap">
-                <form method="POST" action="{{ route('admin.expenses.destroy', $exp) }}" onsubmit="return confirm('Delete expense \'{{ addslashes($exp->title) }}\'?');" class="inline-block">
-                  @csrf
-                  @method('DELETE')
-                  <button type="submit" class="p-1 rounded-lg hover:bg-rose-50 text-gray-400 hover:text-rose-600 transition-colors" title="Delete expense">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                  </button>
-                </form>
+              <td class="py-3 px-4 text-right whitespace-nowrap">
+                <div class="inline-flex items-center gap-1.5">
+                  @if($exp->receipt_attachment)
+                    <button type="button" onclick="previewReceipt('{{ $exp->receiptUrl() }}', '{{ addslashes($exp->title) }}')" class="h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 inline-flex items-center justify-center" title="View receipt" aria-label="View receipt">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                  @endif
+                  <form method="POST" action="{{ route('admin.expenses.destroy', $exp) }}" onsubmit="return confirm('Delete expense \'{{ addslashes($exp->title) }}\'?');" class="inline-block">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="h-8 w-8 rounded-full bg-gray-100 hover:bg-rose-50 text-gray-500 hover:text-rose-700 inline-flex items-center justify-center" title="Delete expense" aria-label="Delete expense">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                    </button>
+                  </form>
+                </div>
               </td>
             </tr>
           @empty
             <tr>
-              <td colspan="8" class="py-12 text-center text-gray-400">
-                <svg class="w-10 h-10 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                <p class="font-bold text-gray-500">No expenses recorded for this period</p>
-                <p class="text-xs text-gray-400 mt-1">Click "+ Add Expense" or "Log FB Boost" above to log costs.</p>
+              <td colspan="7" class="py-12 text-center">
+                <p class="text-sm font-medium text-gray-600">No expenses recorded for this period</p>
+                <p class="text-xs text-gray-400 mt-1">Use Add expense or Log ad spend above.</p>
               </td>
             </tr>
           @endforelse
@@ -226,159 +173,193 @@
       </table>
     </div>
 
+    {{-- Phone cards --}}
+    <div class="md:hidden px-3 pb-3 space-y-2">
+      @forelse($expenses as $exp)
+        <article class="rounded-2xl bg-gray-50/80 p-3.5 space-y-2">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="font-semibold text-sm text-gray-900">{{ $exp->title }}</p>
+              <p class="text-[11px] text-gray-500 mt-0.5">{{ $exp->expense_date->format('d M Y') }} · {{ ucfirst($exp->payment_method ?: 'cash') }}</p>
+            </div>
+            <div class="text-right shrink-0">
+              <p class="font-semibold text-[15px] text-gray-900 tabular-nums">৳{{ number_format($exp->amount, 2) }}</p>
+              @if($exp->currency === 'USD' && $exp->currency_amount)
+                <p class="text-[11px] text-gray-500 tabular-nums">${{ number_format($exp->currency_amount, 2) }}</p>
+              @endif
+            </div>
+          </div>
+          @if($exp->notes)
+            <p class="text-xs text-gray-600">{{ $exp->notes }}</p>
+          @endif
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5 flex-wrap min-w-0">
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $exp->categoryBadge() }}">{{ $exp->categoryLabel() }}</span>
+              @if($exp->product)
+                <span class="text-[11px] text-gray-500 truncate">{{ $exp->product->name }}</span>
+              @endif
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              @if($exp->receipt_attachment)
+                <button type="button" onclick="previewReceipt('{{ $exp->receiptUrl() }}', '{{ addslashes($exp->title) }}')" class="h-8 w-8 rounded-full bg-white ring-1 ring-gray-200 text-gray-700 inline-flex items-center justify-center" aria-label="View receipt">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              @endif
+              <form method="POST" action="{{ route('admin.expenses.destroy', $exp) }}" onsubmit="return confirm('Delete expense \'{{ addslashes($exp->title) }}\'?');">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="h-8 w-8 rounded-full bg-rose-50 text-rose-700 inline-flex items-center justify-center" aria-label="Delete expense">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                </button>
+              </form>
+            </div>
+          </div>
+        </article>
+      @empty
+        <div class="py-10 text-center text-sm text-gray-500">No expenses recorded for this period.</div>
+      @endforelse
+    </div>
+
     @if($expenses->hasPages())
-      <div class="p-4 border-t border-gray-100">
-        {{ $expenses->links() }}
-      </div>
+      <div class="p-3.5 sm:p-4 border-t border-gray-100">{{ $expenses->links() }}</div>
     @endif
   </div>
 
 </div>
 
-{{-- MODAL: Add / Edit Expense --}}
-<div id="expenseModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
-  <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+{{-- Add expense modal --}}
+<div id="expenseModal" class="fixed inset-0 z-50 bg-gray-950/50 flex items-center justify-center p-4 hidden">
+  <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex items-start justify-between gap-3">
       <div>
-        <h3 class="font-extrabold text-gray-900 text-base" id="expenseModalTitle">Log Business Expense</h3>
-        <p class="text-xs text-gray-500">Record marketing ad spend, sourcing trips, or packaging costs</p>
+        <h3 class="text-[15px] font-semibold text-gray-900" id="expenseModalTitle">Log expense</h3>
+        <p class="text-xs text-gray-500 mt-0.5">Ad spend, sourcing trips, packaging or other costs.</p>
       </div>
-      <button type="button" onclick="closeExpenseModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+      <button type="button" onclick="closeExpenseModal()" class="h-8 w-8 grid place-items-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 shrink-0" aria-label="Close">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
     </div>
 
-    <form method="POST" action="{{ route('admin.expenses.store') }}" enctype="multipart/form-data" class="space-y-4" id="expenseForm">
+    <form method="POST" action="{{ route('admin.expenses.store') }}" enctype="multipart/form-data" class="mt-4 space-y-3" id="expenseForm">
       @csrf
 
-      {{-- Expense Title --}}
       <div>
-        <label class="block text-xs font-bold text-gray-700 mb-1">Expense Title / Description <span class="text-rose-500">*</span></label>
-        <input type="text" name="title" id="expTitle" required placeholder="e.g. Facebook Boost - Smartwatch Campaign, Chawkbazar Trip" class="w-full text-xs font-bold px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:border-brand-500">
+        <label class="lbl" for="expTitle">Title <span class="text-rose-500">*</span></label>
+        <input type="text" name="title" id="expTitle" required placeholder="e.g. Facebook boost, Chawkbazar trip" class="w-full h-10 rounded-xl border border-gray-200 px-3.5 text-sm">
       </div>
 
-      {{-- Category Selector --}}
       <div>
-        <label class="block text-xs font-bold text-gray-700 mb-1">Expense Category <span class="text-rose-500">*</span></label>
-        <select name="category" id="expCategory" onchange="onCategorySelect(this.value)" class="w-full text-xs font-bold px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:border-brand-500">
+        <label class="lbl" for="expCategory">Category <span class="text-rose-500">*</span></label>
+        <select name="category" id="expCategory" onchange="onCategorySelect(this.value)" class="w-full h-10 rounded-xl border border-gray-200 px-3 text-sm bg-white">
           @foreach($categories as $key => $label)
             <option value="{{ $key }}">{{ $label }}</option>
           @endforeach
         </select>
       </div>
 
-      {{-- Currency Mode Toggle (BDT vs USD for Facebook Ads) --}}
-      <div class="p-3.5 rounded-xl bg-gray-50 border border-gray-200 space-y-3">
-        <div class="flex items-center justify-between">
-          <label class="text-xs font-bold text-gray-900">Currency &amp; Amount</label>
-          <div class="flex items-center gap-2 text-xs">
-            <label class="flex items-center gap-1 cursor-pointer font-bold text-gray-700">
-              <input type="radio" name="currency" value="BDT" checked onchange="toggleCurrency('BDT')" class="text-brand-600">
-              ৳ BDT
+      <div class="rounded-xl bg-gray-50 p-3 space-y-2.5">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <span class="text-xs font-semibold text-gray-700">Amount</span>
+          <div class="flex items-center gap-3 text-xs">
+            <label class="flex items-center gap-1.5 cursor-pointer text-gray-700">
+              <input type="radio" name="currency" value="BDT" checked onchange="toggleCurrency('BDT')">
+              BDT
             </label>
-            <label class="flex items-center gap-1 cursor-pointer font-bold text-blue-700">
-              <input type="radio" name="currency" value="USD" onchange="toggleCurrency('USD')" class="text-blue-600">
-              $ USD (Meta Ads)
+            <label class="flex items-center gap-1.5 cursor-pointer text-gray-700">
+              <input type="radio" name="currency" value="USD" onchange="toggleCurrency('USD')">
+              USD (Meta ads)
             </label>
           </div>
         </div>
 
-        {{-- BDT Input Box --}}
         <div id="bdtInputBox">
           <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center font-bold text-gray-400 text-sm">৳</span>
-            <input type="number" step="0.01" name="amount" id="expAmountBDT" placeholder="0.00" class="w-full pl-8 pr-3 py-2 text-sm font-mono font-bold bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-brand-500">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 text-sm">৳</span>
+            <input type="number" step="0.01" name="amount" id="expAmountBDT" placeholder="0.00" class="w-full h-10 pl-8 pr-3 rounded-xl border border-gray-200 bg-white text-sm tabular-nums">
           </div>
         </div>
 
-        {{-- USD Converter Box (Hidden by default, shown when USD is selected) --}}
         <div id="usdInputBox" class="hidden space-y-2">
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-[11px] font-bold text-gray-600 mb-0.5">USD Amount ($)</label>
+              <label class="block text-[11px] text-gray-500 mb-1" for="expAmountUSD">USD amount</label>
               <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-3 flex items-center font-bold text-blue-600 text-xs">$</span>
-                <input type="number" step="0.01" name="currency_amount" id="expAmountUSD" oninput="calcUsdToBdt()" placeholder="10.00" class="w-full pl-7 pr-2 py-1.5 text-xs font-mono font-bold bg-white border border-blue-300 rounded-lg focus:outline-none focus:border-blue-500">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 text-xs">$</span>
+                <input type="number" step="0.01" name="currency_amount" id="expAmountUSD" oninput="calcUsdToBdt()" placeholder="10.00" class="w-full h-10 pl-7 pr-2 rounded-xl border border-gray-200 bg-white text-sm tabular-nums">
               </div>
             </div>
             <div>
-              <label class="block text-[11px] font-bold text-gray-600 mb-0.5">Dollar Rate (৳)</label>
+              <label class="block text-[11px] text-gray-500 mb-1" for="expDollarRate">Dollar rate (৳)</label>
               <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-3 flex items-center font-bold text-gray-400 text-xs">৳</span>
-                <input type="number" step="0.01" name="currency_rate" id="expDollarRate" value="{{ $defaultUsdRate }}" oninput="calcUsdToBdt()" class="w-full pl-7 pr-2 py-1.5 text-xs font-mono font-bold bg-white border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 text-xs">৳</span>
+                <input type="number" step="0.01" name="currency_rate" id="expDollarRate" value="{{ $defaultUsdRate }}" oninput="calcUsdToBdt()" class="w-full h-10 pl-7 pr-2 rounded-xl border border-gray-200 bg-white text-sm tabular-nums">
               </div>
             </div>
           </div>
-          <div class="text-[11px] font-bold text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200 flex items-center justify-between">
-            <span>Total Converted BDT:</span>
-            <span id="usdConvertedDisplay" class="font-mono font-black text-xs">৳0.00</span>
+          <div class="text-xs text-gray-600 bg-white px-3 py-2 rounded-xl flex items-center justify-between">
+            <span>Total in BDT</span>
+            <span id="usdConvertedDisplay" class="font-semibold text-gray-900 tabular-nums">৳0.00</span>
           </div>
         </div>
       </div>
 
-      {{-- Date & Payment Method --}}
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs font-bold text-gray-700 mb-1">Date <span class="text-rose-500">*</span></label>
-          <input type="date" name="expense_date" id="expDate" required value="{{ date('Y-m-d') }}" class="w-full text-xs font-bold px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:border-brand-500">
+          <label class="lbl" for="expDate">Date <span class="text-rose-500">*</span></label>
+          <input type="date" name="expense_date" id="expDate" required value="{{ date('Y-m-d') }}" class="w-full h-10 rounded-xl border border-gray-200 px-3 text-sm">
         </div>
         <div>
-          <label class="block text-xs font-bold text-gray-700 mb-1">Payment Method</label>
-          <select name="payment_method" id="expPaymentMethod" class="w-full text-xs font-bold px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:border-brand-500">
+          <label class="lbl" for="expPaymentMethod">Paid with</label>
+          <select name="payment_method" id="expPaymentMethod" class="w-full h-10 rounded-xl border border-gray-200 px-3 text-sm bg-white">
             <option value="cash">Cash</option>
             <option value="bkash">bKash</option>
             <option value="nagad">Nagad</option>
-            <option value="bank">Bank Transfer</option>
+            <option value="bank">Bank transfer</option>
             <option value="card">Card</option>
           </select>
         </div>
       </div>
 
-      {{-- Target Product Attribution (Optional) --}}
       <div>
-        <label class="block text-xs font-bold text-gray-700 mb-1">Target Product (Optional)</label>
-        <select name="product_id" id="expProduct" class="w-full text-xs px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:border-brand-500">
-          <option value="">-- General Store Expense (No specific product) --</option>
+        <label class="lbl" for="expProduct">Product (optional)</label>
+        <select name="product_id" id="expProduct" class="w-full h-10 rounded-xl border border-gray-200 px-3 text-sm bg-white">
+          <option value="">General store expense</option>
           @foreach($products as $prod)
             <option value="{{ $prod->id }}">{{ $prod->name }}</option>
           @endforeach
         </select>
-        <span class="text-[10px] text-gray-400 block mt-0.5">Select product to measure specific ROAS and campaign profitability</span>
+        <p class="text-[11px] text-gray-400 mt-1">Pick a product to measure its ROAS.</p>
       </div>
 
-      {{-- Receipt Memo Attachment --}}
       <div>
-        <label class="block text-xs font-bold text-gray-700 mb-1">Upload Receipt / Memo (Optional)</label>
-        <input type="file" name="receipt_attachment" accept="image/*" class="w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
+        <label class="lbl">Receipt (optional)</label>
+        <input type="file" name="receipt_attachment" accept="image/*" class="w-full text-xs text-gray-500 file:mr-2 file:h-8 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200">
       </div>
 
-      {{-- Notes --}}
       <div>
-        <label class="block text-xs font-bold text-gray-700 mb-1">Notes / Details</label>
-        <textarea name="notes" id="expNotes" rows="2" placeholder="e.g. CNG fare from Farmgate to Chawkbazar, 500 pcs size 12x16 poly mailers..." class="w-full text-xs px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:border-brand-500"></textarea>
+        <label class="lbl" for="expNotes">Notes</label>
+        <textarea name="notes" id="expNotes" rows="2" placeholder="e.g. CNG fare Farmgate to Chawkbazar, 500 poly mailers" class="w-full rounded-xl border border-gray-200 px-3.5 py-2 text-sm"></textarea>
       </div>
 
-      {{-- Action Buttons --}}
-      <div class="flex items-center gap-2 pt-2 border-t border-gray-100">
-        <button type="button" onclick="closeExpenseModal()" class="flex-1 py-2.5 px-4 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs transition-colors">
-          Cancel
-        </button>
-        <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs uppercase tracking-wider shadow-sm transition-all">
-          Save Expense
-        </button>
+      <div class="flex items-center justify-end gap-2 pt-1">
+        <button type="button" onclick="closeExpenseModal()" class="h-9 px-3.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-[13px] font-medium">Cancel</button>
+        <button type="submit" class="h-9 px-4 rounded-full text-white text-[13px] font-semibold" style="background: var(--brand-dark);">Save expense</button>
       </div>
-
     </form>
   </div>
 </div>
 
-{{-- MODAL: Lightbox Receipt Viewer --}}
-<div id="receiptPreviewModal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-xs flex items-center justify-center p-4 hidden" onclick="closeReceiptPreview()">
+{{-- Receipt preview --}}
+<div id="receiptPreviewModal" class="fixed inset-0 z-50 bg-gray-950/70 flex items-center justify-center p-4 hidden" onclick="closeReceiptPreview()">
   <div class="max-w-2xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl p-4 space-y-3" onclick="event.stopPropagation()">
-    <div class="flex items-center justify-between border-b pb-2">
-      <h4 class="text-sm font-bold text-gray-800" id="receiptPreviewTitle">Expense Voucher</h4>
-      <button type="button" onclick="closeReceiptPreview()" class="text-gray-400 hover:text-gray-600 font-black text-xl">&times;</button>
+    <div class="flex items-center justify-between gap-3">
+      <h4 class="text-sm font-semibold text-gray-900" id="receiptPreviewTitle">Receipt</h4>
+      <button type="button" onclick="closeReceiptPreview()" class="h-8 w-8 grid place-items-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600" aria-label="Close">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
     </div>
     <div class="max-h-[75vh] overflow-auto flex items-center justify-center bg-gray-50 rounded-xl p-2">
-      <img id="receiptPreviewImg" src="" alt="Receipt" class="max-w-full h-auto rounded-lg shadow-sm">
+      <img id="receiptPreviewImg" src="" alt="Receipt" class="max-w-full h-auto rounded-lg">
     </div>
   </div>
 </div>
