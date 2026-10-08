@@ -1,297 +1,125 @@
 @extends('layouts.admin')
-@section('title', 'Banners Management')
+@section('title', 'Banners')
+@section('subtitle', 'Homepage carousel slides and the promo cards beside them.')
+
+@section('page-actions')
+  <a href="{{ url('/') }}" target="_blank" class="pill-btn">
+    View store
+    <span class="pill-ico"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></span>
+  </a>
+  <a href="{{ route('admin.banners.create', ['placement' => 'hero_side']) }}" class="pill-btn">Add promo card</a>
+  <a href="{{ route('admin.banners.create', ['placement' => 'hero']) }}" class="pill-btn pill-btn-dark">
+    <span class="pill-ico"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+    Add slide
+  </a>
+@endsection
 
 @section('content')
-<div class="space-y-6">
+@php
+  $heroSlides = $banners->where('placement', 'hero');
+  $promoCards = $banners->where('placement', 'hero_side');
+  $activeHeroCount = $heroSlides->where('is_active', true)->count();
+  $activePromoCount = $promoCards->where('is_active', true)->count();
 
-  {{-- Page Header --}}
-  <div class="flex flex-wrap items-center justify-between gap-4">
-    <div>
-      <div class="flex items-center gap-2">
-        <h2 class="page-title text-xl sm:text-2xl font-bold text-gray-900">Homepage Banners</h2>
-        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-          Hero &amp; Promo
+  $sections = [
+    [
+      'items' => $heroSlides, 'placement' => 'hero', 'active' => $activeHeroCount,
+      'title' => 'Hero carousel', 'hint' => 'Main rotating slider at the top of the homepage. Best size 1500 × 800 px (15:8).',
+      'aspect' => 'aspect-[15/8]', 'add' => 'Add slide', 'untitled' => 'Untitled slide',
+      'empty' => 'No carousel slides yet', 'emptyHint' => 'Add a slide to show promotions, new arrivals or seasonal deals.',
+      'confirm' => 'Are you sure you want to delete this banner slide?',
+      'icon' => '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5L5 20"/>',
+    ],
+    [
+      'items' => $promoCards, 'placement' => 'hero_side', 'active' => $activePromoCount,
+      'title' => 'Promo cards', 'hint' => 'Cards beside the carousel on desktop, two per row on phones. Best size 868 × 476 px.',
+      'aspect' => 'aspect-[1.82/1]', 'add' => 'Add card', 'untitled' => 'Untitled promo card',
+      'empty' => 'No promo cards yet', 'emptyHint' => 'Add promo cards to sit beside the main carousel.',
+      'confirm' => 'Are you sure you want to delete this promo card?',
+      'icon' => '<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
+    ],
+  ];
+@endphp
+
+<div class="space-y-4">
+
+  {{-- Summary --}}
+  <div class="grid grid-cols-2 gap-3">
+    @foreach($sections as $s)
+      <div class="panel p-3.5 sm:p-4 flex items-center gap-3">
+        <span class="hidden sm:grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gray-100 text-gray-700">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">{!! $s['icon'] !!}</svg>
         </span>
+        <div class="min-w-0 flex-1">
+          <p class="text-xs text-gray-500">{{ $s['title'] }}</p>
+          <p class="mt-1 text-lg sm:text-xl font-semibold text-gray-900 tabular-nums">{{ $s['active'] }} <span class="text-sm font-normal text-gray-400">/ {{ $s['items']->count() }} live</span></p>
+        </div>
+        <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $s['active'] > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' }}">{{ $s['active'] > 0 ? 'Showing' : 'Nothing live' }}</span>
       </div>
-      <p class="text-xs sm:text-sm text-gray-500 mt-1">
-        Manage rotating hero carousel slides and featured promo cards. Upload banner graphics and set destination URLs.
-      </p>
-    </div>
-    <div class="flex items-center gap-2">
-      <a href="{{ url('/') }}" target="_blank" class="px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors shadow-sm inline-flex items-center gap-1.5">
-        <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-        View Storefront
-      </a>
-      <a href="{{ route('admin.banners.create', ['placement' => 'hero']) }}" class="btn-primary text-xs sm:text-sm">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-        Add Slide
-      </a>
-      <a href="{{ route('admin.banners.create', ['placement' => 'hero_side']) }}" class="px-4 py-2 text-xs sm:text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors shadow-sm inline-flex items-center gap-1.5">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-        Add Promo Card
-      </a>
-    </div>
+    @endforeach
   </div>
 
-  @php
-    $heroSlides = $banners->where('placement', 'hero');
-    $promoCards = $banners->where('placement', 'hero_side');
-    $activeHeroCount = $heroSlides->where('is_active', true)->count();
-    $activePromoCount = $promoCards->where('is_active', true)->count();
-  @endphp
-
-  {{-- Overview / Status Banner --}}
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    {{-- Hero Carousel Summary --}}
-    <div class="card p-5 bg-white border-gray-200 shadow-sm flex items-center justify-between">
-      <div class="flex items-center gap-3.5">
-        <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+  @foreach($sections as $s)
+    <section class="panel p-4 sm:p-5">
+      <div class="flex items-start justify-between gap-3 mb-4">
+        <div class="min-w-0">
+          <h2 class="text-[15px] font-semibold text-gray-900">{{ $s['title'] }}</h2>
+          <p class="text-xs text-gray-500 mt-0.5">{{ $s['hint'] }}</p>
         </div>
-        <div>
-          <h3 class="text-sm font-bold text-gray-900">Hero Main Carousel</h3>
-          <p class="text-xs text-gray-400 mt-0.5">Recommended: 1500 &times; 800 px (15:8)</p>
-        </div>
-      </div>
-      <div class="text-right">
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold {{ $activeHeroCount > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
-          <span class="w-1.5 h-1.5 rounded-full {{ $activeHeroCount > 0 ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
-          {{ $activeHeroCount }} / {{ $heroSlides->count() }} Live
-        </span>
-      </div>
-    </div>
-
-    {{-- Promo Cards Summary --}}
-    <div class="card p-5 bg-white border-gray-200 shadow-sm flex items-center justify-between">
-      <div class="flex items-center gap-3.5">
-        <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-sm shrink-0">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-        </div>
-        <div>
-          <h3 class="text-sm font-bold text-gray-900">Featured Promo Cards</h3>
-          <p class="text-xs text-gray-400 mt-0.5">Recommended: 868 &times; 476 px (1.82:1)</p>
-        </div>
-      </div>
-      <div class="text-right">
-        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold {{ $activePromoCount > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
-          <span class="w-1.5 h-1.5 rounded-full {{ $activePromoCount > 0 ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
-          {{ $activePromoCount }} / {{ $promoCards->count() }} Live
-        </span>
-      </div>
-    </div>
-  </div>
-
-  {{-- SECTION 1: HERO CAROUSEL SLIDES --}}
-  <div class="card p-5 sm:p-6">
-    <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-gray-100">
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">1</span>
-          <h3 class="text-base font-bold text-gray-900">Hero Main Carousel Slides</h3>
-        </div>
-        <p class="text-xs text-gray-500 mt-0.5">Main rotating slider on top of homepage. Displays at 15:8 aspect ratio.</p>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg font-medium">
-          {{ $activeHeroCount }} visible &middot; {{ $heroSlides->count() }} total
-        </span>
-        <a href="{{ route('admin.banners.create', ['placement' => 'hero']) }}" class="btn-primary text-xs py-1.5 px-3">
-          + Add Slide
+        <a href="{{ route('admin.banners.create', ['placement' => $s['placement']]) }}" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium inline-flex items-center gap-1 shrink-0">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          {{ $s['add'] }}
         </a>
       </div>
-    </div>
 
-    @if($heroSlides->isEmpty())
-      <div class="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
-        <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-        <p class="text-sm font-semibold text-gray-700">No Hero Carousel Slides Yet</p>
-        <p class="text-xs text-gray-400 mt-1 max-w-sm mx-auto">Add your first slide to showcase flagship promotions, new arrivals, or season deals.</p>
-        <a href="{{ route('admin.banners.create', ['placement' => 'hero']) }}" class="btn-primary text-xs mt-4 inline-flex">
-          + Create First Hero Slide
-        </a>
-      </div>
-    @else
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        @foreach($heroSlides as $slide)
-          <div class="group border border-gray-200 hover:border-primary/40 rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-all flex flex-col justify-between {{ $slide->is_active ? '' : 'opacity-65 bg-gray-50/50' }}">
-            <div>
-              {{-- Banner Preview Aspect Ratio (15/8) --}}
-              <div class="relative w-full aspect-[15/8] bg-gray-900 overflow-hidden">
-                @if($slide->image)
-                  <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+      @if($s['items']->isEmpty())
+        <div class="text-center py-8 rounded-2xl bg-gray-50">
+          <p class="text-sm font-medium text-gray-700">{{ $s['empty'] }}</p>
+          <p class="text-xs text-gray-500 mt-1 max-w-sm mx-auto">{{ $s['emptyHint'] }}</p>
+        </div>
+      @else
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+          @foreach($s['items'] as $banner)
+            <article class="rounded-2xl bg-gray-50 overflow-hidden flex flex-col {{ $banner->is_active ? '' : 'opacity-70' }}">
+              <div class="relative w-full {{ $s['aspect'] }} bg-gray-200 overflow-hidden">
+                @if($banner->image)
+                  <img src="{{ $banner->imageUrl() }}" alt="{{ $banner->title }}" class="w-full h-full object-cover">
                 @else
-                  <div class="w-full h-full bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center text-white text-xs font-semibold p-4 text-center">
-                    No image uploaded
-                  </div>
+                  <div class="w-full h-full flex items-center justify-center text-gray-500 text-xs">No image uploaded</div>
                 @endif
-
-                {{-- Badges on preview --}}
-                <div class="absolute top-2.5 left-2.5">
-                  <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold tracking-wide uppercase bg-black/60 backdrop-blur-sm text-white shadow-sm">
-                    Order #{{ $slide->position }}
-                  </span>
-                </div>
-
-                <div class="absolute top-2.5 right-2.5">
-                  <span class="px-2 py-0.5 rounded-md text-[10px] font-bold shadow-sm {{ $slide->is_active ? 'bg-emerald-500 text-white' : 'bg-gray-600 text-white' }}">
-                    {{ $slide->is_active ? '● Live' : '○ Hidden' }}
-                  </span>
-                </div>
+                <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-white/90 text-gray-800">#{{ $banner->position }}</span>
+                <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $banner->is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">{{ $banner->is_active ? 'Live' : 'Hidden' }}</span>
               </div>
 
-              {{-- Slide Details --}}
-              <div class="p-4 space-y-2">
-                <h4 class="font-bold text-sm text-gray-900 line-clamp-1" title="{{ $slide->title }}">
-                  {{ $slide->title ?: 'Untitled Slide' }}
-                </h4>
-
-                <div>
-                  <a href="{{ $slide->linkHref() }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-mono text-gray-500 hover:text-primary transition-colors bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100 truncate max-w-full" title="{{ $slide->link_url ?: route('shop') }}">
-                    <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                    <span class="truncate">{{ $slide->link_url ?: '/shop' }}</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {{-- Actions Footer --}}
-            <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-xs">
-              <span class="text-gray-400 font-medium">Position: {{ $slide->position }}</span>
-              <div class="flex items-center gap-1.5">
-                {{-- Quick Toggle Visibility --}}
-                <form method="POST" action="{{ route('admin.banners.toggle', $slide) }}">
-                  @csrf @method('PATCH')
-                  <button type="submit" class="px-2.5 py-1 rounded-lg text-xs font-medium transition-colors {{ $slide->is_active ? 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' }}">
-                    {{ $slide->is_active ? 'Hide' : 'Show' }}
-                  </button>
-                </form>
-
-                {{-- Edit --}}
-                <a href="{{ route('admin.banners.edit', $slide) }}" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 transition-colors inline-flex items-center gap-1">
-                  <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                  Edit
+              <div class="p-3 flex-1 min-w-0">
+                <h3 class="text-[13px] font-semibold text-gray-900 truncate" title="{{ $banner->title }}">{{ $banner->title ?: $s['untitled'] }}</h3>
+                <a href="{{ $banner->linkHref() }}" target="_blank" class="mt-1 flex items-center gap-1 text-[11px] text-gray-500 hover:text-gray-800 min-w-0" title="{{ $banner->link_url ?: route('shop') }}">
+                  <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
+                  <span class="truncate">{{ $banner->link_url ?: '/shop' }}</span>
                 </a>
+              </div>
 
-                {{-- Delete --}}
-                <form method="POST" action="{{ route('admin.banners.destroy', $slide) }}" onsubmit="return confirm('Are you sure you want to delete this banner slide?');">
+              <div class="px-3 pb-3 flex items-center gap-1.5">
+                <form method="POST" action="{{ route('admin.banners.toggle', $banner) }}">
+                  @csrf @method('PATCH')
+                  <button type="submit" class="h-8 px-3 rounded-full bg-white hover:bg-gray-100 text-gray-700 text-xs font-medium">
+                    {{ $banner->is_active ? 'Hide' : 'Show' }}
+                  </button>
+                </form>
+                <a href="{{ route('admin.banners.edit', $banner) }}" class="h-8 px-3 rounded-full text-white text-xs font-semibold inline-flex items-center" style="background: var(--brand-dark);">Edit</a>
+                <form method="POST" action="{{ route('admin.banners.destroy', $banner) }}" class="ml-auto" onsubmit="return confirm('{{ $s['confirm'] }}');">
                   @csrf @method('DELETE')
-                  <button type="submit" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 transition-colors">
-                    Del
+                  <button type="submit" class="h-8 w-8 rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100 inline-flex items-center justify-center" title="Delete" aria-label="Delete">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
                   </button>
                 </form>
               </div>
-            </div>
-          </div>
-        @endforeach
-      </div>
-    @endif
-  </div>
-
-  {{-- SECTION 2: PROMO CARDS --}}
-  <div class="card p-5 sm:p-6">
-    <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-gray-100">
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-xs">2</span>
-          <h3 class="text-base font-bold text-gray-900">Featured Promo Cards</h3>
+            </article>
+          @endforeach
         </div>
-        <p class="text-xs text-gray-500 mt-0.5">Side cards stacked beside the carousel on desktop (or 2-column on mobile). Displays at 1.82:1 aspect ratio.</p>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-lg font-medium">
-          {{ $activePromoCount }} visible &middot; {{ $promoCards->count() }} total
-        </span>
-        <a href="{{ route('admin.banners.create', ['placement' => 'hero_side']) }}" class="btn-primary text-xs py-1.5 px-3 bg-amber-600 hover:bg-amber-700">
-          + Add Promo Card
-        </a>
-      </div>
-    </div>
-
-    @if($promoCards->isEmpty())
-      <div class="text-center py-10 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50/50">
-        <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-        <p class="text-sm font-semibold text-gray-700">No Featured Promo Cards Yet</p>
-        <p class="text-xs text-gray-400 mt-1 max-w-sm mx-auto">Add promo cards (e.g. MacBook Neo or AirPods Pro offers) to flank the main hero carousel.</p>
-        <a href="{{ route('admin.banners.create', ['placement' => 'hero_side']) }}" class="btn-primary text-xs mt-4 inline-flex bg-amber-600 hover:bg-amber-700">
-          + Create First Promo Card
-        </a>
-      </div>
-    @else
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        @foreach($promoCards as $card)
-          <div class="group border border-gray-200 hover:border-amber-400/60 rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-all flex flex-col justify-between {{ $card->is_active ? '' : 'opacity-65 bg-gray-50/50' }}">
-            <div>
-              {{-- Banner Preview Aspect Ratio (1.82:1) --}}
-              <div class="relative w-full aspect-[1.82/1] bg-gray-900 overflow-hidden">
-                @if($card->image)
-                  <img src="{{ $card->imageUrl() }}" alt="{{ $card->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                @else
-                  <div class="w-full h-full bg-gradient-to-br from-amber-600 to-stone-800 flex items-center justify-center text-white text-xs font-semibold p-4 text-center">
-                    No image uploaded
-                  </div>
-                @endif
-
-                {{-- Badges --}}
-                <div class="absolute top-2.5 left-2.5">
-                  <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold tracking-wide uppercase bg-black/60 backdrop-blur-sm text-white shadow-sm">
-                    Slot Pos #{{ $card->position }}
-                  </span>
-                </div>
-
-                <div class="absolute top-2.5 right-2.5">
-                  <span class="px-2 py-0.5 rounded-md text-[10px] font-bold shadow-sm {{ $card->is_active ? 'bg-emerald-500 text-white' : 'bg-gray-600 text-white' }}">
-                    {{ $card->is_active ? '● Live' : '○ Hidden' }}
-                  </span>
-                </div>
-              </div>
-
-              {{-- Card Details --}}
-              <div class="p-4 space-y-2">
-                <h4 class="font-bold text-sm text-gray-900 line-clamp-1" title="{{ $card->title }}">
-                  {{ $card->title ?: 'Untitled Promo Card' }}
-                </h4>
-
-                <div>
-                  <a href="{{ $card->linkHref() }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-mono text-gray-500 hover:text-amber-600 transition-colors bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100 truncate max-w-full" title="{{ $card->link_url ?: route('shop') }}">
-                    <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                    <span class="truncate">{{ $card->link_url ?: '/shop' }}</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {{-- Actions Footer --}}
-            <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-xs">
-              <span class="text-gray-400 font-medium">Position: {{ $card->position }}</span>
-              <div class="flex items-center gap-1.5">
-                {{-- Quick Toggle Visibility --}}
-                <form method="POST" action="{{ route('admin.banners.toggle', $card) }}">
-                  @csrf @method('PATCH')
-                  <button type="submit" class="px-2.5 py-1 rounded-lg text-xs font-medium transition-colors {{ $card->is_active ? 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' }}">
-                    {{ $card->is_active ? 'Hide' : 'Show' }}
-                  </button>
-                </form>
-
-                {{-- Edit --}}
-                <a href="{{ route('admin.banners.edit', $card) }}" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 transition-colors inline-flex items-center gap-1">
-                  <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                  Edit
-                </a>
-
-                {{-- Delete --}}
-                <form method="POST" action="{{ route('admin.banners.destroy', $card) }}" onsubmit="return confirm('Are you sure you want to delete this promo card?');">
-                  @csrf @method('DELETE')
-                  <button type="submit" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 transition-colors">
-                    Del
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
-        @endforeach
-      </div>
-    @endif
-  </div>
+      @endif
+    </section>
+  @endforeach
 
 </div>
 @endsection

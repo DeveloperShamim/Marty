@@ -1,66 +1,53 @@
 @extends('layouts.admin')
 @php $editing = $feature->exists; @endphp
-@section('title', $editing ? 'Edit Feature: ' . $feature->title : 'Create New Feature')
+@section('title', $editing ? 'Edit feature' : 'New feature')
+@section('subtitle', $editing ? $feature->title : 'A trust badge for the homepage strip.')
+
+@section('page-actions')
+  <a href="{{ route('admin.features.index') }}" class="pill-btn">Cancel</a>
+  <button type="submit" form="featureForm" class="pill-btn pill-btn-dark cursor-pointer">
+    <span class="pill-ico"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+    {{ $editing ? 'Update feature' : 'Save feature' }}
+  </button>
+@endsection
 
 @section('content')
-<form method="POST" action="{{ $editing ? route('admin.features.update', $feature) : route('admin.features.store') }}" class="space-y-6">
+<form method="POST" action="{{ $editing ? route('admin.features.update', $feature) : route('admin.features.store') }}" id="featureForm" class="max-w-2xl">
   @csrf
   @if($editing) @method('PUT') @endif
 
-  {{-- Page Header --}}
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl border border-stone-200 shadow-2xs">
+  <section class="panel p-4 sm:p-5 space-y-3.5">
     <div>
-      <a href="{{ route('admin.features.index') }}" class="text-xs font-bold text-stone-500 hover:text-brand-600 inline-flex items-center gap-1 mb-1">
-        &larr; Back to Features List
-      </a>
-      <h1 class="text-xl sm:text-2xl font-extrabold text-stone-900 tracking-tight">
-        {{ $editing ? 'Edit Feature: ' . $feature->title : '✨ Create New Trust Feature Badge' }}
-      </h1>
+      <h2 class="text-[15px] font-semibold text-gray-900">Feature details</h2>
+      <p class="text-xs text-gray-500 mt-0.5">Title, short line and icon shown on the homepage.</p>
     </div>
-    <button type="submit" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer">
-      {{ $editing ? '💾 Update Feature Badge' : '✨ Save Feature Badge' }}
-    </button>
-  </div>
 
-  <div class="max-w-2xl space-y-6">
-
-    {{-- Main Feature Card --}}
-    <div class="bg-white p-4 sm:p-6 rounded-2xl border border-stone-200 shadow-2xs space-y-5">
-      <h2 class="text-base font-extrabold text-stone-900 border-b border-stone-100 pb-3 flex items-center gap-2">
-        <span>✨ Feature Identity &amp; Icon</span>
-      </h2>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-        <div>
-          <label class="text-xs font-extrabold text-stone-800 block mb-1.5">Feature Title <span class="text-rose-500">*</span></label>
-          <input name="title" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs" value="{{ old('title', $feature->title) }}" required placeholder="e.g. Free Home Delivery" />
-        </div>
-
-        <div>
-          <label class="text-xs font-bold text-stone-700 block mb-1.5">Display Position Order</label>
-          <input name="position" type="number" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs" value="{{ old('position', $feature->position ?? 0) }}" placeholder="0" />
-        </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div class="sm:col-span-2">
+        <label class="lbl" for="featureTitle">Title <span class="text-rose-500">*</span></label>
+        <input name="title" id="featureTitle" class="inp" value="{{ old('title', $feature->title) }}" required placeholder="e.g. Free home delivery" />
       </div>
-
       <div>
-        <label class="text-xs font-bold text-stone-700 block mb-1.5">Subtitle / Short Description</label>
-        <input name="subtitle" class="w-full text-xs font-bold px-3.5 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs" value="{{ old('subtitle', $feature->subtitle) }}" placeholder="e.g. On orders over ৳1,000 across BD" />
-      </div>
-
-      <div>
-        <label class="text-xs font-extrabold text-stone-800 block mb-1.5">Icon (Emoji, SVG Path, or Image URL)</label>
-        <textarea name="icon" rows="3" class="w-full text-xs font-mono font-semibold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:border-brand-500 shadow-2xs" placeholder="🚚 or M12 3l8 4v5... or https://...">{{ old('icon', $feature->icon) }}</textarea>
-        <p class="text-[11px] text-stone-400 mt-1.5">Examples: Emoji (<code>🚚</code>, <code>🛡️</code>, <code>🔁</code>, <code>✨</code>), SVG path (<code>M12 3l8 4v5...</code>), or image URL (<code>https://...</code>)</p>
-      </div>
-
-      <div class="pt-3 border-t border-stone-100 bg-stone-50/70 p-4 rounded-xl border border-stone-200">
-        <label class="flex items-center gap-2.5 text-xs font-extrabold text-stone-800 cursor-pointer">
-          <input type="checkbox" name="is_active" value="1" class="h-4 w-4 accent-brand-600 rounded cursor-pointer" @checked(old('is_active', $feature->is_active ?? true)) /> 
-          <span>Active &amp; Visible (Show on homepage trust feature strip)</span>
-        </label>
+        <label class="lbl" for="featurePosition">Position</label>
+        <input name="position" id="featurePosition" type="number" class="inp" value="{{ old('position', $feature->position ?? 0) }}" placeholder="0" />
       </div>
     </div>
 
-  </div>
+    <div>
+      <label class="lbl" for="featureSubtitle">Subtitle</label>
+      <input name="subtitle" id="featureSubtitle" class="inp" value="{{ old('subtitle', $feature->subtitle) }}" placeholder="e.g. On orders over ৳1,000 across BD" />
+    </div>
+
+    <div>
+      <label class="lbl" for="featureIcon">Icon</label>
+      <textarea name="icon" id="featureIcon" rows="3" class="inp font-mono text-xs" placeholder="An emoji, an SVG path like M12 3l8 4v5... or https://...">{{ old('icon', $feature->icon) }}</textarea>
+      <p class="text-[11px] text-gray-500 mt-1">Paste an emoji, an SVG path (<code>M12 3l8 4v5...</code>) or an image URL (<code>https://...</code>).</p>
+    </div>
+
+    <label class="flex items-center gap-2.5 p-3 rounded-xl bg-gray-50 text-[13px] font-medium text-gray-800 cursor-pointer">
+      <input type="checkbox" name="is_active" value="1" class="h-4 w-4 accent-brand-600 rounded cursor-pointer" @checked(old('is_active', $feature->is_active ?? true)) />
+      <span>Show on the homepage</span>
+    </label>
+  </section>
 </form>
 @endsection

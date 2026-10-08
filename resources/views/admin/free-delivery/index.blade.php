@@ -1,79 +1,89 @@
 @extends('layouts.admin')
-@section('title', 'Free Delivery')
+@section('title', 'Free delivery')
+@section('subtitle', 'Free delivery for online payments, big orders or selected products.')
 
 @section('content')
 @php
   $reasonRows = [
-    'online_payment' => ['Paid online', 'bg-emerald-50 border-emerald-200 text-emerald-900'],
-    'product'        => ['Free-delivery products', 'bg-sky-50 border-sky-200 text-sky-900'],
-    'order_total'    => ['Big orders', 'bg-violet-50 border-violet-200 text-violet-900'],
+    'online_payment' => ['Paid online', 'bg-emerald-50 text-emerald-700', '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>'],
+    'product'        => ['Free-delivery products', 'bg-sky-50 text-sky-700', '<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/>'],
+    'order_total'    => ['Big orders', 'bg-violet-50 text-violet-700', '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 2h3l2.7 12.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/>'],
   ];
   $totalCost = (float) $stats->sum('cost');
   $totalOrders = (int) $stats->sum('orders');
   $fees = $config['fees'];
 @endphp
 
-<div class="space-y-5 sm:space-y-6 max-w-5xl">
-
-  {{-- Header --}}
-  <div class="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs">
-    <h1 class="text-base sm:text-xl font-extrabold text-stone-900 tracking-tight flex items-center gap-2"><span>🚚</span> Free Delivery</h1>
-    <p class="text-xs text-stone-500 mt-1">
-      Give customers free delivery for paying online, for big orders, or on selected products.
-      Your normal delivery fee is {{ money($fees['inside_dhaka']) }} inside / {{ money($fees['outside_dhaka']) }} outside Dhaka
-      (<a href="{{ route('admin.settings.edit') }}" class="underline">Store Settings</a>). On a free-delivery order you still pay the courier,
-      so that fee is subtracted from your profit in <b>Profit &amp; Analytics</b>.
-    </p>
-  </div>
+<div class="space-y-4 max-w-5xl">
 
   {{-- This month --}}
-  <div class="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-3">
-    <div class="flex items-center justify-between gap-2">
-      <h2 class="text-sm font-black text-stone-900">This month's free delivery cost</h2>
-      <span class="text-[11px] text-stone-400">Delivered or paid orders since {{ now()->startOfMonth()->format('d M') }}</span>
+  <section>
+    <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 px-0.5 mb-2">
+      <h2 class="text-[15px] font-semibold text-gray-900">Cost this month</h2>
+      <span class="text-xs text-gray-500">Delivered or paid orders since {{ now()->startOfMonth()->format('d M') }}</span>
     </div>
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-      <div class="rounded-xl border border-amber-200 bg-amber-50 p-3">
-        <div class="text-[10px] font-bold uppercase tracking-wider text-amber-700">Total</div>
-        <div class="text-lg font-black text-amber-900 font-mono">{{ money($totalCost) }}</div>
-        <div class="text-[11px] text-amber-700">{{ $totalOrders }} {{ \Illuminate\Support\Str::plural('order', $totalOrders) }}</div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="panel p-3.5 sm:p-4">
+        <div class="flex items-center justify-between gap-2">
+          <p class="text-xs text-gray-500">Total</p>
+          <span class="grid h-8 w-8 place-items-center rounded-xl bg-amber-50 text-amber-700">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+          </span>
+        </div>
+        <p class="mt-1 text-lg sm:text-xl font-semibold text-gray-900 tabular-nums">{{ money($totalCost) }}</p>
+        <p class="text-[11px] text-gray-400 mt-0.5">{{ $totalOrders }} {{ \Illuminate\Support\Str::plural('order', $totalOrders) }}</p>
       </div>
-      @foreach($reasonRows as $key => [$label, $cls])
+      @foreach($reasonRows as $key => [$label, $cls, $icon])
         @php $row = $stats->get($key); @endphp
-        <div class="rounded-xl border p-3 {{ $cls }}">
-          <div class="text-[10px] font-bold uppercase tracking-wider opacity-75">{{ $label }}</div>
-          <div class="text-lg font-black font-mono">{{ money((float) ($row->cost ?? 0)) }}</div>
-          <div class="text-[11px] opacity-75">{{ (int) ($row->orders ?? 0) }} {{ \Illuminate\Support\Str::plural('order', (int) ($row->orders ?? 0)) }}</div>
+        <div class="panel p-3.5 sm:p-4">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-xs text-gray-500 leading-tight">{{ $label }}</p>
+            <span class="grid h-8 w-8 shrink-0 place-items-center rounded-xl {{ $cls }}">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">{!! $icon !!}</svg>
+            </span>
+          </div>
+          <p class="mt-1 text-lg sm:text-xl font-semibold text-gray-900 tabular-nums">{{ money((float) ($row->cost ?? 0)) }}</p>
+          <p class="text-[11px] text-gray-400 mt-0.5">{{ (int) ($row->orders ?? 0) }} {{ \Illuminate\Support\Str::plural('order', (int) ($row->orders ?? 0)) }}</p>
         </div>
       @endforeach
     </div>
-  </div>
+    <p class="mt-2 px-0.5 text-xs text-gray-500 leading-relaxed">
+      Normal delivery fee: {{ money($fees['inside_dhaka']) }} inside / {{ money($fees['outside_dhaka']) }} outside Dhaka
+      (<a href="{{ route('admin.settings.edit') }}" class="underline hover:text-gray-800">Store settings</a>).
+      You still pay the courier on a free-delivery order, so that fee is taken off your profit in Profit &amp; Analytics.
+    </p>
+  </section>
 
   {{-- Offer rules --}}
-  <form method="POST" action="{{ route('admin.free-delivery.update') }}" class="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-5">
+  <form method="POST" action="{{ route('admin.free-delivery.update') }}" class="panel p-4 sm:p-5 flex flex-col gap-4">
     @csrf @method('PUT')
 
-    <div class="space-y-3">
+    <div>
+      <h2 class="text-[15px] font-semibold text-gray-900">Offer rules</h2>
+      <p class="text-xs text-gray-500 mt-0.5">Choose when an order ships free.</p>
+    </div>
+
+    <div class="rounded-xl bg-gray-50 p-3.5 space-y-3">
       <label class="flex items-start gap-3 cursor-pointer">
         <span class="relative inline-flex items-center shrink-0 mt-0.5">
           <input type="checkbox" name="free_delivery_online" value="1" @checked(old('free_delivery_online', $config['online_enabled'])) class="sr-only peer">
-          <span class="w-11 h-6 bg-stone-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></span>
+          <span class="w-10 h-6 bg-gray-300 rounded-full peer peer-checked:after:translate-x-4 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></span>
         </span>
         <span>
-          <span class="block text-sm font-extrabold text-stone-900">Free delivery when the customer pays online</span>
-          <span class="block text-xs text-stone-500">bKash, Nagad or Rocket at checkout. It only counts once you <b>verify</b> the payment. If the money never arrives, use “Switch to cash on delivery” on the order and the delivery charge is added back.</span>
+          <span class="block text-[13px] font-semibold text-gray-900">When the customer pays online</span>
+          <span class="block text-xs text-gray-500 mt-0.5">bKash, Nagad or Rocket at checkout. It only counts once you verify the payment. If the money never arrives, use “Switch to cash on delivery” on the order and the delivery charge is added back.</span>
         </span>
       </label>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:pl-14">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:pl-[52px]">
         <div>
-          <label for="fdMin" class="text-xs font-black text-stone-800 block mb-1">Minimum order amount (৳)</label>
-          <input id="fdMin" type="number" name="free_delivery_online_min" min="0" step="1" value="{{ old('free_delivery_online_min', (float) $config['online_min']) }}" class="w-full text-sm font-bold px-3.5 py-2.5 bg-stone-50 focus:bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500" />
-          <p class="text-[11px] text-stone-500 mt-1">After coupon discount. 0 = any amount. Stops losing money on small orders.</p>
+          <label for="fdMin" class="lbl">Minimum order (৳)</label>
+          <input id="fdMin" type="number" name="free_delivery_online_min" min="0" step="1" value="{{ old('free_delivery_online_min', (float) $config['online_min']) }}" class="inp" />
+          <p class="text-[11px] text-gray-500 mt-1">After coupon discount. 0 means any amount.</p>
         </div>
         <div>
-          <label for="fdZones" class="text-xs font-black text-stone-800 block mb-1">Delivery zones</label>
-          <select id="fdZones" name="free_delivery_online_zones" class="w-full text-sm font-bold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500">
+          <label for="fdZones" class="lbl">Delivery zones</label>
+          <select id="fdZones" name="free_delivery_online_zones" class="inp">
             <option value="both" @selected(old('free_delivery_online_zones', $config['online_zones']) === 'both')>Inside &amp; outside Dhaka</option>
             <option value="inside_dhaka" @selected(old('free_delivery_online_zones', $config['online_zones']) === 'inside_dhaka')>Inside Dhaka only</option>
             <option value="outside_dhaka" @selected(old('free_delivery_online_zones', $config['online_zones']) === 'outside_dhaka')>Outside Dhaka only</option>
@@ -82,68 +92,72 @@
       </div>
     </div>
 
-    <div class="border-t border-stone-100 pt-5">
-      <label for="fdOver" class="text-sm font-extrabold text-stone-900 block">Free delivery for every order above (৳)</label>
-      <p class="text-xs text-stone-500 mb-2">Any payment method, including cash on delivery. Leave 0 to turn this off.</p>
-      <input id="fdOver" type="number" name="free_delivery_over_amount" min="0" step="1" value="{{ old('free_delivery_over_amount', (float) $config['over_amount']) }}" class="w-full sm:w-64 text-sm font-bold px-3.5 py-2.5 bg-stone-50 focus:bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500" />
+    <div class="rounded-xl bg-gray-50 p-3.5">
+      <label for="fdOver" class="block text-[13px] font-semibold text-gray-900">Every order above (৳)</label>
+      <p class="text-xs text-gray-500 mt-0.5 mb-2">Any payment method, including cash on delivery. 0 turns this off.</p>
+      <input id="fdOver" type="number" name="free_delivery_over_amount" min="0" step="1" value="{{ old('free_delivery_over_amount', (float) $config['over_amount']) }}" class="inp sm:w-64" />
     </div>
 
     <div class="flex justify-end">
-      <button type="submit" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md transition-all">Save Free Delivery</button>
+      <button type="submit" class="w-full sm:w-auto h-9 px-4 rounded-full text-white text-[13px] font-semibold" style="background: var(--brand-dark);">Save rules</button>
     </div>
   </form>
 
   {{-- Free-delivery products --}}
-  <div class="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-4">
+  <section class="panel p-4 sm:p-5 space-y-3">
     <div>
-      <h2 class="text-sm font-extrabold text-stone-900">Free-delivery products ({{ $freeProducts->count() }})</h2>
-      <p class="text-xs text-stone-500">If a cart contains any of these, the whole order ships free, whatever the payment method. They show a “Free Delivery” badge in the shop.</p>
+      <h2 class="text-[15px] font-semibold text-gray-900">Free-delivery products <span class="text-gray-400 font-normal tabular-nums">({{ $freeProducts->count() }})</span></h2>
+      <p class="text-xs text-gray-500 mt-0.5">If a cart has any of these, the whole order ships free. They show a “Free Delivery” badge in the shop.</p>
     </div>
 
     <form method="GET" action="{{ route('admin.free-delivery.index') }}" class="flex gap-2">
-      <input type="search" name="q" value="{{ $q }}" placeholder="Search products to add…" class="flex-1 min-w-0 text-sm px-3.5 py-2.5 bg-stone-50 focus:bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500" />
-      <button class="px-4 py-2.5 rounded-xl bg-stone-900 text-white text-xs font-extrabold shrink-0">Search</button>
+      <label class="relative flex-1 min-w-0">
+        <span class="sr-only">Search products to add</span>
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="search" name="q" value="{{ $q }}" placeholder="Search products to add" class="w-full h-10 pl-10 pr-4 rounded-full bg-gray-100 border border-transparent text-sm focus:bg-white focus:border-gray-200 outline-none" />
+      </label>
+      <button class="h-10 px-4 rounded-full text-white text-[13px] font-semibold shrink-0" style="background: var(--brand-dark);">Search</button>
     </form>
 
     @if($q !== '')
-      <div class="rounded-xl border border-stone-200 divide-y divide-stone-100">
+      <div class="rounded-xl bg-gray-50 divide-y divide-gray-100">
         @forelse($available as $p)
           <div class="flex items-center gap-3 p-2.5">
-            <img src="{{ $p->imageUrl() }}" alt="" class="h-10 w-10 rounded-lg object-cover bg-stone-100 shrink-0" loading="lazy">
+            <img src="{{ $p->imageUrl() }}" alt="" class="h-10 w-10 rounded-lg object-cover bg-white shrink-0" loading="lazy">
             <div class="min-w-0 flex-1">
-              <div class="text-sm font-semibold text-stone-900 truncate">{{ $p->name }}</div>
-              <div class="text-[11px] text-stone-500">{{ money($p->price) }}</div>
+              <div class="text-[13px] font-medium text-gray-900 truncate">{{ $p->name }}</div>
+              <div class="text-[11px] text-gray-500 tabular-nums">{{ money($p->price) }}</div>
             </div>
             <form method="POST" action="{{ route('admin.free-delivery.toggle', $p) }}">
               @csrf @method('PUT')
               <input type="hidden" name="free_delivery" value="1">
-              <button class="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-extrabold">+ Add</button>
+              <button class="h-8 px-3.5 rounded-full text-white text-xs font-semibold" style="background: var(--brand-dark);">Add</button>
             </form>
           </div>
         @empty
-          <p class="p-3 text-xs text-stone-500">No other products match “{{ $q }}”.</p>
+          <p class="p-3 text-xs text-gray-500">No other products match “{{ $q }}”.</p>
         @endforelse
       </div>
     @endif
 
-    <div class="rounded-xl border border-stone-200 divide-y divide-stone-100">
+    <div class="divide-y divide-gray-100">
       @forelse($freeProducts as $p)
-        <div class="flex items-center gap-3 p-2.5">
-          <img src="{{ $p->imageUrl() }}" alt="" class="h-10 w-10 rounded-lg object-cover bg-stone-100 shrink-0" loading="lazy">
+        <div class="flex items-center gap-3 py-2.5">
+          <img src="{{ $p->imageUrl() }}" alt="" class="h-10 w-10 rounded-lg object-cover bg-gray-100 shrink-0" loading="lazy">
           <div class="min-w-0 flex-1">
-            <a href="{{ route('admin.products.edit', $p) }}" class="block text-sm font-semibold text-stone-900 truncate hover:underline">{{ $p->name }}</a>
-            <div class="text-[11px] text-stone-500">{{ money($p->price) }} @unless($p->is_published)· <span class="text-amber-700">not published</span>@endunless</div>
+            <a href="{{ route('admin.products.edit', $p) }}" class="block text-[13px] font-medium text-gray-900 truncate hover:underline">{{ $p->name }}</a>
+            <div class="text-[11px] text-gray-500 tabular-nums">{{ money($p->price) }} @unless($p->is_published)· <span class="text-amber-700">not published</span>@endunless</div>
           </div>
           <form method="POST" action="{{ route('admin.free-delivery.toggle', $p) }}">
             @csrf @method('PUT')
             <input type="hidden" name="free_delivery" value="0">
-            <button class="px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-extrabold">Remove</button>
+            <button class="h-8 px-3 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-medium">Remove</button>
           </form>
         </div>
       @empty
-        <p class="p-4 text-xs text-stone-500 text-center">No free-delivery products yet. Search above to add one, or switch it on in the product's edit page.</p>
+        <p class="py-6 text-xs text-gray-500 text-center">No free-delivery products yet. Search above to add one, or switch it on in the product's edit page.</p>
       @endforelse
     </div>
-  </div>
+  </section>
 </div>
 @endsection

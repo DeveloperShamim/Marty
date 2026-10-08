@@ -1,142 +1,112 @@
 @extends('layouts.admin')
-@section('title', 'Flash Sale Manager')
-
-@section('content')
+@section('title', 'Flash sale')
 @php
   $endsLocal = !empty($endsAt)
     ? \Illuminate\Support\Str::of($endsAt)->replace(' ', 'T')->substr(0, 16)
     : '';
   $hasActiveCountdown = !empty($endsAt) && \Illuminate\Support\Carbon::parse($endsAt)->isFuture();
 @endphp
+@section('subtitle', 'Homepage flash deals, the countdown clock, display order and stock bars.')
 
-<div class="space-y-5 sm:space-y-6 max-w-full">
+@section('page-actions')
+  <a href="{{ route('home') }}" target="_blank" class="pill-btn">
+    View store
+    <span class="pill-ico"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></span>
+  </a>
+@endsection
 
-  {{-- Header & Stats Ribbon --}}
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs">
-    <div>
-      <div class="flex items-center gap-2 flex-wrap">
-        <h1 class="text-base sm:text-xl font-extrabold text-stone-900 tracking-tight flex items-center gap-2">
-          <span>⚡</span> Flash Sale Manager
-        </h1>
-        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200">
-          {{ $flashProducts->count() }} Deals Active
-        </span>
-        @if($hasActiveCountdown)
-          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200">
-            ● Timer Running
-          </span>
-        @else
-          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-stone-100 text-stone-500 border border-stone-200">
-            ○ Timer Inactive
-          </span>
-        @endif
-      </div>
-      <p class="text-xs text-stone-500 mt-1">
-        Configure homepage flash deals, live expiration countdown timer, product display sequence, and stock progress bars.
-      </p>
-    </div>
+@section('content')
+<div class="space-y-4 max-w-full">
 
-    <a href="{{ route('home') }}" target="_blank" class="px-4 py-2.5 rounded-xl bg-white hover:bg-stone-50 text-stone-800 border border-stone-200 font-extrabold text-xs shadow-2xs transition-all flex items-center justify-center gap-1.5 self-start sm:self-auto shrink-0 group">
-      <span>View Live on Storefront</span>
-      <span class="text-stone-400 group-hover:text-emerald-700 transition-transform group-hover:translate-x-0.5">↗</span>
-    </a>
-  </div>
+  <div id="flashReorderFeedback" class="hidden rounded-xl text-[13px] font-medium px-3.5 py-2.5"></div>
 
-  @if(session('status'))
-    <div class="rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-extrabold px-4 py-3 shadow-2xs flex items-center gap-2">
-      <span>✓</span>
-      <span>{{ session('status') }}</span>
-    </div>
-  @endif
-
-  <div id="flashReorderFeedback" class="hidden rounded-2xl text-xs sm:text-sm font-extrabold px-4 py-3 border shadow-2xs"></div>
-
-  {{-- Countdown End Time & Schedule Form Card --}}
-  <form method="POST" action="{{ route('admin.flash-sale.ends-at') }}" class="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-3">
+  {{-- Countdown --}}
+  <form method="POST" action="{{ route('admin.flash-sale.ends-at') }}" class="panel p-4 sm:p-5 flex flex-col gap-3">
     @csrf
     @method('PUT')
-    
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
-      <div class="flex-1 min-w-0 space-y-1.5">
-        <label class="text-xs font-black text-stone-800 flex items-center gap-1.5">
-          <span>⏰</span> Flash Sale Countdown Expiration Date &amp; Time
-        </label>
-        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <input type="datetime-local" id="flashSaleEndsAtInput" name="flash_sale_ends_at" class="w-full sm:w-80 text-xs font-bold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-2xs" value="{{ old('flash_sale_ends_at', $endsLocal) }}" />
-          
+
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <h2 class="text-[15px] font-semibold text-gray-900">Countdown</h2>
+        <p class="text-xs text-gray-500 mt-0.5">The live clock on the homepage flash sale row. Leave blank to hide it.</p>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-600 tabular-nums">{{ $flashProducts->count() }} deals</span>
+        @if($hasActiveCountdown)
+          <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700">Running</span>
+        @else
+          <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-600">Not running</span>
+        @endif
+      </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row lg:items-end gap-2.5">
+      <div class="flex-1 min-w-0">
+        <label for="flashSaleEndsAtInput" class="lbl">Ends at</label>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+          <input type="datetime-local" id="flashSaleEndsAtInput" name="flash_sale_ends_at" class="inp sm:w-72" value="{{ old('flash_sale_ends_at', $endsLocal) }}" />
           <div class="flex items-center gap-1.5 flex-wrap">
-            <button type="button" onclick="setTimerHours(24)" class="px-2.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-[11px] font-bold transition shadow-2xs cursor-pointer">+24 Hours</button>
-            <button type="button" onclick="setTimerHours(72)" class="px-2.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-[11px] font-bold transition shadow-2xs cursor-pointer">+3 Days</button>
-            <button type="button" onclick="setTimerHours(168)" class="px-2.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-[11px] font-bold transition shadow-2xs cursor-pointer">+7 Days</button>
-            <button type="button" onclick="clearTimer()" class="px-2.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-[11px] font-bold transition shadow-2xs cursor-pointer">Clear</button>
+            <button type="button" onclick="setTimerHours(24)" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium cursor-pointer">+24 hours</button>
+            <button type="button" onclick="setTimerHours(72)" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium cursor-pointer">+3 days</button>
+            <button type="button" onclick="setTimerHours(168)" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium cursor-pointer">+7 days</button>
+            <button type="button" onclick="clearTimer()" class="h-8 px-3 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-medium cursor-pointer">Clear</button>
           </div>
         </div>
-        <p class="text-[11px] text-stone-400">Controls the live clock on the homepage flash sale row. Leave blank to hide the clock.</p>
       </div>
-
-      <button type="submit" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md transition-all shrink-0 cursor-pointer">
-        Save Schedule
-      </button>
+      <button type="submit" class="h-9 px-4 rounded-full text-white text-[13px] font-semibold shrink-0 cursor-pointer" style="background: var(--brand-dark);">Save schedule</button>
     </div>
   </form>
 
-  {{-- Active Flash Sale Deals Container --}}
-  <div class="bg-white rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs overflow-hidden space-y-0">
-    <div class="p-4 sm:p-5 border-b border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-stone-50/50">
-      <div>
-        <h2 class="font-extrabold text-stone-900 text-sm sm:text-base flex items-center gap-2">
-          <span>🔥</span> Active Flash Deals ({{ $flashProducts->count() }})
-        </h2>
-        <p class="text-xs text-stone-500 mt-0.5">Drag card or handle to reorder products. Adjust Stock Progress % (0–100%) for the storefront progress bar.</p>
-      </div>
+  {{-- Active deals --}}
+  <section class="panel overflow-hidden">
+    <div class="p-4 sm:p-5">
+      <h2 class="text-[15px] font-semibold text-gray-900">Active deals <span class="text-gray-400 font-normal tabular-nums">({{ $flashProducts->count() }})</span></h2>
+      <p class="text-xs text-gray-500 mt-0.5">Drag the handle to reorder. Set the stock bar % (0–100) shown on the store.</p>
     </div>
 
     @if($flashProducts->isEmpty())
-      <div class="p-8 sm:p-12 text-center text-stone-400 text-xs sm:text-sm font-bold bg-stone-50/40">
-        <div class="text-3xl mb-2">⚡</div>
-        No products in flash sale yet. Add deals from the available catalog below!
+      <div class="px-4 pb-10 pt-4 text-center text-gray-500 text-sm">
+        No products in the flash sale yet. Add deals from the list below.
       </div>
     @else
 
-      {{-- Mobile Drag-and-Drop Cards View (`block md:hidden`) --}}
-      <div id="flashSaleListMobile" class="grid grid-cols-1 gap-3 p-4 md:hidden divide-y-0">
+      {{-- Phone: drag-and-drop cards --}}
+      <div id="flashSaleListMobile" class="md:hidden px-3 pb-3 space-y-2.5">
         @foreach($flashProducts as $i => $product)
-          <div class="flash-card-item relative bg-white p-4 rounded-2xl border border-stone-200 shadow-2xs space-y-3" data-id="{{ $product->id }}">
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex items-center gap-3">
-                <button type="button" class="flash-drag-handle inline-flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200 bg-stone-50 text-stone-600 hover:bg-brand-50 hover:text-brand-700 cursor-grab active:cursor-grabbing shrink-0" title="Drag to reorder">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
-                </button>
-                <img src="{{ $product->imageUrl() }}" class="h-12 w-12 object-cover rounded-xl border border-stone-100 bg-stone-50 shrink-0" alt="{{ $product->name }}" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'48\' height=\'48\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23a8a29e\' stroke-width=\'2\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/></svg>';">
-                <div>
-                  <div class="flex items-center gap-1.5">
-                    <span class="flash-pos inline-flex h-5 px-1.5 items-center justify-center rounded-md bg-amber-100 text-amber-900 font-black text-[10px]">#{{ $i + 1 }}</span>
-                    <h3 class="font-extrabold text-stone-900 text-xs leading-tight line-clamp-1">{{ $product->name }}</h3>
-                  </div>
-                  <p class="text-[11px] text-stone-400 mt-0.5 font-mono">{{ $product->category?->name }} • {{ $product->sku }}</p>
+          <div class="flash-card-item relative rounded-2xl bg-gray-50/80 p-3.5 space-y-3" data-id="{{ $product->id }}">
+            <div class="flex items-center gap-2.5">
+              <button type="button" class="flash-drag-handle inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-500 cursor-grab active:cursor-grabbing shrink-0" title="Drag to reorder">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+              </button>
+              <img src="{{ $product->imageUrl() }}" class="h-11 w-11 object-cover rounded-xl bg-white shrink-0" alt="{{ $product->name }}" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'48\' height=\'48\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23a8a29e\' stroke-width=\'2\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/></svg>';">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="flash-pos text-[11px] font-semibold text-gray-500 tabular-nums">#{{ $i + 1 }}</span>
+                  <h3 class="font-semibold text-gray-900 text-[13px] leading-tight truncate">{{ $product->name }}</h3>
                 </div>
+                <p class="text-[11px] text-gray-500 mt-0.5 truncate">{{ $product->category?->name }} · {{ $product->sku }}</p>
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 text-xs bg-stone-50 p-2.5 rounded-xl border border-stone-200/80">
+            <div class="grid grid-cols-2 gap-2 rounded-xl bg-white p-2.5 text-xs">
               <div>
-                <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">Flash Price</span>
-                <span class="font-black text-emerald-700 text-sm font-mono">{{ money($product->price) }}</span>
+                <span class="text-[11px] text-gray-500 block">Deal price</span>
+                <span class="font-semibold text-gray-900 tabular-nums">{{ money($product->price) }}</span>
                 @if($product->on_sale)
-                  <span class="text-[10px] text-stone-400 line-through ml-1 font-mono">{{ money($product->regular_price) }}</span>
+                  <span class="text-[11px] text-gray-400 line-through ml-1 tabular-nums">{{ money($product->regular_price) }}</span>
                 @endif
               </div>
               <div>
-                <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">Stock / Sold</span>
-                <span class="font-bold text-stone-800 font-mono">{{ $product->stock_quantity }} left · {{ $product->sold_units }} sold</span>
+                <span class="text-[11px] text-gray-500 block">Stock</span>
+                <span class="font-medium text-gray-800 tabular-nums">{{ $product->stock_quantity }} left · {{ $product->sold_units }} sold</span>
               </div>
             </div>
 
             <div class="space-y-1.5">
-              <div class="flex items-center justify-between text-xs">
+              <div class="flex items-center justify-between gap-2 text-xs">
                 <div>
-                  <label class="text-[11px] font-extrabold text-stone-700 block">Stock Progress %</label>
-                  <span class="text-[10px] text-emerald-700 font-bold">Auto: {{ $product->calculatedFlashSaleProgress() }}% Claimed</span>
+                  <label class="text-xs font-medium text-gray-700 block">Stock bar</label>
+                  <span class="text-[11px] text-gray-500">Auto: {{ $product->calculatedFlashSaleProgress() }}% claimed</span>
                 </div>
                 <div class="flex items-center gap-1">
                   <input
@@ -145,100 +115,98 @@
                     max="100"
                     step="1"
                     value="{{ (int) ($product->flash_sale_progress ?? 50) }}"
-                    class="flash-progress-input w-16 border border-stone-200 rounded-lg px-2 py-1 text-xs font-bold text-center focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono"
+                    class="flash-progress-input w-16 h-8 border border-gray-200 rounded-lg px-2 text-xs font-medium text-center bg-white focus:outline-none focus:border-gray-400 tabular-nums"
                     data-progress-url="{{ route('admin.flash-sale.progress', $product) }}"
                   />
-                  <span class="text-xs font-bold text-stone-400">%</span>
+                  <span class="text-xs text-gray-400">%</span>
                 </div>
               </div>
-              <div class="h-2 w-full rounded-full bg-stone-100 overflow-hidden border border-stone-200/60">
+              <div class="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
                 <div class="flash-progress-bar h-full rounded-full bg-amber-500 transition-all duration-300" style="width: {{ (int) ($product->flash_sale_progress ?? 50) }}%"></div>
               </div>
             </div>
 
-            <div class="pt-2 border-t border-stone-100 flex items-center justify-end gap-2">
-              <a href="{{ route('admin.products.edit', $product) }}" class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-stone-50 hover:bg-stone-100 text-stone-700 border border-stone-200 transition shadow-2xs">
-                Edit
-              </a>
+            <div class="flex items-center gap-1.5">
+              <a href="{{ route('admin.products.edit', $product) }}" class="flex-1 h-9 rounded-full bg-white hover:bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center justify-center">Edit product</a>
               <form method="POST" action="{{ route('admin.flash-sale.remove', $product) }}" onsubmit="return confirm('Remove {{ addslashes($product->name) }} from Flash Sale?')">
                 @csrf @method('DELETE')
-                <button type="submit" class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition cursor-pointer">
-                  Remove
-                </button>
+                <button type="submit" class="h-9 px-4 rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-medium cursor-pointer">Remove</button>
               </form>
             </div>
           </div>
         @endforeach
       </div>
 
-      {{-- Desktop Drag-and-Drop Table View (`hidden md:block`) --}}
+      {{-- Desktop: drag-and-drop table --}}
       <div class="hidden md:block overflow-x-auto">
-        <table class="w-full text-left text-xs border-collapse">
+        <table class="w-full text-left text-[13px] border-collapse">
           <thead>
-            <tr class="bg-stone-100/90 text-stone-700 font-black border-b border-stone-200 uppercase text-[11px] tracking-wider whitespace-nowrap">
-              <th class="px-4 py-3.5 w-12 text-center">Drag</th>
-              <th class="px-4 py-3.5 w-14 text-center"># Pos</th>
-              <th class="px-5 py-3.5">Product Information</th>
-              <th class="px-5 py-3.5">Deal Price</th>
-              <th class="px-5 py-3.5 text-center">Stock</th>
-              <th class="px-5 py-3.5 w-48">Stock Progress %</th>
-              <th class="px-5 py-3.5 text-right">Actions</th>
+            <tr class="text-gray-500 text-xs font-medium whitespace-nowrap border-y border-gray-100 bg-gray-50/60">
+              <th class="py-3 pl-4 pr-1 w-10"><span class="sr-only">Drag</span></th>
+              <th class="py-3 px-2 w-10">#</th>
+              <th class="py-3 px-4">Product</th>
+              <th class="py-3 px-4">Deal price</th>
+              <th class="py-3 px-4">Stock</th>
+              <th class="py-3 px-4 w-56">Stock bar</th>
+              <th class="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody id="flashSaleList" class="divide-y divide-stone-100 bg-white">
+          <tbody id="flashSaleList" class="divide-y divide-gray-100">
             @foreach($flashProducts as $i => $product)
-              <tr class="hover:bg-stone-50/80 transition-colors" data-id="{{ $product->id }}">
-                <td class="px-4 py-3.5 text-center">
-                  <button type="button" class="flash-drag-handle inline-flex h-8 w-8 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-stone-500 hover:bg-stone-100 hover:text-stone-800 cursor-grab active:cursor-grabbing shadow-2xs" title="Drag to reorder">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
+              <tr class="hover:bg-gray-50/70 transition-colors" data-id="{{ $product->id }}">
+                <td class="py-3 pl-4 pr-1">
+                  <button type="button" class="flash-drag-handle inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-800 cursor-grab active:cursor-grabbing" title="Drag to reorder">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/></svg>
                   </button>
                 </td>
-                <td class="px-4 py-3.5 text-center">
-                  <span class="flash-pos inline-flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 text-amber-900 font-black text-xs">#{{ $i + 1 }}</span>
+                <td class="py-3 px-2">
+                  <span class="flash-pos text-xs font-semibold text-gray-500 tabular-nums">#{{ $i + 1 }}</span>
                 </td>
-                <td class="px-5 py-3.5">
+                <td class="py-3 px-4">
                   <div class="flex items-center gap-3">
-                    <img src="{{ $product->imageUrl() }}" class="h-10 w-10 object-cover rounded-xl border border-stone-200 bg-stone-50 shrink-0" alt="{{ $product->name }}" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23a8a29e\' stroke-width=\'2\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/></svg>';">
-                    <div>
-                      <p class="font-extrabold text-stone-900 text-xs">{{ $product->name }}</p>
-                      <p class="text-[11px] text-stone-400 font-mono mt-0.5">{{ $product->category?->name }} • {{ $product->sku }}</p>
+                    <img src="{{ $product->imageUrl() }}" class="h-10 w-10 object-cover rounded-xl bg-gray-100 shrink-0" alt="{{ $product->name }}" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23a8a29e\' stroke-width=\'2\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/></svg>';">
+                    <div class="min-w-0">
+                      <p class="font-semibold text-gray-900">{{ $product->name }}</p>
+                      <p class="text-[11px] text-gray-500 mt-0.5">{{ $product->category?->name }} · {{ $product->sku }}</p>
                     </div>
                   </div>
                 </td>
-                <td class="px-5 py-3.5">
-                  <span class="font-black text-emerald-700 font-mono text-sm">{{ money($product->price) }}</span>
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <span class="font-semibold text-gray-900 tabular-nums">{{ money($product->price) }}</span>
                   @if($product->on_sale)
-                    <span class="text-[11px] text-stone-400 line-through ml-1 font-mono">{{ money($product->regular_price) }}</span>
+                    <span class="block text-[11px] text-gray-400 line-through tabular-nums">{{ money($product->regular_price) }}</span>
                   @endif
                 </td>
-                <td class="px-5 py-3.5 text-center">
-                  <div class="font-black text-stone-800 font-mono text-xs">{{ $product->stock_quantity }} left</div>
-                  <div class="text-[10px] text-stone-400 font-mono mt-0.5">{{ $product->sold_units }} sold</div>
+                <td class="py-3 px-4 whitespace-nowrap tabular-nums">
+                  <div class="font-medium text-gray-800">{{ $product->stock_quantity }} left</div>
+                  <div class="text-[11px] text-gray-500">{{ $product->sold_units }} sold</div>
                 </td>
-                <td class="px-5 py-3.5">
-                  <div class="flex items-center gap-2">
+                <td class="py-3 px-4">
+                  <div class="flex items-center gap-1.5">
                     <input
                       type="number"
                       min="0"
                       max="100"
                       step="1"
                       value="{{ (int) ($product->flash_sale_progress ?? 50) }}"
-                      class="flash-progress-input w-16 border border-stone-200 rounded-lg px-2 py-1 text-xs font-bold text-center focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono"
+                      class="flash-progress-input w-16 h-8 border border-gray-200 rounded-lg px-2 text-xs font-medium text-center focus:outline-none focus:border-gray-400 tabular-nums"
                       data-progress-url="{{ route('admin.flash-sale.progress', $product) }}"
                     />
-                    <span class="text-xs font-bold text-stone-400">%</span>
-                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded">Auto: {{ $product->calculatedFlashSaleProgress() }}%</span>
+                    <span class="text-xs text-gray-400">%</span>
+                    <span class="text-[11px] text-gray-500 whitespace-nowrap">Auto {{ $product->calculatedFlashSaleProgress() }}%</span>
                   </div>
-                  <div class="mt-1.5 h-1.5 w-full rounded-full bg-stone-100 overflow-hidden border border-stone-200/60">
+                  <div class="mt-1.5 h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
                     <div class="flash-progress-bar h-full rounded-full bg-amber-500" style="width: {{ (int) ($product->flash_sale_progress ?? 50) }}%"></div>
                   </div>
                 </td>
-                <td class="px-5 py-3.5 text-right whitespace-nowrap space-x-1">
-                  <a href="{{ route('admin.products.edit', $product) }}" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-stone-50 hover:bg-stone-100 text-stone-700 border border-stone-200 transition shadow-2xs">Edit</a>
-                  <form method="POST" action="{{ route('admin.flash-sale.remove', $product) }}" class="inline" onsubmit="return confirm('Remove {{ addslashes($product->name) }} from Flash Sale?')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition cursor-pointer">Remove</button>
-                  </form>
+                <td class="py-3 px-4 text-right whitespace-nowrap">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <a href="{{ route('admin.products.edit', $product) }}" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium inline-flex items-center">Edit</a>
+                    <form method="POST" action="{{ route('admin.flash-sale.remove', $product) }}" class="inline" onsubmit="return confirm('Remove {{ addslashes($product->name) }} from Flash Sale?')">
+                      @csrf @method('DELETE')
+                      <button type="submit" class="h-8 px-3 rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-medium cursor-pointer">Remove</button>
+                    </form>
+                  </div>
                 </td>
               </tr>
             @endforeach
@@ -246,100 +214,100 @@
         </table>
       </div>
     @endif
-  </div>
+  </section>
 
-  {{-- Add Products to Flash Sale Section --}}
-  <div class="bg-white rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs overflow-hidden">
-    <div class="p-4 sm:p-5 border-b border-stone-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-stone-50/50">
+  {{-- Add products --}}
+  <section class="panel overflow-hidden">
+    <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
-        <h2 class="font-extrabold text-stone-900 text-sm sm:text-base flex items-center gap-2">
-          <span>➕</span> Add Products to Flash Sale
-        </h2>
-        <p class="text-xs text-stone-500 mt-0.5">Published products in your store available to be added to Flash Sale.</p>
+        <h2 class="text-[15px] font-semibold text-gray-900">Add products</h2>
+        <p class="text-xs text-gray-500 mt-0.5">Published products that are not in the flash sale yet.</p>
       </div>
-
       <form method="GET" action="{{ route('admin.flash-sale.index') }}" class="flex items-center gap-2 w-full sm:w-auto">
-        <input type="text" name="q" value="{{ $q }}" placeholder="Search product name or SKU..." class="flex-1 sm:w-64 border border-stone-200 rounded-xl px-3.5 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white" />
-        <button type="submit" class="px-4 py-2 rounded-xl bg-stone-900 text-white font-extrabold text-xs hover:bg-stone-800 transition cursor-pointer shadow-2xs">Search</button>
+        <label class="relative flex-1 sm:w-64">
+          <span class="sr-only">Search products</span>
+          <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" name="q" value="{{ $q }}" placeholder="Search name or SKU" class="w-full h-10 pl-10 pr-4 rounded-full bg-gray-100 border border-transparent text-sm focus:bg-white focus:border-gray-200 outline-none" />
+        </label>
+        <button type="submit" class="h-10 px-4 rounded-full text-white text-[13px] font-semibold shrink-0 cursor-pointer" style="background: var(--brand-dark);">Search</button>
       </form>
     </div>
 
-    {{-- Available Products Mobile Cards View (`block md:hidden`) --}}
-    <div class="grid grid-cols-1 gap-3 p-4 md:hidden">
+    {{-- Phone: cards --}}
+    <div class="md:hidden px-3 pb-3 space-y-2">
       @forelse($available as $product)
-        <div class="bg-white p-3.5 rounded-2xl border border-stone-200 shadow-2xs flex items-center justify-between gap-3">
+        <div class="rounded-2xl bg-gray-50/80 p-3 flex items-center justify-between gap-3">
           <div class="flex items-center gap-3 min-w-0">
-            <img src="{{ $product->imageUrl() }}" class="h-11 w-11 object-cover rounded-xl border border-stone-100 bg-stone-50 shrink-0" alt="{{ $product->name }}" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'44\' height=\'44\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23a8a29e\' stroke-width=\'2\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/></svg>';">
+            <img src="{{ $product->imageUrl() }}" class="h-11 w-11 object-cover rounded-xl bg-white shrink-0" alt="{{ $product->name }}" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'44\' height=\'44\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23a8a29e\' stroke-width=\'2\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/></svg>';">
             <div class="min-w-0">
-              <h3 class="font-extrabold text-stone-900 text-xs truncate">{{ $product->name }}</h3>
-              <p class="text-[11px] text-stone-500 font-bold mt-0.5">
-                <span class="font-mono text-stone-900 font-black">{{ money($product->price) }}</span>
-                @if($product->on_sale)<span class="text-[10px] text-stone-400 line-through ml-1 font-mono">{{ money($product->regular_price) }}</span>@endif
-                • {{ $product->stock_quantity }} in stock
+              <h3 class="font-semibold text-gray-900 text-[13px] truncate">{{ $product->name }}</h3>
+              <p class="text-[11px] text-gray-500 mt-0.5">
+                <span class="font-semibold text-gray-900 tabular-nums">{{ money($product->price) }}</span>
+                @if($product->on_sale)<span class="text-gray-400 line-through ml-1 tabular-nums">{{ money($product->regular_price) }}</span>@endif
+                · {{ $product->stock_quantity }} in stock
               </p>
             </div>
           </div>
 
           <form method="POST" action="{{ route('admin.flash-sale.add', $product) }}" class="shrink-0">
             @csrf
-            <button type="submit" class="px-3.5 py-2 text-xs rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold shadow-2xs transition cursor-pointer">
-              + Add
-            </button>
+            <button type="submit" class="h-8 px-3.5 rounded-full text-white text-xs font-semibold cursor-pointer" style="background: var(--brand-dark);">Add</button>
           </form>
         </div>
       @empty
-        <div class="p-8 text-center text-stone-400 text-xs font-bold">No available products found to add.</div>
+        <div class="py-8 text-center text-gray-500 text-sm">No products found to add.</div>
       @endforelse
     </div>
 
-    {{-- Available Products Desktop Table View (`hidden md:block`) --}}
+    {{-- Desktop table --}}
     <div class="hidden md:block overflow-x-auto">
-      <table class="w-full text-left text-xs border-collapse">
+      <table class="w-full text-left text-[13px] border-collapse">
         <thead>
-          <tr class="bg-stone-100/90 text-stone-700 font-black border-b border-stone-200 uppercase text-[11px] tracking-wider whitespace-nowrap">
-            <th class="px-5 py-3.5">Product Information</th>
-            <th class="px-5 py-3.5">Price</th>
-            <th class="px-5 py-3.5 text-center">Stock</th>
-            <th class="px-5 py-3.5 text-right">Actions</th>
+          <tr class="text-gray-500 text-xs font-medium whitespace-nowrap border-y border-gray-100 bg-gray-50/60">
+            <th class="py-3 px-4">Product</th>
+            <th class="py-3 px-4">Price</th>
+            <th class="py-3 px-4">Stock</th>
+            <th class="py-3 px-4 text-right">Actions</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-stone-100 bg-white">
+        <tbody class="divide-y divide-gray-100">
           @forelse($available as $product)
-            <tr class="hover:bg-stone-50/70 transition-colors">
-              <td class="px-5 py-3.5">
+            <tr class="hover:bg-gray-50/70 transition-colors">
+              <td class="py-3 px-4">
                 <div class="flex items-center gap-3">
-                  <img src="{{ $product->imageUrl() }}" class="h-10 w-10 object-cover rounded-xl border border-stone-200 bg-stone-50 shrink-0" alt="{{ $product->name }}" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23a8a29e\' stroke-width=\'2\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/></svg>';">
-                  <div>
-                    <p class="font-extrabold text-stone-900 text-xs">{{ $product->name }}</p>
-                    <p class="text-[11px] text-stone-400 font-mono mt-0.5">{{ $product->category?->name }} • {{ $product->sku }}</p>
+                  <img src="{{ $product->imageUrl() }}" class="h-10 w-10 object-cover rounded-xl bg-gray-100 shrink-0" alt="{{ $product->name }}" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23a8a29e\' stroke-width=\'2\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/></svg>';">
+                  <div class="min-w-0">
+                    <p class="font-semibold text-gray-900">{{ $product->name }}</p>
+                    <p class="text-[11px] text-gray-500 mt-0.5">{{ $product->category?->name }} · {{ $product->sku }}</p>
                   </div>
                 </div>
               </td>
-              <td class="px-5 py-3.5 font-black text-stone-900 font-mono text-sm">
-                {{ money($product->price) }}
-                @if($product->on_sale)<span class="text-[11px] text-stone-400 line-through ml-1">{{ money($product->regular_price) }}</span>@endif
+              <td class="py-3 px-4 whitespace-nowrap tabular-nums">
+                <span class="font-semibold text-gray-900">{{ money($product->price) }}</span>
+                @if($product->on_sale)<span class="text-[11px] text-gray-400 line-through ml-1">{{ money($product->regular_price) }}</span>@endif
               </td>
-              <td class="px-5 py-3.5 text-center font-bold text-stone-700 font-mono">{{ $product->stock_quantity }}</td>
-              <td class="px-5 py-3.5 text-right">
+              <td class="py-3 px-4 text-gray-700 tabular-nums">{{ $product->stock_quantity }}</td>
+              <td class="py-3 px-4 text-right">
                 <form method="POST" action="{{ route('admin.flash-sale.add', $product) }}" class="inline">
                   @csrf
-                  <button type="submit" class="px-4 py-2 text-xs rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-extrabold shadow-2xs transition cursor-pointer">
-                    + Add to Flash Sale
+                  <button type="submit" class="h-8 px-3.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium inline-flex items-center gap-1 cursor-pointer">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                    Add to flash sale
                   </button>
                 </form>
               </td>
             </tr>
           @empty
-            <tr><td colspan="4" class="px-5 py-10 text-center text-stone-400 font-bold">No available products found to add.</td></tr>
+            <tr><td colspan="4" class="py-10 text-center text-gray-500">No products found to add.</td></tr>
           @endforelse
         </tbody>
       </table>
     </div>
 
     @if($available->hasPages())
-      <div class="p-4 border-t border-stone-100 bg-stone-50/40">{{ $available->links() }}</div>
+      <div class="px-4 py-3 border-t border-gray-100">{{ $available->links() }}</div>
     @endif
-  </div>
+  </section>
 
 </div>
 @endsection

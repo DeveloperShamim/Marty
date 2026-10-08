@@ -1,5 +1,13 @@
 @extends('layouts.admin')
-@section('title', 'News Ticker')
+@section('title', 'News ticker')
+@section('subtitle', 'The scrolling headline bar at the top of every store page.')
+
+@section('page-actions')
+  <a href="{{ route('home') }}" target="_blank" class="pill-btn">
+    View store
+    <span class="pill-ico"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></span>
+  </a>
+@endsection
 
 @section('content')
 @php
@@ -7,42 +15,36 @@
       ->filter(fn ($c) => $c->isCurrentlyActive())->pluck('code')->values();
 @endphp
 
-<div class="space-y-5 sm:space-y-6 max-w-4xl">
-
-  {{-- Header --}}
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs">
-    <div>
-      <h1 class="text-base sm:text-xl font-extrabold text-stone-900 tracking-tight flex items-center gap-2"><span>📰</span> News Ticker</h1>
-      <p class="text-xs text-stone-500 mt-1">The scrolling headline bar at the very top of every storefront page, on phones, tablets and computers.</p>
-    </div>
-    <a href="{{ route('home') }}" target="_blank" class="px-4 py-2.5 rounded-xl bg-white hover:bg-stone-50 text-stone-800 border border-stone-200 font-extrabold text-xs shadow-2xs flex items-center justify-center gap-1.5 self-start sm:self-auto shrink-0">
-      View on storefront <span class="text-stone-400">↗</span>
-    </a>
-  </div>
+<div class="space-y-4 max-w-4xl">
 
   {{-- Live preview --}}
-  <div class="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-2">
-    <div class="flex items-center justify-between gap-2">
-      <span class="text-xs font-black text-stone-800">Preview</span>
-      <span class="text-[11px] text-stone-400">Updates as you type — click Save to publish</span>
+  <section class="panel p-4 sm:p-5 space-y-2.5">
+    <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+      <h2 class="text-[15px] font-semibold text-gray-900">Preview</h2>
+      <span class="text-xs text-gray-500">Updates as you type. Save to publish.</span>
     </div>
     <div id="tkPreview" class="tk-bar rounded-xl" style="--tk-from: {{ $theme['primary_hover'] }}; --tk-via: {{ $theme['primary'] }}; --tk-dark: {{ $theme['dark'] }};">
       <span id="tkLabel" class="tk-label"><span class="tk-dot"></span><span id="tkLabelText"></span></span>
       <span class="tk-window"><span id="tkTrack" class="tk-track"></span></span>
     </div>
-    <p id="tkEmpty" class="hidden text-[11px] font-bold text-amber-700">No headlines and no countdown — the bar is hidden on the storefront.</p>
-  </div>
+    <p id="tkEmpty" class="hidden text-xs font-medium text-amber-700">No headlines and no countdown, so the bar is hidden on the store.</p>
+  </section>
 
-  <form method="POST" action="{{ route('admin.news-ticker.update') }}" class="bg-white p-4 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-5" id="tkForm">
+  <form method="POST" action="{{ route('admin.news-ticker.update') }}" class="panel p-4 sm:p-5 flex flex-col gap-4" id="tkForm">
     @csrf @method('PUT')
 
     <div>
-      <label for="tkHeadlines" class="text-xs font-black text-stone-800 block mb-1">Headlines <span class="font-medium text-stone-400">— one per line</span></label>
-      <textarea id="tkHeadlines" name="header_promo_text" rows="5" maxlength="1000" class="w-full text-sm font-semibold px-3.5 py-2.5 bg-stone-50 focus:bg-white border border-stone-200 rounded-xl leading-relaxed focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Cash on delivery all over Bangladesh&#10;Use code UNILIFE10 for 10% OFF&#10;bKash payment 10% cashback">{{ old('header_promo_text', $headlines) }}</textarea>
-      <div class="mt-1.5 text-[11px] text-stone-500 space-y-0.5">
-        <p>Write an active coupon code in a headline and customers can <b>tap it to copy</b>.
+      <h2 class="text-[15px] font-semibold text-gray-900">Ticker settings</h2>
+      <p class="text-xs text-gray-500 mt-0.5">Headlines, label and link.</p>
+    </div>
+
+    <div>
+      <label for="tkHeadlines" class="lbl">Headlines <span class="font-normal text-gray-400">(one per line)</span></label>
+      <textarea id="tkHeadlines" name="header_promo_text" rows="5" maxlength="1000" class="inp leading-relaxed" placeholder="Cash on delivery all over Bangladesh&#10;Use code UNILIFE10 for 10% OFF&#10;bKash payment 10% cashback">{{ old('header_promo_text', $headlines) }}</textarea>
+      <div class="mt-1.5 text-[11px] text-gray-500 space-y-1">
+        <p>Write an active coupon code in a headline and customers can tap it to copy.
           @if($liveCodes->isNotEmpty())
-            Active codes: @foreach($liveCodes as $code)<button type="button" data-insert="{{ $code }}" class="ml-1 px-1.5 py-0.5 rounded-md border border-dashed border-stone-300 font-mono font-bold text-stone-700 hover:bg-stone-100">{{ $code }}</button>@endforeach
+            Active codes: @foreach($liveCodes as $code)<button type="button" data-insert="{{ $code }}" class="ml-1 px-2 py-0.5 rounded-full bg-gray-100 hover:bg-gray-200 font-mono font-medium text-gray-700">{{ $code }}</button>@endforeach
           @else
             You have no active coupons right now.
           @endif
@@ -51,48 +53,48 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
       <div>
-        <label for="tkLabelInput" class="text-xs font-black text-stone-800 block mb-1">Label text</label>
-        <input id="tkLabelInput" name="ticker_label" maxlength="24" value="{{ old('ticker_label', $label) }}" placeholder="Hot Deals" class="w-full text-xs font-bold px-3.5 py-2.5 bg-stone-50 focus:bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500" />
-        <p class="text-[11px] text-stone-500 mt-1">e.g. Hot Deals, Offers, Notice, অফার. Empty = no label.</p>
+        <label for="tkLabelInput" class="lbl">Label text</label>
+        <input id="tkLabelInput" name="ticker_label" maxlength="24" value="{{ old('ticker_label', $label) }}" placeholder="Hot Deals" class="inp" />
+        <p class="text-[11px] text-gray-500 mt-1">e.g. Hot Deals, Offers, Notice, অফার. Empty means no label.</p>
       </div>
       <div>
-        <label for="tkStyle" class="text-xs font-black text-stone-800 block mb-1">Label colour</label>
-        <select id="tkStyle" name="ticker_label_style" class="w-full text-xs font-bold px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500">
+        <label for="tkStyle" class="lbl">Label colour</label>
+        <select id="tkStyle" name="ticker_label_style" class="inp">
           <option value="dark" @selected(old('ticker_label_style', $labelStyle) === 'dark')>Dark (theme colour)</option>
           <option value="red" @selected(old('ticker_label_style', $labelStyle) === 'red')>Red (urgent notice)</option>
           <option value="white" @selected(old('ticker_label_style', $labelStyle) === 'white')>White</option>
         </select>
       </div>
       <div>
-        <label for="tkLink" class="text-xs font-black text-stone-800 block mb-1">Headline link <span class="font-medium text-stone-400">(optional)</span></label>
-        <input id="tkLink" name="header_promo_link" maxlength="255" value="{{ old('header_promo_link', $link) }}" placeholder="/shop or full URL" class="w-full text-xs font-bold px-3.5 py-2.5 bg-stone-50 focus:bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500" />
-        <p class="text-[11px] text-stone-500 mt-1">Where a tapped headline goes. Empty = headlines are not links.</p>
+        <label for="tkLink" class="lbl">Headline link <span class="font-normal text-gray-400">(optional)</span></label>
+        <input id="tkLink" name="header_promo_link" maxlength="255" value="{{ old('header_promo_link', $link) }}" placeholder="/shop or full URL" class="inp" />
+        <p class="text-[11px] text-gray-500 mt-1">Where a tapped headline goes. Empty means no link.</p>
       </div>
     </div>
 
-    <label class="flex items-start gap-3 cursor-pointer rounded-xl border border-stone-200 bg-stone-50 p-3">
+    <label class="flex items-start gap-3 cursor-pointer rounded-xl bg-gray-50 p-3.5">
       <span class="relative inline-flex items-center shrink-0 mt-0.5">
         <input id="tkCountdown" type="checkbox" name="ticker_show_countdown" value="1" @checked(old('ticker_show_countdown', $showCountdown)) class="sr-only peer">
-        <span class="w-11 h-6 bg-stone-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></span>
+        <span class="w-10 h-6 bg-gray-300 rounded-full peer peer-checked:after:translate-x-4 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></span>
       </span>
       <span>
-        <span class="block text-xs font-extrabold text-stone-800">Show flash sale countdown</span>
-        <span class="block text-[11px] text-stone-500">
-          Adds “⚡ Flash Sale ends in …” as the first headline while a flash sale is running.
+        <span class="block text-[13px] font-semibold text-gray-900">Show flash sale countdown</span>
+        <span class="block text-xs text-gray-500 mt-0.5">
+          Adds “Flash Sale ends in …” as the first headline while a flash sale is running.
           @if($flashEnds)
-            Current end time: <b>{{ $flashEnds->format('d M Y, g:i A') }}</b>.
+            Current end time: <span class="font-medium text-gray-700">{{ $flashEnds->format('d M Y, g:i A') }}</span>.
           @else
-            <b class="text-amber-700">No end time is set</b>, so it won't show yet.
+            <span class="font-medium text-amber-700">No end time is set</span>, so it won't show yet.
           @endif
-          Change it on <a href="{{ route('admin.flash-sale.index') }}" class="text-brand-700 font-bold underline">Flash Sale</a>.
+          Change it on <a href="{{ route('admin.flash-sale.index') }}" class="font-medium text-gray-800 underline">Flash sale</a>.
         </span>
       </span>
     </label>
 
-    <div class="flex justify-end pt-1">
-      <button type="submit" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md transition-all">Save News Ticker</button>
+    <div class="flex justify-end">
+      <button type="submit" class="w-full sm:w-auto h-9 px-4 rounded-full text-white text-[13px] font-semibold" style="background: var(--brand-dark);">Save ticker</button>
     </div>
   </form>
 </div>
