@@ -1701,7 +1701,7 @@
     $$("img").forEach((img) => { if (img.complete && img.naturalWidth === 0 && img.getAttribute("src")) fix(img); else img.addEventListener("error", () => fix(img)); });
   })();
 
-  // Phone tab bar: slide the pill to the tapped tab, bump the cart icon, tuck the bar away while scrolling down until scrolling stops
+  // Phone tab bar: slide the pill to the tapped tab and bump the cart icon. The bar always stays on screen.
   (function () {
     const bar = $("[data-tabbar]");
     if (!bar) return;
@@ -1713,19 +1713,6 @@
       if (pill) { pill.style.setProperty("--i", tab.dataset.tabIndex); pill.classList.remove("opacity-0"); }
       tabs.forEach((t) => { const on = t === tab; t.classList.toggle("text-white", on); t.classList.toggle("text-white/55", !on); on ? t.setAttribute("aria-current", "page") : t.removeAttribute("aria-current"); });
     }));
-    let lastY = window.scrollY, ticking = false, idle;
-    window.addEventListener("scroll", () => {
-      // Bring the bar back once scrolling stops
-      clearTimeout(idle);
-      idle = setTimeout(() => bar.classList.remove("is-tucked"), 300);
-      if (ticking) return; ticking = true;
-      requestAnimationFrame(() => {
-        const y = window.scrollY, nearBottom = window.innerHeight + y >= document.documentElement.scrollHeight - 120;
-        if (y > lastY + 6 && y > 160 && !nearBottom) bar.classList.add("is-tucked");
-        else if (y < lastY - 6 || y <= 160 || nearBottom) bar.classList.remove("is-tucked");
-        lastY = y; ticking = false;
-      });
-    }, { passive: true });
   })();
 
   $("#year") && ($("#year").textContent = new Date().getFullYear());

@@ -16,8 +16,6 @@
   $activeIndex = collect($tabs)->search(fn ($t) => $t['active']);
 @endphp
 <style>
-  .tabbar{transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .25s}
-  .tabbar.is-tucked{transform:translateY(calc(100% + 24px));opacity:0}
   .tabbar-pill{left:6px;width:calc((100% - 12px) / 5);transform:translateX(calc(var(--i) * 100%));transition:transform .45s cubic-bezier(.34,1.4,.5,1),opacity .2s;will-change:transform}
   .tabbar-tab svg{transition:transform .35s cubic-bezier(.34,1.5,.5,1),color .2s}
   .tabbar-tab .tabbar-label{transition:opacity .2s,transform .3s}
