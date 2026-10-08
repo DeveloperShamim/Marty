@@ -2,7 +2,21 @@
 
 @php $editing = $product->exists; @endphp
 
-@section('title', $editing ? 'Edit: ' . $product->name : 'Create New Product')
+@section('title', $editing ? 'Edit product' : 'New product')
+@section('subtitle', $editing ? 'Update details, photos, pricing and variants.' : 'Add a new item to your catalog.')
+
+@section('page-actions')
+  @if($editing && $product->is_published)
+    <a href="{{ route('product.show', $product->slug) }}" target="_blank" class="pill-btn">
+      View on store
+      <span class="pill-ico"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg></span>
+    </a>
+  @endif
+  <a href="{{ route('admin.products.index') }}" class="pill-btn">
+    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    All products
+  </a>
+@endsection
 
 @section('content')
 @php
@@ -50,52 +64,47 @@
   }
 @endphp
 
-<form id="productForm" method="POST" action="{{ $editing ? route('admin.products.update', $product) : route('admin.products.store') }}" enctype="multipart/form-data" class="space-y-5 sm:space-y-6 max-w-full pb-20 sm:pb-8">
+<form id="productForm" method="POST" action="{{ $editing ? route('admin.products.update', $product) : route('admin.products.store') }}" enctype="multipart/form-data" class="space-y-4 max-w-full pb-20 sm:pb-8">
   @csrf
   @if($editing) @method('PUT') @endif
 
   {{-- Sticky action bar: one Save, one Cancel --}}
-  <div class="sticky top-[64px] lg:top-[80px] z-10 bg-white/90 backdrop-blur-xl rounded-[16px] shadow-panel px-3 sm:px-5 py-3 flex items-center justify-between gap-3">
-    <div class="flex items-center gap-3 min-w-0">
-      <a href="{{ route('admin.products.index') }}" class="h-9 w-9 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 flex items-center justify-center text-stone-500 hover:text-stone-900 shrink-0" title="Back to products" aria-label="Back to products">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-      </a>
-      <div class="min-w-0">
-        <p class="text-xs text-stone-500">Products</p>
-        <div class="flex items-center gap-2 min-w-0">
-          <h1 class="text-base sm:text-lg font-semibold text-stone-900 truncate">{{ $editing ? $product->name : 'Add product' }}</h1>
-          @if($editing)
-            <span class="shrink-0 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium {{ $product->is_published ? 'bg-emerald-50 text-emerald-700' : 'bg-stone-100 text-stone-600' }}">
-              <span class="w-1.5 h-1.5 rounded-full {{ $product->is_published ? 'bg-emerald-500' : 'bg-stone-400' }}"></span>{{ $product->is_published ? 'Published' : 'Draft' }}
-            </span>
-          @endif
-        </div>
-      </div>
-    </div>
-
-    <div class="hidden sm:flex items-center gap-2 shrink-0">
-      @if($editing && $product->is_published)
-        <a href="{{ route('product.show', $product->slug) }}" target="_blank" class="px-3 py-2 rounded-lg text-sm font-medium text-stone-600 hover:text-stone-900 hover:bg-stone-100">View on store</a>
+  <div class="hidden sm:flex sticky top-[64px] lg:top-[80px] z-10 bg-white/90 backdrop-blur-xl rounded-full shadow-panel pl-4 pr-1.5 py-1.5 items-center justify-between gap-3">
+    <div class="flex items-center gap-2 min-w-0">
+      @if($editing)
+        <p class="text-[13px] font-semibold text-gray-900 truncate">{{ $product->name }}</p>
+      @else
+        <p class="text-[13px] text-gray-500 truncate">Not saved yet. Press Ctrl+S or click Save when you are done.</p>
       @endif
-      <a href="{{ route('admin.products.index') }}" class="px-3.5 py-2 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-sm font-medium text-stone-700">Cancel</a>
-      <button type="submit" class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold cursor-pointer">{{ $editing ? 'Save changes' : 'Save product' }}</button>
+      @if($editing)
+        <span class="shrink-0 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $product->is_published ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">
+          <span class="w-1.5 h-1.5 rounded-full {{ $product->is_published ? 'bg-emerald-500' : 'bg-gray-400' }}"></span>{{ $product->is_published ? 'Published' : 'Draft' }}
+        </span>
+      @endif
+    </div>
+    <div class="flex items-center gap-1.5 shrink-0">
+      <a href="{{ route('admin.products.index') }}" class="h-9 px-3.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-[13px] font-medium inline-flex items-center">Cancel</a>
+      <button type="submit" class="h-9 px-4 rounded-full text-white text-[13px] font-semibold inline-flex items-center gap-1.5 cursor-pointer" style="background: var(--brand-dark);">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        {{ $editing ? 'Save changes' : 'Save product' }}
+      </button>
     </div>
   </div>
 
   {{-- Main Layout Grid: Full Responsive Desktop (12-Col) & Tablet/Mobile --}}
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 items-start">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
 
     {{-- Left Column (Main Form Content - 8 cols on Desktop) --}}
-    <div class="lg:col-span-8 space-y-5 sm:space-y-6">
+    <div class="lg:col-span-8 space-y-4">
 
       {{-- Card 1: Basic Product Information --}}
-      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 space-y-5">
-        <div class="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
+      <section class="panel bg-white p-4 sm:p-5 space-y-5">
+        <div class="flex items-start justify-between gap-3 border-b border-gray-100 pb-3.5">
           <div class="flex items-start gap-3">
-            <div class="w-7 h-7 rounded-full bg-stone-100 text-stone-600 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">1</div>
+            <div class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-[11px] font-semibold flex items-center justify-center shrink-0">1</div>
             <div>
-              <h2 class="text-base font-semibold text-stone-900">Basic information</h2>
-              <p class="text-[13px] text-stone-500 mt-0.5">Name, category, brand and description</p>
+              <h2 class="text-[15px] font-semibold text-gray-900">Basic information</h2>
+              <p class="text-xs text-gray-500 mt-0.5">Name, category, brand and description</p>
             </div>
           </div>
         </div>
@@ -170,7 +179,7 @@
               <div class="flex items-center gap-1 bg-stone-100 p-0.5 rounded-lg text-xs font-semibold">
                 <button type="button" id="descModeVisualBtn" class="px-2.5 py-1 rounded-md bg-white text-stone-900 shadow-2xs font-bold text-[11px] transition-all cursor-pointer">Visual</button>
                 <button type="button" id="descModeHtmlBtn" class="px-2.5 py-1 rounded-md text-stone-600 hover:text-stone-900 font-bold text-[11px] transition-all cursor-pointer">&lt;&gt; HTML</button>
-                <button type="button" id="descModePreviewBtn" class="px-2.5 py-1 rounded-md text-stone-600 hover:text-stone-900 font-bold text-[11px] transition-all cursor-pointer">👁 Preview</button>
+                <button type="button" id="descModePreviewBtn" class="px-2.5 py-1 rounded-md text-stone-600 hover:text-stone-900 font-bold text-[11px] transition-all cursor-pointer">Preview</button>
               </div>
             </div>
 
@@ -221,7 +230,7 @@
 
                 {{-- Quote & Table --}}
                 <button type="button" id="descInsertQuoteBtn" class="h-7 px-2 rounded-lg hover:bg-stone-200 active:scale-95 flex items-center gap-1 text-[11px] font-bold transition-colors cursor-pointer" title="Blockquote">
-                  <span>❝ Quote</span>
+                  <span>Quote</span>
                 </button>
                 <button type="button" id="descInsertTableBtn" class="h-7 px-2 rounded-lg hover:bg-stone-200 active:scale-95 flex items-center gap-1 text-[11px] font-bold transition-colors cursor-pointer" title="Insert Spec Table">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
@@ -278,16 +287,16 @@
             </style>
           </div>
         </div>
-      </div>
+      </section>
 
       {{-- Card 5: Media Gallery & Drag-and-Drop Image Uploader --}}
-      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 space-y-4">
-        <div class="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
+      <section class="panel bg-white p-4 sm:p-5 space-y-4">
+        <div class="flex items-start justify-between gap-3 border-b border-gray-100 pb-3.5">
           <div class="flex items-start gap-3">
-            <div class="w-7 h-7 rounded-full bg-stone-100 text-stone-600 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">2</div>
+            <div class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-[11px] font-semibold flex items-center justify-center shrink-0">2</div>
             <div>
-              <h2 class="text-base font-semibold text-stone-900">Photos</h2>
-              <p class="text-[13px] text-stone-500 mt-0.5">The first photo is the main image. JPG, PNG or WebP, up to 4&nbsp;MB each.</p>
+              <h2 class="text-[15px] font-semibold text-gray-900">Photos</h2>
+              <p class="text-xs text-gray-500 mt-0.5">The first photo is the main image. JPG, PNG or WebP, up to 4&nbsp;MB each.</p>
             </div>
           </div>
         </div>
@@ -305,15 +314,15 @@
                   <input type="hidden" name="image_positions[{{ $img->id }}]" class="image-position-input" value="{{ $imgIndex }}" />
                   <div class="relative w-full aspect-square bg-white rounded-lg overflow-hidden flex items-center justify-center border border-stone-100">
                     <img src="{{ $img->url() }}" class="max-h-full max-w-full object-contain p-1 pointer-events-none" alt="{{ $img->alt }}" />
-                    <span class="main-badge absolute top-1 left-1 bg-brand-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-2xs {{ $loop->first ? '' : 'hidden' }}">Main</span>
+                    <span class="main-badge absolute top-1 left-1 bg-brand-600 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded shadow-2xs {{ $loop->first ? '' : 'hidden' }}">Main</span>
                     <button type="button" onclick="deleteProductImage({{ $product->id }}, {{ $img->id }})" class="absolute top-1 right-1 bg-rose-600 text-white h-5 w-5 rounded-full text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center shadow-md cursor-pointer" title="Delete Image">&times;</button>
                   </div>
 
                   {{-- Reorder Control Arrows --}}
                   <div class="flex items-center justify-between w-full px-1 py-0.5 bg-stone-100/80 rounded-md border border-stone-200 text-[10px] font-bold text-stone-600">
-                    <button type="button" class="move-image-btn hover:text-stone-900 px-1 cursor-pointer font-black" data-dir="left" title="Move Left">◄</button>
+                    <button type="button" class="move-image-btn hover:text-stone-900 px-1 cursor-pointer" data-dir="left" title="Move Left">◄</button>
                     <span class="text-[9px] text-stone-400 uppercase tracking-tighter">Order</span>
-                    <button type="button" class="move-image-btn hover:text-stone-900 px-1 cursor-pointer font-black" data-dir="right" title="Move Right">►</button>
+                    <button type="button" class="move-image-btn hover:text-stone-900 px-1 cursor-pointer" data-dir="right" title="Move Right">►</button>
                   </div>
 
                   <div class="w-full mt-0.5">
@@ -341,16 +350,16 @@
 
         {{-- Live New Uploads Preview Grid --}}
         <div id="newImagesPreview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"></div>
-      </div>
+      </section>
 
       {{-- Card 2: Pricing & General Inventory --}}
-      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 space-y-5">
-        <div class="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
+      <section class="panel bg-white p-4 sm:p-5 space-y-5">
+        <div class="flex items-start justify-between gap-3 border-b border-gray-100 pb-3.5">
           <div class="flex items-start gap-3">
-            <div class="w-7 h-7 rounded-full bg-stone-100 text-stone-600 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">3</div>
+            <div class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-[11px] font-semibold flex items-center justify-center shrink-0">3</div>
             <div>
-              <h2 class="text-base font-semibold text-stone-900">Pricing &amp; stock</h2>
-              <p class="text-[13px] text-stone-500 mt-0.5">Prices in Taka. Buying cost is private and used for profit reports.</p>
+              <h2 class="text-[15px] font-semibold text-gray-900">Pricing &amp; stock</h2>
+              <p class="text-xs text-gray-500 mt-0.5">Prices in Taka. Buying cost is private and used for profit reports.</p>
             </div>
           </div>
           <span id="autoStockNoticeHeader" class="hidden text-xs text-stone-500"></span>
@@ -391,17 +400,17 @@
         </div>
 
         <p id="discountBadgePreview" class="hidden text-[13px] text-stone-600">Shoppers will see <span id="discountPercentText" class="font-semibold text-stone-900"></span> on this product.</p>
-      </div>
+      </section>
 
       {{-- Card 3: Variants & Weight Pack Options --}}
-      <div id="skuMatrixSection" class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 space-y-5">
+      <section id="skuMatrixSection" class="panel bg-white p-4 sm:p-5 space-y-5">
         <input type="hidden" name="sku_matrix_submitted" value="1" />
-        <div class="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
+        <div class="!mt-0 flex items-start justify-between gap-3 border-b border-gray-100 pb-3.5">
           <div class="flex items-start gap-3">
-            <div class="w-7 h-7 rounded-full bg-stone-100 text-stone-600 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">4</div>
+            <div class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-[11px] font-semibold flex items-center justify-center shrink-0">4</div>
             <div>
-              <h2 class="text-base font-semibold text-stone-900">Variants</h2>
-              <p class="text-[13px] text-stone-500 mt-0.5">Sizes, colours or other options, each with its own price and stock</p>
+              <h2 class="text-[15px] font-semibold text-gray-900">Variants</h2>
+              <p class="text-xs text-gray-500 mt-0.5">Sizes, colours or other options, each with its own price and stock</p>
             </div>
           </div>
         </div>
@@ -492,7 +501,7 @@
           </div>
           <p class="text-xs text-stone-500">Leave price empty to use the product price. Total stock is the sum of active variants. Removed variants are deleted when you save.</p>
         </div>
-      </div>
+      </section>
 
       {{-- Card 4: Product Specifications Builder --}}
       @php
@@ -510,13 +519,13 @@
           $specRows = [['label' => '', 'value' => '']];
         }
       @endphp
-      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 space-y-4">
-        <div class="flex items-start justify-between gap-3 border-b border-stone-100 pb-4">
+      <section class="panel bg-white p-4 sm:p-5 space-y-4">
+        <div class="flex items-start justify-between gap-3 border-b border-gray-100 pb-3.5">
           <div class="flex items-start gap-3">
-            <div class="w-7 h-7 rounded-full bg-stone-100 text-stone-600 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">5</div>
+            <div class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-[11px] font-semibold flex items-center justify-center shrink-0">5</div>
             <div>
-              <h2 class="text-base font-semibold text-stone-900">Specifications</h2>
-              <p class="text-[13px] text-stone-500 mt-0.5">Shown as a feature table on the product page</p>
+              <h2 class="text-[15px] font-semibold text-gray-900">Specifications</h2>
+              <p class="text-xs text-gray-500 mt-0.5">Shown as a feature table on the product page</p>
             </div>
           </div>
           <button type="button" id="addSpecRow" class="px-3 py-1.5 text-sm font-medium rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 cursor-pointer shrink-0">+ Add row</button>
@@ -537,21 +546,21 @@
             </div>
           @endforeach
         </div>
-      </div>
+      </section>
 
       {{-- Card 6: Search engine listing (collapsed) --}}
-      <details class="group bg-white p-5 sm:p-6 rounded-2xl border border-stone-200">
+      <details class="group panel bg-white p-4 sm:p-5">
         <summary class="flex items-start justify-between gap-3 cursor-pointer list-none">
           <div class="flex items-start gap-3">
-            <div class="w-7 h-7 rounded-full bg-stone-100 text-stone-600 text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">6</div>
+            <div class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-[11px] font-semibold flex items-center justify-center shrink-0">6</div>
             <div>
-              <h2 class="text-base font-semibold text-stone-900">Search engine listing</h2>
-              <p class="text-[13px] text-stone-500 mt-0.5">How this product appears on Google. Optional.</p>
+              <h2 class="text-[15px] font-semibold text-gray-900">Search engine listing</h2>
+              <p class="text-xs text-gray-500 mt-0.5">How this product appears on Google. Optional.</p>
             </div>
           </div>
           <svg class="w-5 h-5 text-stone-400 mt-1 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
         </summary>
-        <div class="space-y-4 pt-5 mt-4 border-t border-stone-100">
+        <div class="space-y-4 pt-4 mt-3.5 border-t border-gray-100">
         {{-- Live Google Search Preview --}}
         <div class="p-3.5 rounded-xl bg-stone-50 border border-stone-200 text-xs space-y-1">
           <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">Google Search Preview</span>
@@ -588,11 +597,11 @@
     </div>
 
     {{-- Right Sidebar Column (Sticky on Desktop: Publish Box, Organization, Badges & SEO - 4 cols on Desktop) --}}
-    <div class="order-first lg:order-none lg:col-span-4 lg:sticky lg:top-[150px] space-y-5">
+    <div class="lg:col-span-4 lg:sticky lg:top-[140px] space-y-4">
 
       {{-- Status & storefront badges --}}
-      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-stone-200 space-y-1">
-        <h3 class="text-base font-semibold text-stone-900 pb-2">Status</h3>
+      <section class="panel bg-white p-4 sm:p-5 space-y-1">
+        <h2 class="text-[15px] font-semibold text-gray-900 pb-1">Status</h2>
         @php
           $toggles = [
             'is_published'   => ['Published', 'Visible to shoppers'],
@@ -626,18 +635,16 @@
             <div class="flex justify-between"><dt>Last updated</dt><dd class="text-stone-700">{{ $product->updated_at?->diffForHumans() ?? '—' }}</dd></div>
           </dl>
         @endif
-      </div>
+      </section>
     </div>
   </div>
 
-  {{-- Floating Action Bar on Mobile Viewports --}}
-  <div class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-stone-200 p-3 sm:hidden shadow-lg flex items-center justify-between gap-2">
-    <a href="{{ route('admin.products.index') }}" class="px-4 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-600 font-bold text-xs">
-      Cancel
-    </a>
-    <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-      <span>{{ $editing ? 'Save Changes' : 'Publish Product' }}</span>
+  {{-- Floating action bar on phones --}}
+  <div class="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-100 px-3 py-2.5 sm:hidden flex items-center gap-2">
+    <a href="{{ route('admin.products.index') }}" class="h-10 px-4 rounded-full bg-gray-100 text-gray-800 text-[13px] font-medium inline-flex items-center">Cancel</a>
+    <button type="submit" class="flex-1 h-10 px-4 rounded-full text-white text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 cursor-pointer" style="background: var(--brand-dark);">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      <span>{{ $editing ? 'Save changes' : 'Save product' }}</span>
     </button>
   </div>
 </form>
@@ -653,13 +660,13 @@
   <div class="relative max-w-lg w-full bg-white rounded-2xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[90vh]">
     <div class="flex items-center justify-between p-4 border-b border-stone-100 bg-stone-50/50">
       <div class="flex items-center gap-2">
-        <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm">🖼</span>
+        <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg></span>
         <div>
-          <h3 class="text-sm font-extrabold text-stone-900">Insert Image in Description</h3>
+          <h3 class="text-[15px] font-semibold text-gray-900">Insert image</h3>
           <p class="text-[11px] text-stone-500">Upload an image file or paste a web image link</p>
         </div>
       </div>
-      <button type="button" id="descCloseImageModal" class="w-8 h-8 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold flex items-center justify-center text-sm cursor-pointer">✕</button>
+      <button type="button" id="descCloseImageModal" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center cursor-pointer" aria-label="Close"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
 
     {{-- Tabs --}}
@@ -680,7 +687,7 @@
           </div>
         </label>
         <div id="descImgUploadStatus" class="hidden text-xs text-stone-600 flex items-center gap-2 p-2.5 rounded-xl bg-stone-100">
-          <span class="animate-spin text-emerald-600 font-bold">⟳</span>
+          <span class="animate-spin text-emerald-600"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span>
           <span id="descImgUploadStatusText">Uploading image...</span>
         </div>
       </div>
@@ -730,7 +737,7 @@
 
     <div class="p-4 border-t border-stone-100 bg-stone-50/50 flex items-center justify-end gap-2">
       <button type="button" id="descCancelImgBtn" class="px-4 py-2 rounded-xl text-xs font-bold text-stone-600 hover:bg-stone-200 transition-colors cursor-pointer">Cancel</button>
-      <button type="button" id="descConfirmImgBtn" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-xs transition-all cursor-pointer">Insert Image</button>
+      <button type="button" id="descConfirmImgBtn" class="h-9 px-4 rounded-full text-[13px] font-semibold bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-xs transition-all cursor-pointer">Insert Image</button>
     </div>
   </div>
 </div>
@@ -740,13 +747,13 @@
   <div class="relative max-w-lg w-full bg-white rounded-2xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[90vh]">
     <div class="flex items-center justify-between p-4 border-b border-stone-100 bg-stone-50/50">
       <div class="flex items-center gap-2">
-        <span class="w-8 h-8 rounded-xl bg-red-100 text-red-700 flex items-center justify-center font-bold text-sm">🎬</span>
+        <span class="w-8 h-8 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect width="15" height="14" x="2" y="5" rx="2"/><path d="m17 10 5-3v10l-5-3"/></svg></span>
         <div>
-          <h3 class="text-sm font-extrabold text-stone-900">Insert Video / Video Link</h3>
+          <h3 class="text-[15px] font-semibold text-gray-900">Insert video</h3>
           <p class="text-[11px] text-stone-500">Embed YouTube, Vimeo or direct MP4 video files</p>
         </div>
       </div>
-      <button type="button" id="descCloseVideoModal" class="w-8 h-8 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold flex items-center justify-center text-sm cursor-pointer">✕</button>
+      <button type="button" id="descCloseVideoModal" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 flex items-center justify-center cursor-pointer" aria-label="Close"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
 
     {{-- Tabs --}}
@@ -775,13 +782,13 @@
         <label class="block border-2 border-dashed border-stone-300 hover:border-red-500 rounded-2xl p-4 text-center cursor-pointer transition-colors bg-stone-50/50 hover:bg-red-50/20">
           <input type="file" id="descVidFileInput" accept="video/mp4,video/webm,video/ogg" class="hidden" />
           <div class="space-y-1">
-            <span class="text-base">📹</span>
+            <span class="text-gray-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect width="15" height="14" x="2" y="5" rx="2"/><path d="m17 10 5-3v10l-5-3"/></svg></span>
             <p class="text-xs font-bold text-stone-800">Upload MP4 Video File</p>
             <p class="text-[10px] text-stone-400">MP4, WebM (up to 50MB)</p>
           </div>
         </label>
         <div id="descVidUploadStatus" class="hidden text-xs text-stone-600 flex items-center gap-2 p-2.5 rounded-xl bg-stone-100">
-          <span class="animate-spin text-red-600 font-bold">⟳</span>
+          <span class="animate-spin text-rose-600"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span>
           <span id="descVidUploadStatusText">Uploading video...</span>
         </div>
       </div>
@@ -797,7 +804,7 @@
 
     <div class="p-4 border-t border-stone-100 bg-stone-50/50 flex items-center justify-end gap-2">
       <button type="button" id="descCancelVidBtn" class="px-4 py-2 rounded-xl text-xs font-bold text-stone-600 hover:bg-stone-200 transition-colors cursor-pointer">Cancel</button>
-      <button type="button" id="descConfirmVidBtn" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-red-600 hover:bg-red-700 active:scale-95 text-white shadow-xs transition-all cursor-pointer">Insert Video</button>
+      <button type="button" id="descConfirmVidBtn" class="h-9 px-4 rounded-full text-[13px] font-semibold bg-red-600 hover:bg-red-700 active:scale-95 text-white shadow-xs transition-all cursor-pointer">Insert Video</button>
     </div>
   </div>
 </div>

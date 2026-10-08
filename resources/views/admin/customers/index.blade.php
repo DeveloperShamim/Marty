@@ -1,130 +1,133 @@
 @extends('layouts.admin')
-@section('title', 'Customer CRM & Insights')
+@section('title', 'Customers')
+@section('subtitle', 'Lifetime value, segment tags and quick contact for every buyer.')
+
+@section('page-actions')
+  <a href="{{ route('admin.customers.export', request()->query()) }}" class="pill-btn">
+    Export CSV
+    <span class="pill-ico"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg></span>
+  </a>
+  <a href="{{ route('admin.orders.index') }}" class="pill-btn pill-btn-dark">
+    <span class="pill-ico"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg></span>
+    View orders
+  </a>
+@endsection
+
+@php
+  $tagTone = function ($tag) {
+    return match ($tag) {
+      'VIP' => 'bg-amber-50 text-amber-800',
+      'Wholesale' => 'bg-purple-50 text-purple-800',
+      'Loyal' => 'bg-sky-50 text-sky-800',
+      'Risk' => 'bg-rose-50 text-rose-700',
+      'Influencer' => 'bg-pink-50 text-pink-700',
+      'Repeat Buyer' => 'bg-indigo-50 text-indigo-700',
+      default => 'bg-emerald-50 text-emerald-700',
+    };
+  };
+@endphp
 
 @section('content')
-<div class="space-y-5 sm:space-y-6 max-w-full">
+<div class="space-y-4 max-w-full">
 
-  {{-- Header & Actions Ribbon --}}
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs">
-    <div>
-      <div class="flex items-center gap-2 flex-wrap">
-        <h1 class="text-base sm:text-xl font-extrabold text-stone-900 tracking-tight flex items-center gap-2">
-          <span>👥</span> Customer Relationship Hub
-        </h1>
-        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-stone-100 text-stone-700 border border-stone-200">
-          {{ number_format($totalCustomersCount) }} Total Customers
-        </span>
+  {{-- KPI tiles --}}
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div class="panel p-3.5 sm:p-4">
+      <div class="flex items-center justify-between gap-2">
+        <p class="text-xs text-gray-500">Customers</p>
+        <span class="grid h-8 w-8 place-items-center rounded-xl bg-gray-100 text-gray-700"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg></span>
       </div>
-      <p class="text-xs text-stone-500 mt-1">
-        Track customer lifetime value (LTV), assign custom VIP / Wholesale segment tags, and manage customer communications.
-      </p>
+      <p class="mt-1 text-lg sm:text-xl font-semibold text-gray-900 tabular-nums">{{ number_format($totalCustomersCount) }}</p>
+      <p class="text-[11px] text-gray-400 mt-0.5">Unique buyers</p>
     </div>
-
-    <div class="flex items-center gap-2 self-start sm:self-auto flex-wrap">
-      <a href="{{ route('admin.customers.export', request()->query()) }}" class="px-4 py-2.5 rounded-xl bg-stone-50 hover:bg-stone-100 text-stone-800 border border-stone-200 font-extrabold text-xs shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-        <span>Export CSV</span>
-      </a>
-      <a href="{{ route('admin.orders.index') }}" class="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
-        <span>📦 View Orders</span>
-      </a>
+    <div class="panel p-3.5 sm:p-4">
+      <div class="flex items-center justify-between gap-2">
+        <p class="text-xs text-gray-500">Lifetime spent</p>
+        <span class="grid h-8 w-8 place-items-center rounded-xl bg-emerald-50 text-emerald-700"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg></span>
+      </div>
+      <p class="mt-1 text-lg sm:text-xl font-semibold text-gray-900 tabular-nums truncate">{{ money($totalLifetimeRevenue) }}</p>
+      <p class="text-[11px] text-gray-400 mt-0.5">Across all orders</p>
+    </div>
+    <div class="panel p-3.5 sm:p-4">
+      <div class="flex items-center justify-between gap-2">
+        <p class="text-xs text-gray-500">VIP customers</p>
+        <span class="grid h-8 w-8 place-items-center rounded-xl bg-amber-50 text-amber-700"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg></span>
+      </div>
+      <p class="mt-1 text-lg sm:text-xl font-semibold text-gray-900 tabular-nums">{{ number_format($vipCount) }}</p>
+      <p class="text-[11px] text-gray-400 mt-0.5">Tagged VIP by admin</p>
+    </div>
+    <div class="panel p-3.5 sm:p-4">
+      <div class="flex items-center justify-between gap-2">
+        <p class="text-xs text-gray-500">Repeat buyers</p>
+        <span class="grid h-8 w-8 place-items-center rounded-xl bg-indigo-50 text-indigo-700"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg></span>
+      </div>
+      <p class="mt-1 text-lg sm:text-xl font-semibold text-gray-900 tabular-nums">{{ number_format($repeatCustomersCount) }}</p>
+      <p class="text-[11px] text-gray-400 mt-0.5">2+ completed orders</p>
     </div>
   </div>
 
-  @if(session('status'))
-    <div class="rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-extrabold px-4 py-3 shadow-2xs flex items-center gap-2">
-      <span>✓</span>
-      <span>{{ session('status') }}</span>
-    </div>
-  @endif
-
-  {{-- CRM Quick KPI Metric Cards Ribbon --}}
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4">
-    <div class="p-4 rounded-2xl sm:rounded-3xl bg-white border border-stone-200 shadow-2xs space-y-1">
-      <span class="text-[11px] font-black text-stone-500 uppercase tracking-wider block">Total Customer Base</span>
-      <p class="text-xl sm:text-2xl font-black text-stone-900 font-mono tracking-tight">{{ number_format($totalCustomersCount) }}</p>
-      <span class="text-[10px] text-stone-400 font-semibold block">Unique buyers</span>
-    </div>
-
-    <div class="p-4 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-emerald-50/80 via-white to-white border border-emerald-200/80 shadow-2xs space-y-1">
-      <span class="text-[11px] font-black text-emerald-800 uppercase tracking-wider block">Lifetime Spent</span>
-      <p class="text-xl sm:text-2xl font-black text-emerald-700 font-mono tracking-tight">{{ money($totalLifetimeRevenue) }}</p>
-      <span class="text-[10px] text-emerald-600 font-semibold block">Across all orders</span>
-    </div>
-
-    <div class="p-4 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-50/80 via-white to-white border border-amber-200/80 shadow-2xs space-y-1">
-      <span class="text-[11px] font-black text-amber-900 uppercase tracking-wider block">VIP Spenders</span>
-      <p class="text-xl sm:text-2xl font-black text-amber-800 font-mono tracking-tight">{{ number_format($vipCount) }}</p>
-      <span class="text-[10px] text-amber-700 font-semibold block">Tagged VIP by admin</span>
-    </div>
-
-    <div class="p-4 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-50/80 via-white to-white border border-indigo-200/80 shadow-2xs space-y-1">
-      <span class="text-[11px] font-black text-indigo-900 uppercase tracking-wider block">Repeat Buyers</span>
-      <p class="text-xl sm:text-2xl font-black text-indigo-800 font-mono tracking-tight">{{ number_format($repeatCustomersCount) }}</p>
-      <span class="text-[10px] text-indigo-600 font-semibold block">2+ Completed orders</span>
-    </div>
-  </div>
-
-  {{-- Filters, Search & Segment Tabs Card --}}
-  <div class="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-stone-200 shadow-2xs space-y-4">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-stone-100 pb-3.5">
-      
-      {{-- Segment Tabs --}}
-      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 md:pb-0">
-        <a href="{{ route('admin.customers.index', array_merge(request()->query(), ['tab' => 'all'])) }}" class="px-3 py-1.5 text-xs font-black rounded-xl transition whitespace-nowrap {{ $tab === 'all' ? 'bg-stone-900 text-white shadow-2xs' : 'bg-stone-50 text-stone-600 hover:bg-stone-100' }}">
-          All Customers
+  {{-- Segment tabs --}}
+  @php
+    $tabs = [
+      'all' => 'All customers',
+      'vip' => 'VIP',
+      'repeat' => 'Repeat buyers',
+      'new' => 'First-time buyers',
+      'blacklisted' => 'Blacklisted',
+    ];
+  @endphp
+  <nav class="-mx-3 sm:mx-0 px-3 sm:px-0 overflow-x-auto no-scrollbar" aria-label="Customer segments">
+    <div class="inline-flex items-center gap-1 p-1 rounded-full bg-white shadow-panel whitespace-nowrap">
+      @foreach($tabs as $key => $label)
+        @php $active = $tab === $key; @endphp
+        <a href="{{ route('admin.customers.index', array_merge(request()->query(), ['tab' => $key])) }}"
+           class="h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium inline-flex items-center transition-colors {{ $active ? 'text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}"
+           @if($active) style="background: var(--brand-dark);" aria-current="page" @endif>
+          {{ $label }}
         </a>
-        <a href="{{ route('admin.customers.index', array_merge(request()->query(), ['tab' => 'vip'])) }}" class="px-3 py-1.5 text-xs font-black rounded-xl transition whitespace-nowrap {{ $tab === 'vip' ? 'bg-amber-500 text-white shadow-2xs' : 'bg-amber-50 text-amber-900 hover:bg-amber-100' }}">
-          🥇 VIP Spenders
-        </a>
-        <a href="{{ route('admin.customers.index', array_merge(request()->query(), ['tab' => 'repeat'])) }}" class="px-3 py-1.5 text-xs font-black rounded-xl transition whitespace-nowrap {{ $tab === 'repeat' ? 'bg-indigo-600 text-white shadow-2xs' : 'bg-indigo-50 text-indigo-900 hover:bg-indigo-100' }}">
-          🔁 Repeat Buyers
-        </a>
-        <a href="{{ route('admin.customers.index', array_merge(request()->query(), ['tab' => 'new'])) }}" class="px-3 py-1.5 text-xs font-black rounded-xl transition whitespace-nowrap {{ $tab === 'new' ? 'bg-emerald-600 text-white shadow-2xs' : 'bg-emerald-50 text-emerald-900 hover:bg-emerald-100' }}">
-          ✨ First-Time Buyers
-        </a>
-        <a href="{{ route('admin.customers.index', array_merge(request()->query(), ['tab' => 'blacklisted'])) }}" class="px-3 py-1.5 text-xs font-black rounded-xl transition whitespace-nowrap {{ $tab === 'blacklisted' ? 'bg-rose-600 text-white shadow-2xs' : 'bg-rose-50 text-rose-900 hover:bg-rose-100' }}">
-          🚫 Blacklisted
-        </a>
+      @endforeach
+    </div>
+  </nav>
+
+  {{-- Customer list --}}
+  <div class="card overflow-hidden">
+    <form method="GET" action="{{ route('admin.customers.index') }}" class="p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+      <input type="hidden" name="tab" value="{{ $tab }}">
+      <label class="relative flex-1">
+        <span class="sr-only">Search customers</span>
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" name="q" value="{{ $term }}" placeholder="Search name, phone or city" class="w-full h-10 pl-10 pr-4 rounded-full bg-gray-100 border border-transparent text-sm text-gray-800 placeholder-gray-500 focus:bg-white focus:border-gray-200 outline-none transition" />
+      </label>
+      <div class="flex items-center gap-2">
+        <label class="relative flex-1 sm:flex-initial">
+          <span class="sr-only">Sort by</span>
+          <select name="sort" onchange="this.form.submit()" class="w-full sm:w-auto h-10 rounded-full bg-gray-100 border border-transparent pl-4 pr-9 text-sm font-medium text-gray-800 appearance-none cursor-pointer focus:bg-white focus:border-gray-200 outline-none">
+            <option value="latest" {{ $sort === 'latest' ? 'selected' : '' }}>Recent activity</option>
+            <option value="spent_desc" {{ $sort === 'spent_desc' ? 'selected' : '' }}>Highest spent</option>
+            <option value="orders_desc" {{ $sort === 'orders_desc' ? 'selected' : '' }}>Most orders</option>
+            <option value="name_asc" {{ $sort === 'name_asc' ? 'selected' : '' }}>Name (A-Z)</option>
+          </select>
+          <svg class="w-3.5 h-3.5 text-gray-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+        </label>
+        <button type="submit" class="h-10 px-5 rounded-full text-white text-sm font-semibold shrink-0" style="background: var(--brand-dark);">Search</button>
       </div>
+    </form>
 
-      {{-- Search & Sort --}}
-      <form method="GET" action="{{ route('admin.customers.index') }}" class="flex items-center gap-2 flex-wrap sm:flex-nowrap w-full md:w-auto">
-        <input type="hidden" name="tab" value="{{ $tab }}">
-        
-        <div class="relative flex-1 sm:w-64">
-          <input type="text" name="q" value="{{ $term }}" placeholder="Search customer name, phone, city..." class="w-full pl-8 pr-3 py-2 text-xs font-semibold bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500" />
-          <svg class="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        </div>
-
-        <select name="sort" onchange="this.form.submit()" class="text-xs font-bold bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-stone-800 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer shadow-2xs">
-          <option value="latest" {{ $sort === 'latest' ? 'selected' : '' }}>Recent Activity</option>
-          <option value="spent_desc" {{ $sort === 'spent_desc' ? 'selected' : '' }}>Highest Spent (LTV)</option>
-          <option value="orders_desc" {{ $sort === 'orders_desc' ? 'selected' : '' }}>Most Orders</option>
-          <option value="name_asc" {{ $sort === 'name_asc' ? 'selected' : '' }}>Name (A-Z)</option>
-        </select>
-
-        <button type="submit" class="px-3.5 py-2 rounded-xl bg-stone-900 text-white font-extrabold text-xs hover:bg-stone-800 transition cursor-pointer shadow-2xs">
-          Search
-        </button>
-      </form>
-    </div>
-
-    {{-- Desktop Table View (`hidden md:block`) --}}
-    <div class="hidden md:block overflow-x-auto rounded-xl border border-stone-200">
-      <table class="w-full text-left text-xs border-collapse">
+    {{-- Desktop table --}}
+    <div class="hidden md:block overflow-x-auto">
+      <table class="w-full text-left text-[13px] border-collapse">
         <thead>
-          <tr class="bg-stone-100/90 text-stone-700 font-black border-b border-stone-200 uppercase text-[11px] tracking-wider whitespace-nowrap">
-            <th class="py-3 px-4">Customer</th>
-            <th class="py-3 px-4">Contact &amp; Location</th>
-            <th class="py-3 px-4 text-center">Segment Tag (Admin Selectable)</th>
-            <th class="py-3 px-4 text-center">Orders Placed</th>
-            <th class="py-3 px-4 text-right">Lifetime Spent (LTV)</th>
-            <th class="py-3 px-4 text-right">Last Order</th>
-            <th class="py-3 px-4 text-right">Actions</th>
+          <tr class="text-gray-500 text-xs font-medium whitespace-nowrap border-y border-gray-100 bg-gray-50/60">
+            <th class="py-3 px-4 lg:pl-5">Customer</th>
+            <th class="py-3 px-4">Contact</th>
+            <th class="py-3 px-4">Segment</th>
+            <th class="py-3 px-4">Orders</th>
+            <th class="py-3 px-4 text-right">Lifetime spent</th>
+            <th class="py-3 px-4 text-right">Last order</th>
+            <th class="py-3 px-4 lg:pr-5 text-right">Actions</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-stone-100 bg-white">
+        <tbody class="divide-y divide-gray-100">
           @forelse($customers as $c)
             @php
               $cleanPhone = preg_replace('/[^0-9]/', '', $c->customer_phone);
@@ -136,47 +139,42 @@
                 $waPhone = '880' . $cleanPhone;
               }
             @endphp
-            <tr class="hover:bg-stone-50/80 transition-colors">
-              <td class="py-3.5 px-4">
+            <tr class="hover:bg-gray-50/70 transition-colors">
+              <td class="py-3 px-4 lg:pl-5">
                 <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-xl font-black text-xs flex items-center justify-center shrink-0 border {{ $c->tag === 'VIP' ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-stone-100 text-stone-700 border-stone-200' }}">
+                  <div class="w-9 h-9 rounded-full font-semibold text-xs flex items-center justify-center shrink-0 {{ $c->tag === 'VIP' ? 'bg-amber-50 text-amber-800' : 'bg-gray-100 text-gray-700' }}">
                     {{ strtoupper(substr($c->customer_name ?: 'C', 0, 2)) }}
                   </div>
                   <div class="min-w-0">
-                    <a href="{{ route('admin.customers.show', $c->customer_phone) }}" class="font-extrabold text-stone-900 text-xs sm:text-sm hover:text-brand-600 block truncate">
+                    <a href="{{ route('admin.customers.show', $c->customer_phone) }}" class="font-semibold text-gray-900 hover:underline block truncate">
                       {{ $c->customer_name ?: 'Valued Customer' }}
                     </a>
                     @if($c->is_blacklisted)
-                      <span class="inline-flex items-center gap-1 text-[10px] font-black text-rose-600 mt-0.5">
-                        <span>🚫 Blacklisted</span>
-                      </span>
+                      <span class="mt-0.5 inline-flex px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-rose-50 text-rose-700">Blacklisted</span>
                     @endif
                   </div>
                 </div>
               </td>
 
-              <td class="py-3.5 px-4">
-                <div class="space-y-0.5">
-                  <p class="font-mono font-bold text-stone-800 text-xs">{{ $c->customer_phone }}</p>
-                  @if($c->city)
-                    <p class="text-[11px] text-stone-400 font-medium">📍 {{ $c->city }}</p>
-                  @endif
-                </div>
+              <td class="py-3 px-4">
+                <p class="text-gray-800 tabular-nums whitespace-nowrap">{{ $c->customer_phone }}</p>
+                @if($c->city)
+                  <p class="text-[11px] text-gray-400">{{ $c->city }}</p>
+                @endif
               </td>
 
-              {{-- Segment Tag Dropdown Selector Form --}}
-              <td class="py-3.5 px-4 text-center whitespace-nowrap">
+              <td class="py-3 px-4 whitespace-nowrap">
                 <form method="POST" action="{{ route('admin.customers.update-segment-tag', $c->customer_phone) }}" class="inline-block">
                   @csrf
-                  <select name="segment_tag" onchange="this.form.submit()" class="text-[11px] font-black rounded-lg px-2.5 py-1 border transition-all cursor-pointer shadow-2xs focus:outline-none focus:ring-2 focus:ring-brand-500 {{ $c->tag === 'VIP' ? 'bg-amber-100 text-amber-950 border-amber-300' : ($c->tag === 'Wholesale' ? 'bg-purple-100 text-purple-950 border-purple-300' : ($c->tag === 'Loyal' ? 'bg-sky-100 text-sky-950 border-sky-300' : ($c->tag === 'Risk' ? 'bg-rose-100 text-rose-950 border-rose-300' : ($c->tag === 'Influencer' ? 'bg-pink-100 text-pink-950 border-pink-300' : ($c->tag === 'Repeat Buyer' ? 'bg-indigo-50 text-indigo-900 border-indigo-200' : 'bg-emerald-50 text-emerald-900 border-emerald-200'))))) }}">
-                    <optgroup label="Custom Tag (Admin Selected)">
-                      <option value="VIP" {{ ($c->admin_tag === 'VIP') ? 'selected' : '' }}>🥇 VIP Customer</option>
-                      <option value="Wholesale" {{ ($c->admin_tag === 'Wholesale') ? 'selected' : '' }}>📦 Wholesale / Bulk</option>
-                      <option value="Loyal" {{ ($c->admin_tag === 'Loyal') ? 'selected' : '' }}>🌟 Loyal Client</option>
-                      <option value="Influencer" {{ ($c->admin_tag === 'Influencer') ? 'selected' : '' }}>🎬 Influencer / Partner</option>
-                      <option value="Risk" {{ ($c->admin_tag === 'Risk') ? 'selected' : '' }}>⚠️ Return Risk</option>
+                  <select name="segment_tag" onchange="this.form.submit()" aria-label="Segment tag" class="h-7 text-[11px] font-semibold rounded-full pl-2.5 pr-7 border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-200 {{ $tagTone($c->tag) }}">
+                    <optgroup label="Custom tag">
+                      <option value="VIP" {{ ($c->admin_tag === 'VIP') ? 'selected' : '' }}>VIP customer</option>
+                      <option value="Wholesale" {{ ($c->admin_tag === 'Wholesale') ? 'selected' : '' }}>Wholesale / bulk</option>
+                      <option value="Loyal" {{ ($c->admin_tag === 'Loyal') ? 'selected' : '' }}>Loyal client</option>
+                      <option value="Influencer" {{ ($c->admin_tag === 'Influencer') ? 'selected' : '' }}>Influencer / partner</option>
+                      <option value="Risk" {{ ($c->admin_tag === 'Risk') ? 'selected' : '' }}>Return risk</option>
                     </optgroup>
-                    <optgroup label="Automatic Default">
+                    <optgroup label="Automatic">
                       <option value="auto" {{ empty($c->admin_tag) ? 'selected' : '' }}>
                         Auto ({{ $c->orders_count >= 2 ? 'Repeat Buyer' : 'New Customer' }})
                       </option>
@@ -185,50 +183,47 @@
                 </form>
               </td>
 
-              <td class="py-3.5 px-4 text-center">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-stone-100 text-stone-800 border border-stone-200 font-mono">
-                  {{ number_format($c->orders_count) }} orders
-                </span>
+              <td class="py-3 px-4 whitespace-nowrap">
+                <p class="font-semibold text-gray-900 tabular-nums">{{ number_format($c->orders_count) }}</p>
                 @if($c->delivered_count > 0)
-                  <span class="block text-[10px] text-emerald-700 font-bold mt-0.5 font-mono">{{ $c->delivered_count }} delivered</span>
+                  <p class="text-[11px] text-emerald-700 tabular-nums">{{ $c->delivered_count }} delivered</p>
                 @endif
               </td>
 
-              <td class="py-3.5 px-4 text-right font-black text-emerald-700 font-mono text-sm">
+              <td class="py-3 px-4 text-right font-semibold text-gray-900 tabular-nums whitespace-nowrap">
                 {{ money($c->total_spent) }}
               </td>
 
-              <td class="py-3.5 px-4 text-right text-stone-500 font-medium whitespace-nowrap text-xs">
+              <td class="py-3 px-4 text-right text-gray-500 whitespace-nowrap">
                 {{ \Illuminate\Support\Carbon::parse($c->last_order_at)->format('d M, Y') }}
               </td>
 
-              <td class="py-3.5 px-4 text-right whitespace-nowrap">
+              <td class="py-3 px-4 lg:pr-5 text-right whitespace-nowrap">
                 <div class="flex items-center justify-end gap-1.5">
-                  <a href="https://wa.me/{{ $waPhone }}" target="_blank" class="h-8 w-8 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/90 hover:bg-emerald-100 hover:scale-105 transition shadow-2xs flex items-center justify-center cursor-pointer shrink-0" title="Chat with {{ $c->customer_name ?: 'Customer' }} on WhatsApp">
-                    <svg class="w-4 h-4 fill-current text-emerald-700" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm0 18.15c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.216 8.216 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c.01 4.54-3.68 8.23-8.22 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.17-.25.25-.42.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.44.06-.66.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.43 1.03 2.6.12.17 1.78 2.71 4.3 3.8.6.26 1.07.41 1.44.53.61.19 1.16.17 1.6-.07.49-.26 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.12-.23-.19-.48-.31z"/></svg>
+                  <a href="https://wa.me/{{ $waPhone }}" target="_blank" class="h-8 w-8 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 inline-flex items-center justify-center" title="Chat with {{ $c->customer_name ?: 'Customer' }} on WhatsApp" aria-label="WhatsApp">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm0 18.15c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.216 8.216 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c.01 4.54-3.68 8.23-8.22 8.23zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.12-.15.17-.25.25-.42.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.44.06-.66.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.43 1.03 2.6.12.17 1.78 2.71 4.3 3.8.6.26 1.07.41 1.44.53.61.19 1.16.17 1.6-.07.49-.26 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.12-.23-.19-.48-.31z"/></svg>
                   </a>
-                  <a href="tel:{{ $c->customer_phone }}" class="h-8 w-8 rounded-xl bg-stone-50 text-stone-700 border border-stone-200 hover:bg-stone-100 hover:scale-105 transition shadow-2xs flex items-center justify-center cursor-pointer shrink-0" title="Call {{ $c->customer_phone }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                  <a href="tel:{{ $c->customer_phone }}" class="h-8 w-8 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 inline-flex items-center justify-center" title="Call {{ $c->customer_phone }}" aria-label="Call">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
                   </a>
-                  <a href="{{ route('admin.customers.show', $c->customer_phone) }}" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-stone-50 hover:bg-stone-100 text-stone-800 border border-stone-200 transition shadow-2xs">
-                    Profile &rarr;
+                  <a href="{{ route('admin.customers.show', $c->customer_phone) }}" class="h-8 pl-3 pr-2 rounded-full text-white text-xs font-semibold inline-flex items-center gap-1" style="background: var(--brand-dark);">
+                    Profile
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
                   </a>
                 </div>
               </td>
             </tr>
           @empty
             <tr>
-              <td colspan="7" class="px-5 py-12 text-center text-stone-400 text-xs italic bg-stone-50/50">
-                👥 No customers match your filter or search query.
-              </td>
+              <td colspan="7" class="px-5 py-12 text-center text-gray-500 text-sm">No customers match your filter or search.</td>
             </tr>
           @endforelse
         </tbody>
       </table>
     </div>
 
-    {{-- Mobile Cards View (`block md:hidden`) --}}
-    <div class="block md:hidden divide-y divide-stone-100 bg-white">
+    {{-- Phone: one card per customer --}}
+    <div class="md:hidden px-3 pb-3 space-y-2">
       @forelse($customers as $c)
         @php
           $cleanPhone = preg_replace('/[^0-9]/', '', $c->customer_phone);
@@ -240,75 +235,61 @@
             $waPhone = '880' . $cleanPhone;
           }
         @endphp
-        <div class="p-4 space-y-3">
+        <article class="rounded-2xl bg-gray-50/80 p-3 space-y-2.5">
           <div class="flex items-start justify-between gap-3">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl font-black text-xs flex items-center justify-center shrink-0 border {{ $c->tag === 'VIP' ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-stone-100 text-stone-700 border-stone-200' }}">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-9 h-9 rounded-full font-semibold text-xs flex items-center justify-center shrink-0 {{ $c->tag === 'VIP' ? 'bg-amber-50 text-amber-800' : 'bg-white text-gray-700' }}">
                 {{ strtoupper(substr($c->customer_name ?: 'C', 0, 2)) }}
               </div>
               <div class="min-w-0">
-                <a href="{{ route('admin.customers.show', $c->customer_phone) }}" class="font-extrabold text-sm text-stone-900 hover:text-brand-600 block truncate">
+                <a href="{{ route('admin.customers.show', $c->customer_phone) }}" class="font-semibold text-[13px] text-gray-900 hover:underline block truncate">
                   {{ $c->customer_name ?: 'Valued Customer' }}
                 </a>
-                <p class="text-xs font-mono font-bold text-stone-700 mt-0.5">{{ $c->customer_phone }}</p>
-                @if($c->city)
-                  <p class="text-[11px] text-stone-400">📍 {{ $c->city }}</p>
-                @endif
+                <p class="text-[11px] text-gray-500 tabular-nums truncate">{{ $c->customer_phone }}@if($c->city) · {{ $c->city }}@endif</p>
               </div>
             </div>
-
             <div class="text-right shrink-0">
-              <p class="text-sm font-black text-emerald-700 font-mono">{{ money($c->total_spent) }}</p>
-              <span class="text-[10px] text-stone-400 font-mono font-bold block">{{ $c->orders_count }} orders</span>
+              <p class="text-[13px] font-semibold text-gray-900 tabular-nums">{{ money($c->total_spent) }}</p>
+              <p class="text-[11px] text-gray-500 tabular-nums">{{ $c->orders_count }} orders</p>
             </div>
           </div>
 
-          {{-- Mobile Segment Tag & Quick Switcher --}}
-          <div class="flex items-center justify-between gap-2 p-2 bg-stone-50 rounded-xl border border-stone-200/80 text-xs">
-            <span class="text-[11px] font-bold text-stone-500">Segment Tag:</span>
+          <div class="flex items-center justify-between gap-2">
             <form method="POST" action="{{ route('admin.customers.update-segment-tag', $c->customer_phone) }}" class="inline-block">
               @csrf
-              <select name="segment_tag" onchange="this.form.submit()" class="text-[11px] font-black rounded-lg px-2 py-0.5 border cursor-pointer {{ $c->tag === 'VIP' ? 'bg-amber-100 text-amber-950 border-amber-300' : ($c->tag === 'Wholesale' ? 'bg-purple-100 text-purple-950 border-purple-300' : ($c->tag === 'Loyal' ? 'bg-sky-100 text-sky-950 border-sky-300' : ($c->tag === 'Risk' ? 'bg-rose-100 text-rose-950 border-rose-300' : ($c->tag === 'Repeat Buyer' ? 'bg-indigo-50 text-indigo-900 border-indigo-200' : 'bg-emerald-50 text-emerald-900 border-emerald-200')))) }}">
-                <optgroup label="Admin Assigned">
-                  <option value="VIP" {{ ($c->admin_tag === 'VIP') ? 'selected' : '' }}>🥇 VIP</option>
-                  <option value="Wholesale" {{ ($c->admin_tag === 'Wholesale') ? 'selected' : '' }}>📦 Wholesale</option>
-                  <option value="Loyal" {{ ($c->admin_tag === 'Loyal') ? 'selected' : '' }}>🌟 Loyal</option>
-                  <option value="Influencer" {{ ($c->admin_tag === 'Influencer') ? 'selected' : '' }}>🎬 Influencer</option>
-                  <option value="Risk" {{ ($c->admin_tag === 'Risk') ? 'selected' : '' }}>⚠️ Return Risk</option>
+              <select name="segment_tag" onchange="this.form.submit()" aria-label="Segment tag" class="h-8 text-[11px] font-semibold rounded-full pl-3 pr-8 border-0 cursor-pointer {{ $tagTone($c->tag) }}">
+                <optgroup label="Custom tag">
+                  <option value="VIP" {{ ($c->admin_tag === 'VIP') ? 'selected' : '' }}>VIP</option>
+                  <option value="Wholesale" {{ ($c->admin_tag === 'Wholesale') ? 'selected' : '' }}>Wholesale</option>
+                  <option value="Loyal" {{ ($c->admin_tag === 'Loyal') ? 'selected' : '' }}>Loyal</option>
+                  <option value="Influencer" {{ ($c->admin_tag === 'Influencer') ? 'selected' : '' }}>Influencer</option>
+                  <option value="Risk" {{ ($c->admin_tag === 'Risk') ? 'selected' : '' }}>Return risk</option>
                 </optgroup>
-                <optgroup label="Auto Fallback">
+                <optgroup label="Automatic">
                   <option value="auto" {{ empty($c->admin_tag) ? 'selected' : '' }}>
                     Auto ({{ $c->orders_count >= 2 ? 'Repeat' : 'New' }})
                   </option>
                 </optgroup>
               </select>
             </form>
+            @if($c->is_blacklisted)
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-700">Blacklisted</span>
+            @endif
           </div>
 
-          <div class="flex items-center justify-between gap-2 pt-1">
-            <div class="flex items-center gap-1.5">
-              <a href="https://wa.me/{{ $waPhone }}" target="_blank" class="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center gap-1">
-                <span>💬 WhatsApp</span>
-              </a>
-              <a href="tel:{{ $c->customer_phone }}" class="px-3 py-1.5 rounded-xl bg-stone-50 text-stone-800 border border-stone-200 text-xs font-bold flex items-center gap-1">
-                <span>📞 Call</span>
-              </a>
-            </div>
-
-            <a href="{{ route('admin.customers.show', $c->customer_phone) }}" class="px-4 py-1.5 text-xs font-bold rounded-xl bg-stone-900 text-white shadow-2xs">
-              Profile &rarr;
-            </a>
+          <div class="flex items-center gap-1.5">
+            <a href="https://wa.me/{{ $waPhone }}" target="_blank" class="h-8 px-3 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold inline-flex items-center">WhatsApp</a>
+            <a href="tel:{{ $c->customer_phone }}" class="h-8 px-3 rounded-full bg-white ring-1 ring-gray-200 text-gray-700 text-xs font-semibold inline-flex items-center">Call</a>
+            <a href="{{ route('admin.customers.show', $c->customer_phone) }}" class="flex-1 h-8 rounded-full text-white text-xs font-semibold inline-flex items-center justify-center" style="background: var(--brand-dark);">Profile</a>
           </div>
-        </div>
+        </article>
       @empty
-        <div class="p-8 text-center text-xs text-stone-400 bg-stone-50">
-          No customers found.
-        </div>
+        <div class="py-12 text-center text-sm text-gray-500">No customers found.</div>
       @endforelse
     </div>
 
     @if($customers->hasPages())
-      <div class="p-4 border-t border-stone-100 bg-stone-50/40">{{ $customers->links() }}</div>
+      <div class="p-3.5 sm:p-4 border-t border-gray-100">{{ $customers->links() }}</div>
     @endif
   </div>
 
