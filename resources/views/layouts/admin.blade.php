@@ -76,7 +76,7 @@
   <div class="admin-shell min-h-screen min-h-[100dvh] px-3 pb-6 sm:px-4 lg:px-5">
     @include('admin.partials.topbar')
 
-    <div class="flex items-start gap-4 xl:gap-5 mt-3 sm:mt-4">
+    <div class="flex items-start gap-4 xl:gap-5 mt-3 sm:mt-4 pl-12 sm:pl-[52px] lg:pl-0">
       @include('admin.partials.sidebar')
 
       <div class="admin-main flex-1 flex flex-col min-w-0 w-full">

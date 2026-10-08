@@ -167,6 +167,25 @@
     </div>
   @endif
 </aside>
+
+{{-- Phones and tablets: a slim icon rail stays on the left so every page is one tap away. The menu button opens the full sidebar above. --}}
+<nav id="mobileRail" class="lg:hidden fixed left-2 sm:left-3 top-16 bottom-2 z-20 w-11 bg-white rounded-[22px] shadow-panel overflow-y-auto overscroll-contain no-scrollbar py-1.5" aria-label="Quick navigation">
+  @foreach(array_merge($nav, ['Settings' => $support]) as $group => $items)
+    @if(!$loop->first)<span class="block mx-auto my-1.5 h-px w-5 bg-gray-200" aria-hidden="true"></span>@endif
+    @foreach($items as $i)
+      @php $on = request()->routeIs($i['pattern']); $badge = $badges[$i['key']] ?? null; @endphp
+      <a href="{{ route($i['route']) }}" class="relative mx-auto my-0.5 grid h-9 w-9 place-items-center rounded-full transition-colors {{ $on ? 'text-white' : 'text-gray-500 active:bg-gray-100' }}"
+         @if($on) aria-current="page" data-rail-current style="background: var(--brand-dark);" @endif aria-label="{{ $i['label'] }}" title="{{ $i['label'] }}">
+        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $i['icon'] !!}</svg>
+        @if($badge && ($badge['count'] > 0 || $i['key'] === 'orders'))
+          <span @if($i['key'] === 'orders') data-live-badge="orders" @endif style="display: {{ $badge['count'] > 0 ? 'contents' : 'none' }}">
+            <span class="absolute top-1 right-1 h-2 w-2 rounded-full ring-2 ring-white" style="background: var(--brand);" aria-hidden="true"></span>
+          </span>
+        @endif
+      </a>
+    @endforeach
+  @endforeach
+</nav>
 <div id="sidebarTip" class="hidden fixed z-[60] px-2 py-1 rounded-md bg-gray-900 text-white text-xs font-medium pointer-events-none whitespace-nowrap" role="tooltip"></div>
 <script>
   {{-- Restore folded groups before first paint so the menu doesn't jump. --}}

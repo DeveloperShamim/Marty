@@ -219,3 +219,10 @@
   document.addEventListener('click', function (e) { if (menu.open && !menu.contains(e.target)) menu.open = false; });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') menu.open = false; });
 })();
+
+/* Phone icon rail: keep the current page's icon in view */
+(function () {
+  var rail = document.getElementById('mobileRail');
+  var cur = rail && rail.querySelector('[data-rail-current]');
+  if (cur && rail.clientHeight) rail.scrollTop = cur.offsetTop - (rail.clientHeight - cur.offsetHeight) / 2;
+})();
