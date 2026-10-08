@@ -176,13 +176,7 @@ class OrderController extends Controller
         };
 
         if ($result['success']) {
-            $order->update([
-                'courier_name'          => $provider,
-                'courier_tracking_code' => $result['tracking_code'],
-                'courier_status'        => 'in_transit',
-                'courier_sent_at'       => now(),
-                'status'                => in_array($order->status, ['pending', 'confirmed', 'processing'], true) ? 'shipped' : $order->status,
-            ]);
+            $order->markDispatched($provider, $result['tracking_code']);
 
             return back()->with('status', "Order {$order->order_number} successfully dispatched to {$order->courierLabel()}! Tracking Code: {$result['tracking_code']}");
         }

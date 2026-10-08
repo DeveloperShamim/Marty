@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\EnsureAdmin::class,
             'role'  => \App\Http\Middleware\EnsureRolePermission::class,
             'testing.readonly' => \App\Http\Middleware\BlockMutationsInTestingMode::class,
+            'mobile.token' => \App\Http\Middleware\AuthenticateMobileToken::class,
         ]);
 
         $middleware->web(append: [

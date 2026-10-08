@@ -150,6 +150,18 @@ class Order extends Model
         return ! empty($this->courier_name) && ! empty($this->courier_tracking_code);
     }
 
+    /** Record a courier booking and move an unshipped order to "shipped". */
+    public function markDispatched(string $courierName, string $trackingCode): void
+    {
+        $this->update([
+            'courier_name'          => $courierName,
+            'courier_tracking_code' => $trackingCode,
+            'courier_status'        => 'in_transit',
+            'courier_sent_at'       => now(),
+            'status'                => in_array($this->status, ['pending', 'confirmed', 'processing'], true) ? 'shipped' : $this->status,
+        ]);
+    }
+
     public function courierLabel(): string
     {
         return match (strtolower((string) $this->courier_name)) {
