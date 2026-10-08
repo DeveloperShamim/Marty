@@ -4,8 +4,8 @@
 @endphp
 <a href="{{ route($i['route']) }}"
    class="sb-item group relative flex items-center gap-3 h-10 px-3 rounded-full text-[14px] transition-colors {{ $itemClass($on) }}"
-   @if($on) style="background: var(--brand-dark);" aria-current="page" @endif
-   data-label="{{ $i['label'] }}" data-search="{{ strtolower($i['label'] . ' ' . $i['keywords']) }}">
+   data-label="{{ $i['label'] }}" data-search="{{ strtolower($i['label'] . ' ' . $i['keywords']) }}"
+   @if($on) aria-current="page" style="background: var(--brand-dark);" @endif>
   <svg class="w-[18px] h-[18px] shrink-0 {{ $on ? 'text-white' : 'text-gray-400 group-hover:text-gray-700' }}" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $i['icon'] !!}</svg>
   <span class="sb-label flex-1 truncate">{{ $i['label'] }}</span>
   {{-- The orders count is always rendered (hidden at 0) so the new-order poller can update it. --}}

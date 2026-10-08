@@ -36,7 +36,7 @@ class AdminSidebarTest extends TestCase
         $labels = $this->menuLabels($this->actingAs($manager)->get(route('admin.orders.index'))->assertOk()->getContent());
 
         $this->assertEqualsCanonicalizing(
-            ['Orders', 'POS Register', 'Courier Scan', 'Abandoned Carts', 'Reviews', 'Customers', 'Blacklist', 'View store', 'Expand sidebar'],
+            ['Orders', 'POS Register', 'Courier Scan', 'Abandoned Carts', 'Reviews', 'Customers', 'Blacklist', 'View store', 'Log out'],
             $labels
         );
     }
