@@ -98,8 +98,10 @@
 @endif
 
 <header class="site-header sticky top-0 z-40 bg-white">
-  {{-- ROW 1: Logo + Modern Search + Actions --}}
-  <div class="bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-2xs">
+  {{-- ROW 1: Logo + Modern Search + Actions.
+       relative z-20 keeps this row (and the Account menu that drops out of it) above the category bar below;
+       backdrop-blur makes the row its own stacking layer, so without it row 2 painted over the menu. --}}
+  <div class="relative z-20 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-2xs">
     <div class="max-w-7xl mx-auto pl-1.5 pr-2.5 sm:px-6 py-1.5 sm:py-3 flex items-center justify-between gap-1 sm:gap-6">
 
       {{-- Phones: menu + search on the left --}}
@@ -191,12 +193,12 @@
         @if($moreCats->isNotEmpty())
           <div class="relative group/catdropdown" id="catDropdownContainer">
             <button type="button" 
-                    onclick="event.stopPropagation(); document.getElementById('catDropdownMenu').classList.toggle('hidden');" 
+                    data-nav-dropdown-toggle="catDropdownMenu" aria-expanded="false" aria-haspopup="true"
                     class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ isset($activeCategory) && ! $topCats->pluck('id')->contains($activeCategory->id) ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }} inline-flex items-center gap-1 cursor-pointer">
               <span>More</span>
               <svg class="w-3.5 h-3.5 transition-transform group-hover/catdropdown:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
             </button>
-            <div id="catDropdownMenu" class="absolute left-0 top-full pt-1.5 hidden group-hover/catdropdown:block z-50 min-w-[260px] max-w-sm">
+            <div id="catDropdownMenu" data-nav-dropdown class="absolute left-0 top-full pt-1.5 hidden group-hover/catdropdown:block z-50 min-w-[260px] max-w-sm">
               <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 p-2 space-y-1 max-h-80 overflow-y-auto">
                 <a href="{{ route('shop') }}" class="flex items-center justify-between gap-2 px-3 py-2 text-xs font-bold text-brand-600 hover:bg-brand-50 rounded-lg transition-colors">
                   <span>Browse All Categories</span>
@@ -220,7 +222,7 @@
         @if($navBrs->isNotEmpty())
           <div class="relative group/branddropdown" id="brandDropdownContainer">
             <button type="button" 
-                    onclick="event.stopPropagation(); document.getElementById('brandDropdownMenu').classList.toggle('hidden');" 
+                    data-nav-dropdown-toggle="brandDropdownMenu" aria-expanded="false" aria-haspopup="true"
                     class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ request()->routeIs('shop.brand') || request('brand') ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }} inline-flex items-center gap-1 cursor-pointer">
               <span class="inline-flex items-center gap-1">
                 <span>Brands</span>
@@ -228,7 +230,7 @@
               </span>
               <svg class="w-3.5 h-3.5 transition-transform group-hover/branddropdown:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
             </button>
-            <div id="brandDropdownMenu" class="absolute left-0 top-full pt-1.5 hidden group-hover/branddropdown:block z-50 w-[420px]">
+            <div id="brandDropdownMenu" data-nav-dropdown class="absolute left-0 top-full pt-1.5 hidden group-hover/branddropdown:block z-50 w-[420px]">
               <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 p-4 space-y-3">
                 <div class="flex items-center justify-between border-b border-stone-100 pb-2">
                   <span class="text-xs font-extrabold uppercase tracking-wider text-stone-400">Official Brands</span>

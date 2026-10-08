@@ -147,6 +147,36 @@
     if (!e.target.closest("[data-account-menu]")) closeAccountMenus();
   });
 
+  /* ---------------- Header "More" / "Brands" dropdowns ---------------- */
+  function closeNavDropdowns(except) {
+    $$("[data-nav-dropdown]").forEach((d) => { if (d !== except) d.classList.add("hidden"); });
+    $$("[data-nav-dropdown-toggle]").forEach((b) => {
+      if (!except || b.dataset.navDropdownToggle !== except.id) b.setAttribute("aria-expanded", "false");
+    });
+  }
+  $$("[data-nav-dropdown-toggle]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const menu = document.getElementById(btn.dataset.navDropdownToggle);
+      if (!menu) return;
+      const willOpen = menu.classList.contains("hidden");
+      closeAccountMenus();
+      closeNavDropdowns(menu);
+      menu.classList.toggle("hidden", !willOpen);
+      btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+    });
+  });
+  // The account toggle stops propagation, so close the nav menus from its own click too
+  $$("[data-account-toggle]").forEach((b) => b.addEventListener("click", () => closeNavDropdowns()));
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("[data-nav-dropdown]")) closeNavDropdowns();
+  });
+  // Any open header menu closes as soon as the page scrolls, or on Escape
+  window.addEventListener("scroll", () => { closeNavDropdowns(); closeAccountMenus(); }, { passive: true });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { closeNavDropdowns(); closeAccountMenus(); }
+  });
+
   /* ---------------- Mega menu ---------------- */
   const megaBtn = $("#megaBtn"), megaMenu = $("#megaMenu");
   if (megaBtn && megaMenu) {
