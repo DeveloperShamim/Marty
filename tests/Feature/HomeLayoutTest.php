@@ -12,6 +12,12 @@ class HomeLayoutTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        \App\Models\Setting::forgetCache(); // the settings bag is static and would carry over from an earlier test
+    }
+
     private function product(Category $cat, string $name, array $attrs = []): Product
     {
         return Product::create(array_merge([
@@ -25,6 +31,8 @@ class HomeLayoutTest extends TestCase
         $cats = collect(range(1, 5))->map(fn ($i) => Category::create([
             'name' => "Cat $i", 'slug' => "cat-$i", 'is_active' => true, 'is_featured' => true, 'position' => $i,
         ]));
+        // A timed flash sale is running, so the Flash deals section shows
+        \App\Models\Setting::put('flash_sale_ends_at', now()->addDay()->toDateTimeString());
         // Cat 1: one flash product, one best seller and five others
         $this->product($cats[0], 'Flash One', ['is_flash_sale' => true]);
         $this->product($cats[0], 'Best One', ['is_best_seller' => true]);
@@ -70,6 +78,28 @@ class HomeLayoutTest extends TestCase
         $this->assertGreaterThan(strpos($html, 'data-auto-row'), strpos($html, 'data-just-for-you'), 'Just for you comes after the category rows');
         $this->assertGreaterThan(strpos($html, 'data-just-for-you'), strpos($html, 'data-home-coupons'), 'Vouchers come last, after Just for you');
         $this->assertGreaterThan(strpos($html, 'Customer Feedback') ?: 0, strpos($html, 'data-just-for-you'));
+    }
+
+    public function test_our_picks_replaces_flash_deals_unless_a_timed_sale_is_running(): void
+    {
+        $cat = Category::create(['name' => 'Wallets', 'slug' => 'wallets', 'is_active' => true]);
+        $this->product($cat, 'Picked Wallet', ['is_featured' => true]);
+        $this->product($cat, 'Flash Wallet', ['is_flash_sale' => true]);
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('data-our-picks', $html);
+        $this->assertStringNotContainsString('data-home-flash', $html);
+        $this->assertStringNotContainsString('LIMITED TIME DROPS', $html);
+
+        \App\Models\Setting::put('flash_sale_ends_at', now()->addDay()->toDateTimeString());
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('data-home-flash', $html);
+        $this->assertStringContainsString('data-countdown-end', $html);
+        $this->assertStringNotContainsString('data-our-picks', $html);
+        $this->assertStringNotContainsString('LIMITED TIME DROPS', $html);
+
+        \App\Models\Setting::put('flash_sale_ends_at', now()->subHour()->toDateTimeString());
+        $this->assertStringContainsString('data-our-picks', $this->get('/')->assertOk()->getContent(), 'An ended sale goes back to Our picks');
     }
 
     public function test_brands_show_as_logos_only_when_there_is_more_than_one(): void

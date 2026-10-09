@@ -64,16 +64,25 @@ class HomeController extends Controller
             ->orderBy('id')
             ->get();
 
+        // The spot under the categories: Flash deals only while a timed sale is running (Admin → Flash Sale,
+        // "Ends at" in the future); otherwise "Our picks", the products ticked Featured in Admin → Products.
+        $flashEndsAt = setting('flash_sale_ends_at');
+        $flashActive = $flashProducts->isNotEmpty() && $flashEndsAt
+            && rescue(fn () => \Illuminate\Support\Carbon::parse($flashEndsAt)->isFuture(), false, false);
+        $ourPicks = $flashActive ? collect() : Product::query()->tap($withImages)
+            ->where('is_featured', true)->latest()->take(8)->get();
+        $topSection = $flashActive ? $flashProducts : $ourPicks;
+
         $homeReviews = ProductReview::approved()
             ->with('product')
             ->latest()
             ->take(6) // 3 + 3 on desktop, 2 + 2 + 2 on tablets
             ->get();
 
-        // Featured categories get one sliding row each. A product already shown in Flash deals or
+        // Featured categories get one sliding row each. A product already shown in Flash deals / Our picks or
         // Best sellers is skipped, so the page doesn't repeat itself; a small catalogue tops a row
         // back up to 4 rather than leave it half empty.
-        $shown = $flashProducts->take(8)->pluck('id')->merge($bestSellers->take(8)->pluck('id'));
+        $shown = $topSection->take(8)->pluck('id')->merge($bestSellers->take(8)->pluck('id'));
         $featuredHomeCategories = Category::where('is_active', true)
             ->where('is_featured', true)
             ->orderBy('position')
@@ -108,6 +117,8 @@ class HomeController extends Controller
                 ->values()
                 ->take(4),
             'flashProducts'          => $flashProducts,
+            'flashActive'            => $flashActive,
+            'ourPicks'               => $ourPicks,
             'bestSellers'            => $bestSellers,
             'newArrivals'            => $newArrivals,
             'featuredBrands'         => $featuredBrands,

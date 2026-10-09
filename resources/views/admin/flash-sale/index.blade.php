@@ -28,7 +28,7 @@
     <div class="flex items-start justify-between gap-3">
       <div>
         <h2 class="text-[15px] font-semibold text-gray-900">Countdown</h2>
-        <p class="text-xs text-gray-500 mt-0.5">The live clock on the homepage flash sale row. Leave blank to hide it.</p>
+        <p class="text-xs text-gray-500 mt-0.5">While this time is in the future, the homepage shows Flash deals with a live clock. Leave it blank or let it pass, and the homepage shows Our picks (products ticked Featured) instead.</p>
       </div>
       <div class="flex items-center gap-1.5 shrink-0">
         <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-600 tabular-nums">{{ $flashProducts->count() }} deals</span>

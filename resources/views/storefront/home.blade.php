@@ -198,15 +198,12 @@
       </section>
     @endif
 
-    {{-- 4. FLASH SALE & LIMITED DROPS (Elevated here for high-converting urgency) --}}
-    @if($flashProducts->isNotEmpty())
-      <section class="mt-10 sm:mt-14" data-reveal>
+    {{-- 4. FLASH DEALS while a timed sale runs (Admin → Flash Sale "Ends at" in the future), otherwise OUR PICKS --}}
+    @if($flashActive)
+      <section class="mt-10 sm:mt-14" data-reveal data-home-flash>
         <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-4 sm:mb-6 gap-3 flex-wrap">
           <div>
             <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span class="inline-flex items-center gap-1 bg-brand-50 text-brand-600 font-extrabold text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-brand-100">
-                ⚡ LIMITED TIME DROPS
-              </span>
               @if($flashEndsIso)
                 <div data-countdown-end="{{ $flashEndsIso }}" class="flex items-center gap-1 font-mono font-bold text-stone-600 text-xs">
                   <span class="text-stone-400 font-sans text-[11px] mr-0.5">Ends in:</span>
@@ -233,6 +230,24 @@
           @endforeach
         </div>
         @include('storefront.partials.see-all', ['href' => route('shop', ['flash' => 1]), 'label' => 'deals'])
+      </section>
+    @elseif($ourPicks->isNotEmpty())
+      <section class="mt-10 sm:mt-14" data-reveal data-our-picks>
+        <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-4 sm:mb-6 gap-3">
+          <div>
+            <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">{{ setting('home_picks_title', 'Our picks') }}</h2>
+            <p class="text-xs text-stone-500 mt-1">{{ setting('home_picks_subtitle', 'Handpicked for you') }}</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+          @foreach($ourPicks as $product)
+            {{-- Phones show the first 4 --}}
+            <div class="{{ $loop->index >= 4 ? 'max-sm:hidden' : '' }} grid min-w-0">
+              @include('storefront.partials.product-card', ['product' => $product])
+            </div>
+          @endforeach
+        </div>
+        @include('storefront.partials.see-all', ['href' => route('shop', ['featured' => 1]), 'label' => 'our picks'])
       </section>
     @endif
 
