@@ -81,7 +81,12 @@ class ShopController extends Controller
                 'rating'     => $query->orderByDesc('rating'),
                 'name'       => $query->orderBy('name'),
                 'newest'     => $query->latest(),
-                default      => $query->latest(),
+                // Popular: products marked Best seller first, then the most units sold, then the newest
+                default      => $query->orderByDesc('is_best_seller')
+                    ->orderByDesc(\App\Models\OrderItem::query()->selectRaw('COALESCE(SUM(quantity), 0)')
+                        ->whereColumn('order_items.product_id', 'products.id')
+                        ->whereHas('order', fn ($q) => $q->whereNotIn('status', ['cancelled', 'rejected'])))
+                    ->latest(),
             };
         }
 
