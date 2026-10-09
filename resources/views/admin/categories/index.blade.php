@@ -106,7 +106,7 @@
               <img src="{{ $cat->imageUrl() }}" class="h-full w-full object-cover" alt="{{ $cat->name }}" onerror="{{ $imgFallback }}" />
             </div>
             <div class="min-w-0 flex-1">
-              <a href="{{ route('admin.categories.edit', $cat) }}" class="font-semibold text-sm text-gray-900 truncate block">{{ $cat->name }}</a>
+              <a href="{{ route('admin.categories.edit', $cat) }}" class="font-semibold text-sm text-gray-900 truncate max-[399px]:whitespace-normal max-[399px]:leading-snug block">{{ $cat->name }}</a>
               <p class="text-[11px] text-gray-500 font-mono truncate mt-0.5">/{{ $cat->slug }}</p>
             </div>
             <div class="text-right shrink-0">

@@ -166,8 +166,8 @@
           <a href="{{ route('admin.orders.index', ['status' => $status, 'method' => $method, 'courier' => $courier ?: null]) }}" class="absolute right-3.5 top-1/2 -translate-y-1/2 h-6 w-6 grid place-items-center rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-700" aria-label="Clear search">✕</a>
         @endif
       </label>
-      <div class="flex items-center gap-2">
-        <label class="relative flex-1 sm:flex-initial">
+      <div class="flex flex-wrap min-[400px]:flex-nowrap items-center gap-2">
+        <label class="relative flex-1 sm:flex-initial max-[399px]:basis-full">
           <span class="sr-only">Payment method</span>
           <select name="method" onchange="this.form.submit()" class="w-full sm:w-auto h-11 rounded-full bg-gray-100 border border-transparent pl-4 pr-9 text-sm font-medium text-gray-800 appearance-none cursor-pointer focus:bg-white focus:border-gray-200 outline-none">
             <option value="">All payments</option>
@@ -177,7 +177,7 @@
           </select>
           <svg class="w-3.5 h-3.5 text-gray-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
         </label>
-        <button type="submit" class="h-11 px-5 rounded-full text-white text-sm font-semibold shrink-0" style="background: var(--brand-dark);">Search</button>
+        <button type="submit" class="h-11 px-5 rounded-full text-white text-sm font-semibold shrink-0 max-[399px]:flex-1" style="background: var(--brand-dark);">Search</button>
         @if($q !== '' || $method !== '' || $courier !== '')
           <a href="{{ route('admin.orders.index', ['status' => $status]) }}" class="h-11 px-4 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-100 inline-flex items-center shrink-0">Reset</a>
         @endif
@@ -286,7 +286,7 @@
                 <input type="checkbox" value="{{ $order->order_number }}" class="order-select mt-0.5 h-4 w-4 rounded border-gray-300 text-teal-700 focus:ring-teal-600 cursor-pointer" aria-label="Select order {{ $order->order_number }}">
               </td>
               <td class="py-3.5 px-3 lg:px-4 whitespace-nowrap">
-                <a href="{{ route('admin.orders.show', $order) }}" class="font-semibold text-gray-900 hover:underline">{{ $order->order_number }}</a>
+                <a href="{{ route('admin.orders.show', $order) }}" class="font-semibold text-gray-900 hover:underline whitespace-nowrap">{{ $order->order_number }}</a>
                 <p class="text-[11px] text-gray-500 mt-0.5">{{ $order->created_at->format('d M Y, g:i A') }}</p>
                 <p class="text-[11px] text-gray-400">{{ $order->items_count }} {{ Str::plural('item', $order->items_count) }}</p>
                 @if($order->prints->isNotEmpty())

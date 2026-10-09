@@ -81,7 +81,7 @@
                 {{ $done ? 'bg-brand-600 text-white' : ($current ? 'bg-white text-brand-700 ring-2 ring-brand-600' : 'bg-white text-slate-400 ring-1 ring-slate-300') }}">
                 @if($done)<x-oi name="check" class="w-3 h-3" />@else{{ $i + 1 }}@endif
               </span>
-              <span class="mt-1 text-[10px] sm:text-xs {{ $current ? 'font-semibold text-slate-900' : 'text-slate-500' }}">{{ $label }}</span>
+              <span class="mt-1 text-[10px] sm:text-xs whitespace-nowrap {{ $current ? 'font-semibold text-slate-900' : 'text-slate-500 max-[399px]:invisible' }}">{{ $label }}</span>
             </li>
           @endforeach
         </ol>
@@ -126,8 +126,8 @@
     <div class="flex flex-wrap items-center gap-2 px-4 sm:px-5 py-3 bg-slate-50/70 border-t border-slate-100">
       {{-- Invoice format is remembered per browser (admin-shell.js) and applied to every invoice link. --}}
       @php $short = ['a4' => 'A4', 'half' => 'Half A4', 'thermal' => '80mm', 'thermal58' => '58mm']; @endphp
-      <div class="flex gap-2 w-full sm:w-auto">
-        <div class="flex-1 sm:flex-none flex items-stretch h-9 rounded-full ring-1 ring-slate-200 bg-white overflow-hidden min-w-0">
+      <div class="flex flex-wrap min-[400px]:flex-nowrap gap-2 w-full sm:w-auto">
+        <div class="flex-1 max-[399px]:basis-full sm:flex-none flex items-stretch h-9 rounded-full ring-1 ring-slate-200 bg-white overflow-hidden min-w-0">
           <a href="{{ route('admin.orders.invoice', ['order' => $order, 'print' => 1]) }}" target="_blank" data-invoice-link data-print-link data-print-warning="{{ $order->printWarning('invoice') }}" class="flex-1 inline-flex items-center justify-center gap-1.5 pl-3.5 pr-2 text-[13px] font-medium text-slate-800 hover:bg-slate-50 whitespace-nowrap">
             <x-oi name="printer" /> Invoice
           </a>
@@ -141,7 +141,7 @@
             <x-oi name="chevron-down" class="!w-3 !h-3 text-slate-400 pointer-events-none" />
           </label>
         </div>
-        <a href="{{ route('admin.orders.labels', ['orders' => [$order->order_number], 'print' => 1]) }}" target="_blank" data-print-link data-print-warning="{{ $order->printWarning('label') }}" class="shrink-0 inline-flex items-center justify-center gap-1.5 h-9 px-4 text-[13px] font-medium text-slate-800 bg-white ring-1 ring-slate-200 hover:bg-slate-50 rounded-full whitespace-nowrap">
+        <a href="{{ route('admin.orders.labels', ['orders' => [$order->order_number], 'print' => 1]) }}" target="_blank" data-print-link data-print-warning="{{ $order->printWarning('label') }}" class="shrink-0 max-[399px]:flex-1 inline-flex items-center justify-center gap-1.5 h-9 px-4 text-[13px] font-medium text-slate-800 bg-white ring-1 ring-slate-200 hover:bg-slate-50 rounded-full whitespace-nowrap">
           <x-oi name="barcode" /> Label
         </a>
       </div>
@@ -203,8 +203,8 @@
                 @endif
               </div>
             </div>
-            <div class="grid grid-cols-[1fr_auto] sm:flex gap-2">
-              <a href="tel:{{ $order->customer_phone }}" class="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-full text-white text-[13px] font-medium tabular-nums" style="background: var(--brand-dark);"><x-oi name="phone" class="w-3.5 h-3.5" /> {{ $order->customer_phone }}</a>
+            <div class="grid grid-cols-1 min-[400px]:grid-cols-[1fr_auto] sm:flex gap-2">
+              <a href="tel:{{ $order->customer_phone }}" class="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-full text-white text-[13px] font-medium tabular-nums whitespace-nowrap" style="background: var(--brand-dark);"><x-oi name="phone" class="w-3.5 h-3.5" /> {{ $order->customer_phone }}</a>
               <a href="https://wa.me/{{ $waPhone }}" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[13px] font-medium"><x-oi name="chat" class="w-3.5 h-3.5" /> WhatsApp</a>
             </div>
           </div>

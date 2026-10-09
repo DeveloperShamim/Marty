@@ -116,7 +116,7 @@
             <div class="flex items-center gap-2.5 min-w-0">
               <span class="h-8 w-8 rounded-full bg-white text-gray-700 font-semibold grid place-items-center text-[11px] shrink-0">{{ strtoupper(substr($log->staff_name ?: 'S', 0, 2)) }}</span>
               <div class="min-w-0">
-                <p class="font-semibold text-gray-900 text-[13px] truncate">{{ $log->staff_name ?: 'System' }}</p>
+                <p class="font-semibold text-gray-900 text-[13px] truncate max-[399px]:whitespace-normal max-[399px]:leading-snug">{{ $log->staff_name ?: 'System' }}</p>
                 <p class="text-[11px] text-gray-500">{{ ucfirst(str_replace('_', ' ', $log->staff_role ?? 'staff')) }}</p>
               </div>
             </div>

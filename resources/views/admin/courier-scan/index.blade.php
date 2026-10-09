@@ -116,7 +116,7 @@
               <button type="button"
                 onclick="quickDispatchOrder('{{ $o->order_number }}')"
                 id="awaiting-order-{{ $o->id }}"
-                class="inline-flex items-center gap-2 h-8 px-3 rounded-full text-xs bg-gray-50 hover:bg-emerald-50 ring-1 ring-gray-200 hover:ring-emerald-200 text-gray-800 transition-colors cursor-pointer"
+                class="inline-flex items-center gap-2 h-8 px-3 rounded-full text-xs whitespace-nowrap bg-gray-50 hover:bg-emerald-50 ring-1 ring-gray-200 hover:ring-emerald-200 text-gray-800 transition-colors cursor-pointer"
                 title="Click to dispatch #{{ $o->order_number }} ({{ $o->customer_name }} - ৳{{ number_format($o->total) }})">
                 <span class="font-semibold">#{{ $o->order_number }}</span>
                 <span class="text-gray-500 tabular-nums">৳{{ number_format($o->total) }}</span>

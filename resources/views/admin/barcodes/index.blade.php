@@ -86,7 +86,7 @@
                 </td>
                 <td class="row-start-1 col-start-2 min-w-0 md:py-3 md:px-4">
                   <div class="flex items-center gap-3">
-                    <img src="{{ $p->imageUrl() }}" alt="" loading="lazy" onerror="this.onerror=null;this.removeAttribute('src')" class="w-10 h-10 rounded-xl object-cover bg-gray-100 shrink-0">
+                    <img src="{{ $p->imageUrl() }}" alt="" loading="lazy" onerror="this.onerror=null;this.removeAttribute('src')" class="w-10 h-10 rounded-xl object-cover bg-gray-100 shrink-0 max-[399px]:hidden">
                     <div class="min-w-0">
                       <div class="font-semibold text-gray-900 truncate">{{ $p->name }}</div>
                       <div class="text-[11px] text-gray-500 truncate">{{ $p->category?->name ?? 'Uncategorized' }}<span class="md:hidden"> · <span class="font-mono">{{ $p->sku ?: 'No SKU' }}</span></span></div>

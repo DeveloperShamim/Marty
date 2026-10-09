@@ -98,8 +98,8 @@
         <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
         <input type="text" name="q" value="{{ $term }}" placeholder="Search name, phone or city" class="w-full h-10 pl-10 pr-4 rounded-full bg-gray-100 border border-transparent text-sm text-gray-800 placeholder-gray-500 focus:bg-white focus:border-gray-200 outline-none transition" />
       </label>
-      <div class="flex items-center gap-2">
-        <label class="relative flex-1 sm:flex-initial">
+      <div class="flex flex-wrap min-[400px]:flex-nowrap items-center gap-2">
+        <label class="relative flex-1 sm:flex-initial max-[399px]:basis-full">
           <span class="sr-only">Sort by</span>
           <select name="sort" onchange="this.form.submit()" class="w-full sm:w-auto h-10 rounded-full bg-gray-100 border border-transparent pl-4 pr-9 text-sm font-medium text-gray-800 appearance-none cursor-pointer focus:bg-white focus:border-gray-200 outline-none">
             <option value="latest" {{ $sort === 'latest' ? 'selected' : '' }}>Recent activity</option>
@@ -109,7 +109,7 @@
           </select>
           <svg class="w-3.5 h-3.5 text-gray-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
         </label>
-        <button type="submit" class="h-10 px-5 rounded-full text-white text-sm font-semibold shrink-0" style="background: var(--brand-dark);">Search</button>
+        <button type="submit" class="h-10 px-5 rounded-full text-white text-sm font-semibold shrink-0 max-[399px]:flex-1" style="background: var(--brand-dark);">Search</button>
       </div>
     </form>
 

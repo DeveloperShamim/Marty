@@ -66,6 +66,17 @@
   /* Wide tables scroll sideways instead of squashing their columns */
   .admin-main main .overflow-x-auto > table { min-width: 620px; }
 }
+/* Small phones (320-399px, beside the icon rail): stat tiles drop their icon chip
+   and let labels wrap, and a search box takes its own line above its buttons */
+@media (max-width: 399px) {
+  .admin-main main .panel > .flex.justify-between > .grid.h-8.w-8.rounded-xl { display: none; }
+  .admin-main main .grid > .panel .text-xs.truncate { white-space: normal; }
+  .admin-main main .grid > .panel > p.text-lg { font-size: 1rem; line-height: 1.5rem; }
+  .admin-main main form.flex:not(.flex-col):has(> label.flex-1) { flex-wrap: wrap; }
+  .admin-main main form.flex:not(.flex-col):has(> label.flex-1) > label.flex-1 { flex: 1 1 100%; }
+  .admin-main main form.flex:not(.flex-col):has(> label.flex-1) > :is(button, a, select) { flex: 1 1 0; justify-content: center; }
+  .admin-main main input[type="file"] { font-size: .75rem; max-width: 100%; }
+}
 ::selection { background: color-mix(in srgb, var(--brand) 22%, transparent); }
 
 .admin-shell { min-height: 100dvh; }

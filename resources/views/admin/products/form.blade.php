@@ -520,7 +520,7 @@
         }
       @endphp
       <section class="panel bg-white p-4 sm:p-5 space-y-4">
-        <div class="flex items-start justify-between gap-3 border-b border-gray-100 pb-3.5">
+        <div class="flex flex-wrap items-start justify-between gap-3 border-b border-gray-100 pb-3.5">
           <div class="flex items-start gap-3">
             <div class="w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-[11px] font-semibold flex items-center justify-center shrink-0">5</div>
             <div>

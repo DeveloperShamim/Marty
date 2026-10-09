@@ -14,7 +14,7 @@
 
   {{-- Filters --}}
   <form action="{{ route('admin.analytics.index') }}" method="GET" class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 flex-wrap" id="analyticsFilterForm">
-    <div class="grid grid-cols-2 sm:flex items-center gap-2">
+    <div class="grid grid-cols-1 min-[400px]:grid-cols-2 sm:flex items-center gap-2">
       <label class="sr-only" for="channelSelect">Sales channel</label>
       <select name="channel" id="channelSelect" onchange="this.form.submit()" class="h-10 rounded-full bg-white shadow-panel border-transparent px-4 text-sm text-gray-800 cursor-pointer">
         <option value="all" @selected($channel === 'all')>All channels</option>
