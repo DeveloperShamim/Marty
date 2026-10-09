@@ -32,12 +32,45 @@ class ProductController extends Controller
             $query->where('category_id', $request->input('category'));
         }
 
+        // Quick views above the list. Low stock uses the same 3-or-fewer line as the dashboard.
+        $views = [
+            'published' => fn ($q) => $q->where('is_published', true),
+            'draft'     => fn ($q) => $q->where('is_published', false),
+            'low'       => fn ($q) => $q->whereBetween('stock_quantity', [1, 3]),
+            'out'       => fn ($q) => $q->where('stock_quantity', '<=', 0),
+        ];
+        $show = array_key_exists($request->input('show'), $views) ? $request->input('show') : 'all';
+        if ($show !== 'all') {
+            $views[$show]($query);
+        }
+        $counts = ['all' => Product::count()];
+        foreach ($views as $key => $scope) {
+            $counts[$key] = $scope(Product::query())->count();
+        }
+
         return view('admin.products.index', [
             'products'   => $query->paginate(15)->withQueryString(),
             'categories' => Category::orderBy('name')->get(),
             'q'          => $term,
             'category'   => $request->input('category'),
+            'show'       => $show,
+            'counts'     => $counts,
         ]);
+    }
+
+    /** Publish or hide (back to draft) several products at once from the list. */
+    public function bulkStatus(Request $request)
+    {
+        $data = $request->validate([
+            'ids'    => ['required', 'string'],
+            'status' => ['required', 'in:publish,hide'],
+        ]);
+
+        $ids = array_filter(array_map('intval', explode(',', $data['ids'])));
+        $count = Product::whereIn('id', $ids)->update(['is_published' => $data['status'] === 'publish']);
+        $verb = $data['status'] === 'publish' ? 'Published' : 'Moved to draft';
+
+        return back()->with('status', "{$verb} {$count} " . Str::plural('product', $count) . '.');
     }
 
     public function export(Request $request)

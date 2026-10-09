@@ -241,6 +241,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('products/export', [AdminProductController::class, 'export'])->middleware('area:products')->name('products.export');
             Route::get('products/sample-csv', [AdminProductController::class, 'sampleCsv'])->middleware('area:products')->name('products.sample-csv');
             Route::post('products/import', [AdminProductController::class, 'import'])->middleware('area:products')->name('products.import');
+            Route::post('products/bulk-status', [AdminProductController::class, 'bulkStatus'])->middleware('area:products')->name('products.bulk-status');
             Route::post('products/bulk-delete', [AdminProductController::class, 'bulkDelete'])->middleware('area:products')->name('products.bulk-delete');
             Route::post('products/upload-description-media', [AdminProductController::class, 'uploadDescriptionMedia'])->middleware('area:products')->name('products.upload-description-media');
             Route::resource('products', AdminProductController::class)->except('show')->middleware('area:products');
