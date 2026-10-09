@@ -60,7 +60,7 @@
 
     // Jobs waiting on the admin, shown as counts; a list opens below only for the ones that aren't zero
     $actions = collect([
-      $canOrders ? ['key' => 'payments', 'label' => 'Payments to verify', 'count' => $pendingCount ?? 0, 'href' => route('admin.orders.index', ['status' => 'pending_verification']),
+      $canOrders ? ['key' => 'payments', 'label' => 'Payments to verify', 'count' => $pendingCount ?? 0, 'href' => route('admin.orders.index', ['status' => 'awaiting_payment']),
         'icon' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'] : null,
       $canOrders ? ['key' => 'risky', 'label' => 'Risky orders to call', 'count' => $riskyCount, 'href' => route('admin.orders.index'),
         'icon' => '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/>'] : null,
@@ -127,7 +127,7 @@
         <div id="act-payments" class="na-list rounded-2xl p-3 sm:p-3.5 min-w-0">
           <div class="flex items-center justify-between gap-2">
             <h3 class="text-[13px] font-semibold text-gray-900">Payment approvals</h3>
-            <a href="{{ route('admin.orders.index', ['status' => 'pending_verification']) }}" class="text-[11px] font-semibold hover:underline" style="color: var(--brand);">View all &rarr;</a>
+            <a href="{{ route('admin.orders.index', ['status' => 'awaiting_payment']) }}" class="text-[11px] font-semibold hover:underline" style="color: var(--brand);">View all &rarr;</a>
           </div>
           <div class="mt-2 {{ $rowCols }} divide-gray-100">
             @foreach($pendingOrders->take(4) as $order)

@@ -62,4 +62,28 @@ class DashboardActionCardsTest extends TestCase
         $this->assertStringNotContainsString('Sales Report', $html, 'The six-month chart repeated Monthly Revenue');
         $this->assertStringNotContainsString('Fulfillment Overview', $html, 'Repeated the order rings');
     }
+
+    public function test_payment_approvals_leave_out_cash_on_delivery(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->order('ORD-COD', ['customer_name' => 'Cash Buyer', 'payment_method' => 'cod']);
+        $this->order('ORD-BKASH', ['customer_name' => 'Bkash Buyer', 'payment_method' => 'bkash', 'status' => 'confirmed']);
+        $this->order('ORD-PAID', ['customer_name' => 'Paid Buyer', 'payment_method' => 'nagad', 'payment_status' => 'verified']);
+        $this->order('ORD-CANCEL', ['customer_name' => 'Cancelled Buyer', 'payment_method' => 'bkash', 'status' => 'cancelled']);
+
+        $html = $this->actingAs($admin)->get('/admin')->assertOk()->getContent();
+        $approvals = Str::between($html, 'id="act-payments"', '</section>');
+
+        $this->assertStringContainsString('Bkash Buyer', $approvals);
+        $this->assertStringNotContainsString('Cash Buyer', $approvals);
+        $this->assertStringNotContainsString('Paid Buyer', $approvals);
+        $this->assertStringNotContainsString('Cancelled Buyer', $approvals);
+        $this->assertMatchesRegularExpression('/>\s*1\s*<\/span>\s*<span[^>]*>Payments to verify/', $html);
+
+        // The list's "View all" opens the same prepaid-only filter on the Orders page
+        $orders = $this->actingAs($admin)->get('/admin/orders?status=awaiting_payment')->assertOk()->getContent();
+        $this->assertStringContainsString('ORD-BKASH', $orders);
+        $this->assertStringNotContainsString('ORD-COD', $orders);
+    }
 }

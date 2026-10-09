@@ -22,6 +22,8 @@ class OrderController extends Controller
         $status = $request->input('status', 'all');
         if ($status === 'pending_verification') {
             $query->needsReview();
+        } elseif ($status === 'awaiting_payment') {
+            $query->awaitingPayment();
         } elseif ($status === 'not_printed') {
             $query->notPrinted();
         } elseif (in_array($status, Order::STATUSES, true)) {

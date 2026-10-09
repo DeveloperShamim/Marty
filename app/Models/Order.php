@@ -286,6 +286,14 @@ class Order extends Model
                 ->whereNotIn('status', ['cancelled', 'returned'])));
     }
 
+    /** Prepaid orders (bKash, Nagad, bank…) whose payment still has to be checked. Cash on delivery is collected by the courier, so it never waits here. */
+    public function scopeAwaitingPayment($query)
+    {
+        return $query->where('payment_status', 'pending')
+            ->where('payment_method', '!=', 'cod')
+            ->whereNotIn('status', ['cancelled', 'returned']);
+    }
+
     public function isAwaitingReview(): bool
     {
         return $this->status === 'pending'
