@@ -26,9 +26,9 @@ class AdminSidebarTest extends TestCase
         foreach (['Dashboard', 'Orders', 'Products', 'Coupons', 'Profit & Analytics', 'Staff & Roles', 'Store Settings'] as $label) {
             $this->assertContains($label, $labels);
         }
-        // One current item in the sidebar and one in the phone icon rail
+        // One current item in the sidebar and one in the phone bottom bar
         $this->assertSame(2, substr_count($html, 'aria-current="page"'), 'Exactly one item per menu should be marked current');
-        $this->assertMatchesRegularExpression('/data-rail-current[^>]*aria-label="Products"/', $html);
+        $this->assertMatchesRegularExpression('/href="[^"]+\/admin\/products"[^>]*\s+aria-current="page" data-bar-current/', $html);
         $this->assertMatchesRegularExpression('/data-label="Products"[^>]*aria-current="page"/', $html);
     }
 
@@ -72,10 +72,9 @@ class AdminSidebarTest extends TestCase
         // Searching the menu for a tab's name still finds its entry.
         $this->assertMatchesRegularExpression('/data-label="Catalog setup" data-search="[^"]*brands/', $html);
 
-        // Phone icon strip: the everyday pages, the current page and a "More" button.
-        preg_match('/<nav id="mobileRail".*?<\/nav>/s', $html, $rail);
-        preg_match_all('/aria-label="([^"]+)" title=/', $rail[0], $icons);
-        $this->assertSame(['Dashboard', 'Orders', 'Courier Scan', 'POS Register', 'Products', 'Inventory', 'Catalog setup', 'More pages'], $icons[1]);
+        // Phone bottom bar: four everyday pages and "More", which is highlighted for pages not on the bar.
+        $this->assertSame(['Home', 'Orders', 'Scan', 'Products', 'More'], $this->bottomBar($html));
+        $this->assertMatchesRegularExpression('/data-bar-more[^>]*>\s*<span[^>]*style="background: var\(--brand-dark\);"/', $html);
 
         $this->assertStringNotContainsString('data-page-tabs', $this->actingAs($admin)->get(route('admin.coupons.index'))->getContent());
     }
@@ -89,5 +88,29 @@ class AdminSidebarTest extends TestCase
         $this->assertStringNotContainsString('data-page-tabs', $html);
         $this->assertStringNotContainsString('Hero banners', $html);
         $this->assertMatchesRegularExpression('/href="[^"]+\/admin\/features"\s+class="sb-item[^"]*"[^>]*data-label="Homepage"/', $html);
+    }
+
+    private function bottomBar(string $html): array
+    {
+        preg_match('/<nav id="bottomNav".*?<\/nav>/s', $html, $bar);
+        preg_match_all('/<span(?: class="[^"]*")?>([^<]+)<\/span>\s*<\/(?:a|button)>/', $bar[0] ?? '', $labels);
+
+        return array_map('trim', $labels[1]);
+    }
+
+    public function test_bottom_bar_follows_the_role_and_steps_aside_on_pos_and_the_product_form(): void
+    {
+        $orders = User::factory()->create(['role' => 'order_manager']);
+        $this->assertSame(['Orders', 'Scan', 'POS', 'Customers', 'More'],
+            $this->bottomBar($this->actingAs($orders)->get(route('admin.orders.index'))->getContent()));
+
+        $stock = User::factory()->create(['role' => 'inventory_manager']);
+        $this->assertSame(['Home', 'Products', 'Inventory', 'Reviews', 'More'],
+            $this->bottomBar($this->actingAs($stock)->get(route('admin.inventory.index'))->getContent()));
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->assertStringNotContainsString('id="bottomNav"', $this->actingAs($admin)->get(route('admin.pos.index'))->getContent());
+        $this->assertStringNotContainsString('id="bottomNav"', $this->actingAs($admin)->get(route('admin.products.create'))->getContent());
+        $this->assertStringNotContainsString('id="mobileRail"', $this->actingAs($admin)->get(route('admin.dashboard'))->getContent());
     }
 }

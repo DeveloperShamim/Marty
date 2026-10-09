@@ -173,7 +173,7 @@
 </div>
 
 {{-- Floating bulk actions bar --}}
-<div id="bulkActionsBar" class="fixed bottom-3 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:bottom-6 z-40 text-white rounded-full shadow-2xl pl-4 pr-1.5 py-1.5 flex items-center justify-between gap-2 hidden" style="background: var(--brand-dark);">
+<div id="bulkActionsBar" data-above-nav class="fixed bottom-3 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:bottom-6 z-40 text-white rounded-full shadow-2xl pl-4 pr-1.5 py-1.5 flex items-center justify-between gap-2 hidden" style="background: var(--brand-dark);">
   <span class="text-[13px] font-semibold whitespace-nowrap"><span id="selectedCount">0</span> selected</span>
   <div class="flex items-center gap-1.5">
     <form action="{{ route('admin.products.bulk-status') }}" method="POST" class="bulk-status-form">

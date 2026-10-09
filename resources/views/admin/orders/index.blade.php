@@ -327,7 +327,7 @@
 
 
 {{-- Bulk printing: selection is kept while moving between pages of the list. --}}
-<div id="bulkBar" class="hidden fixed bottom-3 inset-x-3 lg:left-auto lg:right-6 lg:bottom-6 z-30 lg:max-w-3xl" role="region" aria-label="Selected orders">
+<div id="bulkBar" data-above-nav class="hidden fixed bottom-3 inset-x-3 lg:left-auto lg:right-6 lg:bottom-6 z-30 lg:max-w-3xl" role="region" aria-label="Selected orders">
   <div class="text-white rounded-[22px] shadow-2xl px-3 py-2.5 sm:px-4 flex flex-wrap items-center gap-2 sm:gap-3" style="background: var(--brand-dark);">
     <div class="flex items-center gap-2 mr-auto max-sm:basis-full">
       <span class="text-sm font-semibold"><span id="bulkCount">0</span> selected</span>

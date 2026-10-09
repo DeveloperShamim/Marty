@@ -147,9 +147,9 @@ body.admin-body {
   background-image: linear-gradient(180deg, color-mix(in srgb, var(--brand-soft) 30%, var(--admin-bg)) 0, var(--admin-bg) 28rem);
   background-repeat: no-repeat;
 }
-/* Frosted surfaces: the sidebar, icon rail, top bar and every top-level card on a page.
+/* Frosted surfaces: the sidebar, top bar and every top-level card on a page.
    Form controls, dropdowns and anything inside a modal or popover stay solid. */
-.admin-body :is(#sidebar .sidebar-nav, #sidebar nav + div, #mobileRail, header.sticky),
+.admin-body :is(#sidebar .sidebar-nav, #sidebar nav + div, header.sticky),
 .admin-main main :is(.panel, .card, .bg-white.border.rounded-xl, .bg-white.border.rounded-2xl, .bg-white.rounded-xl.border, .bg-white.rounded-2xl.border):not(input, select, textarea, button, .absolute, .fixed, .fixed *) {
   background: rgba(255,255,255,.72);
   border: 1px solid color-mix(in srgb, var(--brand-border) 55%, transparent);
@@ -197,3 +197,14 @@ details.order-menu > summary { list-style: none; }
 details.order-menu > summary::-webkit-details-marker { display: none; }
 details.bulk-menu > summary { list-style: none; }
 details.bulk-menu > summary::-webkit-details-marker { display: none; }
+
+/* Phones and tablets: the menu opens as a sheet from the bottom bar's "More" (admin-shell.js toggles -translate-x-full) */
+@media (max-width: 1023.98px) {
+  #sidebar { top: auto; bottom: 0; left: 0; right: 0; width: 100%; max-width: none; height: auto; max-height: 85dvh;
+    border-radius: 24px 24px 0 0; padding-bottom: calc(.75rem + env(safe-area-inset-bottom)); transition: transform .25s ease; }
+  #sidebar.-translate-x-full { transform: translateY(100%) !important; }
+  #sidebar:not(.-translate-x-full) { transform: none !important; }
+  #sidebar::before { content: ""; display: block; width: 40px; height: 4px; border-radius: 9999px; background: #d6d3d1; margin: 0 auto 6px; }
+  /* Selection bars sit just above the bottom bar */
+  body:has(#bottomNav) [data-above-nav] { bottom: calc(4.5rem + env(safe-area-inset-bottom)) !important; }
+}

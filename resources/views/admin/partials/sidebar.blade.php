@@ -89,29 +89,41 @@
 
 </aside>
 
-{{-- Phones and tablets: a slim icon rail with the everyday pages and the current one; "More" opens the full menu. --}}
+{{-- Phones and tablets: a bottom bar with four everyday pages and "More", which opens the full menu as a sheet.
+     Hidden on POS and the product form, which have their own bottom bars. --}}
 @php
-  $railItems = collect($nav)->flatten(1)->filter(fn ($i) => in_array($i['key'], \App\Support\AdminNav::RAIL, true) || \App\Support\AdminNav::isOn($i))
-      ->merge(collect($support)->filter(fn ($i) => \App\Support\AdminNav::isOn($i)))->values();
+  $barItems = collect($nav)->flatten(1)->filter(fn ($i) => in_array($i['key'], \App\Support\AdminNav::BOTTOM_BAR, true))
+      ->sortBy(fn ($i) => array_search($i['key'], \App\Support\AdminNav::BOTTOM_BAR, true))->take(4)->values();
+  $barOn = $barItems->contains(fn ($i) => \App\Support\AdminNav::isOn($i));
+  $showBar = ! request()->routeIs('admin.pos.*', 'admin.products.create', 'admin.products.edit');
 @endphp
-<nav id="mobileRail" class="lg:hidden fixed left-2 sm:left-3 top-16 z-20 w-11 max-h-[calc(100dvh-4.5rem)] bg-white rounded-[22px] shadow-panel overflow-y-auto overscroll-contain no-scrollbar py-1.5" aria-label="Quick navigation">
-  @foreach($railItems as $i)
-    @php $on = \App\Support\AdminNav::isOn($i); $badge = $badges[$i['key']] ?? null; @endphp
-    <a href="{{ route($i['route']) }}" class="relative mx-auto my-0.5 grid h-9 w-9 place-items-center rounded-full transition-colors {{ $on ? 'text-white' : 'text-gray-500 active:bg-gray-100' }}"
-       @if($on) aria-current="page" data-rail-current style="background: var(--brand-dark);" @endif aria-label="{{ $i['label'] }}" title="{{ $i['label'] }}">
-      <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $i['icon'] !!}</svg>
-      @if($badge && ($badge['count'] > 0 || $i['key'] === 'orders'))
-        <span @if($i['key'] === 'orders') data-live-badge="orders" @endif style="display: {{ $badge['count'] > 0 ? 'contents' : 'none' }}">
-          <span class="absolute top-1 right-1 h-2 w-2 rounded-full ring-2 ring-white" style="background: var(--brand);" aria-hidden="true"></span>
+@if($showBar)
+<nav id="bottomNav" class="lg:hidden fixed inset-x-0 bottom-0 z-30 bg-white/95 backdrop-blur-xl border-t border-gray-200/70 pb-[env(safe-area-inset-bottom)]" aria-label="Quick navigation">
+  <div class="grid grid-cols-5 h-16 max-w-xl mx-auto">
+    @foreach($barItems as $i)
+      @php $on = \App\Support\AdminNav::isOn($i); $badge = $badges[$i['key']] ?? null; @endphp
+      <a href="{{ route($i['route']) }}" class="flex flex-col items-center justify-center gap-0.5 text-[11px] font-medium {{ $on ? 'text-gray-900' : 'text-gray-500' }}"
+         @if($on) aria-current="page" data-bar-current @endif>
+        <span class="relative grid h-8 w-12 place-items-center rounded-full transition-colors {{ $on ? 'text-white' : '' }}" @if($on) style="background: var(--brand-dark);" @endif>
+          <svg class="w-[19px] h-[19px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $i['icon'] !!}</svg>
+          @if($badge && ($badge['count'] > 0 || $i['key'] === 'orders'))
+            <span @if($i['key'] === 'orders') data-live-badge="orders" @endif style="display: {{ $badge['count'] > 0 ? 'contents' : 'none' }}">
+              <span class="absolute top-0.5 right-2 h-2 w-2 rounded-full ring-2 ring-white" style="background: var(--brand);" aria-hidden="true"></span>
+            </span>
+          @endif
         </span>
-      @endif
-    </a>
-  @endforeach
-  <span class="block mx-auto my-1.5 h-px w-5 bg-gray-200" aria-hidden="true"></span>
-  <button type="button" data-rail-more onclick="document.getElementById('menuBtn').click()" class="mx-auto my-0.5 grid h-9 w-9 place-items-center rounded-full text-gray-500 active:bg-gray-100" aria-label="More pages" title="More pages">
-    <svg class="w-[18px] h-[18px]" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
-  </button>
+        <span class="{{ $on ? 'font-semibold' : '' }}">{{ \App\Support\AdminNav::SHORT[$i['key']] ?? $i['label'] }}</span>
+      </a>
+    @endforeach
+    <button type="button" data-bar-more onclick="document.getElementById('menuBtn').click()" class="flex flex-col items-center justify-center gap-0.5 text-[11px] font-medium {{ $barOn ? 'text-gray-500' : 'text-gray-900' }}" aria-label="More pages">
+      <span class="grid h-8 w-12 place-items-center rounded-full {{ $barOn ? '' : 'text-white' }}" @unless($barOn) style="background: var(--brand-dark);" @endunless>
+        <svg class="w-[19px] h-[19px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </span>
+      <span class="{{ $barOn ? '' : 'font-semibold' }}">More</span>
+    </button>
+  </div>
 </nav>
+@endif
 <div id="sidebarTip" class="hidden fixed z-[60] px-2 py-1 rounded-md bg-gray-900 text-white text-xs font-medium pointer-events-none whitespace-nowrap" role="tooltip"></div>
 <script>
   {{-- Restore folded groups before first paint so the menu doesn't jump. --}}

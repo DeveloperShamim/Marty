@@ -11,7 +11,7 @@
   };
 @endphp
 <header class="sticky top-0 lg:top-3 z-30 -mx-3 sm:mx-0 lg:mt-3 bg-white/90 backdrop-blur-xl sm:rounded-b-[18px] lg:rounded-[18px] shadow-panel flex items-center gap-2 sm:gap-3 h-14 px-3 sm:px-4">
-  <button type="button" id="menuBtn" class="lg:hidden h-9 w-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center shrink-0 transition-colors" aria-label="Open menu">
+  <button type="button" id="menuBtn" class="hidden h-9 w-9 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 flex items-center justify-center shrink-0 transition-colors" aria-label="Open menu">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h16"/></svg>
   </button>
 

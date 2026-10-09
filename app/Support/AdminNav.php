@@ -74,8 +74,11 @@ class AdminNav
         'Settings'      => ['settings', 'integrations'],
     ];
 
-    /** The phone icon strip shows these (when allowed) plus the current page; the rest sit behind "More". */
-    public const RAIL = ['dashboard', 'orders', 'courier-scan', 'pos', 'products', 'inventory'];
+    /** Phone bottom bar: the first four of these the role may open, then "More" for the full menu. */
+    public const BOTTOM_BAR = ['dashboard', 'orders', 'courier-scan', 'products', 'pos', 'inventory', 'customers', 'reviews'];
+
+    /** Shorter labels for the bottom bar. */
+    public const SHORT = ['dashboard' => 'Home', 'courier-scan' => 'Scan', 'pos' => 'POS'];
 
     private static function pattern(string $route): string
     {
