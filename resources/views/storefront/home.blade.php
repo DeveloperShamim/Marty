@@ -153,10 +153,10 @@
       <section class="mt-8 sm:mt-12" data-reveal>
         <div class="flex items-end justify-between mb-3 sm:mb-5 border-b border-stone-200/80 pb-2.5 sm:pb-3">
           <div>
-            <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-none">
+            <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">
               {{ setting('home_categories_title', 'Explore Categories') }}
             </h2>
-            @if(setting('home_categories_subtitle', 'Shop our collection by category'))<p class="text-[11px] sm:text-xs text-stone-500 mt-1">{{ setting('home_categories_subtitle', 'Shop our collection by category') }}</p>@endif
+            @if(setting('home_categories_subtitle', 'Shop our collection by category'))<p class="text-xs text-stone-500 mt-1">{{ setting('home_categories_subtitle', 'Shop our collection by category') }}</p>@endif
           </div>
           <div class="flex items-center gap-1.5 sm:gap-2">
             <button type="button" id="catPrev" class="h-7 w-7 sm:h-8 sm:w-8 rounded-full border border-stone-200 bg-white hover:bg-brand-500 hover:text-white hover:border-brand-500 text-stone-600 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Previous Category">
@@ -222,9 +222,6 @@
             </h2>
           </div>
 
-          <a href="{{ route('shop', ['flash' => 1]) }}" class="text-xs sm:text-sm font-bold text-stone-900 hover:text-brand-600 tracking-wider uppercase inline-flex items-center gap-1 transition-colors shrink-0">
-            VIEW ALL DEALS <span class="text-base font-normal">&rarr;</span>
-          </a>
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
@@ -235,6 +232,7 @@
             </div>
           @endforeach
         </div>
+        @include('storefront.partials.see-all', ['href' => route('shop', ['flash' => 1]), 'label' => 'deals'])
       </section>
     @endif
 
@@ -251,10 +249,10 @@
         {{-- Segmented Tab Switcher --}}
         <div class="w-full sm:w-auto flex sm:inline-flex p-1 rounded-xl bg-stone-100 border border-stone-200/70 text-xs font-bold" id="homeProductTabs" role="tablist">
           <button type="button" data-home-tab="best-sellers" class="home-tab-btn active flex-1 sm:flex-initial text-center justify-center px-2.5 sm:px-3.5 py-2 sm:py-1.5 rounded-lg bg-white text-stone-900 shadow-2xs transition-all text-[11px] sm:text-xs">
-            🔥 Best Sellers
+            Best Sellers
           </button>
           <button type="button" data-home-tab="new-arrivals" class="home-tab-btn flex-1 sm:flex-initial text-center justify-center px-2.5 sm:px-3.5 py-2 sm:py-1.5 rounded-lg text-stone-500 hover:text-stone-900 transition-all text-[11px] sm:text-xs">
-            ✨ New Arrivals
+            New Arrivals
           </button>
         </div>
       </div>
@@ -270,14 +268,7 @@
               </div>
             @endforeach
           </div>
-          <div class="mt-6 text-center">
-            <a href="{{ route('shop', ['best_seller' => 1]) }}" class="group inline-flex items-center gap-3 pl-5 pr-2 py-2 rounded-xl border border-stone-200/90 bg-white hover:border-brand-500/40 hover:bg-stone-50/80 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-95">
-              <span class="text-xs font-bold uppercase tracking-wider text-stone-800 group-hover:text-brand-600 transition-colors">View All Best Sellers</span>
-              <span class="h-7 w-7 rounded-lg bg-stone-100 group-hover:bg-brand-500 text-stone-500 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-2xs">
-                <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-              </span>
-            </a>
-          </div>
+          @include('storefront.partials.see-all', ['href' => route('shop', ['best_seller' => 1]), 'label' => 'best sellers'])
         </div>
 
         {{-- Pane 2: New Arrivals --}}
@@ -289,14 +280,7 @@
               </div>
             @endforeach
           </div>
-          <div class="mt-6 text-center">
-            <a href="{{ route('shop', ['new' => 1]) }}" class="group inline-flex items-center gap-3 pl-5 pr-2 py-2 rounded-xl border border-stone-200/90 bg-white hover:border-brand-500/40 hover:bg-stone-50/80 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-95">
-              <span class="text-xs font-bold uppercase tracking-wider text-stone-800 group-hover:text-brand-600 transition-colors">View All New Arrivals</span>
-              <span class="h-7 w-7 rounded-lg bg-stone-100 group-hover:bg-brand-500 text-stone-500 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-2xs">
-                <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-              </span>
-            </a>
-          </div>
+          @include('storefront.partials.see-all', ['href' => route('shop', ['new' => 1]), 'label' => 'new arrivals'])
         </div>
 
       </div>
@@ -307,10 +291,10 @@
       <section class="mt-14 sm:mt-16" data-reveal>
         <div class="flex items-end justify-between mb-3 sm:mb-4 border-b border-stone-200/80 pb-2.5 sm:pb-3">
           <div>
-            <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-none">
+            <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">
               {{ setting('home_featured_brands_title', 'Official Brands') }}
             </h2>
-            <p class="text-[11px] sm:text-xs text-stone-500 mt-1">{{ setting('home_featured_brands_subtitle', '100% genuine products sourced directly from authorized channels') }}</p>
+            <p class="text-xs text-stone-500 mt-1">{{ setting('home_featured_brands_subtitle', '100% genuine products sourced directly from authorized channels') }}</p>
           </div>
           <div class="flex items-center gap-1.5 sm:gap-2">
             <a href="{{ route('shop') }}" class="text-xs font-bold text-stone-600 hover:text-brand-600 mr-2 hidden sm:inline-block transition-colors">View All Brands &rarr;</a>
@@ -352,14 +336,8 @@
       @foreach($featuredHomeCategories as $featuredCat)
         @if($featuredCat->products->isNotEmpty())
           <section class="mt-12 sm:mt-16" data-reveal>
-            <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-6 gap-3">
-              <div>
-                <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">
-                  @if($featuredCat->icon)<span class="mr-1.5">{{ $featuredCat->icon }}</span>@endif
-                  {{ $featuredCat->name }}
-                </h2>
-                <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
-              </div>
+            <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-4 sm:mb-6 gap-3">
+              <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">{{ $featuredCat->name }}</h2>
             </div>
 
             {{-- One row that slides by itself (pauses on touch or hover); swipe sideways too. 2 visible on phones, 4 from tablets up --}}
@@ -369,16 +347,18 @@
                   @include('storefront.partials.product-card', ['product' => $product])
                 </div>
               @endforeach
+              {{-- Swiping to the end lands on See all --}}
+              @if($featuredCat->products->count() > 2)
+                <a href="{{ route('shop.category', $featuredCat) }}" class="w-[46%] shrink-0 snap-start sm:w-[calc((100%-3rem)/4)] flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-stone-300 bg-stone-50/80 hover:border-brand-500/50 text-stone-800 hover:text-brand-600 transition-colors p-4 text-center" data-row-see-all>
+                  <span class="h-11 w-11 rounded-full bg-white border border-stone-200 flex items-center justify-center shadow-2xs">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  </span>
+                  <span class="text-sm font-bold leading-snug">See all<br>{{ $featuredCat->name }}</span>
+                </a>
+              @endif
             </div>
 
-            <div class="mt-6 text-center">
-              <a href="{{ route('shop.category', $featuredCat) }}" class="group inline-flex items-center gap-3 pl-5 pr-2 py-2 rounded-xl border border-stone-200/90 bg-white hover:border-brand-500/40 hover:bg-stone-50/80 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-95">
-                <span class="text-xs font-bold uppercase tracking-wider text-stone-800 group-hover:text-brand-600 transition-colors">View All {{ $featuredCat->name }}</span>
-                <span class="h-7 w-7 rounded-lg bg-stone-100 group-hover:bg-brand-500 text-stone-500 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-2xs">
-                  <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                </span>
-              </a>
-            </div>
+            @include('storefront.partials.see-all', ['href' => route('shop.category', $featuredCat), 'label' => $featuredCat->name])
           </section>
         @endif
       @endforeach
@@ -389,7 +369,7 @@
       <section class="mt-14 sm:mt-16" data-reveal>
         <div class="flex items-end justify-between mb-4 border-b border-stone-200/80 pb-3">
           <div>
-            <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">
+            <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">
               Exclusive Vouchers &amp; Offers
             </h2>
             <p class="text-xs text-stone-500 mt-1">Apply promo codes at checkout for instant savings</p>
@@ -537,10 +517,10 @@
     {{-- 9. JUST FOR YOU: last on the page, picked from what's in the cart and what hasn't been shown above --}}
     @if(($justForYou ?? collect())->isNotEmpty())
       <section class="mt-12 sm:mt-16 mb-12" data-reveal data-just-for-you>
-        <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-6 gap-3">
+        <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-4 sm:mb-6 gap-3">
           <div>
-            <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">Just for you</h2>
-            <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
+            <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">Just for you</h2>
+            <p class="text-xs text-stone-500 mt-1">Picked from what you're browsing</p>
           </div>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
@@ -551,14 +531,7 @@
             </div>
           @endforeach
         </div>
-        <div class="mt-6 text-center">
-          <a href="{{ route('shop') }}" class="group inline-flex items-center gap-3 pl-5 pr-2 py-2 rounded-xl border border-stone-200/90 bg-white hover:border-brand-500/40 hover:bg-stone-50/80 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-95">
-            <span class="text-xs font-bold uppercase tracking-wider text-stone-800 group-hover:text-brand-600 transition-colors">See more products</span>
-            <span class="h-7 w-7 rounded-lg bg-stone-100 group-hover:bg-brand-500 text-stone-500 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-2xs">
-              <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-            </span>
-          </a>
-        </div>
+        @include('storefront.partials.see-all', ['href' => route('shop'), 'label' => 'products'])
       </section>
     @endif
 
