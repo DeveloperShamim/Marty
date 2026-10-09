@@ -260,7 +260,7 @@ class DashboardController extends Controller
             'lowStockCount'       => $lowStockCount,
             'outOfStockCount'     => $outOfStockCount,
             'pendingOrders'       => Order::awaitingPayment()->latest()->take(6)->get(),
-            'recentOrders'        => Order::latest()->take(8)->get(),
+            'recentOrders'        => Order::latest()->take(14)->get(), // fills the space beside Top products; phones show the first 6
             'topProducts'         => $topProducts,
             'selectedYear'        => $selectedYear,
             'availableYears'      => $availableYears,
