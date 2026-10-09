@@ -239,6 +239,24 @@ class DashboardController extends Controller
         $itemsSold = (int) OrderItem::whereHas('order', $validOrders)->sum('quantity');
         $customersCount = (int) Order::distinct()->count('customer_phone');
 
+        // Headline tiles. Today counts every order placed today (cash on delivery is only "sold" once delivered,
+        // so placed orders are what a COD store watches day to day); the month and its profit count realized sales.
+        $placed = fn ($query) => $query->whereNotIn('status', ['cancelled']);
+        $todayPlaced = Order::whereDate('created_at', Carbon::today())->tap($placed);
+        $yesterdayPlaced = Order::whereDate('created_at', Carbon::yesterday())->tap($placed);
+        $monthStart = Carbon::now()->startOfMonth();
+        $lastMonthStart = (clone $monthStart)->subMonth();
+        $lastMonthRevenue = (float) Order::whereBetween('created_at', [$lastMonthStart, (clone $monthStart)->subSecond()])
+            ->tap($validOrders)->sum(DB::raw('subtotal - discount_amount'));
+        $lastMonthOrders = Order::whereBetween('created_at', [$lastMonthStart, (clone $monthStart)->subSecond()])->tap($validOrders)->count();
+        $inMonth = fn ($q) => $q->where('created_at', '>=', $monthStart);
+        $monthCogs = (float) OrderItem::whereHas('order', fn ($q) => $q->tap($validOrders)->tap($inMonth))
+            ->leftJoin('products', 'order_items.product_id', '=', 'products.id')
+            ->sum(DB::raw('COALESCE(NULLIF(order_items.cost_price, 0), products.cost_price, 0) * order_items.quantity'));
+        $monthCourierLoss = (float) Order::where('status', 'returned')->tap($inMonth)->sum('courier_loss_amount');
+        $monthFreeDelivery = (float) Order::query()->tap($validOrders)->tap($inMonth)->sum('shipping_waived');
+        $monthExpenses = (float) Expense::whereBetween('expense_date', [$monthStart->toDateString(), Carbon::now()->endOfMonth()->toDateString()])->sum('amount');
+
         return view('admin.dashboard', [
             'ordersCount'          => $activeOrdersCount,
             'totalSalesOrdersCount'=> $verifiedOrdersCount,
@@ -285,6 +303,15 @@ class DashboardController extends Controller
             'thisMonthOrders'     => $thisMonthOrders,
             'callbackCarts'       => (clone $callbackCarts)->latest()->take(5)->get(),
             'callbackCount'       => $callbackCarts->count(),
+            'todayPlacedValue'    => (float) (clone $todayPlaced)->sum('total'),
+            'todayPlacedCount'    => (clone $todayPlaced)->count(),
+            'yesterdayPlacedValue'=> (float) (clone $yesterdayPlaced)->sum('total'),
+            'yesterdayPlacedCount'=> (clone $yesterdayPlaced)->count(),
+            'lastMonthRevenue'    => $lastMonthRevenue,
+            'lastMonthOrders'     => $lastMonthOrders,
+            'monthCogs'           => $monthCogs,
+            'monthExpenses'       => $monthExpenses,
+            'monthProfit'         => $thisMonthRevenue - $monthCogs - $monthCourierLoss - $monthFreeDelivery - $monthExpenses,
             'salesByDay'          => $salesByDay,
             'itemsSold'           => $itemsSold,
             'customersCount'      => $customersCount,

@@ -76,7 +76,7 @@ class StaffRoleAccessTest extends TestCase
         $stock = User::factory()->create(['role' => 'inventory_manager']);
         $html = $this->actingAs($stock)->get('/admin')->assertOk()->getContent();
 
-        $this->assertStringNotContainsString('Net Profit', $html);
+        $this->assertStringNotContainsString('Net Profit this month', $html);
         $this->assertStringNotContainsString("Today's Sales", $html);
         $this->assertStringNotContainsString('Recent orders', $html);
         $this->assertStringContainsString('Stock health', $html);
@@ -84,7 +84,7 @@ class StaffRoleAccessTest extends TestCase
         $this->assertStringNotContainsString(route('admin.cache.clear'), $html);
 
         $admin = User::factory()->create(['role' => 'admin']);
-        $this->actingAs($admin)->get('/admin')->assertSee('Net Profit');
+        $this->actingAs($admin)->get('/admin')->assertSee('Net Profit this month');
     }
 
     public function test_order_manager_lands_on_orders_and_ajax_refusals_are_json(): void

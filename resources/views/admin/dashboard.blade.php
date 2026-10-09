@@ -10,9 +10,6 @@
     $canOrders = \App\Support\StaffAccess::allows(auth()->user(), 'orders');
   @endphp
   @php
-    $trend = fn ($now, $before) => $before > 0 ? round(($now - $before) / $before * 100, 1) : null;
-    $salesTrend = $trend($todayRevenue ?? 0, $yesterdayRevenue ?? 0);
-    $ordersTrend = $trend($todayOrdersCount ?? 0, $yesterdayOrdersCount ?? 0);
 
     // Order status rings: each status as a share of all orders
     $statusRings = [
@@ -79,7 +76,6 @@
     ])->filter();
     $listCols = ['', '', 'md:grid-cols-2', 'md:grid-cols-2 xl:grid-cols-3', 'md:grid-cols-2 xl:grid-cols-4'][$openLists->count()];
     $rowCols = $openLists->count() === 1 ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 divide-y md:divide-y-0' : 'divide-y';
-    $monthlyAvg = $totalSeriesRevenue > 0 ? ($totalSeriesRevenue / 12) : 0;
   @endphp
 
   {{-- Needs action: everything waiting on you, at a glance --}}
@@ -220,36 +216,35 @@
   </section>
 
   {{-- Headline numbers --}}
-  <div class="grid grid-cols-2 {{ $canMoney ? 'xl:grid-cols-4' : '' }} gap-3 sm:gap-4">
+  <div class="grid grid-cols-2 {{ $canMoney ? 'xl:grid-cols-3' : '' }} gap-3 sm:gap-4">
     @if($canMoney)
-    <div class="panel p-3.5 sm:p-4 min-w-0">
-      <h2 class="text-xs sm:text-[13px] text-gray-500">Total Sales</h2>
-      <div class="mt-1.5 flex items-center gap-x-2 gap-y-1 flex-wrap">
-        <p class="text-lg sm:text-[22px] leading-tight font-semibold tracking-tight text-gray-900 font-mono">{{ money($revenue) }}</p>
-        @if($salesTrend !== null)
-          <span class="inline-flex items-center h-5 px-1.5 rounded-full text-[10px] font-semibold {{ $salesTrend >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700' }}" title="Today vs yesterday">{{ $salesTrend >= 0 ? '↗' : '↘' }} {{ abs($salesTrend) }}%</span>
-        @endif
-      </div>
-      <p class="mt-1 text-[11px] leading-snug text-gray-500 sm:truncate"><span class="font-semibold" style="color: var(--brand);">{{ money($todayRevenue) }}</span> today &middot; {{ number_format($totalSalesOrdersCount ?? $ordersCount) }} paid orders</p>
-    </div>
-    <div class="panel p-3.5 sm:p-4 min-w-0">
-      <h2 class="text-xs sm:text-[13px] text-gray-500">Net Profit</h2>
-      <div class="mt-1.5 flex items-center gap-x-2 gap-y-1 flex-wrap">
-        <p class="text-lg sm:text-[22px] leading-tight font-semibold tracking-tight font-mono {{ $netProfit < 0 ? 'text-red-600' : 'text-gray-900' }}">{{ $netProfit < 0 ? '-' : '' }}{{ money(abs($netProfit)) }}</p>
-        <span class="inline-flex items-center h-5 px-1.5 rounded-full text-[10px] font-semibold {{ $profitMargin >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700' }}">{{ round($profitMargin, 1) }}%</span>
-      </div>
-      <p class="mt-1 text-[11px] leading-snug text-gray-500 sm:truncate">Goods {{ money($totalCogs) }}@if($totalExpenses > 0) &middot; expenses <span class="text-rose-600">{{ money($totalExpenses) }}</span>@endif</p>
-    </div>
+    @php
+      $monthMargin = $thisMonthRevenue > 0 ? round($monthProfit / $thisMonthRevenue * 100, 1) : null;
+      $monthCosts = collect(['Goods' => $monthCogs, 'expenses' => $monthExpenses])->filter(fn ($v) => $v > 0);
+    @endphp
+    {{-- Today: orders placed today (cash on delivery counts as a sale only once delivered) --}}
+    <a href="{{ route('admin.orders.index') }}" class="panel p-3.5 sm:p-4 min-w-0 block">
+      <h2 class="text-xs sm:text-[13px] text-gray-500">Today</h2>
+      <p class="mt-1.5 text-lg sm:text-[22px] leading-tight font-semibold tracking-tight text-gray-900 font-mono truncate">{{ money($todayPlacedValue) }}</p>
+      <p class="mt-1 text-[11px] leading-snug text-gray-500 sm:truncate">{{ number_format($todayPlacedCount) }} {{ \Illuminate\Support\Str::plural('order', $todayPlacedCount) }} placed &middot; yesterday {{ money($yesterdayPlacedValue) }} ({{ number_format($yesterdayPlacedCount) }})</p>
+    </a>
+    {{-- This month: sales already delivered or paid --}}
     <div class="panel p-3.5 sm:p-4 min-w-0">
       <h2 class="text-xs sm:text-[13px] text-gray-500">This month</h2>
       <p class="mt-1.5 text-lg sm:text-[22px] leading-tight font-semibold tracking-tight text-gray-900 font-mono truncate">{{ money($thisMonthRevenue) }}</p>
-      <p class="mt-1 text-[11px] leading-snug text-gray-500 sm:truncate">{{ number_format($thisMonthOrders) }} {{ \Illuminate\Support\Str::plural('order', $thisMonthOrders) }} &middot; avg. {{ money($monthlyAvg) }} a month</p>
+      <p class="mt-1 text-[11px] leading-snug text-gray-500 sm:truncate">{{ number_format($thisMonthOrders) }} paid {{ \Illuminate\Support\Str::plural('order', $thisMonthOrders) }} &middot; last month {{ money($lastMonthRevenue) }}</p>
     </div>
-    <div class="panel p-3.5 sm:p-4 min-w-0">
-      <h2 class="text-xs sm:text-[13px] text-gray-500">Avg. order</h2>
-      <p class="mt-1.5 text-lg sm:text-[22px] leading-tight font-semibold tracking-tight text-gray-900 font-mono truncate">{{ money($avgOrderValue) }}</p>
-      <p class="mt-1 text-[11px] leading-snug text-gray-500 sm:truncate">Orders today {{ number_format($todayOrdersCount) }} &middot; yesterday {{ number_format($yesterdayOrdersCount) }}</p>
-    </div>
+    {{-- Profit this month: after product cost, return losses, free delivery and this month's expenses --}}
+    <a href="{{ route('admin.analytics.index') }}" class="panel p-3.5 sm:p-4 min-w-0 block col-span-2 xl:col-span-1">
+      <h2 class="text-xs sm:text-[13px] text-gray-500">Net Profit this month</h2>
+      <div class="mt-1.5 flex items-center gap-x-2 gap-y-1 flex-wrap">
+        <p class="text-lg sm:text-[22px] leading-tight font-semibold tracking-tight font-mono {{ $monthProfit < 0 ? 'text-red-600' : 'text-gray-900' }}">{{ $monthProfit < 0 ? '-' : '' }}{{ money(abs($monthProfit)) }}</p>
+        @if($monthMargin !== null)
+          <span class="inline-flex items-center h-5 px-1.5 rounded-full text-[10px] font-semibold {{ $monthMargin >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700' }}" title="Share of this month's sales you keep">{{ $monthMargin }}% kept</span>
+        @endif
+      </div>
+      <p class="mt-1 text-[11px] leading-snug text-gray-500 sm:truncate">{{ $monthCosts->isEmpty() ? 'No costs recorded this month yet' : $monthCosts->map(fn ($v, $k) => $k . ' ' . money($v))->implode(' · ') }}</p>
+    </a>
     @else
     <a href="{{ route('admin.inventory.index') }}" class="panel p-3.5 sm:p-4 min-w-0 col-span-2 hover:bg-gray-50 transition-colors">
       <h2 class="text-xs sm:text-[13px] text-gray-500">Stock health</h2>
