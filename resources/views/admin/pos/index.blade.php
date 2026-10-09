@@ -14,11 +14,13 @@
 
     <div class="flex items-center gap-1.5 shrink-0">
       <span class="text-xs text-gray-400 hidden xl:inline mr-1"><kbd class="px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-600 font-sans text-[11px]">F2</kbd> scan <kbd class="ml-1.5 px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-600 font-sans text-[11px]">F4</kbd> customer</span>
+      @if(\App\Support\StaffAccess::allows(auth()->user(), 'barcodes'))
       <a href="{{ route('admin.barcodes.index') }}" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium inline-flex items-center gap-1.5 transition-colors">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M8 8v8M12 8v8M16 8v8"/></svg>
         <span class="hidden sm:inline">Barcodes</span>
       </a>
-      <a href="{{ route('admin.dashboard') }}" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium inline-flex items-center transition-colors">
+      @endif
+      <a href="{{ \App\Support\StaffAccess::home(auth()->user()) }}" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-medium inline-flex items-center transition-colors">
         Exit
       </a>
     </div>

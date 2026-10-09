@@ -21,6 +21,11 @@ class EnsureStaffArea
             return response()->json(['success' => false, 'message' => 'You do not have permission for this.'], 403);
         }
 
+        // /admin is everyone's front door; roles without the dashboard just land on their own home page.
+        if ($area === 'dashboard' && $user) {
+            return redirect()->to(StaffAccess::home($user));
+        }
+
         return redirect()->to($user ? StaffAccess::home($user) : route('admin.login'))
             ->with('error', 'Access denied: your role cannot open that page.');
     }

@@ -74,11 +74,29 @@ class AdminNav
         'Settings'      => ['settings', 'integrations'],
     ];
 
-    /** Phone bottom bar: the first four of these the role may open, then "More" for the full menu. */
-    public const BOTTOM_BAR = ['dashboard', 'orders', 'courier-scan', 'products', 'pos', 'inventory', 'customers', 'reviews'];
+    /** Phone bottom bar per role: four everyday pages (each still checked against the role), then "More". */
+    public const BOTTOM_BAR = [
+        'admin'             => ['dashboard', 'orders', 'courier-scan', 'products'],
+        'store_manager'     => ['dashboard', 'orders', 'products', 'pos'],
+        'order_manager'     => ['orders', 'courier-scan', 'pos', 'customers'],
+        'inventory_manager' => ['dashboard', 'products', 'inventory', 'barcodes'],
+    ];
+
+    /** The bottom bar's pages for this user, in order. */
+    public static function bottomBar(?User $user): array
+    {
+        $keys = self::BOTTOM_BAR[$user->role ?? ''] ?? self::BOTTOM_BAR['admin'];
+        $areas = self::areas();
+
+        return collect($keys)->filter(fn ($key) => StaffAccess::allows($user, $key))->map(function ($key) use ($areas) {
+            [$label, $route, $icon] = $areas[$key];
+
+            return ['key' => $key, 'label' => $label, 'route' => $route, 'patterns' => [self::pattern($route)], 'icon' => $icon];
+        })->values()->all();
+    }
 
     /** Shorter labels for the bottom bar. */
-    public const SHORT = ['dashboard' => 'Home', 'courier-scan' => 'Scan', 'pos' => 'POS'];
+    public const SHORT = ['dashboard' => 'Home', 'courier-scan' => 'Scan', 'pos' => 'POS', 'barcodes' => 'Barcodes'];
 
     private static function pattern(string $route): string
     {

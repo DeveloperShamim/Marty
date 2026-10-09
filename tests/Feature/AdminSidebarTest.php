@@ -105,12 +105,31 @@ class AdminSidebarTest extends TestCase
             $this->bottomBar($this->actingAs($orders)->get(route('admin.orders.index'))->getContent()));
 
         $stock = User::factory()->create(['role' => 'inventory_manager']);
-        $this->assertSame(['Home', 'Products', 'Inventory', 'Reviews', 'More'],
+        $this->assertSame(['Home', 'Products', 'Inventory', 'Barcodes', 'More'],
             $this->bottomBar($this->actingAs($stock)->get(route('admin.inventory.index'))->getContent()));
+
+        $store = User::factory()->create(['role' => 'store_manager']);
+        $this->assertSame(['Home', 'Orders', 'Products', 'POS', 'More'],
+            $this->bottomBar($this->actingAs($store)->get(route('admin.orders.index'))->getContent()));
 
         $admin = User::factory()->create(['role' => 'admin']);
         $this->assertStringNotContainsString('id="bottomNav"', $this->actingAs($admin)->get(route('admin.pos.index'))->getContent());
         $this->assertStringNotContainsString('id="bottomNav"', $this->actingAs($admin)->get(route('admin.products.create'))->getContent());
         $this->assertStringNotContainsString('id="mobileRail"', $this->actingAs($admin)->get(route('admin.dashboard'))->getContent());
+    }
+
+    public function test_logo_and_admin_home_lead_each_role_to_a_page_it_can_open(): void
+    {
+        $orders = User::factory()->create(['role' => 'order_manager']);
+        $html = $this->actingAs($orders)->get(route('admin.orders.index'))->getContent();
+        $this->assertMatchesRegularExpression('/<a href="[^"]+\/admin\/orders" class="flex items-center gap-2.5[^"]*" aria-label="[^"]+ admin home"/', $html);
+
+        // Opening /admin goes straight to their home page, without an "access denied" message.
+        $this->actingAs($orders)->get(route('admin.dashboard'))->assertRedirect(route('admin.orders.index'))->assertSessionMissing('error');
+        $this->actingAs($orders)->get(route('admin.analytics.index'))->assertSessionHas('error');
+
+        $pos = $this->actingAs($orders)->get(route('admin.pos.index'))->getContent();
+        $this->assertStringNotContainsString(route('admin.barcodes.index'), $pos);
+        $this->assertStringNotContainsString('href="'.route('admin.dashboard').'"', $pos);
     }
 }

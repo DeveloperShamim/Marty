@@ -89,11 +89,10 @@
 
 </aside>
 
-{{-- Phones and tablets: a bottom bar with four everyday pages and "More", which opens the full menu as a sheet.
+{{-- Phones and tablets: a bottom bar with four everyday pages for the role and "More", which opens the full menu as a sheet.
      Hidden on POS and the product form, which have their own bottom bars. --}}
 @php
-  $barItems = collect($nav)->flatten(1)->filter(fn ($i) => in_array($i['key'], \App\Support\AdminNav::BOTTOM_BAR, true))
-      ->sortBy(fn ($i) => array_search($i['key'], \App\Support\AdminNav::BOTTOM_BAR, true))->take(4)->values();
+  $barItems = collect(\App\Support\AdminNav::bottomBar($user));
   $barOn = $barItems->contains(fn ($i) => \App\Support\AdminNav::isOn($i));
   $showBar = ! request()->routeIs('admin.pos.*', 'admin.products.create', 'admin.products.edit');
 @endphp

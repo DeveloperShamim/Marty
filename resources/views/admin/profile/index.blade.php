@@ -3,7 +3,7 @@
 @section('subtitle', 'Your photo, contact details and password.')
 
 @section('page-actions')
-  <a href="{{ route('admin.dashboard') }}" class="pill-btn">Back to dashboard</a>
+  <a href="{{ \App\Support\StaffAccess::home(auth()->user()) }}" class="pill-btn">Back</a>
 @endsection
 
 @php

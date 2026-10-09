@@ -15,7 +15,7 @@
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h16"/></svg>
   </button>
 
-  <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 min-w-0 shrink-0" aria-label="{{ site_name() }} admin home">
+  <a href="{{ \App\Support\StaffAccess::home(auth()->user()) }}" class="flex items-center gap-2.5 min-w-0 shrink-0" aria-label="{{ site_name() }} admin home">
     @if(has_custom_logo())
       <img src="{{ logo_url() }}" alt="{{ site_name() }}" class="max-h-7 max-w-[140px] w-auto object-contain" />
     @else
