@@ -80,25 +80,26 @@ class DashboardController extends Controller
         // Average Order Value (AOV)
         $avgOrderValue = $verifiedOrdersCount > 0 ? ($revenue / $verifiedOrdersCount) : 0;
 
-        // Top 5 Revenue-Generating Products (strictly excluding cancelled and returned orders)
+        // Top 12 revenue products (strictly excluding cancelled and returned orders), with units
+        // sold in the last 30 days against the 30 days before for the trend badge
+        $trendFrom = now()->subDays(30);
+        $trendPrevFrom = now()->subDays(60);
         $topProducts = OrderItem::query()
-            ->select(
-                'product_id',
-                'product_name',
-                'image',
-                DB::raw('SUM(quantity) as total_units'),
-                DB::raw('SUM(line_total) as total_revenue')
-            )
-            ->whereHas('order', function ($query) {
-                $query->whereNotIn('status', ['cancelled', 'returned'])
-                    ->where(function ($q) {
-                        $q->where('status', 'delivered')
-                          ->orWhere('payment_status', 'verified');
-                    });
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->whereNotIn('orders.status', ['cancelled', 'returned'])
+            ->where(function ($q) {
+                $q->where('orders.status', 'delivered')
+                  ->orWhere('orders.payment_status', 'verified');
             })
-            ->groupBy('product_id', 'product_name', 'image')
+            ->select('order_items.product_id', 'order_items.product_name')
+            ->selectRaw('MAX(order_items.image) as image')
+            ->selectRaw('SUM(order_items.quantity) as total_units')
+            ->selectRaw('SUM(order_items.line_total) as total_revenue')
+            ->selectRaw('SUM(CASE WHEN orders.created_at >= ? THEN order_items.quantity ELSE 0 END) as recent_units', [$trendFrom])
+            ->selectRaw('SUM(CASE WHEN orders.created_at >= ? AND orders.created_at < ? THEN order_items.quantity ELSE 0 END) as previous_units', [$trendPrevFrom, $trendFrom])
+            ->groupBy('order_items.product_id', 'order_items.product_name')
             ->orderByDesc('total_revenue')
-            ->take(5)
+            ->take(12)
             ->get();
 
         // Attach Product model to get current stock and live status
@@ -111,6 +112,10 @@ class DashboardController extends Controller
         $topProducts->transform(function ($item) use ($liveProductsById, $liveProductsByName) {
             $item->product = ($item->product_id ? $liveProductsById->get($item->product_id) : null)
                 ?? $liveProductsByName->get($item->product_name);
+            $recent = (int) $item->recent_units;
+            $previous = (int) $item->previous_units;
+            // null = no sales in either window, 'new' = sold now but not before, otherwise a % change
+            $item->trend = $previous > 0 ? (int) round(($recent - $previous) / $previous * 100) : ($recent > 0 ? 'new' : null);
             return $item;
         });
 

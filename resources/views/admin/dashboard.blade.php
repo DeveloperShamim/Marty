@@ -534,121 +534,86 @@
   @endif
 
   @if($canMoney)
-  {{-- Top Products Leaderboard --}}
-  <div class="bg-white rounded-2xl border border-gray-200/90 p-4 sm:p-5 shadow-2xs space-y-4">
-    <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-      <div>
-        <h2 class="font-bold text-sm sm:text-base text-gray-900">Top Revenue Products</h2>
-        <p class="text-xs text-gray-500">Best-selling products ranked by verified revenue</p>
+  {{-- Top products: a row of product cards paged with the arrows (swipe on phones) --}}
+  <section class="rounded-[22px] p-3.5 sm:p-5" style="background: color-mix(in srgb, var(--brand) 9%, #f5f5f4);" data-top-products>
+    <div class="flex items-start justify-between gap-3 px-0.5">
+      <div class="min-w-0">
+        <h2 class="text-[15px] sm:text-base font-semibold text-gray-900">Top products</h2>
+        <p class="text-xs text-gray-500 mt-0.5" title="The % compares units sold in the last 30 days with the 30 days before">Best sellers by verified revenue</p>
       </div>
-      <a href="{{ route('admin.products.index') }}" class="text-xs font-semibold text-primary hover:underline whitespace-nowrap shrink-0">
-        All Products &rarr;
-      </a>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button type="button" data-tp-prev aria-label="Previous products" class="h-9 w-9 rounded-full bg-white text-gray-800 grid place-items-center shadow-sm hover:bg-gray-50 transition disabled:opacity-40 disabled:cursor-default">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+        </button>
+        <button type="button" data-tp-next aria-label="More products" class="h-9 w-9 rounded-full bg-white text-gray-800 grid place-items-center shadow-sm hover:bg-gray-50 transition disabled:opacity-40 disabled:cursor-default">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
     </div>
 
-    {{-- Desktop Table View (`hidden md:block`) --}}
-    <div class="hidden md:block overflow-x-auto rounded-xl border border-gray-200">
-      <table class="w-full text-left text-xs border-collapse">
-        <thead>
-          <tr class="bg-gray-50 text-gray-600 font-semibold border-b border-gray-200 uppercase text-[11px] tracking-wider whitespace-nowrap">
-            <th class="py-3 px-4 w-14">Rank</th>
-            <th class="py-3 px-4">Product Details</th>
-            <th class="py-3 px-4 text-center">Units Sold</th>
-            <th class="py-3 px-4 text-right">Total Revenue</th>
-            <th class="py-3 px-4 text-center">Stock Status</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100 bg-white">
-          @forelse($topProducts as $index => $item)
-            <tr class="hover:bg-gray-50/70 transition-colors">
-              <td class="py-3 px-4 font-bold text-xs">
-                <span class="inline-block px-2 py-0.5 rounded-md font-mono text-xs {{ $index === 0 ? 'bg-primary/10 text-primary font-bold' : 'bg-gray-100 text-gray-700' }}">
-                  #{{ $index + 1 }}
-                </span>
-              </td>
-              <td class="py-3 px-4">
-                <div class="flex items-center gap-3">
-                  @if($item->image)
-                    <img src="{{ $item->image }}" alt="{{ $item->product_name }}" class="h-9 w-9 object-cover rounded-lg border border-gray-200 shrink-0 bg-gray-100" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'36\' height=\'36\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23a8a29e\' stroke-width=\'2\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/></svg>';" />
-                  @else
-                    <div class="h-9 w-9 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 font-bold text-xs shrink-0 border border-gray-200">
-                      {{ substr($item->product_name, 0, 1) }}
-                    </div>
-                  @endif
-                  <div class="min-w-0">
-                    <span class="font-semibold text-gray-900 text-xs line-clamp-1 block">{{ $item->product_name }}</span>
-                    @if($item->product)
-                      <span class="text-[11px] text-gray-400 font-mono">Price: {{ money($item->product->price) }}</span>
-                    @endif
-                  </div>
-                </div>
-              </td>
-              <td class="py-3 px-4 text-center">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-gray-100 text-gray-700 font-mono">
-                  {{ number_format($item->total_units) }} units
-                </span>
-              </td>
-              <td class="py-3 px-4 text-right font-bold text-emerald-700 font-mono text-xs sm:text-sm">
-                {{ money($item->total_revenue) }}
-              </td>
-              <td class="py-3 px-4 text-center whitespace-nowrap">
-                @if($item->product)
-                  @if($item->product->stock_quantity <= 0)
-                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-rose-100 text-rose-800">Out of Stock</span>
-                  @elseif($item->product->stock_quantity <= 5)
-                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-amber-100 text-amber-800">Low ({{ $item->product->stock_quantity }})</span>
-                  @else
-                    <span class="px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-100 text-emerald-800">{{ $item->product->stock_quantity }} In Stock</span>
-                  @endif
-                @else
-                  <span class="text-xs text-gray-400">N/A</span>
-                @endif
-              </td>
-            </tr>
-          @empty
-            <tr>
-              <td colspan="5" class="text-center py-6 text-gray-400 text-xs">
-                No revenue data recorded yet.
-              </td>
-            </tr>
-          @endforelse
-        </tbody>
-      </table>
-    </div>
-
-    {{-- Mobile Cards View (`block md:hidden`) --}}
-    <div class="block md:hidden space-y-2.5">
-      @forelse($topProducts as $index => $item)
-        <div class="p-3 bg-gray-50/80 rounded-xl border border-gray-200 space-y-2 shadow-2xs">
-          <div class="flex items-center gap-2.5">
-            <span class="px-2 py-0.5 rounded-md font-mono text-xs font-bold shrink-0 {{ $index === 0 ? 'bg-primary/10 text-primary' : 'bg-gray-200 text-gray-700' }}">
-              #{{ $index + 1 }}
-            </span>
-
-            @if($item->image)
-              <img src="{{ $item->image }}" alt="{{ $item->product_name }}" class="h-9 w-9 object-cover rounded-lg border border-gray-200 shrink-0 bg-white max-[399px]:hidden" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'36\' height=\'36\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23a8a29e\' stroke-width=\'2\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/></svg>';" />
-            @else
-              <div class="h-9 w-9 bg-white rounded-lg flex items-center justify-center text-gray-400 font-bold text-xs shrink-0 border border-gray-200 max-[399px]:hidden">
-                {{ substr($item->product_name, 0, 1) }}
-              </div>
-            @endif
-
-            <div class="min-w-0 flex-1">
-              <span class="font-semibold text-gray-900 text-xs truncate block">{{ $item->product_name }}</span>
-              <div class="flex items-center justify-between gap-2 text-[11px] text-gray-500 mt-0.5">
-                <span class="whitespace-nowrap">{{ number_format($item->total_units) }} sold</span>
-                <span class="font-bold text-emerald-700 font-mono">{{ money($item->total_revenue) }}</span>
-              </div>
+    @if($topProducts->isEmpty())
+      <div class="mt-3 rounded-2xl bg-white py-8 text-center text-xs text-gray-400">No revenue data recorded yet.</div>
+    @else
+      <div data-tp-track class="tp-track mt-3 sm:mt-4 flex gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth">
+        @foreach($topProducts as $index => $item)
+          @php
+            $img = $item->product ? $item->product->imageUrl() : $item->image;
+            $link = $item->product ? route('admin.products.edit', $item->product) : route('admin.products.index');
+            $stock = $item->product?->stock_quantity;
+          @endphp
+          <a href="{{ $link }}" class="tp-card snap-start shrink-0 rounded-2xl bg-white p-2.5 sm:p-3 hover:shadow-md transition-shadow min-w-0">
+            <div class="relative aspect-square rounded-xl bg-stone-50 grid place-items-center overflow-hidden">
+              @if($img)
+                <img src="{{ $img }}" alt="{{ $item->product_name }}" loading="lazy" class="h-full w-full object-cover" onerror="this.remove()" />
+              @else
+                <span class="text-2xl font-semibold text-gray-300">{{ mb_substr($item->product_name, 0, 1) }}</span>
+              @endif
+              <span class="absolute top-2 left-2 h-6 min-w-[24px] px-1.5 rounded-full text-[11px] font-semibold grid place-items-center {{ $index === 0 ? 'text-white' : 'bg-white text-gray-700 shadow-sm' }}" @if($index === 0) style="background: var(--brand-dark);" @endif>#{{ $index + 1 }}</span>
+              @if($stock !== null && $stock <= 5)
+                <span class="absolute top-2 right-2 px-2 h-6 rounded-full text-[10px] font-semibold grid place-items-center {{ $stock <= 0 ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-800' }}">{{ $stock <= 0 ? 'Out of stock' : $stock.' left' }}</span>
+              @endif
             </div>
-          </div>
-        </div>
-      @empty
-        <div class="text-center py-6 text-gray-400 text-xs bg-gray-50 rounded-xl border border-gray-200">
-          No revenue data recorded yet.
-        </div>
-      @endforelse
-    </div>
-  </div>
+            <p class="mt-2.5 text-[13px] font-semibold text-gray-900 truncate" title="{{ $item->product_name }}">{{ $item->product_name }}</p>
+            <p class="mt-0.5 text-[11px] text-gray-500 flex items-center gap-1.5 min-w-0">
+              <span class="whitespace-nowrap">{{ number_format($item->total_units) }} sold</span>
+              @if($item->trend === 'new')
+                <span class="font-semibold text-emerald-600">New</span>
+              @elseif($item->trend !== null)
+                <span class="font-semibold tabular-nums {{ $item->trend >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">{{ $item->trend >= 0 ? '+' : '' }}{{ $item->trend }}%</span>
+              @endif
+            </p>
+            <p class="mt-1 text-xs font-semibold text-gray-900 tabular-nums truncate">{{ money($item->total_revenue) }}</p>
+          </a>
+        @endforeach
+      </div>
+    @endif
+  </section>
+  <style>
+    /* Cards per view: 2 on phones, then 3, 4 and 5 as the screen widens */
+    .tp-card { width: calc((100% - .625rem) / 2); }
+    @media (min-width: 640px)  { .tp-card { width: calc((100% - 1.5rem) / 3); } }
+    @media (min-width: 1024px) { .tp-card { width: calc((100% - 2.25rem) / 4); } }
+    @media (min-width: 1280px) { .tp-card { width: calc((100% - 3rem) / 5); } }
+  </style>
+  <script>
+    (function () {
+      var box = document.querySelector('[data-top-products]');
+      var track = box && box.querySelector('[data-tp-track]');
+      if (!track) return;
+      var prev = box.querySelector('[data-tp-prev]'), next = box.querySelector('[data-tp-next]');
+      function sync() {
+        prev.disabled = track.scrollLeft <= 2;
+        next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
+      }
+      prev.addEventListener('click', function () { track.scrollBy({ left: -track.clientWidth, behavior: 'smooth' }); });
+      next.addEventListener('click', function () { track.scrollBy({ left: track.clientWidth, behavior: 'smooth' }); });
+      track.addEventListener('scroll', sync, { passive: true });
+      // Re-check whenever the row changes size (also once the styles have loaded)
+      if (window.ResizeObserver) new ResizeObserver(sync).observe(track); else window.addEventListener('resize', sync);
+      window.addEventListener('load', sync);
+      sync();
+    })();
+  </script>
 
   @endif
 
