@@ -1,5 +1,5 @@
 @php
-  $on = request()->routeIs($i['pattern']);
+  $on = \App\Support\AdminNav::isOn($i);
   $badge = $badges[$i['key']] ?? null;
 @endphp
 <a href="{{ route($i['route']) }}"

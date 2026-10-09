@@ -38,7 +38,7 @@ class AdminSidebarTest extends TestCase
         $labels = $this->menuLabels($this->actingAs($manager)->get(route('admin.orders.index'))->assertOk()->getContent());
 
         $this->assertEqualsCanonicalizing(
-            ['Orders', 'POS Register', 'Courier Scan', 'Abandoned Carts', 'Reviews', 'Customers', 'Blacklist', 'View store', 'Log out'],
+            ['Orders', 'POS Register', 'Courier Scan', 'Abandoned Carts', 'Reviews', 'Customers', 'View store', 'Log out'],
             $labels
         );
     }
@@ -54,10 +54,40 @@ class AdminSidebarTest extends TestCase
 
         $html = $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()->getContent();
 
-        $this->assertMatchesRegularExpression('/data-group="Storefront".*Hero Banners.*Trust Strip.*Size Guide.*Media Library/s', $html);
-        $this->assertMatchesRegularExpression('/data-group="Marketing".*Coupons.*Flash Sale.*Abandoned Carts/s', $html);
-        $this->assertStringContainsString('Product Barcodes', $html);
+        $this->assertMatchesRegularExpression('/data-group="Store content".*Homepage.*Size Guide.*Media Library/s', $html);
+        $this->assertMatchesRegularExpression('/data-group="Marketing".*Coupons.*Promotions.*Abandoned Carts/s', $html);
+        $this->assertMatchesRegularExpression('/data-group="Catalog".*Products.*Inventory.*Catalog setup.*Reviews/s', $html);
         $this->assertStringNotContainsString('data-label="My Account"', $html, 'Account is in the sidebar footer');
         $this->assertMatchesRegularExpression('/data-label="Courier Scan".*?title="1 courier updates need you"/s', $html);
+    }
+
+    public function test_merged_pages_share_one_menu_entry_and_show_tabs(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $html = $this->actingAs($admin)->get(route('admin.brands.index'))->assertOk()->getContent();
+
+        $this->assertCount(20, array_diff($this->menuLabels($html), ['View store', 'Log out']));
+        $this->assertMatchesRegularExpression('/data-label="Catalog setup"[^>]*aria-current="page"/', $html);
+        $this->assertMatchesRegularExpression('/data-page-tabs.*Categories.*aria-current="true"[^>]*>Brands<.*Variations/s', $html);
+        // Searching the menu for a tab's name still finds its entry.
+        $this->assertMatchesRegularExpression('/data-label="Catalog setup" data-search="[^"]*brands/', $html);
+
+        // Phone icon strip: the everyday pages, the current page and a "More" button.
+        preg_match('/<nav id="mobileRail".*?<\/nav>/s', $html, $rail);
+        preg_match_all('/aria-label="([^"]+)" title=/', $rail[0], $icons);
+        $this->assertSame(['Dashboard', 'Orders', 'Courier Scan', 'POS Register', 'Products', 'Inventory', 'Catalog setup', 'More pages'], $icons[1]);
+
+        $this->assertStringNotContainsString('data-page-tabs', $this->actingAs($admin)->get(route('admin.coupons.index'))->getContent());
+    }
+
+    public function test_tabs_only_list_pages_the_role_may_open(): void
+    {
+        $stock = User::factory()->create(['role' => 'inventory_manager']);
+        $html = $this->actingAs($stock)->get(route('admin.features.index'))->assertOk()->getContent();
+
+        // Only Trust strip is theirs, so there is nothing to switch to.
+        $this->assertStringNotContainsString('data-page-tabs', $html);
+        $this->assertStringNotContainsString('Hero banners', $html);
+        $this->assertMatchesRegularExpression('/href="[^"]+\/admin\/features"\s+class="sb-item[^"]*"[^>]*data-label="Homepage"/', $html);
     }
 }

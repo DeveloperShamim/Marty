@@ -80,6 +80,8 @@
       @include('admin.partials.sidebar')
 
       <div class="admin-main flex-1 flex flex-col min-w-0 w-full">
+        @include('admin.partials.page-tabs')
+
         {{-- Page heading: title, optional subtitle and actions (sections "subtitle" and "page-actions") --}}
         <div class="page-head flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 px-0.5 pb-3 sm:pb-4">
           <div class="min-w-0">

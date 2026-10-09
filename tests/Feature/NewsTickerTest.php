@@ -19,7 +19,7 @@ class NewsTickerTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         Coupon::create(['code' => 'SAVE10', 'type' => 'percentage', 'value' => 10, 'is_active' => true]);
 
-        $this->actingAs($admin)->get(route('admin.news-ticker.index'))->assertOk()->assertSee('News Ticker')->assertSee('SAVE10');
+        $this->actingAs($admin)->get(route('admin.news-ticker.index'))->assertOk()->assertSee('News ticker')->assertSee('SAVE10');
 
         $this->actingAs($admin)->put(route('admin.news-ticker.update'), [
             'header_promo_text'  => "Cash on delivery all over Bangladesh\nUse code SAVE10 for 10% OFF",
