@@ -2,7 +2,7 @@
 @section('title', 'Dashboard')
 
 @section('content')
-<div class="space-y-4 max-w-full">
+<div class="dash-glass space-y-4 max-w-full">
 
   @php
     // Inventory managers see the dashboard without money or order details (App\Support\StaffAccess).
@@ -383,7 +383,6 @@
   @if($canMoney || $canOrders)
   @php
     // Bottom block: Top products on the left; Sales by day, Store performance and Recent orders on the right
-    $tint = 'background: color-mix(in srgb, var(--brand) 9%, #f5f5f4);';
     $both = $canMoney && $canOrders;
     $dayMax = max(1, $salesByDay->max('value'));
     $dayTones = ['var(--brand)', 'color-mix(in srgb, var(--brand) 45%, #fff)', 'var(--brand-dark)'];
@@ -399,7 +398,7 @@
   <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
     @if($canMoney)
     {{-- Top products: product cards in two rows, paged with the arrows (swipe on phones) --}}
-    <section class="rounded-[22px] p-3.5 sm:p-4 min-w-0 flex flex-col {{ $both ? 'xl:col-span-6' : 'xl:col-span-12' }}" style="{{ $tint }}" data-top-products>
+    <section class="rounded-[22px] p-3.5 sm:p-4 min-w-0 flex flex-col {{ $both ? 'xl:col-span-6' : 'xl:col-span-12' }}" data-tint data-top-products>
       <div class="flex items-start justify-between gap-3 px-0.5">
         <div class="min-w-0">
           <h2 class="text-[15px] sm:text-base font-semibold text-gray-900">Top products</h2>
@@ -425,7 +424,7 @@
               $link = $item->product ? route('admin.products.edit', $item->product) : route('admin.products.index');
               $stock = $item->product?->stock_quantity;
             @endphp
-            <a href="{{ $link }}" class="snap-start rounded-2xl bg-white p-2.5 sm:p-3 hover:shadow-md transition-shadow min-w-0" style="--tp-order: {{ $tpOrder($index) }};">
+            <a href="{{ $link }}" class="tp-card snap-start rounded-2xl bg-white p-2.5 sm:p-3 hover:shadow-md transition-shadow min-w-0" style="--tp-order: {{ $tpOrder($index) }};">
               <div class="tp-img relative aspect-[4/3] rounded-xl bg-stone-50 grid place-items-center overflow-hidden">
                 @if($img)
                   <img src="{{ $img }}" alt="{{ $item->product_name }}" loading="lazy" class="h-full w-full object-cover" onerror="this.remove()" />
@@ -459,7 +458,7 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         @if($canMoney)
         {{-- Sales by day: last 7 days --}}
-        <div class="rounded-[22px] p-4 min-w-0" style="{{ $tint }}">
+        <div class="rounded-[22px] p-4 min-w-0" data-tint>
           <h2 class="text-[15px] font-semibold text-gray-900">Sales by day</h2>
           <p class="text-xs text-gray-500 mt-0.5">Last 7 days &middot; <span class="font-semibold text-gray-800">{{ money($salesByDay->sum('value')) }}</span></p>
           <div class="mt-3 flex items-end gap-1.5 sm:gap-2 h-24">
@@ -478,7 +477,7 @@
         @endif
 
         {{-- Store performance: order success rate with the order mix --}}
-        <div class="rounded-[22px] p-4 min-w-0 flex flex-col {{ $canMoney ? '' : 'sm:col-span-2' }}" style="{{ $tint }}">
+        <div class="rounded-[22px] p-4 min-w-0 flex flex-col {{ $canMoney ? '' : 'sm:col-span-2' }}" data-tint>
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
               <h2 class="text-[15px] font-semibold text-gray-900">Store performance</h2>
@@ -505,7 +504,7 @@
       </div>
 
       {{-- Recent orders --}}
-      <div class="rounded-[22px] p-4 min-w-0 flex-1" style="{{ $tint }}">
+      <div class="rounded-[22px] p-4 min-w-0 flex-1" data-tint>
         <div class="flex items-start justify-between gap-3">
           <h2 class="text-[15px] font-semibold text-gray-900">Recent orders</h2>
           <a href="{{ route('admin.orders.index') }}" class="shrink-0 text-xs font-semibold text-gray-700 hover:text-gray-900">See all &rarr;</a>
