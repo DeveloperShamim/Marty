@@ -205,15 +205,7 @@ class DashboardController extends Controller
             return $order;
         })->filter(fn ($o) => $o->risk > 0)->sortByDesc('risk')->values();
 
-        // Return loss over the last 30 days: delivery charges lost on returned parcels, and the cities returning most.
-        $since = Carbon::now()->subDays(30);
-        $recentFinished = Order::whereIn('status', ['delivered', 'returned'])->where('updated_at', '>=', $since);
-        $returnStats = (clone $recentFinished)->selectRaw("SUM(CASE WHEN status = 'returned' THEN 1 ELSE 0 END) as returned, COUNT(*) as finished, SUM(CASE WHEN status = 'returned' THEN courier_loss_amount ELSE 0 END) as loss")->first();
-        $returnCities = (clone $recentFinished)->selectRaw("city, SUM(CASE WHEN status = 'returned' THEN 1 ELSE 0 END) as returned, COUNT(*) as finished")
-            ->groupBy('city')->havingRaw("SUM(CASE WHEN status = 'returned' THEN 1 ELSE 0 END) > 0")
-            ->orderByDesc('returned')->take(3)->get();
-
-        // Ad spend vs sales this month (Marketing & Facebook Ads expenses).
+        // Ad spend this month (Marketing & Facebook Ads expenses).
         $adSpend = (float) Expense::where('category', 'marketing')
             ->whereBetween('expense_date', [Carbon::now()->startOfMonth()->toDateString(), Carbon::now()->endOfMonth()->toDateString()])
             ->sum('amount');
@@ -222,18 +214,6 @@ class DashboardController extends Controller
         // Carts to call back: abandoned in the last 3 days with a phone number.
         $callbackCarts = AbandonedCart::abandoned()->whereNotNull('customer_phone')->where('customer_phone', '!=', '')
             ->where('created_at', '>=', Carbon::now()->subDays(3));
-
-        // Sales by day: verified revenue for each of the last 7 days (one grouped query).
-        $dayKey = DB::connection()->getDriverName() === 'sqlite' ? "strftime('%Y-%m-%d', created_at)" : "DATE(created_at)";
-        $dailyTotals = Order::query()->tap($validOrders)
-            ->where('created_at', '>=', Carbon::today()->subDays(6))
-            ->selectRaw("{$dayKey} as day_key, SUM(subtotal - discount_amount) as total")
-            ->groupBy(DB::raw($dayKey))
-            ->pluck('total', 'day_key');
-        $salesByDay = collect(range(6, 0))->map(function ($daysAgo) use ($dailyTotals) {
-            $day = Carbon::today()->subDays($daysAgo);
-            return ['label' => $day->format('D'), 'date' => $day->format('d M'), 'value' => (float) ($dailyTotals[$day->format('Y-m-d')] ?? 0), 'is_today' => $daysAgo === 0];
-        });
 
         // Store performance: all orders, units sold on verified orders and distinct customers.
         $itemsSold = (int) OrderItem::whereHas('order', $validOrders)->sum('quantity');
@@ -295,10 +275,6 @@ class DashboardController extends Controller
             'yesterdayOrdersCount'=> Order::whereDate('created_at', Carbon::yesterday())->tap($validOrders)->count(),
             'riskyOrders'         => $riskyOrders->take(5),
             'riskyCount'          => $riskyOrders->count(),
-            'returnedRecent'      => (int) ($returnStats->returned ?? 0),
-            'finishedRecent'      => (int) ($returnStats->finished ?? 0),
-            'returnLoss'          => (float) ($returnStats->loss ?? 0),
-            'returnCities'        => $returnCities,
             'adSpend'             => $adSpend,
             'thisMonthOrders'     => $thisMonthOrders,
             'callbackCarts'       => (clone $callbackCarts)->latest()->take(5)->get(),
@@ -312,7 +288,6 @@ class DashboardController extends Controller
             'monthCogs'           => $monthCogs,
             'monthExpenses'       => $monthExpenses,
             'monthProfit'         => $thisMonthRevenue - $monthCogs - $monthCourierLoss - $monthFreeDelivery - $monthExpenses,
-            'salesByDay'          => $salesByDay,
             'itemsSold'           => $itemsSold,
             'customersCount'      => $customersCount,
             'allOrdersCount'      => (int) $statusCounts->sum(),

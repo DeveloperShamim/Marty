@@ -54,11 +54,14 @@ class DashboardActionCardsTest extends TestCase
         $this->assertStringContainsString('Cart Rahim', $html);
         $this->assertStringContainsString('https://wa.me/8801711222333', $html);
 
-        $this->assertStringContainsString('Return loss', $html);
-        $this->assertStringContainsString('Chattogram', $html);
-        $this->assertStringContainsString('1 of 2', $html);
-
-        $this->assertStringContainsString('Ad spend vs sales', $html);
+        // Ad spend this month: 500 against one paid order; the owner dropped Return loss, Sales by day and Sales per ৳1
+        $ad = Str::between($html, 'data-ad-spend', 'Store performance');
+        $this->assertStringContainsString('data-ad-spend', $html);
+        $this->assertStringContainsString(money(500), $ad);
+        $this->assertStringContainsString('Cost per order', $ad);
+        $this->assertStringNotContainsString('Return loss', $html);
+        $this->assertStringNotContainsString('Sales by day', $html);
+        $this->assertStringNotContainsString('Sales per', $html);
         $this->assertStringNotContainsString('Sales Report', $html, 'The six-month chart repeated Monthly Revenue');
         $this->assertStringNotContainsString('Fulfillment Overview', $html, 'Repeated the order rings');
     }

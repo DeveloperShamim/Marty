@@ -49,9 +49,7 @@
 
   @php
     $canCarts = \App\Support\StaffAccess::allows(auth()->user(), 'abandoned-carts');
-    $returnRate = $finishedRecent > 0 ? round($returnedRecent / $finishedRecent * 100, 1) : 0;
     $costPerOrder = $thisMonthOrders > 0 ? $adSpend / $thisMonthOrders : null;
-    $roas = $adSpend > 0 ? $thisMonthRevenue / $adSpend : null;
     $waNumber = fn ($phone) => ($n = \App\Services\Courier\BdCourierService::normalizePhone($phone)) ? '88' . $n : null;
     $phoneIcon = '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2Z"/>';
 
@@ -338,68 +336,10 @@
   </div>
   @endif
 
-  @if($canMoney)
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    {{-- Return loss --}}
-    <div class="panel p-4 min-w-0">
-      <div class="min-w-0">
-        <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Return loss</h2>
-        <p class="text-xs text-gray-500 mt-0.5">Parcels finished in the last 30 days</p>
-      </div>
-      <div class="mt-2.5 flex items-baseline gap-2 flex-wrap">
-        <p class="text-xl leading-none font-semibold tracking-tight font-mono {{ $returnLoss > 0 ? 'text-rose-600' : 'text-gray-900' }}">{{ money($returnLoss) }}</p>
-        <span class="text-[11px] text-gray-500">lost on {{ $returnedRecent }} {{ \Illuminate\Support\Str::plural('return', $returnedRecent) }} &middot; {{ $returnRate }}% return rate</span>
-      </div>
-      <div class="mt-3 space-y-2">
-        @forelse($returnCities->take(3) as $c)
-          @php $cityRate = $c->finished > 0 ? round($c->returned / $c->finished * 100) : 0; @endphp
-          <div>
-            <div class="flex items-center justify-between gap-2 text-xs">
-              <span class="font-medium text-gray-800 truncate">{{ $c->city ?: 'Unknown' }}</span>
-              <span class="shrink-0 text-gray-500">{{ $c->returned }} of {{ $c->finished }} &middot; <span class="font-semibold text-gray-800">{{ $cityRate }}%</span></span>
-            </div>
-            <div class="mt-1 h-1.5 rounded-full bg-gray-100 overflow-hidden"><div class="h-full rounded-full bg-rose-400" style="width: {{ max(4, $cityRate) }}%"></div></div>
-          </div>
-        @empty
-          <p class="text-xs text-gray-500">No returns in the last 30 days.</p>
-        @endforelse
-      </div>
-    </div>
-
-    {{-- Ad spend vs sales --}}
-    <div class="panel p-4 min-w-0">
-      <div class="flex items-start justify-between gap-3">
-        <div class="min-w-0">
-          <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Ad spend vs sales</h2>
-          <p class="text-xs text-gray-500 mt-0.5">{{ date('F') }}, from Marketing &amp; Facebook Ads expenses</p>
-        </div>
-        <a href="{{ route('admin.expenses.index') }}" class="shrink-0 text-xs font-semibold text-gray-600 hover:text-gray-900">Expenses &rarr;</a>
-      </div>
-      <div class="mt-2.5 grid grid-cols-3 gap-2">
-        <div class="rounded-xl bg-gray-50 px-2.5 py-2 min-w-0">
-          <span class="block text-[11px] text-gray-500 truncate">Ad spend</span>
-          <span class="block mt-0.5 text-sm font-semibold text-gray-900 font-mono truncate">{{ money($adSpend) }}</span>
-        </div>
-        <div class="rounded-xl bg-gray-50 px-2.5 py-2 min-w-0">
-          <span class="block text-[11px] text-gray-500 truncate">Cost per order</span>
-          <span class="block mt-0.5 text-sm font-semibold text-gray-900 font-mono truncate">{{ $adSpend > 0 && $costPerOrder !== null ? money($costPerOrder) : '—' }}</span>
-        </div>
-        <div class="rounded-xl bg-gray-50 px-2.5 py-2 min-w-0" title="Sales per {{ currency_symbol() }}1 of ads">
-          <span class="block text-[11px] text-gray-500 truncate">Sales per {{ currency_symbol() }}1</span>
-          <span class="block mt-0.5 text-sm font-semibold font-mono truncate {{ $roas === null ? 'text-gray-900' : ($roas >= 3 ? 'text-emerald-600' : ($roas >= 1.5 ? 'text-amber-600' : 'text-rose-600')) }}">{{ $roas === null ? '—' : currency_symbol() . number_format($roas, 1) }}</span>
-        </div>
-      </div>
-      <p class="mt-2.5 text-[11px] text-gray-500">{{ $adSpend > 0 ? 'Against ' . money($thisMonthRevenue) . ' of sales this month.' : "Log this month's ad spend under Expenses to see cost per order." }}</p>
-    </div>
-  </div>
-  @endif
-
   @if($canMoney || $canOrders)
   @php
     // Bottom block: Top products on the left; Sales by day, Store performance and Recent orders on the right
     $both = $canMoney && $canOrders;
-    $dayMax = max(1, $salesByDay->max('value'));
-    $bestDay = $salesByDay->max('value');
     $perfParts = [
       ['Delivered', $deliveredCount ?? 0, 'var(--brand)'],
       ['In progress', $ordersCount ?? 0, 'color-mix(in srgb, var(--brand) 45%, #fff)'],
@@ -472,27 +412,22 @@
     <div class="flex flex-col gap-4 min-w-0 {{ $both ? 'xl:col-span-6' : 'xl:col-span-12' }}">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         @if($canMoney)
-        {{-- Sales by day: last 7 days --}}
-        <div class="rounded-[22px] p-4 min-w-0" data-tint>
-          <h2 class="text-[15px] font-semibold text-gray-900">Sales by day</h2>
-          <p class="text-xs text-gray-500 mt-0.5">Last 7 days &middot; <span class="font-semibold text-gray-800">{{ money($salesByDay->sum('value')) }}</span></p>
-          {{-- Every day gets the same track; the fill is the brand brown, the best day dark brown, and an empty day shows only its track --}}
-          <div class="mt-3 grid grid-cols-7 gap-1 h-24">
-            @foreach($salesByDay as $day)
-              @php $isBest = $day['value'] > 0 && $day['value'] == $bestDay; @endphp
-              <div class="flex justify-center" title="{{ $day['date'] }}: {{ money($day['value']) }}">
-                <div class="relative h-full w-3.5 sm:w-4 rounded-full overflow-hidden" style="background: color-mix(in srgb, var(--brand-border) 45%, #fff);">
-                  @if($day['value'] > 0)
-                    <div class="absolute inset-x-0 bottom-0 rounded-full" style="height: max(1rem, {{ round($day['value'] / $dayMax * 100) }}%); background: {{ $isBest ? 'var(--brand-dark)' : 'var(--brand)' }};"></div>
-                  @endif
-                </div>
-              </div>
-            @endforeach
+        {{-- Ad spend this month: Marketing & Facebook Ads expenses --}}
+        <div class="rounded-[22px] p-4 min-w-0 flex flex-col" data-tint data-ad-spend>
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <h2 class="text-[15px] font-semibold text-gray-900">Ad spend</h2>
+              <p class="text-xs text-gray-500 mt-0.5">{{ date('F') }}, from Marketing expenses</p>
+            </div>
+            <a href="{{ route('admin.expenses.index') }}" aria-label="Expenses" class="h-9 w-9 shrink-0 rounded-full bg-white text-gray-800 grid place-items-center shadow-sm hover:bg-gray-50 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+            </a>
           </div>
-          <div class="mt-2 grid grid-cols-7 gap-1 text-[11px] text-gray-500">
-            @foreach($salesByDay as $day)
-              <span class="text-center {{ $day['is_today'] ? 'font-semibold' : '' }}" @if($day['is_today']) style="color: var(--brand-dark);" @endif>{{ $day['label'] }}</span>
-            @endforeach
+          <p class="mt-3 text-[28px] leading-none font-semibold tracking-tight text-gray-900 tabular-nums">{{ money($adSpend) }}</p>
+          <p class="mt-1 text-[11px] text-gray-500">{{ $adSpend > 0 ? 'Against ' . money($thisMonthRevenue) . ' of sales' : 'Log ad spend under Expenses' }}</p>
+          <div class="mt-auto pt-3 grid grid-cols-2 gap-2">
+            <div class="min-w-0"><span class="block text-[11px] text-gray-500 truncate">Cost per order</span><span class="block text-sm font-semibold text-gray-900 tabular-nums">{{ $adSpend > 0 && $costPerOrder !== null ? money($costPerOrder) : '—' }}</span></div>
+            <div class="min-w-0"><span class="block text-[11px] text-gray-500 truncate">Paid orders</span><span class="block text-sm font-semibold text-gray-900 tabular-nums">{{ number_format($thisMonthOrders) }}</span></div>
           </div>
         </div>
         @endif
