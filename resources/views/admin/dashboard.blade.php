@@ -60,13 +60,13 @@
 
     // Jobs waiting on the admin, shown as counts; a list opens below only for the ones that aren't zero
     $actions = collect([
-      $canOrders ? ['key' => 'payments', 'label' => 'Payments to verify', 'count' => $pendingCount ?? 0, 'href' => route('admin.orders.index', ['status' => 'pending_verification']), 'tone' => 'bg-amber-50 text-amber-700',
+      $canOrders ? ['key' => 'payments', 'label' => 'Payments to verify', 'count' => $pendingCount ?? 0, 'href' => route('admin.orders.index', ['status' => 'pending_verification']),
         'icon' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'] : null,
-      $canOrders ? ['key' => 'risky', 'label' => 'Risky orders to call', 'count' => $riskyCount, 'href' => route('admin.orders.index'), 'tone' => 'bg-rose-50 text-rose-700',
+      $canOrders ? ['key' => 'risky', 'label' => 'Risky orders to call', 'count' => $riskyCount, 'href' => route('admin.orders.index'),
         'icon' => '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/>'] : null,
-      $canCarts ? ['key' => 'carts', 'label' => 'Carts to call back', 'count' => $callbackCount, 'href' => route('admin.abandoned-carts.index'), 'tone' => 'bg-sky-50 text-sky-700',
+      $canCarts ? ['key' => 'carts', 'label' => 'Carts to call back', 'count' => $callbackCount, 'href' => route('admin.abandoned-carts.index'),
         'icon' => '<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L22 7H6"/>'] : null,
-      ['key' => 'stock', 'label' => 'Low stock', 'count' => $lowStockCount, 'href' => route('admin.inventory.index'), 'tone' => 'bg-violet-50 text-violet-700',
+      ['key' => 'stock', 'label' => 'Low stock', 'count' => $lowStockCount, 'href' => route('admin.inventory.index'),
         'icon' => '<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>'],
     ])->filter()->values();
     $waiting = $actions->where('count', '>', 0);
@@ -83,45 +83,63 @@
   @endphp
 
   {{-- Needs action: everything waiting on you, at a glance --}}
-  <section class="panel p-4">
+  @php
+    $initials = fn ($name) => mb_strtoupper(collect(preg_split('/\s+/', trim((string) $name)))->filter()->take(2)->map(fn ($w) => mb_substr($w, 0, 1))->implode('')) ?: '?';
+    $waitingTotal = $waiting->sum('count');
+  @endphp
+  <section class="panel p-4 sm:p-5">
     <div class="flex items-center justify-between gap-3">
       <div class="min-w-0">
-        <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Needs action</h2>
-        <p class="text-xs text-gray-500 mt-0.5">{{ $waiting->isEmpty() ? 'All clear. Nothing is waiting on you.' : $waiting->sum('count') . ' ' . \Illuminate\Support\Str::plural('thing', $waiting->sum('count')) . ' waiting on you' }}</p>
+        <h2 class="text-[15px] sm:text-base font-semibold text-gray-900">Needs action</h2>
+        <p class="text-xs text-gray-500 mt-0.5">{{ $waiting->isEmpty() ? 'All clear. Nothing is waiting on you.' : 'Jobs waiting on you right now' }}</p>
       </div>
+      @if($waitingTotal > 0)
+        <span class="shrink-0 inline-flex items-center gap-1.5 h-7 px-3 rounded-full text-xs font-semibold text-white" style="background: var(--brand-dark);">
+          <span class="h-1.5 w-1.5 rounded-full" style="background: var(--brand-border);"></span>{{ number_format($waitingTotal) }} waiting
+        </span>
+      @else
+        <span class="shrink-0 grid h-8 w-8 place-items-center rounded-full" style="background: var(--brand-soft); color: var(--brand);" aria-hidden="true">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+        </span>
+      @endif
     </div>
-    <div class="mt-3 grid grid-cols-2 {{ $actions->count() >= 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-' . $actions->count() }} gap-2 sm:gap-2.5">
+    <div class="mt-3.5 grid grid-cols-2 {{ $actions->count() >= 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-' . $actions->count() }} gap-2 sm:gap-3">
       @foreach($actions as $a)
-        <a href="{{ $a['count'] > 0 && $a['key'] !== 'stock' ? '#act-' . $a['key'] : $a['href'] }}" class="flex items-center gap-2.5 rounded-2xl px-3 py-2.5 min-w-0 transition-colors {{ $a['count'] > 0 ? 'bg-gray-50 hover:bg-gray-100' : 'bg-gray-50/60 hover:bg-gray-100' }}">
-          <span class="hidden sm:grid h-8 w-8 shrink-0 place-items-center rounded-xl {{ $a['count'] > 0 ? $a['tone'] : 'bg-white text-gray-400' }}">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $a['icon'] !!}</svg>
+        @php $on = $a['count'] > 0; @endphp
+        <a href="{{ $on && $a['key'] !== 'stock' ? '#act-' . $a['key'] : $a['href'] }}" class="na-tile {{ $on ? 'is-on' : '' }} group flex items-center gap-3 rounded-2xl p-3 sm:p-3.5 min-w-0">
+          <span class="na-ico hidden sm:grid h-10 w-10 shrink-0 place-items-center rounded-full">
+            <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $a['icon'] !!}</svg>
           </span>
-          <span class="min-w-0">
-            <span class="block text-lg leading-tight font-semibold tabular-nums {{ $a['count'] > 0 ? 'text-gray-900' : 'text-gray-400' }}">{{ number_format($a['count']) }}</span>
-            <span class="block text-[11px] leading-tight text-gray-500">{{ $a['label'] }}</span>
+          <span class="min-w-0 flex-1">
+            <span class="block text-xl leading-none font-semibold tabular-nums {{ $on ? 'text-gray-900' : 'text-gray-400' }}">{{ number_format($a['count']) }}</span>
+            <span class="block mt-1 text-[11px] sm:text-xs leading-tight {{ $on ? 'text-gray-600' : 'text-gray-400' }}">{{ $a['label'] }}</span>
           </span>
+          @if($on)
+            <svg class="na-go hidden sm:block w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>
+          @endif
         </a>
       @endforeach
     </div>
 
     @if($openLists->isNotEmpty())
-    <div class="mt-3 grid grid-cols-1 {{ $listCols }} gap-2.5">
+    <div class="mt-3 grid grid-cols-1 {{ $listCols }} gap-3">
       @if($canOrders && ($pendingCount ?? 0) > 0)
-        <div id="act-payments" class="rounded-2xl border border-gray-100 p-3 min-w-0">
+        <div id="act-payments" class="na-list rounded-2xl p-3 sm:p-3.5 min-w-0">
           <div class="flex items-center justify-between gap-2">
-            <h3 class="text-[13px] font-medium text-gray-900">Payment approvals</h3>
-            <a href="{{ route('admin.orders.index', ['status' => 'pending_verification']) }}" class="text-[11px] font-semibold text-gray-600 hover:text-gray-900">View all &rarr;</a>
+            <h3 class="text-[13px] font-semibold text-gray-900">Payment approvals</h3>
+            <a href="{{ route('admin.orders.index', ['status' => 'pending_verification']) }}" class="text-[11px] font-semibold hover:underline" style="color: var(--brand);">View all &rarr;</a>
           </div>
           <div class="mt-2 {{ $rowCols }} divide-gray-100">
             @foreach($pendingOrders->take(4) as $order)
               <div class="flex items-center gap-2.5 py-2">
+                <span class="na-avatar grid h-8 w-8 shrink-0 place-items-center rounded-full text-[11px] font-semibold">{{ $initials($order->customer_name) }}</span>
                 <a href="{{ route('admin.orders.show', $order) }}" class="min-w-0 flex-1 group">
                   <span class="block text-[13px] font-semibold text-gray-900 truncate group-hover:underline">{{ $order->customer_name }}</span>
                   <span class="block text-[11px] text-gray-500 truncate">{{ $order->order_number }} &middot; {{ money($order->total) }} &middot; {{ $order->paymentMethodLabel() }}</span>
                 </a>
                 <form method="POST" action="{{ route('admin.orders.verify', $order) }}" class="shrink-0">
                   @csrf
-                  <button type="submit" class="h-7 px-3 rounded-full text-[11px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white">Verify</button>
+                  <button type="submit" class="na-btn h-8 px-3.5 rounded-full text-[11px] font-semibold text-white">Verify</button>
                 </form>
               </div>
             @endforeach
@@ -130,20 +148,20 @@
       @endif
 
       @if($canOrders && $riskyCount > 0)
-        <div id="act-risky" class="rounded-2xl border border-gray-100 p-3 min-w-0">
+        <div id="act-risky" class="na-list rounded-2xl p-3 sm:p-3.5 min-w-0">
           <div class="flex items-center justify-between gap-2">
-            <h3 class="text-[13px] font-medium text-gray-900">Risky orders to call</h3>
+            <h3 class="text-[13px] font-semibold text-gray-900">Risky orders to call</h3>
             <span class="text-[11px] text-gray-500">Fraud check or courier history</span>
           </div>
           <div class="mt-2 {{ $rowCols }} divide-gray-100">
             @foreach($riskyOrders->take(4) as $o)
               <div class="flex items-center gap-2.5 py-2">
-                <span class="h-2 w-2 shrink-0 rounded-full {{ $o->risk >= 2 ? 'bg-rose-500' : 'bg-amber-400' }}" title="{{ $o->risk >= 2 ? 'High risk' : 'Medium risk' }}"></span>
+                <span class="na-avatar relative grid h-8 w-8 shrink-0 place-items-center rounded-full text-[11px] font-semibold" title="{{ $o->risk >= 2 ? 'High risk' : 'Medium risk' }}">{{ $initials($o->customer_name) }}<span class="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-white {{ $o->risk >= 2 ? 'bg-rose-500' : 'bg-amber-400' }}"></span></span>
                 <a href="{{ route('admin.orders.show', $o) }}" class="min-w-0 flex-1 group">
                   <span class="block text-[13px] font-semibold text-gray-900 truncate group-hover:underline">{{ $o->customer_name }} <span class="font-normal text-[11px] text-gray-400">{{ $o->order_number }} &middot; {{ money($o->total) }}</span></span>
                   <span class="block text-[11px] {{ $o->risk >= 2 ? 'text-rose-600' : 'text-amber-700' }} truncate">{{ $o->riskReason }}</span>
                 </a>
-                <a href="tel:{{ $o->customer_phone }}" class="shrink-0 grid h-7 w-7 place-items-center rounded-full text-white" style="background: var(--brand-dark);" aria-label="Call {{ $o->customer_name }}" title="Call {{ $o->customer_phone }}">
+                <a href="tel:{{ $o->customer_phone }}" class="shrink-0 grid h-8 w-8 place-items-center rounded-full text-white" style="background: var(--brand-dark);" aria-label="Call {{ $o->customer_name }}" title="Call {{ $o->customer_phone }}">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">{!! $phoneIcon !!}</svg>
                 </a>
               </div>
@@ -153,25 +171,26 @@
       @endif
 
       @if($canCarts && $callbackCount > 0)
-        <div id="act-carts" class="rounded-2xl border border-gray-100 p-3 min-w-0">
+        <div id="act-carts" class="na-list rounded-2xl p-3 sm:p-3.5 min-w-0">
           <div class="flex items-center justify-between gap-2">
-            <h3 class="text-[13px] font-medium text-gray-900">Carts to call back</h3>
-            <a href="{{ route('admin.abandoned-carts.index') }}" class="text-[11px] font-semibold text-gray-600 hover:text-gray-900">{{ $callbackCount > 4 ? 'All ' . $callbackCount : 'Open' }} &rarr;</a>
+            <h3 class="text-[13px] font-semibold text-gray-900">Carts to call back</h3>
+            <a href="{{ route('admin.abandoned-carts.index') }}" class="text-[11px] font-semibold hover:underline" style="color: var(--brand);">{{ $callbackCount > 4 ? 'All ' . $callbackCount : 'Open' }} &rarr;</a>
           </div>
           <div class="mt-2 {{ $rowCols }} divide-gray-100">
             @foreach($callbackCarts->take(4) as $cart)
               @php $wa = $waNumber($cart->customer_phone); @endphp
               <div class="flex items-center gap-2 py-2">
+                <span class="na-avatar grid h-8 w-8 shrink-0 place-items-center rounded-full text-[11px] font-semibold">{{ $initials($cart->customer_name ?: '#') }}</span>
                 <div class="min-w-0 flex-1">
                   <p class="text-[13px] font-semibold text-gray-900 truncate">{{ $cart->customer_name ?: $cart->customer_phone }}</p>
                   <p class="text-[11px] text-gray-500 truncate">{{ money($cart->total) }} &middot; {{ $cart->created_at->diffForHumans() }}</p>
                 </div>
                 @if($wa)
-                  <a href="https://wa.me/{{ $wa }}" target="_blank" rel="noopener" class="shrink-0 grid h-7 w-7 place-items-center rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100" aria-label="WhatsApp {{ $cart->customer_phone }}" title="WhatsApp">
+                  <a href="https://wa.me/{{ $wa }}" target="_blank" rel="noopener" class="shrink-0 grid h-8 w-8 place-items-center rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100" aria-label="WhatsApp {{ $cart->customer_phone }}" title="WhatsApp">
                     <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3Z"/></svg>
                   </a>
                 @endif
-                <a href="tel:{{ $cart->customer_phone }}" class="shrink-0 grid h-7 w-7 place-items-center rounded-full text-white" style="background: var(--brand-dark);" aria-label="Call {{ $cart->customer_phone }}" title="Call {{ $cart->customer_phone }}">
+                <a href="tel:{{ $cart->customer_phone }}" class="shrink-0 grid h-8 w-8 place-items-center rounded-full text-white" style="background: var(--brand-dark);" aria-label="Call {{ $cart->customer_phone }}" title="Call {{ $cart->customer_phone }}">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">{!! $phoneIcon !!}</svg>
                 </a>
               </div>
@@ -181,16 +200,16 @@
       @endif
 
       @if($lowStockCount > 0 && $lowStockProducts->isNotEmpty())
-        <div id="act-stock" class="rounded-2xl border border-gray-100 p-3 min-w-0">
+        <div id="act-stock" class="na-list rounded-2xl p-3 sm:p-3.5 min-w-0">
           <div class="flex items-center justify-between gap-2">
-            <h3 class="text-[13px] font-medium text-gray-900">Low stock</h3>
-            <a href="{{ route('admin.inventory.index') }}" class="text-[11px] font-semibold text-gray-600 hover:text-gray-900">Manage &rarr;</a>
+            <h3 class="text-[13px] font-semibold text-gray-900">Low stock</h3>
+            <a href="{{ route('admin.inventory.index') }}" class="text-[11px] font-semibold hover:underline" style="color: var(--brand);">Manage &rarr;</a>
           </div>
           <div class="mt-2 {{ $rowCols }} divide-gray-100">
             @foreach($lowStockProducts->take(4) as $lowItem)
               <div class="flex items-center justify-between gap-2 py-2">
                 <span class="min-w-0 text-[13px] font-medium text-gray-900 truncate">{{ $lowItem->name }}</span>
-                <span class="shrink-0 px-2 py-0.5 text-[10px] font-semibold rounded-full {{ $lowItem->stock_quantity <= 0 ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-700' }}">{{ $lowItem->stock_quantity <= 0 ? 'Out of stock' : $lowItem->stock_quantity . ' left' }}</span>
+                <span class="shrink-0 px-2.5 py-1 text-[10px] font-semibold rounded-full {{ $lowItem->stock_quantity <= 0 ? 'text-white' : '' }}" style="{{ $lowItem->stock_quantity <= 0 ? 'background: var(--brand-dark);' : 'background: var(--brand-soft); color: var(--brand);' }}">{{ $lowItem->stock_quantity <= 0 ? 'Out of stock' : $lowItem->stock_quantity . ' left' }}</span>
               </div>
             @endforeach
           </div>

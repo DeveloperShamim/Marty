@@ -171,3 +171,17 @@ body:has(.dash-glass) .pill-btn:not(.pill-btn-dark) { background: rgba(255,255,2
   .dash-glass .panel { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(255,255,255,.85); }
 }
 @media (max-width: 1023px) { body:has(.dash-glass) #sidebar :is(.sidebar-nav, nav + div) { background: rgba(255,255,255,.94); } }
+/* Needs action: count tiles and the lists under them, in the theme colours */
+.na-tile { background: color-mix(in srgb, var(--brand-soft) 45%, #fff); border: 1px solid transparent; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+.na-tile .na-ico { background: #fff; color: color-mix(in srgb, var(--brand) 55%, #fff); }
+.na-tile.is-on { background: #fff; border-color: color-mix(in srgb, var(--brand-border) 80%, transparent); box-shadow: 0 10px 24px -18px color-mix(in srgb, var(--brand-dark) 55%, transparent); }
+.na-tile.is-on .na-ico { background: var(--brand-dark); color: #fff; }
+.na-tile.is-on .na-go { color: var(--brand); transition: transform .15s ease; }
+.na-tile.is-on:hover { border-color: var(--brand); transform: translateY(-1px); }
+.na-tile.is-on:hover .na-go { transform: translateX(2px); }
+.na-tile:not(.is-on):hover { background: color-mix(in srgb, var(--brand-soft) 70%, #fff); }
+.na-list { background: color-mix(in srgb, var(--brand-soft) 45%, #fff); }
+.na-list .divide-gray-100 > * + * { border-color: color-mix(in srgb, var(--brand-border) 55%, transparent); }
+.na-avatar { background: #fff; color: var(--brand); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand-border) 70%, transparent); }
+.na-btn { background: var(--brand); transition: background-color .15s ease; }
+.na-btn:hover { background: var(--brand-700); }
