@@ -390,7 +390,7 @@
   <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
     @if($canMoney)
     {{-- Top products: product cards in two rows, paged with the arrows (swipe on phones) --}}
-    <section class="rounded-[22px] p-3.5 sm:p-4 min-w-0 flex flex-col {{ $both ? 'xl:col-span-6' : 'xl:col-span-12' }}" data-tint data-top-products>
+    <section class="panel p-3.5 sm:p-4 min-w-0 flex flex-col {{ $both ? 'xl:col-span-6' : 'xl:col-span-12' }}" data-top-products>
       <div class="flex items-start justify-between gap-3 px-0.5">
         <div class="min-w-0">
           <h2 class="text-[15px] sm:text-base font-semibold text-gray-900">Top products</h2>
@@ -450,7 +450,7 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         @if($canMoney)
         {{-- Ad spend this month: Marketing & Facebook Ads expenses --}}
-        <div class="rounded-[22px] p-4 min-w-0 flex flex-col" data-tint data-ad-spend>
+        <div class="panel p-4 min-w-0 flex flex-col" data-ad-spend>
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
               <h2 class="text-[15px] font-semibold text-gray-900">Ad spend</h2>
@@ -470,7 +470,7 @@
         @endif
 
         {{-- Store performance: order success rate with the order mix --}}
-        <div class="rounded-[22px] p-4 min-w-0 flex flex-col {{ $canMoney ? '' : 'sm:col-span-2' }}" data-tint>
+        <div class="panel p-4 min-w-0 flex flex-col {{ $canMoney ? '' : 'sm:col-span-2' }}">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
               <h2 class="text-[15px] font-semibold text-gray-900">Store performance</h2>
@@ -499,7 +499,7 @@
       </div>
 
       {{-- Recent orders --}}
-      <div class="rounded-[22px] p-4 min-w-0 flex-1" data-tint>
+      <div class="panel p-4 min-w-0 flex-1">
         <div class="flex items-start justify-between gap-3">
           <h2 class="text-[15px] font-semibold text-gray-900">Recent orders</h2>
           <a href="{{ route('admin.orders.index') }}" class="shrink-0 text-xs font-semibold text-gray-700 hover:text-gray-900">See all &rarr;</a>

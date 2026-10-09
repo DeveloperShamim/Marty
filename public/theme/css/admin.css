@@ -44,7 +44,7 @@
   border-radius: 16px;
 }
 /* ...but cards nested inside a card stay solid white with a hairline instead of a second shadow */
-.admin-main main :is(.bg-white, .card, .panel, [data-tint]) :is(.bg-white.border.rounded-xl, .bg-white.border.rounded-2xl, .bg-white.rounded-xl.border, .bg-white.rounded-2xl.border) {
+.admin-main main :is(.bg-white, .card, .panel) :is(.bg-white.border.rounded-xl, .bg-white.border.rounded-2xl, .bg-white.rounded-xl.border, .bg-white.rounded-2xl.border) {
   background: #fff; border-color: color-mix(in srgb, var(--brand-border) 50%, transparent); border-radius: 12px; box-shadow: none;
   -webkit-backdrop-filter: none; backdrop-filter: none;
 }
@@ -160,12 +160,7 @@ body.admin-body {
 .admin-main main table thead { background: color-mix(in srgb, var(--brand-soft) 35%, transparent); }
 .admin-main main table tbody tr:hover { background-color: rgba(255,255,255,.6); }
 .admin-body .pill-btn:not(.pill-btn-dark) { background: rgba(255,255,255,.8); border: 1px solid color-mix(in srgb, var(--brand-border) 55%, transparent); }
-/* Dashboard: brand-tinted cards (Top products, Sales by day, Store performance, Recent orders) */
-.dash-glass [data-tint] {
-  background: color-mix(in srgb, var(--brand-soft) 85%, transparent);
-  border: 1px solid color-mix(in srgb, var(--brand-border) 55%, transparent);
-  box-shadow: 0 16px 36px -28px color-mix(in srgb, var(--brand-dark) 40%, transparent);
-}
+/* Dashboard: product cards stay white on their frosted card */
 .dash-glass .tp-card { background: #fff; }
 .dash-glass .panel :is(.bg-gray-50, .bg-stone-50) { background-color: color-mix(in srgb, var(--brand-soft) 60%, #fff); }
 .dash-glass .panel .bg-gray-50\/60 { background-color: color-mix(in srgb, var(--brand-soft) 35%, #fff); }
