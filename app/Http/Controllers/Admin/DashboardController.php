@@ -223,6 +223,22 @@ class DashboardController extends Controller
         $callbackCarts = AbandonedCart::abandoned()->whereNotNull('customer_phone')->where('customer_phone', '!=', '')
             ->where('created_at', '>=', Carbon::now()->subDays(3));
 
+        // Sales by day: verified revenue for each of the last 7 days (one grouped query).
+        $dayKey = DB::connection()->getDriverName() === 'sqlite' ? "strftime('%Y-%m-%d', created_at)" : "DATE(created_at)";
+        $dailyTotals = Order::query()->tap($validOrders)
+            ->where('created_at', '>=', Carbon::today()->subDays(6))
+            ->selectRaw("{$dayKey} as day_key, SUM(subtotal - discount_amount) as total")
+            ->groupBy(DB::raw($dayKey))
+            ->pluck('total', 'day_key');
+        $salesByDay = collect(range(6, 0))->map(function ($daysAgo) use ($dailyTotals) {
+            $day = Carbon::today()->subDays($daysAgo);
+            return ['label' => $day->format('D'), 'date' => $day->format('d M'), 'value' => (float) ($dailyTotals[$day->format('Y-m-d')] ?? 0), 'is_today' => $daysAgo === 0];
+        });
+
+        // Store performance: all orders, units sold on verified orders and distinct customers.
+        $itemsSold = (int) OrderItem::whereHas('order', $validOrders)->sum('quantity');
+        $customersCount = (int) Order::distinct()->count('customer_phone');
+
         return view('admin.dashboard', [
             'ordersCount'          => $activeOrdersCount,
             'totalSalesOrdersCount'=> $verifiedOrdersCount,
@@ -246,7 +262,7 @@ class DashboardController extends Controller
             'lowStockCount'       => $lowStockCount,
             'outOfStockCount'     => $outOfStockCount,
             'pendingOrders'       => Order::needsReview()->latest()->take(6)->get(),
-            'recentOrders'        => Order::latest()->take(5)->get(),
+            'recentOrders'        => Order::latest()->take(8)->get(),
             'topProducts'         => $topProducts,
             'selectedYear'        => $selectedYear,
             'availableYears'      => $availableYears,
@@ -269,6 +285,10 @@ class DashboardController extends Controller
             'thisMonthOrders'     => $thisMonthOrders,
             'callbackCarts'       => (clone $callbackCarts)->latest()->take(5)->get(),
             'callbackCount'       => $callbackCarts->count(),
+            'salesByDay'          => $salesByDay,
+            'itemsSold'           => $itemsSold,
+            'customersCount'      => $customersCount,
+            'allOrdersCount'      => (int) $statusCounts->sum(),
         ]);
     }
 

@@ -25,11 +25,9 @@
     ];
     $ringTotal = max(1, ($ordersCount ?? 0) + ($deliveredCount ?? 0) + ($returnedOrdersCount ?? 0) + ($cancelledOrdersCount ?? 0));
 
-    // Delivery success gauge: delivered vs returned
+    // Order success rate: delivered vs returned
     $finished = ($deliveredCount ?? 0) + ($returnedOrdersCount ?? 0);
     $successRate = $finished > 0 ? round(($deliveredCount ?? 0) / $finished * 100, 1) : 0;
-    $gaugeSegments = 28;
-    $gaugeOn = (int) round($successRate / 100 * $gaugeSegments);
   @endphp
 
   @section('subtitle', 'Welcome back, ' . (auth()->user()->name ?? 'Admin') . '. Here is how the store is doing today.')
@@ -326,40 +324,8 @@
   </div>
   @endif
 
-  @if($canOrders || $canMoney)
-  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-    @if($canOrders)
-    {{-- Delivery success gauge --}}
-    <div class="panel p-4 min-w-0">
-      <div class="flex items-start justify-between gap-3">
-        <div>
-          <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Delivery Success</h2>
-          <p class="text-xs text-gray-500 mt-0.5">Delivered vs returned parcels</p>
-        </div>
-        <a href="{{ route('admin.courier-scan.index') }}" class="shrink-0 text-xs font-semibold text-gray-600 hover:text-gray-900">Courier &rarr;</a>
-      </div>
-      <div class="relative mx-auto mt-2 w-full max-w-[200px]">
-        <svg viewBox="0 0 200 112" class="w-full" aria-hidden="true">
-          @for($k = 0; $k < $gaugeSegments; $k++)
-            @php
-              $ang = M_PI - ($k + .5) * M_PI / $gaugeSegments;
-              $x1 = 100 + cos($ang) * 70; $y1 = 104 - sin($ang) * 70;
-              $x2 = 100 + cos($ang) * 92; $y2 = 104 - sin($ang) * 92;
-              $mixPct = $gaugeOn > 1 ? round(35 + 65 * $k / max(1, $gaugeOn - 1)) : 100;
-            @endphp
-            <line x1="{{ round($x1, 2) }}" y1="{{ round($y1, 2) }}" x2="{{ round($x2, 2) }}" y2="{{ round($y2, 2) }}" stroke-width="7" stroke-linecap="round"
-                  stroke="{{ $k < $gaugeOn ? 'color-mix(in srgb, var(--brand) ' . $mixPct . '%, #fff)' : '#e7e5e4' }}"/>
-          @endfor
-        </svg>
-        <div class="absolute inset-x-0 bottom-0 text-center">
-          <p class="text-2xl leading-none font-semibold tracking-tight text-gray-900 tabular-nums">{{ $successRate }}%</p>
-          <p class="mt-1 text-[11px] text-gray-500">{{ number_format($deliveredCount ?? 0) }} delivered &middot; {{ number_format($returnedOrdersCount ?? 0) }} returned</p>
-        </div>
-      </div>
-    </div>
-    @endif
-
-    @if($canMoney)
+  @if($canMoney)
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     {{-- Return loss --}}
     <div class="panel p-4 min-w-0">
       <div class="min-w-0">
@@ -411,71 +377,198 @@
       </div>
       <p class="mt-2.5 text-[11px] text-gray-500">{{ $adSpend > 0 ? 'Against ' . money($thisMonthRevenue) . ' of sales this month.' : "Log this month's ad spend under Expenses to see cost per order." }}</p>
     </div>
-    @endif
   </div>
   @endif
 
-  @if($canMoney)
-  {{-- Top products: a row of product cards paged with the arrows (swipe on phones) --}}
-  <section class="rounded-[22px] p-3.5 sm:p-4" style="background: color-mix(in srgb, var(--brand) 9%, #f5f5f4);" data-top-products>
-    <div class="flex items-start justify-between gap-3 px-0.5">
-      <div class="min-w-0">
-        <h2 class="text-[15px] sm:text-base font-semibold text-gray-900">Top products</h2>
-        <p class="text-xs text-gray-500 mt-0.5" title="The % compares units sold in the last 30 days with the 30 days before">Best sellers by verified revenue</p>
+  @if($canMoney || $canOrders)
+  @php
+    // Bottom block: Top products on the left; Sales by day, Store performance and Recent orders on the right
+    $tint = 'background: color-mix(in srgb, var(--brand) 9%, #f5f5f4);';
+    $both = $canMoney && $canOrders;
+    $dayMax = max(1, $salesByDay->max('value'));
+    $dayTones = ['var(--brand)', 'color-mix(in srgb, var(--brand) 45%, #fff)', 'var(--brand-dark)'];
+    $perfParts = [
+      ['Delivered', $deliveredCount ?? 0, 'var(--brand)'],
+      ['In progress', $ordersCount ?? 0, 'color-mix(in srgb, var(--brand) 45%, #fff)'],
+      ['Returned or cancelled', ($returnedOrdersCount ?? 0) + ($cancelledOrdersCount ?? 0), 'var(--brand-dark)'],
+    ];
+    $perfTotal = max(1, collect($perfParts)->sum(1));
+    // Two-row pages fill column by column, so on wide screens each page of 6 gets a CSS order that reads #1 #2 #3 across the top row
+    $tpOrder = fn ($i) => intdiv($i, 6) * 6 + [0, 2, 4, 1, 3, 5][$i % 6];
+  @endphp
+  <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
+    @if($canMoney)
+    {{-- Top products: product cards in two rows, paged with the arrows (swipe on phones) --}}
+    <section class="rounded-[22px] p-3.5 sm:p-4 min-w-0 flex flex-col {{ $both ? 'xl:col-span-6' : 'xl:col-span-12' }}" style="{{ $tint }}" data-top-products>
+      <div class="flex items-start justify-between gap-3 px-0.5">
+        <div class="min-w-0">
+          <h2 class="text-[15px] sm:text-base font-semibold text-gray-900">Top products</h2>
+          <p class="text-xs text-gray-500 mt-0.5" title="The % compares units sold in the last 30 days with the 30 days before">Best sellers by verified revenue</p>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button type="button" data-tp-prev aria-label="Previous products" class="h-9 w-9 rounded-full bg-white text-gray-800 grid place-items-center shadow-sm hover:bg-gray-50 transition disabled:opacity-40 disabled:cursor-default">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+          </button>
+          <button type="button" data-tp-next aria-label="More products" class="h-9 w-9 rounded-full bg-white text-gray-800 grid place-items-center shadow-sm hover:bg-gray-50 transition disabled:opacity-40 disabled:cursor-default">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
       </div>
-      <div class="flex items-center gap-1.5 shrink-0">
-        <button type="button" data-tp-prev aria-label="Previous products" class="h-9 w-9 rounded-full bg-white text-gray-800 grid place-items-center shadow-sm hover:bg-gray-50 transition disabled:opacity-40 disabled:cursor-default">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
-        </button>
-        <button type="button" data-tp-next aria-label="More products" class="h-9 w-9 rounded-full bg-white text-gray-800 grid place-items-center shadow-sm hover:bg-gray-50 transition disabled:opacity-40 disabled:cursor-default">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </button>
+
+      @if($topProducts->isEmpty())
+        <div class="mt-3 rounded-2xl bg-white py-8 text-center text-xs text-gray-400">No revenue data recorded yet.</div>
+      @else
+        <div data-tp-track class="tp-track flex-1 mt-3 sm:mt-4 grid gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth {{ $both ? 'tp-rows' : '' }}">
+          @foreach($topProducts as $index => $item)
+            @php
+              $img = $item->product ? $item->product->imageUrl() : $item->image;
+              $link = $item->product ? route('admin.products.edit', $item->product) : route('admin.products.index');
+              $stock = $item->product?->stock_quantity;
+            @endphp
+            <a href="{{ $link }}" class="snap-start rounded-2xl bg-white p-2.5 sm:p-3 hover:shadow-md transition-shadow min-w-0" style="--tp-order: {{ $tpOrder($index) }};">
+              <div class="tp-img relative aspect-[4/3] rounded-xl bg-stone-50 grid place-items-center overflow-hidden">
+                @if($img)
+                  <img src="{{ $img }}" alt="{{ $item->product_name }}" loading="lazy" class="h-full w-full object-cover" onerror="this.remove()" />
+                @else
+                  <span class="text-2xl font-semibold text-gray-300">{{ mb_substr($item->product_name, 0, 1) }}</span>
+                @endif
+                <span class="absolute top-2 left-2 h-6 min-w-[24px] px-1.5 rounded-full text-[11px] font-semibold grid place-items-center {{ $index === 0 ? 'text-white' : 'bg-white text-gray-700 shadow-sm' }}" @if($index === 0) style="background: var(--brand-dark);" @endif>#{{ $index + 1 }}</span>
+                @if($stock !== null && $stock <= 5)
+                  <span class="absolute top-2 right-2 px-2 h-6 rounded-full text-[10px] font-semibold grid place-items-center {{ $stock <= 0 ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-800' }}">{{ $stock <= 0 ? 'Out of stock' : $stock.' left' }}</span>
+                @endif
+              </div>
+              <p class="mt-2.5 text-[13px] font-semibold text-gray-900 truncate" title="{{ $item->product_name }}">{{ $item->product_name }}</p>
+              <p class="mt-0.5 text-[11px] text-gray-500 flex items-center gap-1.5 min-w-0">
+                <span class="whitespace-nowrap">{{ number_format($item->total_units) }} sold</span>
+                @if($item->trend === 'new')
+                  <span class="font-semibold text-emerald-600">New</span>
+                @elseif($item->trend !== null)
+                  <span class="font-semibold tabular-nums {{ $item->trend >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">{{ $item->trend >= 0 ? '+' : '' }}{{ $item->trend }}%</span>
+                @endif
+              </p>
+              <p class="mt-1 text-xs font-semibold text-gray-900 tabular-nums truncate">{{ money($item->total_revenue) }}</p>
+            </a>
+          @endforeach
+        </div>
+      @endif
+    </section>
+    @endif
+
+    @if($canOrders)
+    <div class="flex flex-col gap-4 min-w-0 {{ $both ? 'xl:col-span-6' : 'xl:col-span-12' }}">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        @if($canMoney)
+        {{-- Sales by day: last 7 days --}}
+        <div class="rounded-[22px] p-4 min-w-0" style="{{ $tint }}">
+          <h2 class="text-[15px] font-semibold text-gray-900">Sales by day</h2>
+          <p class="text-xs text-gray-500 mt-0.5">Last 7 days &middot; <span class="font-semibold text-gray-800">{{ money($salesByDay->sum('value')) }}</span></p>
+          <div class="mt-3 flex items-end gap-1.5 sm:gap-2 h-24">
+            @foreach($salesByDay as $day)
+              <div class="flex-1 h-full flex items-end" title="{{ $day['date'] }}: {{ money($day['value']) }}">
+                <div class="w-full rounded-full" style="height: {{ $day['value'] > 0 ? max(14, round($day['value'] / $dayMax * 100)) : 10 }}%; background: {{ $day['value'] > 0 ? $dayTones[$loop->index % 3] : '#e7e5e4' }};"></div>
+              </div>
+            @endforeach
+          </div>
+          <div class="mt-2 flex gap-1.5 sm:gap-2 text-[11px] text-gray-500">
+            @foreach($salesByDay as $day)
+              <span class="flex-1 text-center {{ $day['is_today'] ? 'font-semibold' : '' }}" @if($day['is_today']) style="color: var(--brand);" @endif>{{ $day['label'] }}</span>
+            @endforeach
+          </div>
+        </div>
+        @endif
+
+        {{-- Store performance: order success rate with the order mix --}}
+        <div class="rounded-[22px] p-4 min-w-0 flex flex-col {{ $canMoney ? '' : 'sm:col-span-2' }}" style="{{ $tint }}">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <h2 class="text-[15px] font-semibold text-gray-900">Store performance</h2>
+              <p class="text-xs text-gray-500 mt-0.5">Order success rate</p>
+            </div>
+            <a href="{{ route('admin.courier-scan.index') }}" aria-label="Courier" class="h-9 w-9 shrink-0 rounded-full bg-white text-gray-800 grid place-items-center shadow-sm hover:bg-gray-50 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+            </a>
+          </div>
+          <p class="mt-3 text-[28px] leading-none font-semibold tracking-tight text-gray-900 tabular-nums" title="{{ number_format($deliveredCount ?? 0) }} delivered, {{ number_format($returnedOrdersCount ?? 0) }} returned">{{ $successRate }}%</p>
+          <div class="mt-auto pt-3 grid grid-cols-3 gap-2">
+            <div class="min-w-0"><span class="block text-[11px] text-gray-500 truncate">Orders</span><span class="block text-sm font-semibold text-gray-900 tabular-nums">{{ number_format($allOrdersCount) }}</span></div>
+            <div class="min-w-0"><span class="block text-[11px] text-gray-500 truncate">Items sold</span><span class="block text-sm font-semibold text-gray-900 tabular-nums">{{ number_format($itemsSold) }}</span></div>
+            <div class="min-w-0"><span class="block text-[11px] text-gray-500 truncate">Customers</span><span class="block text-sm font-semibold text-gray-900 tabular-nums">{{ number_format($customersCount) }}</span></div>
+          </div>
+          <div class="mt-2.5 flex h-2.5 gap-1">
+            @foreach($perfParts as [$label, $count, $color])
+              @if($count > 0)
+                <span class="rounded-full" style="flex: {{ $count }} 1 0; background: {{ $color }};" title="{{ $label }}: {{ number_format($count) }} ({{ round($count / $perfTotal * 100) }}%)"></span>
+              @endif
+            @endforeach
+          </div>
+        </div>
+      </div>
+
+      {{-- Recent orders --}}
+      <div class="rounded-[22px] p-4 min-w-0 flex-1" style="{{ $tint }}">
+        <div class="flex items-start justify-between gap-3">
+          <h2 class="text-[15px] font-semibold text-gray-900">Recent orders</h2>
+          <a href="{{ route('admin.orders.index') }}" class="shrink-0 text-xs font-semibold text-gray-700 hover:text-gray-900">See all &rarr;</a>
+        </div>
+
+        <div class="hidden md:block mt-1.5">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="!bg-transparent">
+              <tr class="whitespace-nowrap">
+                <th class="py-2 pr-3 !font-medium !normal-case !tracking-normal !text-[11px] !text-gray-500">Order #</th>
+                <th class="py-2 px-3 !font-medium !normal-case !tracking-normal !text-[11px] !text-gray-500">Customer</th>
+                <th class="py-2 px-3 text-right !font-medium !normal-case !tracking-normal !text-[11px] !text-gray-500">Total</th>
+                <th class="py-2 px-3 !font-medium !normal-case !tracking-normal !text-[11px] !text-gray-500">Status</th>
+                <th class="py-2 pl-3 text-right !font-medium !normal-case !tracking-normal !text-[11px] !text-gray-500">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @forelse($recentOrders as $order)
+                <tr class="hover:!bg-white/60">
+                  <td class="py-2 pr-3"><a href="{{ route('admin.orders.show', $order) }}" class="font-semibold text-gray-900 hover:underline whitespace-nowrap">{{ $order->order_number }}</a></td>
+                  <td class="py-2 px-3 text-gray-800 max-w-[150px] truncate">{{ $order->customer_name }}</td>
+                  <td class="py-2 px-3 text-right font-semibold text-gray-900 font-mono whitespace-nowrap">{{ money($order->total) }}</td>
+                  <td class="py-2 px-3 whitespace-nowrap"><span class="px-2.5 py-1 text-[10px] font-semibold rounded-full {{ $order->statusBadge() }}">{{ ucfirst($order->status) }}</span></td>
+                  <td class="py-2 pl-3 text-right text-gray-500 whitespace-nowrap">{{ $order->created_at->format('d M, Y') }}</td>
+                </tr>
+              @empty
+                <tr><td colspan="5" class="py-6 text-center text-gray-400">No recent orders found.</td></tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
+
+        <div class="md:hidden mt-2 space-y-1.5">
+          @forelse($recentOrders as $order)
+            <a href="{{ route('admin.orders.show', $order) }}" class="flex items-center gap-3 rounded-xl bg-white/70 px-3 py-2">
+              <div class="min-w-0 flex-1">
+                <p class="text-[13px] font-semibold text-gray-900 truncate">{{ $order->customer_name }}</p>
+                <p class="text-[11px] text-gray-500 truncate">{{ $order->order_number }} &middot; {{ $order->created_at->format('d M') }}</p>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="text-[13px] font-semibold text-gray-900 font-mono">{{ money($order->total) }}</p>
+                <span class="inline-block mt-0.5 px-2 py-0.5 text-[10px] font-semibold rounded-full {{ $order->statusBadge() }}">{{ ucfirst($order->status) }}</span>
+              </div>
+            </a>
+          @empty
+            <p class="py-6 text-center text-xs text-gray-400">No recent orders found.</p>
+          @endforelse
+        </div>
       </div>
     </div>
-
-    @if($topProducts->isEmpty())
-      <div class="mt-3 rounded-2xl bg-white py-8 text-center text-xs text-gray-400">No revenue data recorded yet.</div>
-    @else
-      <div data-tp-track class="tp-track mt-3 sm:mt-4 flex gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth">
-        @foreach($topProducts as $index => $item)
-          @php
-            $img = $item->product ? $item->product->imageUrl() : $item->image;
-            $link = $item->product ? route('admin.products.edit', $item->product) : route('admin.products.index');
-            $stock = $item->product?->stock_quantity;
-          @endphp
-          <a href="{{ $link }}" class="tp-card snap-start shrink-0 rounded-2xl bg-white p-2.5 sm:p-3 hover:shadow-md transition-shadow min-w-0">
-            <div class="relative aspect-[4/3] rounded-xl bg-stone-50 grid place-items-center overflow-hidden">
-              @if($img)
-                <img src="{{ $img }}" alt="{{ $item->product_name }}" loading="lazy" class="h-full w-full object-cover" onerror="this.remove()" />
-              @else
-                <span class="text-2xl font-semibold text-gray-300">{{ mb_substr($item->product_name, 0, 1) }}</span>
-              @endif
-              <span class="absolute top-2 left-2 h-6 min-w-[24px] px-1.5 rounded-full text-[11px] font-semibold grid place-items-center {{ $index === 0 ? 'text-white' : 'bg-white text-gray-700 shadow-sm' }}" @if($index === 0) style="background: var(--brand-dark);" @endif>#{{ $index + 1 }}</span>
-              @if($stock !== null && $stock <= 5)
-                <span class="absolute top-2 right-2 px-2 h-6 rounded-full text-[10px] font-semibold grid place-items-center {{ $stock <= 0 ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-800' }}">{{ $stock <= 0 ? 'Out of stock' : $stock.' left' }}</span>
-              @endif
-            </div>
-            <p class="mt-2.5 text-[13px] font-semibold text-gray-900 truncate" title="{{ $item->product_name }}">{{ $item->product_name }}</p>
-            <p class="mt-0.5 text-[11px] text-gray-500 flex items-center gap-1.5 min-w-0">
-              <span class="whitespace-nowrap">{{ number_format($item->total_units) }} sold</span>
-              @if($item->trend === 'new')
-                <span class="font-semibold text-emerald-600">New</span>
-              @elseif($item->trend !== null)
-                <span class="font-semibold tabular-nums {{ $item->trend >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">{{ $item->trend >= 0 ? '+' : '' }}{{ $item->trend }}%</span>
-              @endif
-            </p>
-            <p class="mt-1 text-xs font-semibold text-gray-900 tabular-nums truncate">{{ money($item->total_revenue) }}</p>
-          </a>
-        @endforeach
-      </div>
     @endif
-  </section>
+  </div>
   <style>
-    /* Cards per view: 2 on phones, then 3, 5 and 6 as the screen widens */
-    .tp-card { width: calc((100% - .625rem) / 2); }
-    @media (min-width: 640px)  { .tp-card { width: calc((100% - 1.5rem) / 3); } }
-    @media (min-width: 1024px) { .tp-card { width: calc((100% - 3rem) / 5); } }
-    @media (min-width: 1280px) { .tp-card { width: calc((100% - 3.75rem) / 6); } }
+    /* Top products: 2 cards per view on phones, then 3; beside Recent orders on wide screens they stack in two rows of 3 */
+    .tp-track { grid-auto-flow: column; grid-auto-columns: calc((100% - .625rem) / 2); }
+    @media (min-width: 640px)  { .tp-track { grid-auto-columns: calc((100% - 1.5rem) / 3); } }
+    @media (min-width: 1024px) { .tp-track:not(.tp-rows) { grid-auto-columns: calc((100% - 3rem) / 5); } }
+    @media (min-width: 1280px) {
+      .tp-track:not(.tp-rows) { grid-auto-columns: calc((100% - 3.75rem) / 6); }
+      .tp-track.tp-rows { grid-template-rows: repeat(2, 1fr); }
+      .tp-track.tp-rows .tp-img { aspect-ratio: 1 / 1; }
+      .tp-track.tp-rows > a { order: var(--tp-order); }
+    }
   </style>
   <script>
     (function () {
@@ -496,63 +589,6 @@
       sync();
     })();
   </script>
-  @endif
-
-  @if($canOrders)
-  {{-- Recent Orders Activity --}}
-  <div class="panel p-4">
-    <div class="flex items-start justify-between gap-3">
-      <div>
-        <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Recent Orders</h2>
-        <p class="text-xs text-gray-500 mt-0.5">Latest purchases across the store</p>
-      </div>
-      <a href="{{ route('admin.orders.index') }}" class="shrink-0 text-xs font-semibold text-gray-600 hover:text-gray-900">All orders &rarr;</a>
-    </div>
-
-    <div class="hidden md:block mt-2 overflow-x-auto">
-      <table class="w-full text-left text-xs border-collapse">
-        <thead>
-          <tr class="text-gray-500 text-[11px] font-medium whitespace-nowrap border-b border-gray-100">
-            <th class="py-2.5 pr-4">Order</th>
-            <th class="py-2.5 px-4">Customer</th>
-            <th class="py-2.5 px-4 text-right">Total</th>
-            <th class="py-2.5 px-4 text-center">Payment</th>
-            <th class="py-2.5 px-4 text-center">Status</th>
-            <th class="py-2.5 pl-4 text-right">Date</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          @foreach($recentOrders as $order)
-            <tr class="hover:bg-gray-50/70 transition-colors">
-              <td class="py-2.5 pr-4"><a href="{{ route('admin.orders.show', $order) }}" class="font-semibold text-gray-900 hover:underline whitespace-nowrap">{{ $order->order_number }}</a></td>
-              <td class="py-2.5 px-4 text-gray-800">{{ $order->customer_name }}</td>
-              <td class="py-2.5 px-4 text-right font-semibold text-gray-900 font-mono">{{ money($order->total) }}</td>
-              <td class="py-2.5 px-4 text-center whitespace-nowrap"><span class="px-2 py-0.5 text-[10px] font-semibold rounded-full {{ $order->paymentBadge() }}">{{ ucfirst($order->payment_status) }}</span></td>
-              <td class="py-2.5 px-4 text-center whitespace-nowrap"><span class="px-2 py-0.5 text-[10px] font-semibold rounded-full {{ $order->statusBadge() }}">{{ ucfirst($order->status) }}</span></td>
-              <td class="py-2.5 pl-4 text-right text-gray-400 whitespace-nowrap">{{ $order->created_at->format('d M, Y') }}</td>
-            </tr>
-          @endforeach
-        </tbody>
-      </table>
-    </div>
-
-    <div class="md:hidden mt-2 divide-y divide-gray-100">
-      @forelse($recentOrders as $order)
-        <a href="{{ route('admin.orders.show', $order) }}" class="flex items-center gap-3 py-2.5">
-          <div class="min-w-0 flex-1">
-            <p class="text-[13px] font-semibold text-gray-900 truncate">{{ $order->customer_name }}</p>
-            <p class="text-[11px] text-gray-500 truncate">{{ $order->order_number }} &middot; {{ $order->created_at->format('d M') }}</p>
-          </div>
-          <div class="text-right shrink-0">
-            <p class="text-[13px] font-semibold text-gray-900 font-mono">{{ money($order->total) }}</p>
-            <span class="inline-block mt-0.5 px-2 py-0.5 text-[10px] font-semibold rounded-full {{ $order->statusBadge() }}">{{ ucfirst($order->status) }}</span>
-          </div>
-        </a>
-      @empty
-        <p class="py-6 text-center text-xs text-gray-400">No recent orders found.</p>
-      @endforelse
-    </div>
-  </div>
   @endif
 </div>
 @endsection
