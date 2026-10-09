@@ -55,52 +55,33 @@
 
   {{-- Card Content --}}
   <div class="fk-card-body p-2.5 sm:p-4 flex flex-col flex-1 text-left">
-    {{-- Brand Label or Category --}}
-    @if($brandName)
-      <span class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-stone-400 truncate block mb-0.5">
-        {{ $brandName }}
-      </span>
-    @elseif($product->category)
-      <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-stone-400 truncate block mb-0.5">
-        {{ $product->category->name }}
-      </span>
-    @endif
-
     {{-- Product Title --}}
     <a href="{{ route('product.show', $product) }}" class="fk-card-title text-left font-bold text-xs sm:text-sm text-stone-900 hover:text-brand-600 line-clamp-2 leading-snug min-h-[2.5em] transition-colors mb-1.5" title="{{ $product->name }}">
       {{ $product->name }}
     </a>
 
-    {{-- Variations at a glance: colour dots and a size line; the picker does the choosing --}}
-    @if($opts['colors'] || $opts['sizeLabel'] || $opts['otherLabel'])
-      <div class="flex items-center gap-1.5 min-w-0 mb-1.5 text-[10.5px] sm:text-[11px] text-stone-500 font-medium" data-card-options>
-        @if($opts['colors'])
-          <span class="flex items-center gap-1 shrink-0" aria-label="Colours: {{ collect($opts['colors'])->pluck('name')->join(', ') }}">
-            @foreach($opts['colors'] as $c)
-              <span class="h-3.5 w-3.5 rounded-full border border-stone-300/80 {{ $c['swatch'] ? '' : 'bg-stone-200' }}" @if($c['swatch']) style="background-color: {{ $c['swatch'] }}" @endif title="{{ $c['name'] }}"></span>
-            @endforeach
-          </span>
-          @if($opts['moreColors'])<span class="shrink-0">+{{ $opts['moreColors'] }}</span>@endif
+    {{-- Price on the left, the variations at a glance on the right; the picker does the choosing --}}
+    <div class="flex items-center justify-between gap-2 mb-2 min-w-0">
+      <div class="fk-card-price product-card-price flex items-baseline gap-x-1.5 flex-wrap min-w-0">
+        @if($opts['fromPrice'])
+          <span class="fk-price text-xs sm:text-base font-extrabold text-stone-900 tracking-tight whitespace-nowrap"><span class="text-[10px] sm:text-xs font-semibold text-stone-500 mr-0.5">From</span>{{ money($opts['fromPrice']) }}</span>
+        @else
+          <span class="fk-price text-xs sm:text-base font-extrabold text-stone-900 tracking-tight whitespace-nowrap">{{ money($product->price) }}</span>
         @endif
-        @if($opts['sizeLabel'])
-          @if($opts['colors'])<span class="text-stone-300" aria-hidden="true">·</span>@endif
-          <span class="truncate">{{ $opts['sizeLabel'] }}</span>
-        @elseif($opts['otherLabel'])
-          @if($opts['colors'])<span class="text-stone-300" aria-hidden="true">·</span>@endif
-          <span class="truncate">{{ $opts['otherLabel'] }}</span>
+        @if($product->on_sale && ! $opts['fromPrice'])
+          <span class="fk-price-was text-[10px] sm:text-xs text-stone-400 line-through font-medium whitespace-nowrap">{{ money($product->regular_price) }}</span>
         @endif
       </div>
-    @endif
-
-    {{-- Price Row: "From" when the variations cost different amounts --}}
-    <div class="fk-card-price product-card-price flex items-baseline gap-1.5 sm:gap-2 flex-wrap mb-2">
-      @if($opts['fromPrice'])
-        <span class="fk-price text-xs sm:text-base font-extrabold text-stone-900 tracking-tight"><span class="text-[10px] sm:text-xs font-semibold text-stone-500 mr-0.5">From</span>{{ money($opts['fromPrice']) }}</span>
-      @else
-        <span class="fk-price text-xs sm:text-base font-extrabold text-stone-900 tracking-tight">{{ money($product->price) }}</span>
-      @endif
-      @if($product->on_sale && ! $opts['fromPrice'])
-        <span class="fk-price-was text-[10px] sm:text-xs text-stone-400 line-through font-medium">{{ money($product->regular_price) }}</span>
+      @if($opts['colors'])
+        <span class="flex items-center gap-1 shrink-0 text-[10.5px] text-stone-500 font-medium" data-card-options aria-label="Colours: {{ collect($opts['colors'])->pluck('name')->join(', ') }}">
+          @foreach(array_slice($opts['colors'], 0, 3) as $c)
+            <span class="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full border border-stone-300/80 {{ $c['swatch'] ? '' : 'bg-stone-200' }}" @if($c['swatch']) style="background-color: {{ $c['swatch'] }}" @endif title="{{ $c['name'] }}"></span>
+          @endforeach
+          @php $more = count($opts['colors']) - 3 + $opts['moreColors']; @endphp
+          @if($more > 0)<span>+{{ $more }}</span>@endif
+        </span>
+      @elseif($opts['sizeShort'] || $opts['otherLabel'])
+        <span class="shrink-0 px-1.5 py-0.5 rounded-md border border-stone-200 text-[10px] sm:text-[11px] font-semibold text-stone-600 tabular-nums whitespace-nowrap" data-card-options title="{{ $opts['sizeLabel'] ?? $opts['otherLabel'] }}">{{ $opts['sizeShort'] ?? $opts['otherLabel'] }}</span>
       @endif
     </div>
 
@@ -126,8 +107,8 @@
       </div>
     @endif
 
-    {{-- Actions: Order now (opens the option picker when there are variations) plus a quick add-to-cart bag.
-         The photo and name already open the product page. --}}
+    {{-- One action: Order now opens the option picker (which also has Add to cart) when there are
+         variations, and goes straight to checkout when there are none. The photo and name open the product page. --}}
     @php
       $cartData = [
         'product-id' => $product->id, 'title' => $product->name, 'stock' => $product->stock_quantity,
@@ -144,15 +125,10 @@
         <button type="button" disabled class="flex-1 min-w-0 h-9 sm:h-10 bg-stone-100 text-stone-500 font-bold text-xs sm:text-[13px] flex items-center justify-center rounded-xl cursor-not-allowed select-none">Sold out</button>
       </div>
     @else
-      <div class="flex items-center gap-2 sm:gap-2.5 mt-auto pt-1 w-full relative z-10">
+      <div class="flex items-center mt-auto pt-1 w-full relative z-10">
         <button type="button" class="add-to-cart flex-1 min-w-0 h-9 sm:h-10 font-semibold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 text-white transition-all shadow-xs hover:shadow-md active:scale-[0.98] select-none touch-manipulation cursor-pointer btn-view-details rounded-xl" style="background-color: var(--brand-primary, #1D68FE);"
                 data-order-now="true" @foreach($cartData as $k => $v) data-{{ $k }}="{{ $v }}" @endforeach>
           <span class="truncate">Order now</span>
-        </button>
-        <button type="button" class="fk-add-btn fk-icon-only add-to-cart w-9 sm:w-10 h-9 sm:h-10 text-white flex items-center justify-center shrink-0 shadow-xs hover:shadow-md active:scale-95 transition-all cursor-pointer select-none touch-manipulation rounded-xl"
-                aria-label="Add to cart" title="Add to cart"
-                @foreach($cartData as $k => $v) data-{{ $k }}="{{ $v }}" @endforeach>
-          <svg class="w-[18px] h-[18px] shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
         </button>
       </div>
     @endif

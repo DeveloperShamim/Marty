@@ -41,6 +41,7 @@ class ProductCardOptionsTest extends TestCase
 
         $shoe = $this->product('Derby', array_map(fn ($s) => [['Size' => (string) $s], null, 2], range(39, 44)));
         $this->assertSame('Sizes 39–44', ProductCardOptions::for($shoe)['sizeLabel']);
+        $this->assertSame('39–44', ProductCardOptions::for($shoe)['sizeShort'], 'Short form for the price line');
 
         $tee = $this->product('Tee', [[['Size' => 'S'], null, 1], [['Size' => 'M'], null, 1], [['Size' => 'L'], null, 1]]);
         $this->assertSame('3 sizes', ProductCardOptions::for($tee)['sizeLabel']);
@@ -56,6 +57,19 @@ class ProductCardOptionsTest extends TestCase
         $this->assertStringContainsString('Order now', $html);
         $this->assertStringNotContainsString('View Details', $html, 'The photo and name open the product page');
         $this->assertStringContainsString('data-order-now="true"', $html);
+    }
+
+    public function test_card_is_short_one_order_now_button_and_options_beside_the_price(): void
+    {
+        $this->product('Derby', array_map(fn ($s) => [['Size' => (string) $s], null, 2], range(39, 44)));
+        $html = $this->get(route('shop'))->assertOk()->getContent();
+        $card = substr($html, strpos($html, '<article class="fk-card'));
+        $card = substr($card, 0, strpos($card, '</article>'));
+
+        $this->assertSame(1, substr_count($card, '<button'), 'One button: Order now (the picker has Add to cart)');
+        $this->assertStringNotContainsString('fk-icon-only', $card);
+        $this->assertStringNotContainsString('uppercase tracking', $card, 'No brand label above the name');
+        $this->assertMatchesRegularExpression('/fk-card-price.*?<\/div>\s*<span[^>]*data-card-options[^>]*>39–44</s', $card, 'Sizes sit on the price line');
     }
 
     public function test_sold_out_only_when_every_variation_is_out(): void

@@ -25,7 +25,7 @@ class ProductCardOptions
     ];
 
     /**
-     * @return array{colors: array<int, array{name: string, swatch: ?string}>, moreColors: int, sizeLabel: ?string, otherLabel: ?string, fromPrice: ?float}
+     * @return array{colors: array<int, array{name: string, swatch: ?string}>, moreColors: int, sizeLabel: ?string, sizeShort: ?string, otherLabel: ?string, fromPrice: ?float}
      */
     public static function for(Product $product): array
     {
@@ -46,6 +46,7 @@ class ProductCardOptions
                 ->values()->all(),
             'moreColors' => max(0, $colors->count() - self::MAX_DOTS),
             'sizeLabel'  => self::sizeLabel($sizes),
+            'sizeShort'  => self::sizeLabel($sizes, short: true),
             'otherLabel' => $other->count() > 1 ? $other->count() . ' ' . strtolower(\Illuminate\Support\Str::plural($otherKey)) : null,
             'fromPrice'  => self::fromPrice($product),
         ];
@@ -72,13 +73,14 @@ class ProductCardOptions
             ->filter(fn ($values) => $values->isNotEmpty());
     }
 
-    private static function sizeLabel(Collection $sizes): ?string
+    /** "Sizes 39–44" (or "39–44" where space is tight on the card's price line), else "6 sizes". */
+    private static function sizeLabel(Collection $sizes, bool $short = false): ?string
     {
         if ($sizes->count() < 2) {
             return null;
         }
         if ($sizes->every(fn ($s) => is_numeric($s))) {
-            return 'Sizes ' . $sizes->min() . '–' . $sizes->max();
+            return ($short ? '' : 'Sizes ') . $sizes->min() . '–' . $sizes->max();
         }
 
         return $sizes->count() . ' sizes';
