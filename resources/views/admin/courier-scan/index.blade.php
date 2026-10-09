@@ -3,6 +3,18 @@
 @section('subtitle', 'Scan parcels out to the courier and scan returns back in.')
 
 @section('page-actions')
+  @php
+    $syncTitle = 'Ask Steadfast, Pathao and RedX for the latest parcel status. Delivered parcels are marked delivered automatically.'
+      . ($lastSync ? ' Last checked ' . \Illuminate\Support\Carbon::parse($lastSync['at'])->diffForHumans() . '.' : ' Not checked yet.');
+  @endphp
+  <form method="POST" action="{{ route('admin.courier-scan.sync') }}" class="shrink-0" onsubmit="this.querySelector('button').disabled = true; this.querySelector('[data-label]').textContent = 'Syncing...';">
+    @csrf
+    <button type="submit" class="pill-btn disabled:opacity-60" title="{{ $syncTitle }}" aria-label="Sync courier status now">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+      <span data-label>Sync now</span>
+      @if($lastSync)<span class="hidden sm:inline text-[11px] font-normal text-gray-400">· {{ \Illuminate\Support\Carbon::parse($lastSync['at'])->diffForHumans(null, true, true) }} ago</span>@endif
+    </button>
+  </form>
   <a href="{{ route('admin.courier-scan.manifest') }}" target="_blank" class="pill-btn">
     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
     Today's manifest
@@ -12,42 +24,27 @@
 @section('content')
 <div class="space-y-4">
 
-  {{-- Courier reports that need staff action (from the API sync / webhooks). --}}
-  <section class="panel p-4 sm:p-5">
-    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-      <div class="min-w-0">
-        <h2 class="text-[15px] font-semibold text-gray-900 flex items-center gap-2 flex-wrap">
-          Courier updates
-          @if($courierAttention->isNotEmpty())<span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[11px] font-semibold">{{ $courierAttention->count() }} need you</span>@endif
-        </h2>
-        <p class="text-xs text-gray-500 mt-0.5 leading-relaxed">
-          Delivered parcels are marked delivered automatically. Returns, holds and part deliveries are listed here.
-          @if($lastSync) Last checked {{ \Illuminate\Support\Carbon::parse($lastSync['at'])->diffForHumans() }}.@endif
-        </p>
-      </div>
-      <form method="POST" action="{{ route('admin.courier-scan.sync') }}" class="shrink-0">
-        @csrf
-        <button type="submit" class="h-9 px-3.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-[13px] font-medium inline-flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
-          Sync now
-        </button>
-      </form>
-    </div>
-    @if($courierAttention->isNotEmpty())
-      <ul class="mt-3 divide-y divide-gray-100 rounded-2xl bg-gray-50/80 text-xs">
+  {{-- Only shown when a courier reported something staff must act on (returns, holds, part deliveries). --}}
+  @if($courierAttention->isNotEmpty())
+    <details class="rounded-2xl bg-amber-50/80 ring-1 ring-amber-100 px-3.5 py-2.5 group" @if($courierAttention->count() <= 3) open @endif>
+      <summary class="flex items-center justify-between gap-2 cursor-pointer text-[13px]">
+        <span class="font-semibold text-amber-900">{{ $courierAttention->count() }} need you <span class="font-normal text-amber-800">· returns, holds and part deliveries reported by the courier</span></span>
+        <svg class="w-4 h-4 text-amber-700 shrink-0 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+      </summary>
+      <ul class="mt-2 divide-y divide-amber-100 text-xs">
         @foreach($courierAttention as $o)
-          <li class="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2.5">
+          <li class="flex flex-wrap items-center gap-x-3 gap-y-1 py-2">
             <a href="{{ route('admin.orders.show', $o) }}" class="font-semibold text-gray-900 hover:underline">{{ $o->order_number }}</a>
             <span class="text-gray-700">{{ $o->customer_name }}</span>
-            <span class="text-gray-400">{{ $o->courierLabel() }}</span>
-            <span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[11px] font-semibold">{{ \App\Services\Courier\CourierStatusUpdater::label($o->courier_status) }}</span>
+            <span class="text-gray-500">{{ $o->courierLabel() }}</span>
+            <span class="px-2 py-0.5 rounded-full bg-white text-amber-700 text-[11px] font-semibold">{{ \App\Services\Courier\CourierStatusUpdater::label($o->courier_status) }}</span>
             @if($o->courier_status_message)<span class="text-gray-500 truncate max-w-full sm:max-w-xs" title="{{ $o->courier_status_message }}">{{ $o->courier_status_message }}</span>@endif
             <span class="sm:ml-auto text-gray-400">{{ $o->courier_synced_at?->diffForHumans() }}</span>
           </li>
         @endforeach
       </ul>
-    @endif
-  </section>
+    </details>
+  @endif
 
   {{-- Station tabs --}}
   <nav class="-mx-3 sm:mx-0 px-3 sm:px-0 overflow-x-auto no-scrollbar" aria-label="Scan station">
