@@ -15,7 +15,7 @@
       <div class="flex gap-4 items-start pb-4 border-b border-stone-100">
         <div class="w-20 h-20 rounded-xl border border-stone-200 shrink-0 bg-stone-50 overflow-hidden relative">
           <img id="qmProductImg" src="" alt="Product image" class="w-full h-full object-cover" />
-          <span id="qmDiscountBadge" class="absolute top-1 left-1 text-white font-extrabold text-[9px] px-1.5 py-0.5 rounded shadow-xs hidden" style="background-color: var(--brand-dark, #1c1917);"></span>
+          <span id="qmDiscountBadge" class="absolute top-1 left-1 text-white font-extrabold text-[10px] px-1.5 py-0.5 rounded shadow-xs hidden" style="background-color: var(--brand-dark, #1c1917);"></span>
         </div>
         <div class="flex-1 min-w-0">
           <h4 id="qmProductTitle" class="font-bold text-stone-900 text-sm sm:text-base leading-tight line-clamp-2"></h4>

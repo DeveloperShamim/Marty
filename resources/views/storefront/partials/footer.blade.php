@@ -130,7 +130,7 @@
               <li>
                 <a href="{{ route('shop', ['flash' => 1]) }}" class="inline-flex items-center gap-1.5 py-0.5 hover:text-brand-600 transition-colors font-medium text-amber-700">
                   <span>Flash Deals</span>
-                  <span class="px-1.5 py-0.5 text-[9px] font-extrabold bg-amber-100 text-amber-800 rounded uppercase tracking-wider">Hot</span>
+                  <span class="px-1.5 py-0.5 text-[10px] font-extrabold bg-amber-100 text-amber-800 rounded uppercase tracking-wider">Hot</span>
                 </a>
               </li>
             @endif

@@ -185,9 +185,9 @@
                     </div>
                     <h3 class="font-bold text-[11px] sm:text-sm text-stone-800 group-hover:text-brand-600 transition-colors line-clamp-1 leading-tight sm:leading-snug">{{ $cat->name }}</h3>
                     @if(isset($cat->products_count) && $cat->products_count > 0)
-                      <p class="text-[9px] sm:text-[11px] font-medium text-stone-400 mt-0.5">{{ $cat->products_count }} {{ Str::plural('Item', $cat->products_count) }}</p>
+                      <p class="text-[10px] sm:text-[11px] font-medium text-stone-400 mt-0.5">{{ $cat->products_count }} {{ Str::plural('Item', $cat->products_count) }}</p>
                     @else
-                      <p class="text-[9px] sm:text-[11px] font-medium text-stone-400 mt-0.5">Explore</p>
+                      <p class="text-[10px] sm:text-[11px] font-medium text-stone-400 mt-0.5">Explore</p>
                     @endif
                   </a>
                 </div>
@@ -333,9 +333,9 @@
                     </div>
                     <span class="text-[11px] sm:text-sm font-bold text-stone-800 group-hover:text-brand-600 transition-colors truncate w-full">{{ $b->name }}</span>
                     @if(isset($b->products_count) && $b->products_count > 0)
-                      <span class="text-[9px] sm:text-[11px] text-stone-400 group-hover:text-brand-500/80 font-medium mt-0.5 transition-colors">{{ $b->products_count }} {{ Str::plural('item', $b->products_count) }}</span>
+                      <span class="text-[10px] sm:text-[11px] text-stone-400 group-hover:text-brand-500/80 font-medium mt-0.5 transition-colors">{{ $b->products_count }} {{ Str::plural('item', $b->products_count) }}</span>
                     @else
-                      <span class="text-[9px] sm:text-[11px] text-stone-400 group-hover:text-brand-500/80 font-medium mt-0.5 transition-colors">Official Brand</span>
+                      <span class="text-[10px] sm:text-[11px] text-stone-400 group-hover:text-brand-500/80 font-medium mt-0.5 transition-colors">Official Brand</span>
                     @endif
                   </a>
                 </div>

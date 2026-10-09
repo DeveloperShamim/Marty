@@ -306,7 +306,7 @@
                 <label class="pay-opt relative flex {{ $tileLayout }} rounded-xl border transition-all cursor-pointer select-none {{ $method==='bkash' ? 'border-brand-600 bg-brand-50/70 ring-1 ring-brand-600 font-bold shadow-2xs' : 'border-slate-200 bg-white hover:border-slate-300' }}">
                   <span class="px-2 py-0.5 rounded-md bg-[#E2136E] text-white font-black text-[10px] leading-tight {{ $walletRow ? '' : 'mb-1' }} shadow-2xs">bKash</span>
                   <span class="{{ $tileName }} font-bold text-slate-800 block leading-tight">bKash</span>
-                  <span class="online-free-tag hidden {{ $walletRow ? '' : 'mt-0.5' }} text-[9px] font-extrabold uppercase tracking-wide text-emerald-700">Free delivery</span>
+                  <span class="online-free-tag hidden {{ $walletRow ? '' : 'mt-0.5' }} text-[10px] font-extrabold uppercase tracking-wide text-emerald-700">Free delivery</span>
                   <input type="radio" name="payment_method" value="bkash" @checked($method==='bkash') class="pay-radio hidden" data-manual="1" data-pay-number="{{ $bkash }}" />
                   <span class="pay-check absolute {{ $tileCheck }} grid place-items-center rounded-full bg-brand-600 text-white font-bold {{ $method==='bkash' ? '' : 'hidden' }}">✓</span>
                 </label>
@@ -316,7 +316,7 @@
                 <label class="pay-opt relative flex {{ $tileLayout }} rounded-xl border transition-all cursor-pointer select-none {{ $method==='nagad' ? 'border-brand-600 bg-brand-50/70 ring-1 ring-brand-600 font-bold shadow-2xs' : 'border-slate-200 bg-white hover:border-slate-300' }}">
                   <span class="px-2 py-0.5 rounded-md bg-[#F7941D] text-white font-black text-[10px] leading-tight {{ $walletRow ? '' : 'mb-1' }} shadow-2xs">Nagad</span>
                   <span class="{{ $tileName }} font-bold text-slate-800 block leading-tight">Nagad</span>
-                  <span class="online-free-tag hidden {{ $walletRow ? '' : 'mt-0.5' }} text-[9px] font-extrabold uppercase tracking-wide text-emerald-700">Free delivery</span>
+                  <span class="online-free-tag hidden {{ $walletRow ? '' : 'mt-0.5' }} text-[10px] font-extrabold uppercase tracking-wide text-emerald-700">Free delivery</span>
                   <input type="radio" name="payment_method" value="nagad" @checked($method==='nagad') class="pay-radio hidden" data-manual="1" data-pay-number="{{ $nagad }}" />
                   <span class="pay-check absolute {{ $tileCheck }} grid place-items-center rounded-full bg-brand-600 text-white font-bold {{ $method==='nagad' ? '' : 'hidden' }}">✓</span>
                 </label>
@@ -326,7 +326,7 @@
                 <label class="pay-opt relative flex {{ $tileLayout }} rounded-xl border transition-all cursor-pointer select-none {{ $method==='rocket' ? 'border-brand-600 bg-brand-50/70 ring-1 ring-brand-600 font-bold shadow-2xs' : 'border-slate-200 bg-white hover:border-slate-300' }}">
                   <span class="px-2 py-0.5 rounded-md bg-[#8C3494] text-white font-black text-[10px] leading-tight {{ $walletRow ? '' : 'mb-1' }} shadow-2xs">Rocket</span>
                   <span class="{{ $tileName }} font-bold text-slate-800 block leading-tight">Rocket</span>
-                  <span class="online-free-tag hidden {{ $walletRow ? '' : 'mt-0.5' }} text-[9px] font-extrabold uppercase tracking-wide text-emerald-700">Free delivery</span>
+                  <span class="online-free-tag hidden {{ $walletRow ? '' : 'mt-0.5' }} text-[10px] font-extrabold uppercase tracking-wide text-emerald-700">Free delivery</span>
                   <input type="radio" name="payment_method" value="rocket" @checked($method==='rocket') class="pay-radio hidden" data-manual="1" data-pay-number="{{ $rocket }}" />
                   <span class="pay-check absolute {{ $tileCheck }} grid place-items-center rounded-full bg-brand-600 text-white font-bold {{ $method==='rocket' ? '' : 'hidden' }}">✓</span>
                 </label>

@@ -24,24 +24,24 @@
 <article class="fk-card product-card group relative flex flex-col bg-white rounded-2xl border border-stone-200/90 hover:border-brand-500/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden">
   {{-- Floating Badges --}}
   @if($isOutOfStock)
-    <span class="absolute top-2.5 right-2.5 z-10 bg-stone-900/90 backdrop-blur-xs text-white font-extrabold text-[9px] sm:text-[10px] tracking-wide uppercase px-2.5 py-1 rounded-lg shadow-sm">Out of Stock</span>
+    <span class="absolute top-2.5 right-2.5 z-10 bg-stone-900/90 backdrop-blur-xs text-white font-extrabold text-[10px] sm:text-[11px] tracking-wide uppercase px-2.5 py-1 rounded-lg shadow-sm">Out of Stock</span>
   @else
     <div class="absolute top-2.5 left-2.5 z-10 flex flex-wrap gap-1.5 items-center pointer-events-none">
       {{-- The Flash Sale badge only while a timed sale runs; otherwise a plain discount tag --}}
       @if($product->is_flash_sale && flash_sale_running())
-        <span class="text-white font-extrabold text-[9px] sm:text-[10px] tracking-wider uppercase pl-2 pr-1 py-1 rounded-md shadow-sm flex items-center gap-1.5" style="background-color: var(--brand-dark, #1c1917);">
+        <span class="text-white font-extrabold text-[10px] sm:text-[11px] tracking-wider uppercase pl-2 pr-1 py-1 rounded-md shadow-sm flex items-center gap-1.5" style="background-color: var(--brand-dark, #1c1917);">
           <span class="flex items-center gap-1"><svg class="w-2.5 h-2.5 text-amber-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>Flash Sale</span>
           @if($discount > 0)
-            <span class="px-1.5 py-px rounded font-extrabold text-[9px] sm:text-[10px]" style="background-color: var(--brand-primary, #8B5A2B);">{{ $discount }}% OFF</span>
+            <span class="px-1.5 py-px rounded font-extrabold text-[10px] sm:text-[11px]" style="background-color: var(--brand-primary, #8B5A2B);">{{ $discount }}% OFF</span>
           @endif
         </span>
       @elseif($discount > 0)
-        <span class="text-white font-extrabold text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md shadow-sm tracking-tight" style="background-color: var(--brand-dark, #1c1917);">
+        <span class="text-white font-extrabold text-[11px] sm:text-xs px-2 py-0.5 rounded-md shadow-sm tracking-tight" style="background-color: var(--brand-dark, #1c1917);">
           -{{ $discount }}%
         </span>
       @endif
       @if($product->free_delivery)
-        <span class="bg-emerald-600 text-white font-extrabold text-[9px] sm:text-[10px] tracking-wide uppercase px-2 py-1 rounded-lg shadow-sm">🚚 Free Delivery</span>
+        <span class="bg-emerald-600 text-white font-extrabold text-[10px] sm:text-[11px] tracking-wide uppercase px-2 py-1 rounded-lg shadow-sm">🚚 Free Delivery</span>
       @endif
     </div>
   @endif
@@ -57,7 +57,7 @@
   {{-- Card Content --}}
   <div class="fk-card-body p-2.5 sm:p-4 flex flex-col flex-1 text-left">
     {{-- Product Title --}}
-    <a href="{{ route('product.show', $product) }}" class="fk-card-title text-left font-bold text-xs sm:text-sm text-stone-900 hover:text-brand-600 line-clamp-2 leading-snug min-h-[2.5em] transition-colors mb-1.5" title="{{ $product->name }}">
+    <a href="{{ route('product.show', $product) }}" class="fk-card-title text-left font-bold text-[13px] sm:text-sm text-stone-900 hover:text-brand-600 line-clamp-2 leading-snug min-h-[2.5em] transition-colors mb-1.5" title="{{ $product->name }}">
       {{ $product->name }}
     </a>
 
@@ -65,16 +65,16 @@
     <div class="flex items-center justify-between gap-2 mb-2 min-w-0">
       <div class="fk-card-price product-card-price flex items-baseline gap-x-1.5 flex-wrap min-w-0">
         @if($opts['fromPrice'])
-          <span class="fk-price text-xs sm:text-base font-extrabold text-stone-900 tracking-tight whitespace-nowrap"><span class="text-[10px] sm:text-xs font-semibold text-stone-500 mr-0.5">From</span>{{ money($opts['fromPrice']) }}</span>
+          <span class="fk-price text-sm sm:text-base font-extrabold text-stone-900 tracking-tight whitespace-nowrap"><span class="text-[10px] sm:text-xs font-semibold text-stone-500 mr-0.5">From</span>{{ money($opts['fromPrice']) }}</span>
         @else
-          <span class="fk-price text-xs sm:text-base font-extrabold text-stone-900 tracking-tight whitespace-nowrap">{{ money($product->price) }}</span>
+          <span class="fk-price text-sm sm:text-base font-extrabold text-stone-900 tracking-tight whitespace-nowrap">{{ money($product->price) }}</span>
         @endif
         @if($product->on_sale && ! $opts['fromPrice'])
-          <span class="fk-price-was text-[10px] sm:text-xs text-stone-400 line-through font-medium whitespace-nowrap">{{ money($product->regular_price) }}</span>
+          <span class="fk-price-was text-[11px] sm:text-xs text-stone-400 line-through font-medium whitespace-nowrap">{{ money($product->regular_price) }}</span>
         @endif
       </div>
       @if($opts['colors'])
-        <span class="flex items-center gap-1 shrink-0 text-[10.5px] text-stone-500 font-medium" data-card-options aria-label="Colours: {{ collect($opts['colors'])->pluck('name')->join(', ') }}">
+        <span class="flex items-center gap-1 shrink-0 text-[11px] text-stone-500 font-medium" data-card-options aria-label="Colours: {{ collect($opts['colors'])->pluck('name')->join(', ') }}">
           @foreach(array_slice($opts['colors'], 0, 3) as $c)
             <span class="h-3 w-3 sm:h-3.5 sm:w-3.5 rounded-full border border-stone-300/80 {{ $c['swatch'] ? '' : 'bg-stone-200' }}" @if($c['swatch']) style="background-color: {{ $c['swatch'] }}" @endif title="{{ $c['name'] }}"></span>
           @endforeach
@@ -82,7 +82,7 @@
           @if($more > 0)<span>+{{ $more }}</span>@endif
         </span>
       @elseif($opts['sizeShort'] || $opts['otherLabel'])
-        <span class="shrink-0 px-1.5 py-0.5 rounded-md border border-stone-200 text-[10px] sm:text-[11px] font-semibold text-stone-600 tabular-nums whitespace-nowrap" data-card-options title="{{ $opts['sizeLabel'] ?? $opts['otherLabel'] }}">{{ $opts['sizeShort'] ?? $opts['otherLabel'] }}</span>
+        <span class="shrink-0 px-1.5 py-0.5 rounded-md border border-stone-200 text-[11px] font-semibold text-stone-600 tabular-nums whitespace-nowrap" data-card-options title="{{ $opts['sizeLabel'] ?? $opts['otherLabel'] }}">{{ $opts['sizeShort'] ?? $opts['otherLabel'] }}</span>
       @endif
     </div>
 
@@ -90,7 +90,7 @@
     @if($flashCard)
       @php $fs = $product->flashStats(); @endphp
       <div class="sold-container my-1 sm:my-1.5">
-        <div class="flex items-center justify-between text-[9px] sm:text-[10px] font-bold text-stone-600 mb-1">
+        <div class="flex items-center justify-between text-[10px] sm:text-[11px] font-bold text-stone-600 mb-1">
           <span class="flex items-center gap-1 text-brand-600 font-extrabold">
             <span>🔥</span> <span>Flash Deal</span>
           </span>
