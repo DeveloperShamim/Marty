@@ -1,5 +1,5 @@
 {{-- Luxury Human-Designed Size Guide Modal --}}
-<div id="sizeGuideModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 hidden opacity-0 pointer-events-none transition-all duration-200 ease-out" role="dialog" aria-modal="true" aria-labelledby="sgModalTitle">
+<div id="sizeGuideModal" class="fixed inset-0 z-[90] flex items-center justify-center p-3 sm:p-6 hidden opacity-0 pointer-events-none transition-all duration-200 ease-out" role="dialog" aria-modal="true" aria-labelledby="sgModalTitle">
   {{-- Refined Backdrop --}}
   <div class="fixed inset-0 bg-stone-900/60 backdrop-blur-xs transition-opacity duration-200" data-close-size-guide></div>
 

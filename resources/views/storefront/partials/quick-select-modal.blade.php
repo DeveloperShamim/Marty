@@ -1,11 +1,12 @@
 {{-- Quick Select Variation Modal --}}
-<div id="quickSelectModal" class="fixed inset-0 z-[80] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 hidden opacity-0 transition-all duration-300 pointer-events-none" aria-hidden="true">
-  <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden border border-stone-200 transform scale-95 transition-all duration-300 flex flex-col max-h-[90vh]" data-modal-container>
+{{-- A sheet that slides up from the bottom on phones, a centred dialog from tablets up --}}
+<div id="quickSelectModal" class="fixed inset-0 z-[80] bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 hidden opacity-0 transition-all duration-300 pointer-events-none" aria-hidden="true">
+  <div class="relative w-full max-w-lg bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden border border-stone-200 transform scale-95 transition-all duration-300 flex flex-col max-h-[88dvh] sm:max-h-[90vh] pb-[env(safe-area-inset-bottom)]" data-modal-container>
     {{-- Modal Header --}}
     <div class="px-5 py-4 border-b border-stone-100 flex items-center justify-between bg-stone-50/80">
       <div class="flex items-center gap-2">
         <span class="w-2.5 h-2.5 rounded-full bg-brand-500 animate-pulse"></span>
-        <h3 class="font-extrabold text-stone-900 text-base">Select Options</h3>
+        <h3 class="font-extrabold text-stone-900 text-base">Choose your options</h3>
       </div>
       <button type="button" id="closeQuickModal" class="w-8 h-8 rounded-full bg-stone-200/60 hover:bg-stone-200 text-stone-600 font-bold flex items-center justify-center text-sm transition-colors focus:outline-none" aria-label="Close Modal">✕</button>
     </div>
@@ -54,11 +55,11 @@
     <div class="p-4 bg-stone-50 border-t border-stone-100 grid grid-cols-2 gap-3">
       <button type="button" id="qmAddToCartBtn" class="w-full border-2 border-brand-500 bg-transparent text-brand-500 hover:bg-brand-500 hover:text-white font-extrabold py-3 px-4 rounded-xl shadow transition-all flex items-center justify-center gap-1.5 text-xs sm:text-sm uppercase tracking-wide cursor-pointer select-none touch-manipulation disabled:bg-stone-100 disabled:text-stone-400 disabled:border-stone-200 disabled:cursor-not-allowed disabled:pointer-events-none">
         <svg class="w-4 h-4 shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-        <span class="relative z-10 pointer-events-auto select-none">ADD TO CART</span>
+        <span class="relative z-10 pointer-events-auto select-none">Add to cart</span>
       </button>
 
-      <button type="button" id="qmBuyNowBtn" class="w-full bg-[#0B2523] hover:bg-black text-white font-extrabold py-3 px-4 rounded-xl shadow transition-all flex items-center justify-center text-xs sm:text-sm uppercase tracking-wide cursor-pointer select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none">
-        <span class="relative z-10 pointer-events-auto select-none">BUY NOW</span>
+      <button type="button" id="qmBuyNowBtn" style="background-color: var(--brand-dark, #1c1917);" class="w-full hover:brightness-95 text-white font-extrabold py-3 px-4 rounded-xl shadow transition-all flex items-center justify-center text-xs sm:text-sm uppercase tracking-wide cursor-pointer select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none">
+        <span class="relative z-10 pointer-events-auto select-none">Order now</span>
       </button>
     </div>
   </div>

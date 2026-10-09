@@ -900,7 +900,7 @@
 
         if (totalStock <= 0) {
           btn.disabled = true;
-          btn.className = "qm-variant-btn relative px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-stone-200 text-stone-400 bg-stone-100 line-through opacity-40 cursor-not-allowed pointer-events-none";
+          btn.className = "qm-variant-btn relative min-w-[44px] h-10 px-3.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-400 bg-stone-100 line-through opacity-40 cursor-not-allowed pointer-events-none";
           btn.title = val + " is out of stock";
           btn.textContent = val;
 
@@ -910,9 +910,9 @@
         } else {
           btn.disabled = false;
           if (btn.classList.contains("is-selected")) {
-            btn.className = "qm-variant-btn is-selected px-3.5 py-1.5 rounded-lg text-xs font-semibold border-2 border-brand-500 text-brand-600 bg-brand-50/40 transition-all cursor-pointer";
+            btn.className = "qm-variant-btn is-selected min-w-[44px] h-10 px-3.5 rounded-xl text-sm font-semibold border-2 border-brand-500 text-brand-600 bg-brand-50/40 transition-all cursor-pointer";
           } else {
-            btn.className = "qm-variant-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-stone-200 text-stone-700 hover:border-stone-400 transition-all cursor-pointer";
+            btn.className = "qm-variant-btn min-w-[44px] h-10 px-3.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-700 hover:border-stone-400 transition-all cursor-pointer";
           }
           btn.title = "";
           btn.textContent = val;
@@ -1037,26 +1037,26 @@
         qmAddBtn.disabled = true;
         qmAddBtn.classList.add("opacity-40", "cursor-not-allowed", "pointer-events-none", "bg-stone-100", "text-stone-400", "border-stone-200");
         qmAddBtn.classList.remove("hover:bg-brand-500", "hover:text-white");
-        if (qmAddSpan) qmAddSpan.textContent = "OUT OF STOCK";
+        if (qmAddSpan) qmAddSpan.textContent = "Sold out";
       }
       if (qmBuyBtn) {
         qmBuyBtn.disabled = true;
         qmBuyBtn.classList.add("opacity-40", "cursor-not-allowed", "pointer-events-none", "bg-stone-200", "text-stone-400");
         qmBuyBtn.classList.remove("hover:bg-black");
-        if (qmBuySpan) qmBuySpan.textContent = "OUT OF STOCK";
+        if (qmBuySpan) qmBuySpan.textContent = "Sold out";
       }
     } else {
       if (qmAddBtn) {
         qmAddBtn.disabled = false;
         qmAddBtn.classList.remove("opacity-40", "cursor-not-allowed", "pointer-events-none", "bg-stone-100", "text-stone-400", "border-stone-200");
         qmAddBtn.classList.add("hover:bg-brand-500", "hover:text-white");
-        if (qmAddSpan) qmAddSpan.textContent = "ADD TO CART";
+        if (qmAddSpan) qmAddSpan.textContent = "Add to cart";
       }
       if (qmBuyBtn) {
         qmBuyBtn.disabled = false;
         qmBuyBtn.classList.remove("opacity-40", "cursor-not-allowed", "pointer-events-none", "bg-stone-200", "text-stone-400");
         qmBuyBtn.classList.add("hover:bg-black");
-        if (qmBuySpan) qmBuySpan.textContent = "BUY NOW";
+        if (qmBuySpan) qmBuySpan.textContent = "Order now";
       }
     }
   }
@@ -1118,7 +1118,7 @@
         options.forEach((optVal) => {
           const btn = document.createElement("button");
           btn.type = "button";
-          btn.className = "qm-variant-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-stone-200 text-stone-700 hover:border-stone-400 transition-all cursor-pointer";
+          btn.className = "qm-variant-btn min-w-[44px] h-10 px-3.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-700 hover:border-stone-400 transition-all cursor-pointer";
           btn.setAttribute("data-value", optVal);
           btn.textContent = optVal;
 
@@ -1142,7 +1142,23 @@
           flex.appendChild(btn);
         });
 
-        groupDiv.appendChild(label);
+        // Size groups get the size guide link when the shop has one switched on
+        if (/size/i.test(type) && document.getElementById("sizeGuideModal")) {
+          const head = document.createElement("div");
+          head.className = "flex items-center justify-between mb-1.5";
+          label.classList.remove("mb-1.5");
+          const guide = document.createElement("button");
+          guide.type = "button";
+          guide.setAttribute("data-open-size-guide", "");
+          guide.dataset.categoryHint = data.category || type;
+          guide.className = "text-[11px] font-semibold text-stone-500 hover:text-stone-900 underline underline-offset-2";
+          guide.textContent = "Size guide";
+          head.appendChild(label);
+          head.appendChild(guide);
+          groupDiv.appendChild(head);
+        } else {
+          groupDiv.appendChild(label);
+        }
         groupDiv.appendChild(flex);
         qmVariantsBox.appendChild(groupDiv);
       });
@@ -1336,7 +1352,9 @@
       return;
     }
 
-    addToCart(productId, 1, null, btn.dataset.title, false, null, null, btn);
+    // "Order now" on a card skips the cart drawer and goes straight to checkout
+    const orderNow = btn.dataset.orderNow === "true";
+    addToCart(productId, 1, null, btn.dataset.title, false, orderNow ? "/checkout" : null, null, btn);
   }
 
   document.addEventListener("click", (e) => {

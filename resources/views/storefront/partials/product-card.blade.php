@@ -18,6 +18,7 @@
       $variantsGrouped = collect($skusGrouped)->map(fn($vals) => collect($vals)->unique()->values());
   }
   $hasVariants = $variantsGrouped->isNotEmpty();
+  $opts = \App\Support\ProductCardOptions::for($product);
 @endphp
 
 <article class="fk-card product-card group relative flex flex-col bg-white rounded-2xl border border-stone-200/90 hover:border-brand-500/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden">
@@ -70,10 +71,35 @@
       {{ $product->name }}
     </a>
 
-    {{-- Price Row --}}
+    {{-- Variations at a glance: colour dots and a size line; the picker does the choosing --}}
+    @if($opts['colors'] || $opts['sizeLabel'] || $opts['otherLabel'])
+      <div class="flex items-center gap-1.5 min-w-0 mb-1.5 text-[10.5px] sm:text-[11px] text-stone-500 font-medium" data-card-options>
+        @if($opts['colors'])
+          <span class="flex items-center gap-1 shrink-0" aria-label="Colours: {{ collect($opts['colors'])->pluck('name')->join(', ') }}">
+            @foreach($opts['colors'] as $c)
+              <span class="h-3.5 w-3.5 rounded-full border border-stone-300/80 {{ $c['swatch'] ? '' : 'bg-stone-200' }}" @if($c['swatch']) style="background-color: {{ $c['swatch'] }}" @endif title="{{ $c['name'] }}"></span>
+            @endforeach
+          </span>
+          @if($opts['moreColors'])<span class="shrink-0">+{{ $opts['moreColors'] }}</span>@endif
+        @endif
+        @if($opts['sizeLabel'])
+          @if($opts['colors'])<span class="text-stone-300" aria-hidden="true">·</span>@endif
+          <span class="truncate">{{ $opts['sizeLabel'] }}</span>
+        @elseif($opts['otherLabel'])
+          @if($opts['colors'])<span class="text-stone-300" aria-hidden="true">·</span>@endif
+          <span class="truncate">{{ $opts['otherLabel'] }}</span>
+        @endif
+      </div>
+    @endif
+
+    {{-- Price Row: "From" when the variations cost different amounts --}}
     <div class="fk-card-price product-card-price flex items-baseline gap-1.5 sm:gap-2 flex-wrap mb-2">
-      <span class="fk-price text-xs sm:text-base font-extrabold text-stone-900 tracking-tight">{{ money($product->price) }}</span>
-      @if($product->on_sale)
+      @if($opts['fromPrice'])
+        <span class="fk-price text-xs sm:text-base font-extrabold text-stone-900 tracking-tight"><span class="text-[10px] sm:text-xs font-semibold text-stone-500 mr-0.5">From</span>{{ money($opts['fromPrice']) }}</span>
+      @else
+        <span class="fk-price text-xs sm:text-base font-extrabold text-stone-900 tracking-tight">{{ money($product->price) }}</span>
+      @endif
+      @if($product->on_sale && ! $opts['fromPrice'])
         <span class="fk-price-was text-[10px] sm:text-xs text-stone-400 line-through font-medium">{{ money($product->regular_price) }}</span>
       @endif
     </div>
@@ -100,38 +126,32 @@
       </div>
     @endif
 
-    {{-- Modern Split Action Buttons (View Details + Quick Add Bag) --}}
+    {{-- Actions: Order now (opens the option picker when there are variations) plus a quick add-to-cart bag.
+         The photo and name already open the product page. --}}
+    @php
+      $cartData = [
+        'product-id' => $product->id, 'title' => $product->name, 'stock' => $product->stock_quantity,
+        'price' => money($product->price), 'raw-price' => (float) $product->price,
+        'regular-price' => $product->on_sale ? money($product->regular_price) : '',
+        'raw-regular-price' => $product->on_sale && $product->regular_price ? (float) $product->regular_price : '',
+        'discount' => $discount, 'image' => $img, 'url' => route('product.show', $product),
+        'has-variants' => $hasVariants ? 'true' : 'false', 'variants' => json_encode($variantsGrouped),
+        'skus' => json_encode($product->skus ? $product->skus->map(fn($s) => ['id' => $s->id, 'attributes' => $s->getAttributesData(), 'stock' => (int) $s->stock_quantity, 'price_adjustment' => (float) $s->price_adjustment, 'regular_price' => $s->getCalculatedRegularPrice(), 'sale_price' => $s->getCalculatedSalePrice()])->values() : []),
+      ];
+    @endphp
     @if($isOutOfStock)
-      <div class="flex items-center gap-2 sm:gap-2.5 mt-auto pt-1 w-full relative z-10">
-        <a href="{{ route('product.show', $product) }}" class="flex-1 min-w-0 h-9 sm:h-10 bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 transition-all select-none rounded-xl">
-          <svg class="pc-eye w-4 h-4 shrink-0 text-stone-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-          <span class="truncate">View Details</span>
-        </a>
-        <button type="button" disabled class="w-9 sm:w-10 h-9 sm:h-10 bg-stone-100 text-stone-400 flex items-center justify-center shrink-0 cursor-not-allowed border border-stone-200 rounded-xl" title="Out of Stock">
-          <svg class="w-[18px] h-[18px] shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-        </button>
+      <div class="flex items-center mt-auto pt-1 w-full relative z-10">
+        <button type="button" disabled class="flex-1 min-w-0 h-9 sm:h-10 bg-stone-100 text-stone-500 font-bold text-xs sm:text-[13px] flex items-center justify-center rounded-xl cursor-not-allowed select-none">Sold out</button>
       </div>
     @else
       <div class="flex items-center gap-2 sm:gap-2.5 mt-auto pt-1 w-full relative z-10">
-        <a href="{{ route('product.show', $product) }}" class="flex-1 min-w-0 h-9 sm:h-10 font-semibold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 text-white transition-all shadow-xs hover:shadow-md active:scale-[0.98] select-none btn-view-details rounded-xl" style="background-color: var(--brand-primary, #1D68FE);">
-          <svg class="pc-eye w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-          <span class="truncate">View Details</span>
-        </a>
-        <button type="button" class="fk-add-btn fk-icon-only add-to-cart w-9 sm:w-10 h-9 sm:h-10 text-white flex items-center justify-center shrink-0 shadow-xs hover:shadow-md active:scale-95 transition-all cursor-pointer select-none touch-manipulation rounded-xl" 
-                aria-label="Add to Cart"
-                data-product-id="{{ $product->id }}" 
-                data-title="{{ $product->name }}" 
-                data-stock="{{ $product->stock_quantity }}"
-                data-price="{{ money($product->price) }}"
-                data-raw-price="{{ (float) $product->price }}"
-                data-regular-price="{{ $product->on_sale ? money($product->regular_price) : '' }}"
-                data-raw-regular-price="{{ $product->on_sale && $product->regular_price ? (float) $product->regular_price : '' }}"
-                data-discount="{{ $discount }}"
-                data-image="{{ $img }}"
-                data-url="{{ route('product.show', $product) }}"
-                data-has-variants="{{ $hasVariants ? 'true' : 'false' }}"
-                data-variants="{{ json_encode($variantsGrouped) }}"
-                data-skus="{{ json_encode($product->skus ? $product->skus->map(fn($s) => ['id' => $s->id, 'attributes' => $s->getAttributesData(), 'stock' => (int) $s->stock_quantity, 'price_adjustment' => (float) $s->price_adjustment, 'regular_price' => $s->getCalculatedRegularPrice(), 'sale_price' => $s->getCalculatedSalePrice()])->values() : []) }}">
+        <button type="button" class="add-to-cart flex-1 min-w-0 h-9 sm:h-10 font-semibold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 text-white transition-all shadow-xs hover:shadow-md active:scale-[0.98] select-none touch-manipulation cursor-pointer btn-view-details rounded-xl" style="background-color: var(--brand-primary, #1D68FE);"
+                data-order-now="true" @foreach($cartData as $k => $v) data-{{ $k }}="{{ $v }}" @endforeach>
+          <span class="truncate">Order now</span>
+        </button>
+        <button type="button" class="fk-add-btn fk-icon-only add-to-cart w-9 sm:w-10 h-9 sm:h-10 text-white flex items-center justify-center shrink-0 shadow-xs hover:shadow-md active:scale-95 transition-all cursor-pointer select-none touch-manipulation rounded-xl"
+                aria-label="Add to cart" title="Add to cart"
+                @foreach($cartData as $k => $v) data-{{ $k }}="{{ $v }}" @endforeach>
           <svg class="w-[18px] h-[18px] shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
         </button>
       </div>
