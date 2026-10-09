@@ -65,6 +65,13 @@
   .admin-main main .text-2xl { font-size: 1.25rem; line-height: 1.75rem; }
   /* Wide tables scroll sideways instead of squashing their columns */
   .admin-main main .overflow-x-auto > table { min-width: 620px; }
+  /* Phone page heading: smaller title, two-line subtitle, slimmer action pills */
+  .page-head h1 { font-size: 1.125rem; }
+  .page-head p { font-size: .75rem; line-height: 1.1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .page-head .pill-btn { height: 2.125rem; padding: 0 .8rem; gap: .375rem; font-size: .75rem; }
+  .page-head .pill-btn-dark { padding-left: .25rem; }
+  .page-head .pill-btn .pill-ico { width: 1.375rem; height: 1.375rem; }
+  .page-head .pill-btn-dark .pill-ico { width: 1.625rem; height: 1.625rem; }
 }
 /* Small phones (320-399px, beside the icon rail): stat tiles drop their icon chip
    and let labels wrap, and a search box takes its own line above its buttons */

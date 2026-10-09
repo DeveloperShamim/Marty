@@ -51,7 +51,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div class="relative">
             <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style="color: var(--brand-dark);" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M8 8v8M12 8v8M16 8v8"/></svg>
-            <input type="text" id="barcodeScanInput" autofocus placeholder="Scan barcode (F2)" class="w-full h-10 pl-10 pr-11 rounded-full bg-white border border-gray-200 text-sm font-mono text-gray-900 placeholder-gray-400 placeholder:font-sans focus:border-gray-300 outline-none">
+            <input type="text" id="barcodeScanInput" placeholder="Scan barcode (F2)" class="w-full h-10 pl-10 pr-11 rounded-full bg-white border border-gray-200 text-sm font-mono text-gray-900 placeholder-gray-400 placeholder:font-sans focus:border-gray-300 outline-none">
             <button type="button" onclick="openPosCamera()" class="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-800 grid place-items-center" title="Scan with camera" aria-label="Scan with camera">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
             </button>
@@ -342,7 +342,7 @@
     const barcodeInput = document.getElementById('barcodeScanInput');
     
     // Only autofocus barcode on non-mobile devices to avoid unwanted keyboard popup on small phones
-    if (window.innerWidth >= 1024) {
+    if (window.matchMedia('(min-width: 1024px) and (hover: hover)').matches) {
       barcodeInput.focus();
     }
 
@@ -552,7 +552,7 @@
 
   function closeVariantModal() {
     document.getElementById('variantModal').classList.add('hidden');
-    if (window.innerWidth >= 1024) {
+    if (window.matchMedia('(min-width: 1024px) and (hover: hover)').matches) {
       document.getElementById('barcodeScanInput').focus();
     }
   }
@@ -843,7 +843,7 @@
 
   function closeReceiptModal() {
     document.getElementById('receiptModal').classList.add('hidden');
-    if (window.innerWidth >= 1024) {
+    if (window.matchMedia('(min-width: 1024px) and (hover: hover)').matches) {
       document.getElementById('barcodeScanInput').focus();
     }
   }

@@ -45,7 +45,7 @@
         <h2 class="text-[15px] font-semibold text-gray-900">Order pipeline</h2>
         <span class="text-xs text-gray-500 tabular-nums">{{ number_format($counts['all'] ?? 0) }} orders in total</span>
       </div>
-      <div class="mt-3 sm:mt-4 grid grid-cols-4 sm:grid-cols-2 gap-1.5 sm:gap-2.5">
+      <div class="mt-2.5 sm:mt-4 grid grid-cols-4 sm:grid-cols-2 gap-1.5 sm:gap-2.5">
         @foreach([
           ['pending_verification', 'To review', 'var(--brand)'],
           ['not_printed', 'Not printed', '#a8a29e'],
@@ -53,12 +53,12 @@
           ['shipped', 'With courier', 'var(--brand-dark)'],
         ] as [$key, $label, $dot])
           <a href="{{ route('admin.orders.index', ['status' => $key]) }}"
-             class="group rounded-2xl p-2.5 sm:p-3.5 transition-colors {{ $status === $key ? 'text-white' : 'bg-gray-50 hover:bg-gray-100' }}"
+             class="group rounded-xl sm:rounded-2xl px-2 py-2 sm:p-3.5 transition-colors min-w-0 {{ $status === $key ? 'text-white' : 'bg-gray-50 hover:bg-gray-100' }}"
              @if($status === $key) style="background: var(--brand-dark);" @endif>
-            <span class="flex items-center gap-1.5 text-[11px] sm:text-xs leading-tight {{ $status === $key ? 'text-white/70' : 'text-gray-500' }}">
+            <span class="flex items-center gap-1.5 text-[10.5px] sm:text-xs leading-tight {{ $status === $key ? 'text-white/70' : 'text-gray-500' }}">
               <span class="hidden sm:block h-2 w-2 rounded-full shrink-0" style="background: {{ $status === $key ? '#fff' : $dot }};"></span>{{ $label }}
             </span>
-            <span class="mt-1 block text-xl sm:text-2xl font-semibold tracking-tight tabular-nums">{{ number_format($counts[$key] ?? 0) }}</span>
+            <span class="mt-0.5 sm:mt-1 block text-lg sm:text-2xl font-semibold tracking-tight tabular-nums">{{ number_format($counts[$key] ?? 0) }}</span>
           </a>
         @endforeach
       </div>
@@ -78,7 +78,7 @@
               <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-600">Auto update off</span>
             @endif
           </h2>
-          <p class="mt-1 text-xs text-gray-500 leading-relaxed">
+          <p class="mt-1 text-[11.5px] sm:text-xs text-gray-500 leading-snug sm:leading-relaxed">
             Steadfast, Pathao and RedX parcels are checked every night at 9:00 PM.
             @if($lastSync && !empty($lastSync['at']))
               @php $syncedAt = \Illuminate\Support\Carbon::parse($lastSync['at'])->timezone(config('app.timezone')); @endphp
@@ -95,27 +95,27 @@
         @if($canCourier)
           <form method="POST" action="{{ route('admin.courier-scan.sync') }}" class="shrink-0" onsubmit="this.querySelector('button').disabled = true; this.querySelector('[data-label]').textContent = 'Checking...';">
             @csrf
-            <button type="submit" class="h-9 px-3.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors disabled:opacity-60">
+            <button type="submit" class="h-8 sm:h-9 px-3 sm:px-3.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors disabled:opacity-60">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
               <span data-label>Check now</span>
             </button>
           </form>
         @endif
       </div>
-      <div class="mt-3 sm:mt-4 grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2.5">
+      <div class="mt-2.5 sm:mt-4 grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2.5">
         @foreach(\App\Http\Controllers\Admin\OrderController::COURIER_FILTERS as $key => $label)
           @php $on = $courier === $key; @endphp
           <a href="{{ $on ? route('admin.orders.index', ['q' => $q, 'method' => $method]) : route('admin.orders.index', ['courier' => $key, 'q' => $q, 'method' => $method]) }}"
-             class="rounded-2xl p-2.5 sm:p-3.5 transition-colors ring-1 {{ $on ? 'ring-transparent text-white' : 'ring-gray-100 hover:bg-gray-50' }}"
+             class="rounded-xl sm:rounded-2xl px-2.5 py-2 sm:p-3.5 transition-colors ring-1 min-w-0 {{ $on ? 'ring-transparent text-white' : 'ring-gray-100 hover:bg-gray-50' }}"
              @if($on) style="background: var(--brand-dark);" @endif
              @if($on) aria-current="true" title="Show all orders again" @endif>
             <span class="flex items-center justify-between gap-2">
-              <span class="grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-xl {{ $on ? 'bg-white/15 text-white' : $courierTone[$key] }}">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $courierStatusIcon[$key] !!}</svg>
+              <span class="grid h-6 w-6 sm:h-8 sm:w-8 place-items-center rounded-lg sm:rounded-xl {{ $on ? 'bg-white/15 text-white' : $courierTone[$key] }}">
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $courierStatusIcon[$key] !!}</svg>
               </span>
-              <span class="text-xl sm:text-2xl font-semibold tracking-tight tabular-nums">{{ number_format($courierCounts[$key] ?? 0) }}</span>
+              <span class="text-lg sm:text-2xl font-semibold tracking-tight tabular-nums">{{ number_format($courierCounts[$key] ?? 0) }}</span>
             </span>
-            <span class="mt-2 block text-xs font-medium {{ $on ? 'text-white/80' : 'text-gray-600' }}">{{ $label }}</span>
+            <span class="mt-1 sm:mt-2 block text-[11px] sm:text-xs leading-tight font-medium {{ $on ? 'text-white/80' : 'text-gray-600' }}">{{ $label }}</span>
           </a>
         @endforeach
       </div>

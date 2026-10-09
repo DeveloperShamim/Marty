@@ -82,7 +82,7 @@
           <label class="lbl" for="dispatchScanInput">Scan parcel barcode or order number</label>
           <div class="flex gap-2">
             <div class="relative flex-1 min-w-0">
-              <input type="text" id="dispatchScanInput" autofocus placeholder="Scan or type order number" class="w-full h-11 pl-10 pr-20 rounded-xl border border-gray-200 bg-white text-sm font-mono font-medium text-gray-900 placeholder-gray-400">
+              <input type="text" id="dispatchScanInput" placeholder="Scan or type order number" class="w-full h-11 pl-10 pr-20 rounded-xl border border-gray-200 bg-white text-sm font-mono font-medium text-gray-900 placeholder-gray-400">
               <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M8 8v8M12 8v8M16 8v8"/></svg>
               </div>
@@ -349,6 +349,9 @@
 @push('scripts')
 <script src="{{ asset('theme/js/camera-scanner.js') }}?v={{ @filemtime(public_path('theme/js/camera-scanner.js')) ?: '1' }}"></script>
 <script>
+  // Only jump into the scan box on a desktop with a mouse; on phones and tablets it would pop the keyboard open.
+  const canAutoFocus = () => window.matchMedia('(min-width: 1024px) and (hover: hover)').matches;
+
   let scanAudioCtx = null;
 
   function playSound(type = 'success') {
@@ -393,13 +396,13 @@
       btnReturn.className = "h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium inline-flex items-center gap-1.5 transition-colors text-gray-600 hover:bg-gray-100";
       contentDispatch.classList.remove('hidden');
       contentReturn.classList.add('hidden');
-      document.getElementById('dispatchScanInput').focus();
+      if (canAutoFocus()) document.getElementById('dispatchScanInput').focus();
     } else {
       btnReturn.className = "h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium inline-flex items-center gap-1.5 transition-colors text-white bg-amber-600";
       btnDispatch.className = "h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium inline-flex items-center gap-1.5 transition-colors text-gray-600 hover:bg-gray-100";
       contentReturn.classList.remove('hidden');
       contentDispatch.classList.add('hidden');
-      document.getElementById('returnScanInput').focus();
+      if (canAutoFocus()) document.getElementById('returnScanInput').focus();
     }
   }
 
@@ -425,7 +428,7 @@
     } catch(e) {}
 
     const dispatchInput = document.getElementById('dispatchScanInput');
-    dispatchInput.focus();
+    if (canAutoFocus()) dispatchInput.focus();
 
     dispatchInput.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
@@ -666,7 +669,7 @@
 
   function closeReturnModal() {
     document.getElementById('returnDecisionModal').classList.add('hidden');
-    document.getElementById('returnScanInput').focus();
+    if (canAutoFocus()) document.getElementById('returnScanInput').focus();
   }
 
   function submitReturnConfirm() {
