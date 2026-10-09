@@ -140,9 +140,11 @@
 
 /* ---- Brand glass look on every admin page, built only from the store's theme colours (Settings > theme):
    --brand (primary), --brand-dark (dark), --brand-surface (surface), --brand-soft and --brand-border (tints of primary) ---- */
+/* A calm, near-neutral backdrop: the theme surface and tint, mostly mixed with a soft off-white so the page is easy on the eyes */
 body.admin-body {
-  background-color: var(--brand-surface);
-  background-image: linear-gradient(180deg, var(--brand-soft) 0, var(--brand-surface) 34rem);
+  --admin-bg: color-mix(in srgb, var(--brand-surface) 30%, #f6f6f5);
+  background-color: var(--admin-bg);
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--brand-soft) 30%, var(--admin-bg)) 0, var(--admin-bg) 28rem);
   background-repeat: no-repeat;
 }
 /* Frosted surfaces: the sidebar, icon rail, top bar and every top-level card on a page.
@@ -155,7 +157,7 @@ body.admin-body {
   -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%);
 }
 /* Tables: header rows in a light brand tint, rows hover in white */
-.admin-main main table thead { background: color-mix(in srgb, var(--brand-soft) 55%, transparent); }
+.admin-main main table thead { background: color-mix(in srgb, var(--brand-soft) 35%, transparent); }
 .admin-main main table tbody tr:hover { background-color: rgba(255,255,255,.6); }
 .admin-body .pill-btn:not(.pill-btn-dark) { background: rgba(255,255,255,.8); border: 1px solid color-mix(in srgb, var(--brand-border) 55%, transparent); }
 /* Dashboard: brand-tinted cards (Top products, Sales by day, Store performance, Recent orders) */
