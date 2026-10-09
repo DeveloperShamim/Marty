@@ -47,7 +47,7 @@
     :root {
       --brand: {{ $p }}; --primary: {{ $p }}; --brand-primary: {{ $p }};
       --brand-700: {{ $theme['primary_hover'] }}; --brand-hover: {{ $theme['primary_hover'] }};
-      --brand-soft: {{ $scale[50] }}; --brand-ring: {{ $scale[300] }};
+      --brand-soft: {{ $theme['primary_soft_bg'] }}; --brand-border: {{ $theme['primary_border'] }}; --brand-surface: {{ $theme['surface'] }}; --brand-ring: {{ $scale[300] }};
       --ink: {{ $d }}; --brand-dark: {{ $d }};
     }
   </style>

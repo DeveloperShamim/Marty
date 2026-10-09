@@ -138,36 +138,36 @@
 .pill-btn-dark .pill-ico { margin: 0 .125rem 0 0; width: 1.75rem; height: 1.75rem; background: rgba(255,255,255,.14); }
 .panel { background: #fff; border-radius: 18px; box-shadow: 0 1px 2px rgba(28,25,23,.03), 0 12px 32px -20px rgba(28,25,23,.18); }
 
-/* ---- Dashboard glass look: a soft warm backdrop behind frosted, translucent cards ---- */
+/* ---- Dashboard glass look, built only from the store's theme colours (Settings > theme):
+   --brand (primary), --brand-dark (dark), --brand-surface (surface), --brand-soft and --brand-border (tints of primary) ---- */
 body:has(.dash-glass) {
-  background-color: #f3ece5;
-  background-image:
-    radial-gradient(40rem 30rem at 6% 4%, color-mix(in srgb, var(--brand) 38%, transparent), transparent 70%),
-    radial-gradient(36rem 28rem at 94% 10%, rgba(244,180,130,.55), transparent 70%),
-    radial-gradient(44rem 32rem at 72% 98%, color-mix(in srgb, var(--brand-dark) 22%, transparent), transparent 70%),
-    radial-gradient(34rem 28rem at 14% 92%, rgba(232,206,184,.9), transparent 70%),
-    linear-gradient(160deg, #f8f2ec, #eee3d8);
-  background-attachment: fixed;
+  background-color: var(--brand-surface);
+  background-image: linear-gradient(180deg, var(--brand-soft) 0, var(--brand-surface) 34rem);
+  background-repeat: no-repeat;
 }
 body:has(.dash-glass) :is(#sidebar .sidebar-nav, #sidebar nav + div, #mobileRail, header.sticky),
-.dash-glass :is(.panel, [data-tint]) {
-  background: rgba(255,255,255,.52);
-  border: 1px solid rgba(255,255,255,.75);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 1px 2px rgba(60,40,20,.04), 0 18px 40px -24px rgba(60,40,20,.28);
-  -webkit-backdrop-filter: blur(22px) saturate(170%); backdrop-filter: blur(22px) saturate(170%);
+.dash-glass .panel {
+  background: rgba(255,255,255,.72);
+  border: 1px solid color-mix(in srgb, var(--brand-border) 55%, transparent);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--brand-dark) 5%, transparent), 0 16px 36px -26px color-mix(in srgb, var(--brand-dark) 40%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%);
 }
-/* Tinted cards keep a hint of the brand colour */
-.dash-glass [data-tint] { background: color-mix(in srgb, var(--brand) 7%, rgba(255,255,255,.42)); }
-/* Things sitting on a glass card: lighter frosted fills instead of solid white or grey */
-.dash-glass .tp-card { background: rgba(255,255,255,.78); }
-.dash-glass .panel :is(.bg-gray-50, .bg-stone-50) { background-color: rgba(255,255,255,.55); }
-.dash-glass .panel :is(.bg-white.border.rounded-xl, .bg-white.border.rounded-2xl, .bg-white.rounded-xl.border, .bg-white.rounded-2xl.border) { background: rgba(255,255,255,.5); border-color: rgba(255,255,255,.8); }
+/* Brand-tinted cards (Top products, Sales by day, Store performance, Recent orders) */
+.dash-glass [data-tint] {
+  background: color-mix(in srgb, var(--brand-soft) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand-border) 55%, transparent);
+  box-shadow: 0 16px 36px -28px color-mix(in srgb, var(--brand-dark) 40%, transparent);
+}
+/* Things sitting on a card: white or light brand fills instead of grey */
+.dash-glass .tp-card { background: #fff; }
+.dash-glass .panel :is(.bg-gray-50, .bg-stone-50) { background-color: color-mix(in srgb, var(--brand-soft) 60%, #fff); }
+.dash-glass .panel .bg-gray-50\/60 { background-color: color-mix(in srgb, var(--brand-soft) 35%, #fff); }
+.dash-glass .panel :is(.bg-white.border.rounded-xl, .bg-white.border.rounded-2xl, .bg-white.rounded-xl.border, .bg-white.rounded-2xl.border) { background: #fff; border-color: color-mix(in srgb, var(--brand-border) 50%, transparent); }
 .dash-glass table thead { background: transparent; }
-.dash-glass table tbody tr:hover { background-color: rgba(255,255,255,.45); }
-body:has(.dash-glass) .pill-btn:not(.pill-btn-dark) { background: rgba(255,255,255,.6); border: 1px solid rgba(255,255,255,.8); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
-/* Phones: fewer blur layers, slightly more opaque cards so text stays crisp and scrolling stays smooth */
+.dash-glass table tbody tr:hover { background-color: rgba(255,255,255,.6); }
+body:has(.dash-glass) .pill-btn:not(.pill-btn-dark) { background: rgba(255,255,255,.8); border: 1px solid color-mix(in srgb, var(--brand-border) 55%, transparent); }
+/* Phones: no blur layers, so text stays crisp and scrolling stays smooth */
 @media (max-width: 639px) {
-  .dash-glass :is(.panel, [data-tint]) { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(255,255,255,.66); }
-  .dash-glass [data-tint] { background: color-mix(in srgb, var(--brand) 7%, rgba(255,255,255,.58)); }
+  .dash-glass .panel { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(255,255,255,.85); }
 }
-@media (max-width: 1023px) { body:has(.dash-glass) #sidebar :is(.sidebar-nav, nav + div) { background: rgba(255,255,255,.82); } }
+@media (max-width: 1023px) { body:has(.dash-glass) #sidebar :is(.sidebar-nav, nav + div) { background: rgba(255,255,255,.94); } }
