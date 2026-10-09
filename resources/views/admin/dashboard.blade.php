@@ -403,7 +403,8 @@
     $perfParts = [
       ['Delivered', $deliveredCount ?? 0, 'var(--brand)'],
       ['In progress', $ordersCount ?? 0, 'color-mix(in srgb, var(--brand) 45%, #fff)'],
-      ['Returned or cancelled', ($returnedOrdersCount ?? 0) + ($cancelledOrdersCount ?? 0), 'var(--brand-dark)'],
+      ['Returned', $returnedOrdersCount ?? 0, 'var(--brand-dark)'],
+      ['Cancelled', $cancelledOrdersCount ?? 0, 'var(--brand-border)'],
     ];
     $perfTotal = max(1, collect($perfParts)->sum(1));
     // Two-row pages fill column by column, so on wide screens each page of 6 gets a CSS order that reads #1 #2 #3 across the top row
@@ -508,10 +509,12 @@
             </a>
           </div>
           <p class="mt-3 text-[28px] leading-none font-semibold tracking-tight text-gray-900 tabular-nums" title="{{ number_format($deliveredCount ?? 0) }} delivered, {{ number_format($returnedOrdersCount ?? 0) }} returned">{{ $successRate }}%</p>
-          <div class="mt-auto pt-3 grid grid-cols-3 gap-2">
+          <p class="mt-1 text-[11px] text-gray-500">{{ number_format($deliveredCount ?? 0) }} delivered &middot; {{ number_format($returnedOrdersCount ?? 0) }} returned</p>
+          <div class="mt-auto pt-3 grid grid-cols-4 gap-2">
             <div class="min-w-0"><span class="block text-[11px] text-gray-500 truncate">Orders</span><span class="block text-sm font-semibold text-gray-900 tabular-nums">{{ number_format($allOrdersCount) }}</span></div>
             <div class="min-w-0"><span class="block text-[11px] text-gray-500 truncate">Items sold</span><span class="block text-sm font-semibold text-gray-900 tabular-nums">{{ number_format($itemsSold) }}</span></div>
             <div class="min-w-0"><span class="block text-[11px] text-gray-500 truncate">Customers</span><span class="block text-sm font-semibold text-gray-900 tabular-nums">{{ number_format($customersCount) }}</span></div>
+            <div class="min-w-0"><span class="block text-[11px] text-gray-500 truncate">Returned</span><span class="block text-sm font-semibold tabular-nums" style="color: var(--brand-dark);">{{ number_format($returnedOrdersCount ?? 0) }}</span></div>
           </div>
           <div class="mt-2.5 flex h-2.5 gap-1">
             @foreach($perfParts as [$label, $count, $color])
