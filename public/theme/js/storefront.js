@@ -904,19 +904,6 @@
     btn.appendChild(document.createTextNode(val));
   }
 
-  // When a group has only one option left in stock, pick it so the shopper taps less
-  function qmAutoPickSingles() {
-    for (let pass = 0; pass < 3; pass++) {
-      let picked = false;
-      $$("[data-qm-variant-group]").forEach((group) => {
-        if (group.querySelector(".qm-variant-btn.is-selected")) return;
-        const open = [...group.querySelectorAll(".qm-variant-btn")].filter((b) => !b.disabled);
-        if (open.length === 1) { open[0].click(); picked = true; }
-      });
-      if (!picked) break;
-    }
-  }
-
   function updateQuickModalVariantAvailability() {
     if (!currentQmProduct || !currentQmProduct.skus) return;
 
@@ -1258,8 +1245,8 @@
       });
 
       updateQuickModalVariantAvailability();
+      // Nothing is pre-selected: the shopper picks every option themselves
       syncQuickModalPrice();
-      qmAutoPickSingles();
     }
 
     // Show modal
