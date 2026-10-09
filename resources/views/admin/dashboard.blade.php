@@ -404,7 +404,7 @@
     // Bottom block: Top products on the left; Sales by day, Store performance and Recent orders on the right
     $both = $canMoney && $canOrders;
     $dayMax = max(1, $salesByDay->max('value'));
-    $dayTones = ['var(--brand)', 'color-mix(in srgb, var(--brand) 45%, #fff)', 'var(--brand-dark)'];
+    $bestDay = $salesByDay->max('value');
     $perfParts = [
       ['Delivered', $deliveredCount ?? 0, 'var(--brand)'],
       ['In progress', $ordersCount ?? 0, 'color-mix(in srgb, var(--brand) 45%, #fff)'],
@@ -480,16 +480,22 @@
         <div class="rounded-[22px] p-4 min-w-0" data-tint>
           <h2 class="text-[15px] font-semibold text-gray-900">Sales by day</h2>
           <p class="text-xs text-gray-500 mt-0.5">Last 7 days &middot; <span class="font-semibold text-gray-800">{{ money($salesByDay->sum('value')) }}</span></p>
-          <div class="mt-3 flex items-end gap-1.5 sm:gap-2 h-24">
+          {{-- Every day gets the same track; the fill is the brand brown, the best day dark brown, and an empty day shows only its track --}}
+          <div class="mt-3 grid grid-cols-7 gap-1 h-24">
             @foreach($salesByDay as $day)
-              <div class="flex-1 h-full flex items-end" title="{{ $day['date'] }}: {{ money($day['value']) }}">
-                <div class="w-full rounded-full" style="height: {{ $day['value'] > 0 ? max(14, round($day['value'] / $dayMax * 100)) : 10 }}%; background: {{ $day['value'] > 0 ? $dayTones[$loop->index % 3] : '#e7e5e4' }};"></div>
+              @php $isBest = $day['value'] > 0 && $day['value'] == $bestDay; @endphp
+              <div class="flex justify-center" title="{{ $day['date'] }}: {{ money($day['value']) }}">
+                <div class="relative h-full w-3.5 sm:w-4 rounded-full overflow-hidden" style="background: color-mix(in srgb, var(--brand-border) 45%, #fff);">
+                  @if($day['value'] > 0)
+                    <div class="absolute inset-x-0 bottom-0 rounded-full" style="height: max(1rem, {{ round($day['value'] / $dayMax * 100) }}%); background: {{ $isBest ? 'var(--brand-dark)' : 'var(--brand)' }};"></div>
+                  @endif
+                </div>
               </div>
             @endforeach
           </div>
-          <div class="mt-2 flex gap-1.5 sm:gap-2 text-[11px] text-gray-500">
+          <div class="mt-2 grid grid-cols-7 gap-1 text-[11px] text-gray-500">
             @foreach($salesByDay as $day)
-              <span class="flex-1 text-center {{ $day['is_today'] ? 'font-semibold' : '' }}" @if($day['is_today']) style="color: var(--brand);" @endif>{{ $day['label'] }}</span>
+              <span class="text-center {{ $day['is_today'] ? 'font-semibold' : '' }}" @if($day['is_today']) style="color: var(--brand-dark);" @endif>{{ $day['label'] }}</span>
             @endforeach
           </div>
         </div>
