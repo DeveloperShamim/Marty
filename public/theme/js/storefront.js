@@ -1816,26 +1816,28 @@
   })();
 
   // One-line product rows ([data-auto-row]: homepage category rows, "You may also like") slide by themselves:
-  // one card every few seconds, back to the start at the end. They wait while touched, hovered or off screen,
-  // and stay still for people who prefer reduced motion.
+  // one card every few seconds, back to the start at the end. They wait a moment after a touch or swipe, while
+  // a mouse is over them, and while off screen. People who prefer reduced motion get a jump instead of a glide.
   (function () {
     const rows = $$("[data-auto-row]");
-    if (!rows.length || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!rows.length) return;
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
     const STEP_MS = 3500, PAUSE_MS = 6000;
     rows.forEach((row) => {
-      let pausedUntil = 0, visible = !("IntersectionObserver" in window);
+      let pausedUntil = 0, hovered = false, visible = !("IntersectionObserver" in window);
       const pause = () => { pausedUntil = Date.now() + PAUSE_MS; };
-      ["pointerdown", "touchstart", "wheel", "focusin"].forEach((ev) => row.addEventListener(ev, pause, { passive: true }));
-      row.addEventListener("mouseenter", () => { pausedUntil = Infinity; });
-      row.addEventListener("mouseleave", () => { pausedUntil = Date.now() + 1500; });
-      if (!visible) new IntersectionObserver((entries) => { visible = entries[0].isIntersecting; }, { threshold: 0.5 }).observe(row);
+      ["touchstart", "wheel", "focusin"].forEach((ev) => row.addEventListener(ev, pause, { passive: true }));
+      // Only a real mouse holds the row still; a tap on a phone must not freeze it for good
+      row.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") hovered = true; });
+      row.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") { hovered = false; pausedUntil = Date.now() + 1500; } });
+      if (!visible) new IntersectionObserver((entries) => { visible = entries[0].isIntersecting; }, { threshold: 0.25 }).observe(row);
       setInterval(() => {
-        if (!visible || document.hidden || Date.now() < pausedUntil) return;
+        if (!visible || hovered || document.hidden || Date.now() < pausedUntil) return;
         const card = row.firstElementChild;
         if (!card || row.scrollWidth <= row.clientWidth + 4) return;
         const atEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4;
-        if (atEnd) row.scrollTo({ left: 0, behavior: "smooth" });
-        else row.scrollBy({ left: card.getBoundingClientRect().width + (parseFloat(getComputedStyle(row).columnGap) || 0), behavior: "smooth" });
+        if (atEnd) row.scrollTo({ left: 0, behavior });
+        else row.scrollBy({ left: card.getBoundingClientRect().width + (parseFloat(getComputedStyle(row).columnGap) || 0), behavior });
       }, STEP_MS);
     });
   })();

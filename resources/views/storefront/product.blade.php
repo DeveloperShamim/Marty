@@ -764,8 +764,8 @@
   {{-- Related Products: one row that slides by itself, ending in a See all card --}}
   @if($related->isNotEmpty())
     <section class="mt-10" data-related>
-      <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-4 sm:mb-6 gap-3">
-        <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">You may also like</h2>
+      <div class="flex items-end justify-between mb-4 sm:mb-6 gap-3">
+        <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">You may also like</h2>
       </div>
       <div class="flex gap-2.5 sm:gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth scroll-px-3 sm:scroll-px-0 -mx-3 px-3 sm:mx-0 sm:px-0 pb-1" data-auto-row>
         @foreach($related as $rel)

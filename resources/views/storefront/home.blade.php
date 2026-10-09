@@ -151,13 +151,12 @@
     {{-- 3. SHOP BY CATEGORY --}}
     @if($categories->isNotEmpty())
       <section class="mt-8 sm:mt-12" data-reveal>
-        {{-- Centred heading with a short brand bar; arrows sit on the right --}}
+        {{-- Centred heading; arrows sit on the right --}}
         <div class="relative flex items-center justify-center mb-4 sm:mb-6" data-centered-heading>
           <div class="text-center">
-            <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">
+            <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">
               {{ setting('home_categories_title', 'Featured Categories') }}
             </h2>
-            <span class="block mx-auto mt-2 h-1 w-10 rounded-full" style="background-color: var(--brand-primary, #8B5A2B);" aria-hidden="true"></span>
           </div>
           <div class="absolute right-0 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1.5 sm:gap-2">
             <button type="button" id="catPrev" class="h-7 w-7 sm:h-8 sm:w-8 rounded-full border border-stone-200 bg-white hover:bg-brand-500 hover:text-white hover:border-brand-500 text-stone-600 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Previous Category">
@@ -202,7 +201,7 @@
     {{-- 4. FLASH DEALS while a timed sale runs (Admin → Flash Sale "Ends at" in the future), otherwise OUR PICKS --}}
     @if($flashActive)
       <section class="mt-10 sm:mt-14" data-reveal data-home-flash>
-        <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-4 sm:mb-6 gap-3 flex-wrap">
+        <div class="flex items-end justify-between mb-4 sm:mb-6 gap-3 flex-wrap">
           <div>
             <div class="flex items-center gap-2 mb-1.5 flex-wrap">
               @if($flashEndsIso)
@@ -215,7 +214,7 @@
                 </div>
               @endif
             </div>
-            <h2 class="text-base sm:text-xl font-semibold text-stone-900 leading-tight">
+            <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">
               {{ setting('home_hot_deal_title', 'Special Flash Discounts') }}
             </h2>
           </div>
@@ -235,8 +234,7 @@
     @elseif($ourPicks->isNotEmpty())
       <section class="mt-10 sm:mt-14" data-reveal data-our-picks>
         <div class="text-center mb-4 sm:mb-6" data-centered-heading>
-          <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">{{ setting('home_picks_title', 'Top Selling Products') }}</h2>
-          <span class="block mx-auto mt-2 h-1 w-10 rounded-full" style="background-color: var(--brand-primary, #8B5A2B);" aria-hidden="true"></span>
+          <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">{{ setting('home_picks_title', 'Top Selling Products') }}</h2>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
           @foreach($ourPicks as $product)
@@ -252,9 +250,9 @@
 
     {{-- 5. CURATED PRODUCT SHOWCASE WITH INTERACTIVE SEGMENTED TABS (Solves product repetition) --}}
     <section class="mt-12 sm:mt-16" data-reveal>
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between border-b border-stone-200/80 pb-3 sm:pb-4 mb-4 sm:mb-6 gap-3 sm:gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
         <div>
-          <h2 class="text-base sm:text-xl font-semibold text-stone-900 leading-tight">
+          <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">
             Curated Collection
           </h2>
         </div>
@@ -302,9 +300,9 @@
     {{-- 6. SHOP BY BRAND: logos only, each opens the brand's page (hidden while the shop has a single brand) --}}
     @if(setting('show_featured_brands', '1') === '1' && isset($featuredBrands) && $featuredBrands->count() > 1)
       <section class="mt-14 sm:mt-16" data-reveal>
-        <div class="flex items-end justify-between mb-3 sm:mb-4 border-b border-stone-200/80 pb-2.5 sm:pb-3">
+        <div class="flex items-end justify-between mb-3 sm:mb-4">
           <div>
-            <h2 class="text-base sm:text-xl font-semibold text-stone-900 leading-tight">
+            <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">
               {{ setting('home_featured_brands_title', 'Official Brands') }}
             </h2>
           </div>
@@ -348,8 +346,8 @@
       @foreach($featuredHomeCategories as $featuredCat)
         @if($featuredCat->products->isNotEmpty())
           <section class="mt-12 sm:mt-16" data-reveal>
-            <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-4 sm:mb-6 gap-3">
-              <h2 class="text-base sm:text-xl font-semibold text-stone-900 leading-tight">{{ $featuredCat->name }}</h2>
+            <div class="flex items-end justify-between mb-4 sm:mb-6 gap-3">
+              <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">{{ $featuredCat->name }}</h2>
             </div>
 
             {{-- One row that slides by itself (pauses on touch or hover); swipe sideways too. 2 visible on phones, 4 from tablets up --}}
@@ -384,7 +382,7 @@
             <span class="text-amber-500 tracking-wider">★★★★★</span>
             <span>Real Verified Buyers</span>
           </div>
-          <h2 class="text-base sm:text-xl font-semibold text-stone-900 leading-tight">
+          <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">
             {{ setting('home_reviews_title', 'Customer Feedback') }}
           </h2>
         </div>
@@ -454,9 +452,9 @@
     {{-- 9. JUST FOR YOU: near the end (only vouchers follow), picked from what's in the cart and what hasn't been shown above --}}
     @if(($justForYou ?? collect())->isNotEmpty())
       <section class="mt-12 sm:mt-16 last:mb-12" data-reveal data-just-for-you>
-        <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-4 sm:mb-6 gap-3">
+        <div class="flex items-end justify-between mb-4 sm:mb-6 gap-3">
           <div>
-            <h2 class="text-base sm:text-xl font-semibold text-stone-900 leading-tight">Just for you</h2>
+            <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">Just for you</h2>
           </div>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
@@ -474,9 +472,9 @@
     {{-- 10. EXCLUSIVE COUPONS & VOUCHERS: last, after Just for you --}}
     @if($coupons->isNotEmpty())
       <section class="mt-12 sm:mt-16 last:mb-12" data-reveal data-home-coupons>
-        <div class="flex items-end justify-between mb-4 border-b border-stone-200/80 pb-3">
+        <div class="flex items-end justify-between mb-4 pb-3">
           <div>
-            <h2 class="text-base sm:text-xl font-semibold text-stone-900 leading-tight">
+            <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">
               Exclusive Vouchers &amp; Offers
             </h2>
           </div>
