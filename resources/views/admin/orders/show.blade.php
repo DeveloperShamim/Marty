@@ -6,6 +6,7 @@
   $digits = preg_replace('/[^0-9]/', '', (string) $order->customer_phone);
   $waPhone = str_starts_with($digits, '880') ? $digits : (str_starts_with($digits, '0') ? '88' . $digits : '880' . $digits);
   $isCod = $order->payment_method === 'cod';
+  [$payText, $payTone] = $order->paymentSummary();
   $qty = $order->items->sum('quantity');
   $steps = ['pending' => 'Placed', 'confirmed' => 'Confirmed', 'processing' => 'Processing', 'shipped' => 'Shipped', 'delivered' => 'Delivered'];
   $stepIndex = array_search($order->status, array_keys($steps), true);
@@ -33,6 +34,7 @@
             <x-oi name="more" /><span class="sr-only">More actions</span>
           </summary>
           <div class="{{ $menu }}">
+            <a href="#change-status" data-open-change class="{{ $menuItem }} text-slate-700 hover:bg-slate-50"><x-oi name="clipboard" /> Change status or payment</a>
             <form method="POST" action="{{ route('admin.orders.destroy', $order) }}" onsubmit="return confirm('Are you SURE you want to permanently delete order {{ $order->order_number }}? This action cannot be undone.')">
               @csrf @method('DELETE')
               <button type="submit" class="{{ $menuItem }} text-rose-600 hover:bg-rose-50"><x-oi name="trash" /> Delete order</button>
@@ -46,11 +48,10 @@
           <div class="flex flex-wrap items-center gap-2">
             <h2 class="page-title text-lg sm:text-xl font-semibold text-slate-900 tracking-tight">#{{ $order->order_number }}</h2>
             <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full {{ $order->statusBadge() }}">{{ ucfirst($order->status) }}</span>
-            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full {{ $order->paymentBadge() }}">Payment {{ ucfirst($order->payment_status) }}</span>
           </div>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
             <span class="inline-flex items-center gap-1.5" title="{{ $order->created_at->diffForHumans() }}"><x-oi name="calendar" class="w-3.5 h-3.5" />{{ $order->created_at->format('d M Y, g:i A') }}</span>
-            <span class="inline-flex items-center gap-1.5"><x-oi name="{{ $isCod ? 'cash' : 'card' }}" class="w-3.5 h-3.5" />{{ $order->paymentMethodLabel() }}</span>
+            <span class="inline-flex items-center gap-1.5"><x-oi name="{{ $isCod ? 'cash' : 'card' }}" class="w-3.5 h-3.5" />{{ $order->paymentMethodLabel() }}@unless($isCod && $payText === 'Collect on delivery')<span class="font-medium {{ $payTone }}">· {{ $payText }}</span>@endunless</span>
             <span class="inline-flex items-center gap-1.5" title="Source: {{ $order->utm_source ?? 'Direct' }}"><x-oi name="globe" class="w-3.5 h-3.5" />{{ $order->utm_source ? ucfirst($order->utm_source) : 'Direct' }}</span>
           </div>
         </div>
@@ -126,8 +127,8 @@
     <div class="flex flex-wrap items-center gap-2 px-4 sm:px-5 py-3 bg-slate-50/70 border-t border-slate-100">
       {{-- Invoice format is remembered per browser (admin-shell.js) and applied to every invoice link. --}}
       @php $short = ['a4' => 'A4', 'half' => 'Half A4', 'thermal' => '80mm', 'thermal58' => '58mm']; @endphp
-      <div class="flex flex-wrap min-[400px]:flex-nowrap gap-2 w-full sm:w-auto">
-        <div class="flex-1 max-[399px]:basis-full sm:flex-none flex items-stretch h-9 rounded-full ring-1 ring-slate-200 bg-white overflow-hidden min-w-0">
+      <div class="flex gap-2 w-full sm:w-auto">
+        <div class="flex-1 sm:flex-none flex items-stretch h-9 rounded-full ring-1 ring-slate-200 bg-white overflow-hidden min-w-0">
           <a href="{{ route('admin.orders.invoice', ['order' => $order, 'print' => 1]) }}" target="_blank" data-invoice-link data-print-link data-print-warning="{{ $order->printWarning('invoice') }}" class="flex-1 inline-flex items-center justify-center gap-1.5 pl-3.5 pr-2 text-[13px] font-medium text-slate-800 hover:bg-slate-50 whitespace-nowrap">
             <x-oi name="printer" /> Invoice
           </a>
@@ -141,8 +142,11 @@
             <x-oi name="chevron-down" class="!w-3 !h-3 text-slate-400 pointer-events-none" />
           </label>
         </div>
-        <a href="{{ route('admin.orders.labels', ['orders' => [$order->order_number], 'print' => 1]) }}" target="_blank" data-print-link data-print-warning="{{ $order->printWarning('label') }}" class="shrink-0 max-[399px]:flex-1 inline-flex items-center justify-center gap-1.5 h-9 px-4 text-[13px] font-medium text-slate-800 bg-white ring-1 ring-slate-200 hover:bg-slate-50 rounded-full whitespace-nowrap">
+        <a href="{{ route('admin.orders.labels', ['orders' => [$order->order_number], 'print' => 1]) }}" target="_blank" data-print-link data-print-warning="{{ $order->printWarning('label') }}" class="shrink-0 inline-flex items-center justify-center gap-1.5 h-9 px-4 text-[13px] font-medium text-slate-800 bg-white ring-1 ring-slate-200 hover:bg-slate-50 rounded-full whitespace-nowrap">
           <x-oi name="barcode" /> Label
+        </a>
+        <a href="#change-status" data-open-change class="shrink-0 inline-flex items-center justify-center gap-1.5 h-9 px-3 sm:px-4 text-[13px] font-medium text-slate-800 bg-white ring-1 ring-slate-200 hover:bg-slate-50 rounded-full whitespace-nowrap" title="Change status or payment">
+          <x-oi name="clipboard" /> <span class="hidden sm:inline">Change status</span><span class="sr-only sm:hidden">Change status</span>
         </a>
       </div>
       @if($order->prints()->exists())
@@ -203,7 +207,7 @@
                 @endif
               </div>
             </div>
-            <div class="grid grid-cols-1 min-[400px]:grid-cols-[1fr_auto] sm:flex gap-2">
+            <div class="grid grid-cols-[1fr_auto] sm:flex gap-2">
               <a href="tel:{{ $order->customer_phone }}" class="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-full text-white text-[13px] font-medium tabular-nums whitespace-nowrap" style="background: var(--brand-dark);"><x-oi name="phone" class="w-3.5 h-3.5" /> {{ $order->customer_phone }}</a>
               <a href="https://wa.me/{{ $waPhone }}" target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-1.5 h-9 px-3.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[13px] font-medium"><x-oi name="chat" class="w-3.5 h-3.5" /> WhatsApp</a>
             </div>
@@ -299,32 +303,22 @@
         <div class="px-4 sm:px-5 py-3.5 border-t border-slate-100 bg-slate-50/60 space-y-3">
           <div class="flex items-center justify-between gap-2">
             <p class="{{ $title }}"><x-oi name="{{ $isCod ? 'cash' : 'card' }}" class="w-4 h-4 text-slate-400" /> Payment</p>
-            <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->paymentBadge() }}">{{ ucfirst($order->payment_status) }}</span>
+            @unless($isCod && $payText === 'Collect on delivery')<span class="text-xs font-semibold {{ $payTone }}">{{ $payText }}</span>@endunless
           </div>
           @php
             $showTxn = ! $isCod && ($order->payment_sender_number || $order->payment_txn_id || in_array($order->payment_method, ['bkash', 'nagad', 'rocket'], true));
           @endphp
           @if($isCod)
-            <p class="text-sm text-slate-700">Cash on delivery: collect at the door · <b class="font-mono">{{ money($order->total) }}</b></p>
+            <p class="text-sm text-slate-700">{{ in_array($order->status, ['cancelled', 'returned'], true) ? 'Cash on delivery: nothing to collect.' : 'Cash on delivery: collect at the door.' }}@if($order->payment_status === 'pending' && ! $order->isAwaitingReview()) <span class="text-slate-500">Marked paid when the order is set to Delivered.</span>@endif</p>
           @else
-            <dl class="grid grid-cols-2 {{ $showTxn ? 'sm:grid-cols-4' : '' }} gap-x-4 gap-y-2 text-sm">
+            <dl class="grid grid-cols-2 {{ $showTxn ? 'sm:grid-cols-3' : '' }} gap-x-4 gap-y-2 text-sm">
               <div class="min-w-0"><dt class="text-[11px] text-slate-400">Method</dt><dd class="font-medium text-slate-900 break-words">{{ $order->paymentMethodLabel() }}</dd></div>
-              <div class="min-w-0"><dt class="text-[11px] text-slate-400">Amount</dt><dd class="font-medium text-slate-900 font-mono">{{ money($order->total) }}</dd></div>
               @if($showTxn)
                 <div class="min-w-0"><dt class="text-[11px] text-slate-400">Sender phone</dt><dd class="font-medium text-slate-900 font-mono break-all">{{ $order->payment_sender_number ?? 'Not given' }}</dd></div>
                 <div class="min-w-0"><dt class="text-[11px] text-slate-400">Transaction ID</dt><dd class="font-medium text-slate-900 font-mono break-all">{{ $order->payment_txn_id ?? 'Not given' }}</dd></div>
               @endif
             </dl>
           @endif
-          <p class="text-xs text-slate-500">
-            @if($order->isAwaitingReview())
-              Waiting for you: use <b>{{ $order->acceptLabel() }}</b> or reject at the top of the page.
-            @elseif($isCod && $order->payment_status === 'pending')
-              Marked <b>Paid</b> automatically when the order is set to Delivered.
-            @else
-              Marked <b>{{ ucfirst($order->payment_status) }}</b>. Change it under Update order if needed.
-            @endif
-          </p>
           @if($order->canSwitchToCod())
             <form method="POST" action="{{ route('admin.orders.switch-to-cod', $order) }}"
                   onsubmit="return confirm('Money not received? The order becomes cash on delivery{{ $order->free_delivery_reason === 'online_payment' ? ' and the ' . money($order->shipping_waived) . ' delivery charge is added back' : '' }}.')">
@@ -343,44 +337,8 @@
 
     <div class="max-lg:contents lg:space-y-4">
 
-      {{-- ================= Update order ================= --}}
-      <form method="POST" action="{{ route('admin.orders.update', $order) }}" class="card max-lg:order-3">
-        @csrf @method('PATCH')
-        <div class="{{ $head }}">
-          <h3 class="{{ $title }}"><x-oi name="clipboard" class="w-4 h-4 text-slate-400" /> Update order</h3>
-        </div>
-        <div class="p-4 sm:p-5 space-y-3">
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label for="orderFulfillmentStatusSelect" class="lbl">Order status</label>
-              <select name="status" id="orderFulfillmentStatusSelect" class="inp text-sm py-2">
-                @foreach(\App\Models\Order::STATUSES as $s)
-                  <option value="{{ $s }}" @selected($order->status === $s)>{{ ucfirst($s) }}</option>
-                @endforeach
-              </select>
-            </div>
-            <div>
-              <label for="orderPaymentStatusSelect" class="lbl">Payment</label>
-              <select name="payment_status" id="orderPaymentStatusSelect" class="inp text-sm py-2">
-                @foreach(\App\Models\Order::PAYMENT_STATUSES as $s)
-                  <option value="{{ $s }}" @selected($order->payment_status === $s)>{{ ucfirst($s) }}</option>
-                @endforeach
-              </select>
-            </div>
-          </div>
-          <div>
-            <label for="internalNote" class="lbl">Courier &amp; invoice note</label>
-            <textarea id="internalNote" name="internal_note" rows="2" class="inp text-sm" placeholder="e.g. Call before delivery">{{ $order->internal_note }}</textarea>
-            <p class="text-[11px] text-slate-500 mt-1">Printed on the invoice and sent to the courier. Private notes go in Calls &amp; staff notes.</p>
-          </div>
-          <button type="submit" class="w-full h-10 rounded-full text-white text-[13px] font-semibold" style="background: var(--brand-dark);">Save changes</button>
-        </div>
-      </form>
-
-      @include('admin.orders.partials.activity-log')
-
       {{-- ================= Courier ================= --}}
-      <section class="card max-lg:order-5">
+      <section class="card max-lg:order-3" id="courier">
         <div class="{{ $head }}">
           <h3 class="{{ $title }}"><x-oi name="truck" class="w-4 h-4 text-slate-400" /> Courier</h3>
           <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->isDispatchedToCourier() ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600' }}">{{ $order->isDispatchedToCourier() ? 'Sent' : 'Not sent' }}</span>
@@ -403,12 +361,22 @@
                     default => 'bg-slate-50 text-slate-700 ring-slate-200',
                 };
               @endphp
+              @php
+                // Staff can close an order by hand before the courier's own status catches up.
+                $closedByStaff = in_array($order->status, ['delivered', 'returned', 'cancelled'], true) && $cs !== $order->status
+                    && ! ($order->status === 'cancelled' && $cs === 'returned');
+                if ($closedByStaff) {
+                    $csTone = $order->status === 'delivered' ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-amber-50 text-amber-800 ring-amber-200';
+                }
+              @endphp
               <div class="pt-3 border-t border-slate-100 space-y-1.5">
                 <div class="flex items-center justify-between gap-2">
-                  <span class="text-slate-500">Courier says</span>
-                  <span class="px-2 py-0.5 rounded-full ring-1 text-xs font-medium {{ $csTone }}">{{ \App\Services\Courier\CourierStatusUpdater::label($cs) ?? 'Not checked yet' }}</span>
+                  <span class="text-slate-500">{{ $closedByStaff ? 'Status' : 'Courier says' }}</span>
+                  <span class="px-2 py-0.5 rounded-full ring-1 text-xs font-medium {{ $csTone }}">{{ $closedByStaff ? ucfirst($order->status) : (\App\Services\Courier\CourierStatusUpdater::label($cs) ?? 'Not checked yet') }}</span>
                 </div>
-                @if($order->courier_status_message)<p class="text-xs text-slate-600">{{ $order->courier_status_message }}</p>@endif
+                @if($closedByStaff)
+                  <p class="text-xs text-slate-600" data-closed-by-staff>Marked {{ $order->status }} by staff.@if($cs) The courier last said <b class="font-medium">{{ \App\Services\Courier\CourierStatusUpdater::label($cs) }}</b>.@endif</p>
+                @elseif($order->courier_status_message)<p class="text-xs text-slate-600">{{ $order->courier_status_message }}</p>@endif
                 <div class="flex items-center justify-between gap-2 text-xs text-slate-500">
                   <span>{{ $order->courier_synced_at ? 'Checked ' . $order->courier_synced_at->diffForHumans() : 'Updates daily at 9 PM' }}</span>
                   <form method="POST" action="{{ route('admin.orders.courier-status', $order) }}">
@@ -452,9 +420,11 @@
         </div>
       </section>
 
+      @include('admin.orders.partials.activity-log')
+
       {{-- ================= Return ================= --}}
       @if($order->status === 'returned' || $order->courier_returned_at)
-        <section class="card max-lg:order-6">
+        <section class="card max-lg:order-5">
           <div class="{{ $head }}">
             <h3 class="{{ $title }}"><x-oi name="undo" class="w-4 h-4 text-slate-400" /> Return</h3>
             <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full {{ $order->return_restocked ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700' }}">{{ $order->return_restocked ? 'Restocked' : 'Not restocked' }}</span>
@@ -471,6 +441,48 @@
           </dl>
         </section>
       @endif
+      {{-- ================= Change status or payment (folded away: Confirm/Reject and the courier cover the usual path) ================= --}}
+      <details class="card max-lg:order-6 group" id="change-status" @if($errors->hasAny(['status', 'payment_status', 'internal_note'])) open @endif>
+        <summary class="flex items-center justify-between gap-2 px-4 sm:px-5 py-3 cursor-pointer">
+          <span class="min-w-0">
+            <span class="{{ $title }}"><x-oi name="clipboard" class="w-4 h-4 text-slate-400" /> Change status or payment</span>
+            @if($order->internal_note)
+              <span class="block text-xs text-slate-500 mt-0.5 truncate" title="{{ $order->internal_note }}">Note: {{ $order->internal_note }}</span>
+            @endif
+          </span>
+          <x-oi name="chevron-down" class="w-4 h-4 text-slate-400 shrink-0 transition-transform group-open:rotate-180" />
+        </summary>
+      <form method="POST" action="{{ route('admin.orders.update', $order) }}" class="border-t border-slate-100">
+        @csrf @method('PATCH')
+        <div class="p-4 sm:p-5 space-y-3">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="orderFulfillmentStatusSelect" class="lbl">Order status</label>
+              <select name="status" id="orderFulfillmentStatusSelect" class="inp text-sm py-2">
+                @foreach(\App\Models\Order::STATUSES as $s)
+                  <option value="{{ $s }}" @selected($order->status === $s)>{{ ucfirst($s) }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div>
+              <label for="orderPaymentStatusSelect" class="lbl">Payment</label>
+              <select name="payment_status" id="orderPaymentStatusSelect" class="inp text-sm py-2">
+                @foreach(\App\Models\Order::PAYMENT_STATUSES as $s)
+                  <option value="{{ $s }}" @selected($order->payment_status === $s)>{{ ucfirst($s) }}</option>
+                @endforeach
+              </select>
+            </div>
+          </div>
+          <div>
+            <label for="internalNote" class="lbl">Courier &amp; invoice note</label>
+            <textarea id="internalNote" name="internal_note" rows="2" class="inp text-sm" placeholder="e.g. Call before delivery">{{ $order->internal_note }}</textarea>
+            <p class="text-[11px] text-slate-500 mt-1">Printed on the invoice and sent to the courier. Private notes go in Calls &amp; staff notes.</p>
+          </div>
+          <button type="submit" class="w-full h-10 rounded-full text-white text-[13px] font-semibold" style="background: var(--brand-dark);">Save changes</button>
+        </div>
+      </form>
+      </details>
+
     </div>
   </div>
 </div>
@@ -567,6 +579,12 @@
   document.getElementById('editCustomerModal')?.addEventListener('click', (e) => {
     if (e.target.id === 'editCustomerModal') closeEditCustomerModal();
   });
+
+  document.querySelectorAll('[data-open-change]').forEach((a) => a.addEventListener('click', () => {
+    const d = document.getElementById('change-status');
+    if (d) d.open = true;
+    a.closest('details')?.removeAttribute('open');
+  }));
 
   // Auto-sync payment status when fulfillment status changes
   const fulfillmentSelect = document.getElementById('orderFulfillmentStatusSelect');

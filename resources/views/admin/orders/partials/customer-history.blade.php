@@ -36,7 +36,9 @@
   <div class="flex items-start justify-between gap-2">
     <p class="min-w-0 text-xs font-semibold text-slate-700">
       <x-oi name="shield" class="w-3.5 h-3.5 inline -mt-0.5 mr-0.5 text-slate-400" />Customer delivery history
-      <span class="block sm:inline font-normal text-slate-400"><span class="hidden sm:inline">· </span>{{ $fromBd ? 'all couriers via BD Courier' : (! empty($sf['configured']) ? 'Steadfast' : 'not connected') }}</span>
+      @if($fromBd || ! empty($sf['configured']))
+        <span class="block sm:inline font-normal text-slate-400"><span class="hidden sm:inline">· </span>{{ $fromBd ? 'all couriers via BD Courier' : 'Steadfast' }}</span>
+      @endif
     </p>
     @if($fromBd && $customerHistory['configured'])
       <form method="POST" action="{{ route('admin.orders.courier-history', $order) }}"
@@ -46,6 +48,8 @@
       </form>
     @elseif(! $fromBd && ! empty($sf['configured']))
       <a href="{{ request()->fullUrlWithQuery(['refresh_courier' => 1]) }}" class="shrink-0 px-2.5 py-1 rounded-lg ring-1 ring-slate-200 bg-white hover:bg-slate-50 text-[11px] font-medium text-slate-700">Refresh</a>
+    @else
+      <a href="{{ route('admin.integrations.index') }}" class="shrink-0 text-[11px] font-medium text-brand-700 hover:underline" title="Add a BD Courier API token (all couriers) or Steadfast API keys to see each customer's courier delivery history">Connect courier history</a>
     @endif
   </div>
 
@@ -104,8 +108,6 @@
     <p class="text-xs text-slate-500">Not checked yet. New cash-on-delivery orders are checked automatically; use <b>Check now</b> for this one (uses one search).</p>
   @elseif(! empty($sf['configured']))
     <p class="text-xs text-slate-500">{{ $sf['message'] ?? 'Could not check Steadfast right now.' }} Try <b>Refresh</b>.</p>
-  @else
-    <p class="text-xs text-slate-500">Add a BD Courier API token (all couriers) or Steadfast API keys in <a href="{{ route('admin.integrations.index') }}" class="underline font-semibold">Integrations</a> to see this customer's delivery history.</p>
   @endif
 
   <p class="text-xs text-slate-500">

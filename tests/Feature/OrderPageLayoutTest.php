@@ -42,4 +42,30 @@ class OrderPageLayoutTest extends TestCase
         $order->update(['payment_status' => 'verified']);
         $this->actingAs($admin)->get(route('admin.orders.show', $order))->assertOk()->assertDontSee('Next step');
     }
+
+    public function test_status_and_payment_show_once_and_the_manual_change_is_folded_away(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $html = $this->actingAs($admin)->get(route('admin.orders.show', $this->order()))->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('Payment Pending', $html, 'The header shows one status pill');
+        $this->assertStringNotContainsString('Waiting for you', $html, 'Repeated the next-step box');
+        $this->assertMatchesRegularExpression('/<details class="card[^"]*" id="change-status"\s*>/', $html, 'Change status starts folded');
+        $this->assertLessThan(strpos($html, 'id="change-status"'), strpos($html, 'id="courier"'), 'Courier comes before the manual change');
+        $this->assertStringContainsString('Connect courier history', $html);
+        $this->assertStringNotContainsString('to see this customer', $html);
+    }
+
+    public function test_courier_box_says_when_staff_marked_the_order_delivered(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $order = $this->order(['status' => 'delivered', 'payment_status' => 'verified', 'courier_name' => 'steadfast',
+            'courier_tracking_code' => 'SF9', 'courier_sent_at' => now()->subDays(2), 'courier_status' => 'in_transit',
+            'courier_status_message' => 'At sorting hub']);
+
+        $html = $this->actingAs($admin)->get(route('admin.orders.show', $order))->assertOk()->getContent();
+
+        $this->assertStringContainsString('Marked delivered by staff.', $html);
+        $this->assertStringNotContainsString('At sorting hub', $html);
+    }
 }

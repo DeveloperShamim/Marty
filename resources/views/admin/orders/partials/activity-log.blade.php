@@ -31,16 +31,16 @@
       @csrf
       <div>
         <label for="activityBody" class="sr-only">What did they say?</label>
-        <textarea id="activityBody" name="body" rows="2" maxlength="1000" class="inp text-sm" placeholder="What did they say? (optional) Or a private note…">{{ old('body') }}</textarea>
+        <textarea id="activityBody" name="body" rows="2" maxlength="1000" class="inp text-sm" placeholder="Private note, or what they said (optional)">{{ old('body') }}</textarea>
         @error('body')<p class="text-rose-600 text-xs mt-1">{{ $message }}</p>@enderror
       </div>
       <fieldset>
         <legend class="text-xs text-slate-500 mb-1.5">Called the customer? Tap the result to save</legend>
-        <div class="grid grid-cols-3 gap-1.5">
+        <div class="flex flex-wrap gap-1.5">
           @foreach(\App\Models\OrderActivity::CALL_RESULTS as $key => [$label, $icon, $tone, $short])
             <button type="submit" name="call_result" value="{{ $key }}" title="{{ $label }}"
-                    class="flex flex-col items-center justify-center gap-1 px-1 py-2 rounded-lg ring-1 ring-slate-200 bg-white text-[11px] font-medium text-slate-600 text-center leading-tight hover:bg-brand-50 hover:ring-brand-600 hover:text-brand-800 active:scale-95 transition cursor-pointer disabled:opacity-50">
-              <x-oi :name="$icon" class="w-4 h-4" />{{ $short }}
+                    class="inline-flex items-center gap-1 h-8 px-2.5 rounded-full ring-1 ring-slate-200 bg-white text-[11.5px] font-medium text-slate-600 whitespace-nowrap hover:bg-brand-50 hover:ring-brand-600 hover:text-brand-800 active:scale-95 transition cursor-pointer disabled:opacity-50">
+              <x-oi :name="$icon" class="w-3.5 h-3.5" />{{ $short }}
             </button>
           @endforeach
         </div>
