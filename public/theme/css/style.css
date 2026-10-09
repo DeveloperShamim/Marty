@@ -462,6 +462,15 @@ button.gallery-thumb-btn:active,
   background-color: var(--brand-primary, #8B5A2B) !important;
   color: #fff !important;
 }
+/* Bag on cards without variations: a tick and a solid fill once the product is in the cart (tap removes it) */
+.product-card .card-cart-toggle .cc-in { display: none; }
+.product-card .card-cart-toggle.is-in-cart .cc-add { display: none; }
+.product-card .card-cart-toggle.is-in-cart .cc-in { display: block; }
+.product-card .fk-add-btn.fk-icon-only.is-in-cart,
+.product-card .fk-add-btn.fk-icon-only.is-in-cart:hover {
+  background-color: var(--brand-dark, #1c1917) !important;
+  color: #fff !important;
+}
 @container (max-width: 200px) { .product-card .pc-eye { display: none; } }
 
 /* Floating Customer Support Speed Dial - click-through fix */

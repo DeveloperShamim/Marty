@@ -269,6 +269,7 @@
     // Side quick cart only shows (tablet and up) once the bag has items
     $$("[data-quick-cart]").forEach((el) => el.classList.toggle("qc-empty", count === 0));
     $$(".cart-total").forEach((el) => (el.textContent = money(subtotal)));
+    if (data.cart && data.cart.inCart) syncCardCartToggles(data.cart.inCart);
 
     const list = $("#cartItems");
     const empty = $("#cartEmpty");
@@ -287,6 +288,38 @@
     const footer = $("#cartDrawerFooter");
     if (footer) footer.classList.toggle("hidden", !hasItems);
   }
+
+  // Card bag buttons (products without variations): tick + solid when in the cart, bag otherwise
+  function syncCardCartToggles(inCart) {
+    $$("[data-cart-toggle]").forEach((b) => {
+      const key = inCart[b.dataset.productId] || "";
+      b.dataset.cartKey = key;
+      b.classList.toggle("is-in-cart", !!key);
+      b.setAttribute("aria-pressed", key ? "true" : "false");
+      const label = key ? "In your cart, tap to remove" : "Add to cart";
+      b.setAttribute("aria-label", label);
+      b.title = label;
+    });
+  }
+
+  document.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-cart-toggle]");
+    if (!b || b.dataset.busy) return;
+    e.preventDefault();
+    b.dataset.busy = "1";
+    try {
+      if (b.dataset.cartKey) {
+        applyCart(await api("/cart/remove", { key: b.dataset.cartKey }));
+        toast("Removed from cart");
+      } else {
+        await addToCart(b.dataset.productId, 1, null, b.dataset.title, false, null, null, b);
+      }
+    } catch (err) {
+      toast(err.message || "Could not update your cart. Please try again.");
+    } finally {
+      delete b.dataset.busy;
+    }
+  });
 
   function bindDrawer() {
     $$("[data-cart-inc]").forEach((b) => b.addEventListener("click", () => changeQty(b.dataset.key, (+b.dataset.qty || 1) + 1)));

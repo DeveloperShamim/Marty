@@ -72,6 +72,28 @@ class ProductCardOptionsTest extends TestCase
         $this->assertMatchesRegularExpression('/fk-card-price.*?<\/div>\s*<span[^>]*data-card-options[^>]*>39–44</s', $card, 'Sizes sit on the price line');
     }
 
+    public function test_simple_product_card_has_buy_now_and_a_bag_that_shows_a_tick_when_in_cart(): void
+    {
+        $cat = Category::firstOrCreate(['slug' => 'leather'], ['name' => 'Leather', 'is_active' => true]);
+        $pad = Product::create(['category_id' => $cat->id, 'name' => 'Mouse Pad', 'slug' => 'mouse-pad',
+            'regular_price' => 650, 'stock_quantity' => 10, 'is_published' => true]);
+
+        $html = $this->get(route('shop'))->assertOk()->getContent();
+        $this->assertStringContainsString('>Buy now</span>', $html);
+        $this->assertStringContainsString('data-cart-toggle', $html);
+        $this->assertStringNotContainsString('is-in-cart', $html);
+
+        $this->postJson(route('cart.add'), ['product_id' => $pad->id, 'qty' => 1])->assertOk()
+            ->assertJsonPath('cart.inCart.' . $pad->id, $pad->id . '||');
+
+        $html = $this->get(route('shop'))->assertOk()->getContent();
+        $this->assertStringContainsString('is-in-cart', $html);
+        $this->assertStringContainsString('data-cart-key="' . $pad->id . '||"', $html);
+
+        $this->postJson(route('cart.remove'), ['key' => $pad->id . '||'])->assertOk()
+            ->assertJsonMissingPath('cart.inCart.' . $pad->id);
+    }
+
     public function test_sold_out_only_when_every_variation_is_out(): void
     {
         $this->product('Partly out', [[['Size' => '40'], null, 0], [['Size' => '41'], null, 2]]);

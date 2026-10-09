@@ -173,11 +173,31 @@ class CartService
         return $picks->values();
     }
 
+    /**
+     * Products in the cart without a variation, as product id => line key, so product cards can show
+     * "in your cart" on their bag button and remove that line with one tap.
+     *
+     * @return array<int, string>
+     */
+    public function simpleLineKeys(): array
+    {
+        $keys = [];
+        foreach (array_keys($this->raw()) as $key) {
+            [$productId, $variant, $skuId] = array_pad(explode('|', (string) $key, 3), 3, '');
+            if ($variant === '' && $skuId === '' && ctype_digit($productId)) {
+                $keys[(int) $productId] = $key;
+            }
+        }
+
+        return $keys;
+    }
+
     public function toArray(): array
     {
         return [
             'count'    => $this->count(),
             'subtotal' => $this->subtotal(),
+            'inCart'   => (object) $this->simpleLineKeys(),
         ];
     }
 }

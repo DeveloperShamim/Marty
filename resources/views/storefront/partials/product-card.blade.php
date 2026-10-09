@@ -107,8 +107,9 @@
       </div>
     @endif
 
-    {{-- One action: Order now opens the option picker (which also has Add to cart) when there are
-         variations, and goes straight to checkout when there are none. The photo and name open the product page. --}}
+    {{-- With variations: one Order now that opens the option picker (which also has Add to cart).
+         Without: Buy now straight to checkout plus a bag that adds to the cart, and shows a tick (tap to remove)
+         once the product is in the cart. The photo and name open the product page. --}}
     @php
       $cartData = [
         'product-id' => $product->id, 'title' => $product->name, 'stock' => $product->stock_quantity,
@@ -125,11 +126,20 @@
         <button type="button" disabled class="flex-1 min-w-0 h-9 sm:h-10 bg-stone-100 text-stone-500 font-bold text-xs sm:text-[13px] flex items-center justify-center rounded-xl cursor-not-allowed select-none">Sold out</button>
       </div>
     @else
-      <div class="flex items-center mt-auto pt-1 w-full relative z-10">
+      @php $inCartKey = $hasVariants ? null : (app(\App\Services\CartService::class)->simpleLineKeys()[$product->id] ?? null); @endphp
+      <div class="flex items-center gap-2 mt-auto pt-1 w-full relative z-10">
         <button type="button" class="add-to-cart flex-1 min-w-0 h-9 sm:h-10 font-semibold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 text-white transition-all shadow-xs hover:shadow-md active:scale-[0.98] select-none touch-manipulation cursor-pointer btn-view-details rounded-xl" style="background-color: var(--brand-primary, #1D68FE);"
                 data-order-now="true" @foreach($cartData as $k => $v) data-{{ $k }}="{{ $v }}" @endforeach>
-          <span class="truncate">Order now</span>
+          <span class="truncate">{{ $hasVariants ? 'Order now' : 'Buy now' }}</span>
         </button>
+        @unless($hasVariants)
+          <button type="button" class="fk-add-btn fk-icon-only card-cart-toggle {{ $inCartKey ? 'is-in-cart' : '' }} shrink-0 transition-all active:scale-95 cursor-pointer select-none touch-manipulation"
+                  data-cart-toggle data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" data-cart-key="{{ $inCartKey }}"
+                  aria-pressed="{{ $inCartKey ? 'true' : 'false' }}" aria-label="{{ $inCartKey ? 'In your cart, tap to remove' : 'Add to cart' }}" title="{{ $inCartKey ? 'In your cart, tap to remove' : 'Add to cart' }}">
+            <svg class="cc-add w-[18px] h-[18px] pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+            <svg class="cc-in w-[18px] h-[18px] pointer-events-none" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 15l2 2 4-4"/></svg>
+          </button>
+        @endunless
       </div>
     @endif
   </div>
