@@ -162,6 +162,7 @@ class CheckoutController extends Controller
                 'regex:/^(?:\+?88|0088)?01[3-9]\d{8}$/',
             ],
             'payment_txn_id'  => ['nullable', 'string', 'max:60', Rule::requiredIf(fn () => $request->payment_method !== 'cod')],
+            'delivery_note'   => ['nullable', 'string', 'max:500'],
         ], [
             'customer_phone.required' => 'Please enter your mobile phone number.',
             'customer_phone.regex'    => 'Please enter a valid 11-digit Bangladeshi mobile number (e.g. 01712345678 or 018XXXXXXXX).',
@@ -233,6 +234,8 @@ class CheckoutController extends Controller
                     'payment_method'  => $validated['payment_method'],
                     'payment_sender_number' => $isCod ? null : ($validated['payment_sender_number'] ?? null),
                     'payment_txn_id'  => $isCod ? null : ($validated['payment_txn_id'] ?? null),
+                    // The customer's delivery note becomes the order's courier & invoice note.
+                    'internal_note'   => filled($validated['delivery_note'] ?? null) ? trim($validated['delivery_note']) : null,
                     'utm_source'      => session('utm_source'),
                     'payment_status'  => 'pending',
                     'status'          => 'pending',

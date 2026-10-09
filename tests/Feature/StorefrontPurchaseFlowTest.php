@@ -151,6 +151,17 @@ class StorefrontPurchaseFlowTest extends TestCase
             ->assertRedirect(route('cart.index'));
     }
 
+    public function test_delivery_note_from_checkout_becomes_the_courier_note(): void
+    {
+        $product = $this->makeProduct(['regular_price' => 1000, 'stock_quantity' => 10]);
+        $this->postJson(route('cart.add'), ['product_id' => $product->id, 'qty' => 1])->assertOk();
+        $this->get(route('checkout.show'))->assertSee('name="delivery_note"', false);
+
+        $this->post(route('checkout.store'), $this->checkoutPayload(['delivery_note' => '  Deliver after 5pm  ']));
+
+        $this->assertSame('Deliver after 5pm', Order::first()->internal_note);
+    }
+
     public function test_checkout_rejects_invalid_phone_number(): void
     {
         $product = $this->makeProduct();
