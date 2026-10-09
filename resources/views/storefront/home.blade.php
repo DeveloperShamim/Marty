@@ -229,7 +229,10 @@
 
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
           @foreach($flashProducts->take(8) as $product)
-            @include('storefront.partials.product-card', ['product' => $product, 'flashCard' => true])
+            {{-- Phones show the first 4; View all deals has the rest --}}
+            <div class="{{ $loop->index >= 4 ? 'max-sm:hidden' : '' }} grid min-w-0">
+              @include('storefront.partials.product-card', ['product' => $product, 'flashCard' => true])
+            </div>
           @endforeach
         </div>
       </section>
@@ -242,7 +245,7 @@
           <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">
             Curated Collection
           </h2>
-          <p class="text-xs text-stone-500 mt-1">Handpicked for authenticity, build quality, and trending demand</p>
+          <p class="text-xs text-stone-500 mt-1">What customers buy most, and what just came in</p>
         </div>
 
         {{-- Segmented Tab Switcher --}}
@@ -253,9 +256,6 @@
           <button type="button" data-home-tab="new-arrivals" class="home-tab-btn flex-1 sm:flex-initial text-center justify-center px-2.5 sm:px-3.5 py-2 sm:py-1.5 rounded-lg text-stone-500 hover:text-stone-900 transition-all text-[11px] sm:text-xs">
             ✨ New Arrivals
           </button>
-          <button type="button" data-home-tab="trending" class="home-tab-btn flex-1 sm:flex-initial text-center justify-center px-2.5 sm:px-3.5 py-2 sm:py-1.5 rounded-lg text-stone-500 hover:text-stone-900 transition-all text-[11px] sm:text-xs">
-            ⭐ Trending
-          </button>
         </div>
       </div>
 
@@ -265,7 +265,9 @@
         <div id="homePane-best-sellers" class="home-tab-pane">
           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
             @foreach($bestSellers->take(8) as $product)
-              @include('storefront.partials.product-card', ['product' => $product])
+              <div class="{{ $loop->index >= 6 ? 'max-sm:hidden' : '' }} grid min-w-0">
+                @include('storefront.partials.product-card', ['product' => $product])
+              </div>
             @endforeach
           </div>
           <div class="mt-6 text-center">
@@ -282,7 +284,9 @@
         <div id="homePane-new-arrivals" class="home-tab-pane hidden">
           <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
             @foreach($newArrivals->take(8) as $product)
-              @include('storefront.partials.product-card', ['product' => $product])
+              <div class="{{ $loop->index >= 6 ? 'max-sm:hidden' : '' }} grid min-w-0">
+                @include('storefront.partials.product-card', ['product' => $product])
+              </div>
             @endforeach
           </div>
           <div class="mt-6 text-center">
@@ -295,27 +299,11 @@
           </div>
         </div>
 
-        {{-- Pane 3: Trending --}}
-        <div id="homePane-trending" class="home-tab-pane hidden">
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
-            @foreach($trending->take(8) as $product)
-              @include('storefront.partials.product-card', ['product' => $product])
-            @endforeach
-          </div>
-          <div class="mt-6 text-center">
-            <a href="{{ route('shop') }}" class="group inline-flex items-center gap-3 pl-5 pr-2 py-2 rounded-xl border border-stone-200/90 bg-white hover:border-brand-500/40 hover:bg-stone-50/80 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-95">
-              <span class="text-xs font-bold uppercase tracking-wider text-stone-800 group-hover:text-brand-600 transition-colors">Explore All Products</span>
-              <span class="h-7 w-7 rounded-lg bg-stone-100 group-hover:bg-brand-500 text-stone-500 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-2xs">
-                <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-              </span>
-            </a>
-          </div>
-        </div>
       </div>
     </section>
 
-    {{-- 6. OFFICIAL BRANDS CAROUSEL --}}
-    @if(setting('show_featured_brands', '1') === '1' && isset($featuredBrands) && $featuredBrands->isNotEmpty())
+    {{-- 6. SHOP BY BRAND: logos only, each opens the brand's page (hidden while the shop has a single brand) --}}
+    @if(setting('show_featured_brands', '1') === '1' && isset($featuredBrands) && $featuredBrands->count() > 1)
       <section class="mt-14 sm:mt-16" data-reveal>
         <div class="flex items-end justify-between mb-3 sm:mb-4 border-b border-stone-200/80 pb-2.5 sm:pb-3">
           <div>
@@ -359,7 +347,7 @@
       </section>
     @endif
 
-    {{-- ADMIN HOMEPAGE FEATURED CATEGORIES (Shown only when admin enables 'Featured on Homepage' & has products) --}}
+    {{-- FEATURED CATEGORIES: the first 4 marked 'Featured on home' in Admin → Categories, one short row each --}}
     @if(($featuredHomeCategories ?? collect())->isNotEmpty())
       @foreach($featuredHomeCategories as $featuredCat)
         @if($featuredCat->products->isNotEmpty())
@@ -374,51 +362,18 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            {{-- One row: swipe sideways on phones, 4 across from tablets up --}}
+            <div class="flex sm:grid sm:grid-cols-4 gap-2.5 sm:gap-4 overflow-x-auto sm:overflow-visible snap-x snap-mandatory no-scrollbar -mx-3 px-3 sm:mx-0 sm:px-0 pb-1">
               @foreach($featuredCat->products as $product)
-                @include('storefront.partials.product-card', ['product' => $product])
+                <div class="w-[46%] shrink-0 snap-start sm:w-auto grid min-w-0">
+                  @include('storefront.partials.product-card', ['product' => $product])
+                </div>
               @endforeach
             </div>
 
             <div class="mt-6 text-center">
               <a href="{{ route('shop.category', $featuredCat) }}" class="group inline-flex items-center gap-3 pl-5 pr-2 py-2 rounded-xl border border-stone-200/90 bg-white hover:border-brand-500/40 hover:bg-stone-50/80 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-95">
                 <span class="text-xs font-bold uppercase tracking-wider text-stone-800 group-hover:text-brand-600 transition-colors">View All {{ $featuredCat->name }}</span>
-                <span class="h-7 w-7 rounded-lg bg-stone-100 group-hover:bg-brand-500 text-stone-500 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-2xs">
-                  <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                </span>
-              </a>
-            </div>
-          </section>
-        @endif
-      @endforeach
-    @endif
-
-    {{-- ADMIN HOMEPAGE FEATURED BRANDS (Shown only when admin enables 'Homepage Featured' on Brand & has products) --}}
-    @if(($featuredHomeBrands ?? collect())->isNotEmpty())
-      @foreach($featuredHomeBrands as $featuredBrand)
-        @if($featuredBrand->products->isNotEmpty())
-          <section class="mt-12 sm:mt-16" data-reveal>
-            <div class="flex items-center justify-between border-b border-stone-200/80 pb-3 mb-6 gap-3">
-              <div class="flex items-center gap-3">
-                <img src="{{ $featuredBrand->logoUrl() }}" class="h-10 w-10 object-contain rounded-xl border border-stone-200 bg-white p-1 shadow-xs" alt="{{ $featuredBrand->name }}">
-                <div>
-                  <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">
-                    {{ $featuredBrand->name }}
-                  </h2>
-                  <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
-                </div>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
-              @foreach($featuredBrand->products as $product)
-                @include('storefront.partials.product-card', ['product' => $product])
-              @endforeach
-            </div>
-
-            <div class="mt-6 text-center">
-              <a href="{{ route('shop.brand', $featuredBrand) }}" class="group inline-flex items-center gap-3 pl-5 pr-2 py-2 rounded-xl border border-stone-200/90 bg-white hover:border-brand-500/40 hover:bg-stone-50/80 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-95">
-                <span class="text-xs font-bold uppercase tracking-wider text-stone-800 group-hover:text-brand-600 transition-colors">Explore {{ $featuredBrand->name }}</span>
                 <span class="h-7 w-7 rounded-lg bg-stone-100 group-hover:bg-brand-500 text-stone-500 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-2xs">
                   <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                 </span>
