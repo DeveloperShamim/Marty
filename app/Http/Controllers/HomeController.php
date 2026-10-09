@@ -16,7 +16,10 @@ class HomeController extends Controller
 {
     /** How many featured categories get a product row on the homepage, and how many products each row holds. */
     public const HOME_CATEGORY_ROWS = 4;
-    public const HOME_ROW_SIZE = 4;
+    /** A category row slides through up to 8 products; it is topped up to 4 with already-shown ones if short. */
+    public const HOME_ROW_SIZE = 8;
+    public const HOME_ROW_MIN = 4;
+    public const JUST_FOR_YOU = 12;
 
     public function index()
     {
@@ -67,7 +70,7 @@ class HomeController extends Controller
             ->take(6) // 3 + 3 on desktop, 2 + 2 + 2 on tablets
             ->get();
 
-        // Featured categories get one short row each. A product already shown in Flash deals or
+        // Featured categories get one sliding row each. A product already shown in Flash deals or
         // Best sellers is skipped, so the page doesn't repeat itself; a small catalogue tops a row
         // back up to 4 rather than leave it half empty.
         $shown = $flashProducts->take(8)->pluck('id')->merge($bestSellers->take(8)->pluck('id'));
@@ -78,15 +81,18 @@ class HomeController extends Controller
             ->get()
             ->each(function (Category $cat) use (&$shown) {
                 $products = $cat->products()->published()->with('images', 'category', 'brand', 'variants', 'skus')
-                    ->latest()->take(12)->get();
-                $row = $products->reject(fn ($p) => $shown->contains($p->id))
-                    ->concat($products->filter(fn ($p) => $shown->contains($p->id)))
-                    ->take(self::HOME_ROW_SIZE)->values();
+                    ->latest()->take(16)->get();
+                $fresh = $products->reject(fn ($p) => $shown->contains($p->id));
+                $row = ($fresh->count() >= self::HOME_ROW_MIN
+                    ? $fresh->take(self::HOME_ROW_SIZE)
+                    : $fresh->concat($products->filter(fn ($p) => $shown->contains($p->id)))->take(self::HOME_ROW_MIN))->values();
                 $shown = $shown->merge($row->pluck('id'));
                 $cat->setRelation('products', $row);
             })
             ->filter(fn (Category $cat) => $cat->products->isNotEmpty())
             ->values();
+
+        $justForYou = $this->justForYou($withImages, $shown->merge($newArrivals->take(8)->pluck('id')));
 
         return view('storefront.home', [
             'heroBanners'            => $banners('hero')->get(),
@@ -106,7 +112,32 @@ class HomeController extends Controller
             'newArrivals'            => $newArrivals,
             'featuredBrands'         => $featuredBrands,
             'homeReviews'            => $homeReviews,
+            'justForYou'             => $justForYou,
         ]);
+    }
+
+    /**
+     * "Just for you" at the bottom of the homepage: in-stock products from the categories of what is in the
+     * shopper's cart first, then anything not already on the page, in a fresh order each visit. A small
+     * catalogue repeats products from higher up rather than leave the section short.
+     */
+    private function justForYou(\Closure $withImages, \Illuminate\Support\Collection $onPage): \Illuminate\Support\Collection
+    {
+        $cartIds = app(\App\Services\CartService::class)->productIds();
+        $categoryIds = $cartIds->isEmpty() ? collect() : Product::whereIn('id', $cartIds)->pluck('category_id')->filter()->unique();
+        $base = fn () => Product::query()->tap($withImages)->where('stock_quantity', '>', 0)->whereNotIn('id', $cartIds)->inRandomOrder();
+
+        $picks = $categoryIds->isEmpty() ? collect()
+            : $base()->whereNotIn('id', $onPage)->whereIn('category_id', $categoryIds)->take(self::JUST_FOR_YOU)->get();
+        foreach ([$onPage, collect()] as $skip) {
+            if ($picks->count() >= self::JUST_FOR_YOU) {
+                break;
+            }
+            $picks = $picks->concat($base()->whereNotIn('id', $skip->merge($picks->pluck('id')))
+                ->take(self::JUST_FOR_YOU - $picks->count())->get());
+        }
+
+        return $picks->values();
     }
 
     public function loadMore(Request $request)

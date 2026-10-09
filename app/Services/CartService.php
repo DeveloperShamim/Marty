@@ -156,7 +156,7 @@ class CartService
      */
     public function recommendations(int $limit = 8): Collection
     {
-        $inCart = collect($this->raw())->pluck('product_id')->unique()->values();
+        $inCart = $this->productIds();
         $categoryIds = $inCart->isEmpty() ? collect() : Product::whereIn('id', $inCart)->pluck('category_id')->filter()->unique();
 
         $query = fn () => Product::published()
@@ -190,6 +190,12 @@ class CartService
         }
 
         return $keys;
+    }
+
+    /** Ids of the products in the cart, each once. */
+    public function productIds(): Collection
+    {
+        return collect($this->raw())->pluck('product_id')->unique()->values();
     }
 
     public function toArray(): array

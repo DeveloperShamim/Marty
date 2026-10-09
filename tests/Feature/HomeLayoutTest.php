@@ -36,13 +36,38 @@ class HomeLayoutTest extends TestCase
 
         $this->assertSame(['Cat 1', 'Cat 2', 'Cat 3', 'Cat 4'], $rows->pluck('name')->all(), 'Only the first 4 featured categories get a row');
         $row = $rows->first()->products->pluck('name');
-        $this->assertCount(4, $row);
+        $this->assertCount(5, $row, 'All 5 not-yet-shown products slide in the row');
         $this->assertNotContains('Flash One', $row->all());
         $this->assertNotContains('Best One', $row->all());
+        $this->assertCount(1, $rows[1]->products, 'A category with one product still gets its row');
 
         $html = $res->getContent();
         $this->assertStringNotContainsString('data-home-tab="trending"', $html);
         $this->assertStringContainsString('data-home-tab="new-arrivals"', $html);
+    }
+
+    public function test_category_rows_slide_and_just_for_you_comes_last_with_cart_categories_first(): void
+    {
+        $belts = Category::create(['name' => 'Belts', 'slug' => 'belts', 'is_active' => true]);
+        $wallets = Category::create(['name' => 'Wallets', 'slug' => 'wallets', 'is_active' => true, 'is_featured' => true, 'position' => 1]);
+        $inCart = $this->product($belts, 'Belt In Cart');
+        foreach (range(1, 3) as $i) $this->product($belts, "Belt $i");
+        foreach (range(1, 12) as $i) $this->product($wallets, "Wallet $i", $i <= 8 ? ['is_best_seller' => true, 'is_new_arrival' => true] : []);
+        $this->product($wallets, 'Sold Out Wallet', ['stock_quantity' => 0]);
+        $this->postJson(route('cart.add'), ['product_id' => $inCart->id])->assertOk();
+
+        $res = $this->get('/')->assertOk();
+        $html = $res->getContent();
+        $this->assertStringContainsString('data-auto-row', $html);
+
+        $jfy = $res->viewData('justForYou')->pluck('name');
+        $this->assertCount(\App\Http\Controllers\HomeController::JUST_FOR_YOU, $jfy);
+        $this->assertNotContains('Belt In Cart', $jfy->all(), 'Not what is already in the cart');
+        $this->assertNotContains('Sold Out Wallet', $jfy->all());
+        $this->assertSame(3, $jfy->take(3)->filter(fn ($n) => str_starts_with($n, 'Belt '))->count(), 'Same category as the cart comes first');
+
+        $this->assertGreaterThan(strpos($html, 'data-auto-row'), strpos($html, 'data-just-for-you'), 'Just for you is the last section');
+        $this->assertGreaterThan(strpos($html, 'Customer Feedback') ?: 0, strpos($html, 'data-just-for-you'));
     }
 
     public function test_brands_show_as_logos_only_when_there_is_more_than_one(): void

@@ -362,10 +362,10 @@
               </div>
             </div>
 
-            {{-- One row: swipe sideways on phones, 4 across from tablets up --}}
-            <div class="flex sm:grid sm:grid-cols-4 gap-2.5 sm:gap-4 overflow-x-auto sm:overflow-visible snap-x snap-mandatory no-scrollbar -mx-3 px-3 sm:mx-0 sm:px-0 pb-1">
+            {{-- One row that slides by itself (pauses on touch or hover); swipe sideways too. 2 visible on phones, 4 from tablets up --}}
+            <div class="flex gap-2.5 sm:gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth scroll-px-3 sm:scroll-px-0 -mx-3 px-3 sm:mx-0 sm:px-0 pb-1" data-auto-row>
               @foreach($featuredCat->products as $product)
-                <div class="w-[46%] shrink-0 snap-start sm:w-auto grid min-w-0">
+                <div class="w-[46%] shrink-0 snap-start sm:w-[calc((100%-3rem)/4)] grid min-w-0">
                   @include('storefront.partials.product-card', ['product' => $product])
                 </div>
               @endforeach
@@ -530,6 +530,34 @@
             <span>Swipe for more reviews</span>
             <svg class="w-3 h-3 text-stone-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
           </span>
+        </div>
+      </section>
+    @endif
+
+    {{-- 9. JUST FOR YOU: last on the page, picked from what's in the cart and what hasn't been shown above --}}
+    @if(($justForYou ?? collect())->isNotEmpty())
+      <section class="mt-12 sm:mt-16 mb-12" data-reveal data-just-for-you>
+        <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-6 gap-3">
+          <div>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-stone-900 leading-none">Just for you</h2>
+            <div class="w-10 h-1 bg-brand-500 rounded-full mt-2"></div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+          @foreach($justForYou as $product)
+            {{-- Phones show 8 --}}
+            <div class="grid min-w-0 {{ $loop->index >= 8 ? 'max-md:hidden' : '' }}">
+              @include('storefront.partials.product-card', ['product' => $product])
+            </div>
+          @endforeach
+        </div>
+        <div class="mt-6 text-center">
+          <a href="{{ route('shop') }}" class="group inline-flex items-center gap-3 pl-5 pr-2 py-2 rounded-xl border border-stone-200/90 bg-white hover:border-brand-500/40 hover:bg-stone-50/80 shadow-2xs hover:shadow-md transition-all duration-300 active:scale-95">
+            <span class="text-xs font-bold uppercase tracking-wider text-stone-800 group-hover:text-brand-600 transition-colors">See more products</span>
+            <span class="h-7 w-7 rounded-lg bg-stone-100 group-hover:bg-brand-500 text-stone-500 group-hover:text-white flex items-center justify-center transition-all duration-300 shadow-2xs">
+              <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </span>
+          </a>
         </div>
       </section>
     @endif
@@ -716,6 +744,32 @@ document.addEventListener('DOMContentLoaded', function () {
         640: { slidesPerView: 2, spaceBetween: 14 },
         1024: { slidesPerView: 3, spaceBetween: 16 },
       },
+    });
+  }
+
+  /* ---------------- Category rows slide by themselves ----------------
+     One card every few seconds, back to the start at the end. Waits while the row is touched, hovered
+     or off screen, and stays still for people who prefer reduced motion. */
+  const autoRows = document.querySelectorAll('[data-auto-row]');
+  if (autoRows.length && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const ROW_STEP_MS = 3500, ROW_PAUSE_MS = 6000;
+    autoRows.forEach(function (row) {
+      let pausedUntil = 0, visible = false;
+      const pause = function () { pausedUntil = Date.now() + ROW_PAUSE_MS; };
+      ['pointerdown', 'touchstart', 'wheel', 'focusin'].forEach(function (ev) { row.addEventListener(ev, pause, { passive: true }); });
+      row.addEventListener('mouseenter', function () { pausedUntil = Infinity; });
+      row.addEventListener('mouseleave', function () { pausedUntil = Date.now() + 1500; });
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (entries) { visible = entries[0].isIntersecting; }, { threshold: 0.5 }).observe(row);
+      } else { visible = true; }
+      setInterval(function () {
+        if (!visible || document.hidden || Date.now() < pausedUntil) return;
+        const card = row.firstElementChild;
+        if (!card || row.scrollWidth <= row.clientWidth + 4) return;
+        const atEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4;
+        if (atEnd) row.scrollTo({ left: 0, behavior: 'smooth' });
+        else row.scrollBy({ left: card.getBoundingClientRect().width + parseFloat(getComputedStyle(row).columnGap || 0), behavior: 'smooth' });
+      }, ROW_STEP_MS);
     });
   }
 
