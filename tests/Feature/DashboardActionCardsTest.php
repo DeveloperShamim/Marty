@@ -43,7 +43,7 @@ class DashboardActionCardsTest extends TestCase
         $html = $this->actingAs($admin)->get('/admin')->assertOk()->getContent();
 
         $this->assertStringContainsString('Risky orders to call', $html);
-        $risky = \Illuminate\Support\Str::between($html, 'Risky orders to call', 'Delivery Success');
+        $risky = \Illuminate\Support\Str::between($html, 'id="act-risky"', 'id="act-carts"');
         $this->assertStringContainsString('Fraud Score Buyer', $risky);
         $this->assertStringContainsString('Phone used on 4 orders today', $risky);
         $this->assertStringContainsString('Many Returns Buyer', $risky);
