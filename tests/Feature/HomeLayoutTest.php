@@ -155,18 +155,20 @@ class HomeLayoutTest extends TestCase
         $this->assertSame(['Vant', 'Hide Co'], $res->viewData('featuredBrands')->pluck('name')->all(), 'Featured first, brands without products left out');
     }
 
-    public function test_desktop_menu_shows_every_category_and_the_hotline(): void
+    public function test_desktop_menu_lists_categories_with_products_and_the_hotline(): void
     {
         foreach (['Leather Shoes', 'Card Wallets', 'Steel Watches', 'Dress Belts', 'Travel Bags'] as $i => $name) {
             $cat = Category::create(['name' => $name, 'slug' => \Illuminate\Support\Str::slug($name), 'is_active' => true, 'position' => $i]);
             $this->product($cat, $name.' One');
         }
+        Category::create(['name' => 'Empty Shelf', 'slug' => 'empty-shelf', 'is_active' => true, 'position' => 9]);
         Brand::create(['name' => 'Vant', 'slug' => 'vant', 'is_active' => true]);
         \App\Models\Setting::put('contact_phone', '01775-075543');
 
         $html = $this->get('/')->assertOk()->getContent();
-        $this->assertStringNotContainsString('id="catDropdownContainer"', $html, 'No More menu for a single extra category');
-        $this->assertStringContainsString('href="'.route('shop.category', 'travel-bags').'"', $html);
+        $this->assertSame(5, substr_count($html, 'data-nav-cat="'), 'Every category with products is in the bar; the script moves what does not fit under More');
+        $this->assertStringContainsString('href="'.route('shop.category', 'travel-bags').'" data-nav-cat=', $html);
+        $this->assertStringNotContainsString('href="'.route('shop.category', 'empty-shelf').'" data-nav-cat=', $html, 'Categories without products stay out of the menu');
         $this->assertStringNotContainsString('id="brandDropdownContainer"', $html, 'No Brands menu with only one brand');
         $this->assertStringNotContainsString('animate-pulse"></span>', $html);
         $this->assertMatchesRegularExpression('/<a href="tel:01775-075543"[^>]*data-nav-hotline/', $html);

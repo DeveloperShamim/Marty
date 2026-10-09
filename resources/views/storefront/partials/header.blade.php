@@ -4,31 +4,6 @@
   $navCats = ($navCategories ?? collect());
   $navBrs = ($navBrands ?? collect());
 
-  // Check if categories are short 1-word names vs multi-word names
-  $firstSeven = $navCats->take(7);
-  $avgWords = $firstSeven->isNotEmpty() 
-      ? $firstSeven->avg(fn($c) => count(preg_split('/\s+/', trim($c->name)))) 
-      : 1;
-  $avgLength = $firstSeven->isNotEmpty() 
-      ? $firstSeven->avg(fn($c) => mb_strlen(trim($c->name))) 
-      : 10;
-
-  // If short 1-word categories (avg words <= 1.5 and avg length <= 14), show 6 to 7 categories!
-  // If multi-word categories, show 4 categories.
-  if ($avgWords <= 1.5 && $avgLength <= 14) {
-      $visibleCount = min(7, $navCats->count() >= 7 ? 7 : 6);
-  } else {
-      $visibleCount = 4;
-  }
-
-  $visibleCount = max(4, min(7, $visibleCount));
-
-  // A More menu holding a single category is pointless: show that one in the bar too
-  if ($navCats->count() === $visibleCount + 1) $visibleCount++;
-
-  $topCats = $navCats->take($visibleCount);
-  $moreCats = $navCats->skip($visibleCount);
-  $dropdownCats = $moreCats->isNotEmpty() ? $moreCats : $navCats;
 @endphp
 
 @php
@@ -187,39 +162,60 @@
         {{-- 2. All Products --}}
         <a href="{{ route('shop') }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ request()->routeIs('shop') && ! request('flash') && ! request('brand') && ! isset($activeCategory) ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">All Products</a>
 
-        {{-- 3. Dynamic Categories (4 to 7 items based on character/word length) --}}
-        @foreach($topCats as $cat)
-          <a href="{{ route('shop.category', $cat) }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ optional($activeCategory ?? null)->id === $cat->id ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">{{ $cat->name }}</a>
-        @endforeach
+        {{-- 3. Categories that have products, as many as fit on one line; the rest go under More.
+             The script below measures the bar and moves what doesn't fit (on load and on resize). --}}
+        @php($menuCats = $navCats->filter(fn ($c) => ($c->products_count ?? 1) > 0)->values())
+        <div class="flex items-center gap-1 xl:gap-2 min-w-0 overflow-hidden" data-nav-cats>
+          @foreach($menuCats as $cat)
+            <a href="{{ route('shop.category', $cat) }}" data-nav-cat="{{ $cat->id }}" class="shrink-0 px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ optional($activeCategory ?? null)->id === $cat->id ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">{{ $cat->name }}</a>
+          @endforeach
+        </div>
 
-        {{-- 4. More Categories Dropdown (if remaining categories exist) --}}
-        @if($moreCats->isNotEmpty())
-          <div class="relative group/catdropdown" id="catDropdownContainer">
-            <button type="button" 
-                    data-nav-dropdown-toggle="catDropdownMenu" aria-expanded="false" aria-haspopup="true"
-                    class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ isset($activeCategory) && ! $topCats->pluck('id')->contains($activeCategory->id) ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }} inline-flex items-center gap-1 cursor-pointer">
-              <span>More</span>
-              <svg class="w-3.5 h-3.5 transition-transform group-hover/catdropdown:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
-            </button>
-            <div id="catDropdownMenu" data-nav-dropdown class="absolute left-0 top-full pt-1.5 hidden group-hover/catdropdown:block z-50 min-w-[260px] max-w-sm">
-              <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 p-2 space-y-1 max-h-80 overflow-y-auto">
-                <a href="{{ route('shop') }}" class="flex items-center justify-between gap-2 px-3 py-2 text-xs font-bold text-brand-600 hover:bg-brand-50 rounded-lg transition-colors">
-                  <span>Browse All Categories</span>
-                  <span class="text-xs">&rarr;</span>
-                </a>
-                <div class="h-px bg-stone-100 my-1"></div>
-                @foreach($dropdownCats as $cat)
-                  <a href="{{ route('shop.category', $cat) }}" class="flex items-center justify-between gap-2 px-3 py-2 text-xs font-semibold text-stone-700 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors">
-                    <span class="truncate">@if($cat->icon)<span class="mr-1.5">{{ $cat->icon }}</span>@endif{{ $cat->name }}</span>
-                    @if(isset($cat->products_count) && $cat->products_count > 0)
-                      <span class="text-[10px] text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded-full font-mono">{{ $cat->products_count }}</span>
-                    @endif
-                  </a>
+        {{-- 4. More: the categories that didn't fit, in two tidy columns --}}
+        <div class="relative group/catdropdown shrink-0" id="catDropdownContainer" data-nav-more>
+          <button type="button"
+                  data-nav-dropdown-toggle="catDropdownMenu" aria-expanded="false" aria-haspopup="true"
+                  class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors text-stone-700 hover:text-brand-600 hover:bg-stone-50 inline-flex items-center gap-1 cursor-pointer" data-nav-more-btn>
+            <span>More</span>
+            <svg class="w-3.5 h-3.5 transition-transform group-hover/catdropdown:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
+          </button>
+          <div id="catDropdownMenu" data-nav-dropdown class="absolute right-0 top-full pt-2 hidden group-hover/catdropdown:block z-50">
+            <div class="w-[min(30rem,80vw)] bg-white rounded-2xl shadow-xl border border-stone-200/80 overflow-hidden">
+              <div class="grid grid-cols-2 gap-x-1 p-2">
+                @foreach($menuCats as $cat)
+                  <a href="{{ route('shop.category', $cat) }}" data-more-cat="{{ $cat->id }}" class="block px-3 py-2.5 rounded-lg text-[13px] font-medium truncate transition-colors {{ optional($activeCategory ?? null)->id === $cat->id ? 'bg-brand-50 text-brand-600' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">{{ $cat->name }}</a>
                 @endforeach
               </div>
+              <a href="{{ route('shop') }}" class="flex items-center justify-between px-5 py-3 border-t border-stone-100 bg-stone-50/70 text-[13px] font-semibold text-brand-600 hover:bg-brand-50 transition-colors">
+                <span>Browse all products</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg>
+              </a>
             </div>
           </div>
-        @endif
+        </div>
+        <script>
+          (function () {
+            var box = document.querySelector('[data-nav-cats]'), more = document.querySelector('[data-nav-more]');
+            if (!box || !more) return;
+            var links = [].slice.call(box.querySelectorAll('[data-nav-cat]'));
+            var entries = [].slice.call(more.querySelectorAll('[data-more-cat]'));
+            function fit() {
+              more.style.display = '';
+              links.forEach(function (l) { l.style.display = ''; });
+              var right = box.getBoundingClientRect().right + 1, hidden = {}, any = false;
+              links.forEach(function (l) { if (l.getBoundingClientRect().right > right) { l.style.display = 'none'; hidden[l.dataset.navCat] = any = true; } });
+              entries.forEach(function (e) { e.style.display = hidden[e.dataset.moreCat] ? '' : 'none'; });
+              more.style.display = any ? '' : 'none';
+              var btn = more.querySelector('[data-nav-more-btn]');
+              var activeInMore = entries.some(function (e) { return e.style.display !== 'none' && e.classList.contains('bg-brand-50'); });
+              btn.classList.toggle('bg-brand-50', activeInMore); btn.classList.toggle('text-brand-600', activeInMore);
+            }
+            fit();
+            window.addEventListener('resize', fit);
+            window.addEventListener('load', fit);
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+          })();
+        </script>
 
         {{-- 5. Brands Dropdown: only worth a menu with more than one brand (same rule as the homepage logo row) --}}
         @if($navBrs->count() > 1)
