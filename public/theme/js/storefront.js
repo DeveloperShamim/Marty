@@ -1803,17 +1803,15 @@
     $$("img").forEach((img) => { if (img.complete && img.naturalWidth === 0 && img.getAttribute("src")) fix(img); else img.addEventListener("error", () => fix(img)); });
   })();
 
-  // Phone tab bar: slide the pill to the tapped tab and bump the cart icon. The bar always stays on screen.
+  // Phone tab bar: mark the tapped tab straight away and bump the cart icon. The bar always stays on screen.
   (function () {
     const bar = $("[data-tabbar]");
     if (!bar) return;
-    const pill = $("[data-tabbar-pill]", bar);
     const tabs = $$("[data-tab-index]", bar);
     const bump = (el) => { if (!el) return; el.classList.remove("tabbar-bump"); void el.offsetWidth; el.classList.add("tabbar-bump"); };
     tabs.forEach((tab) => tab.addEventListener("click", () => {
       if (tab.hasAttribute("data-open-cart")) { bump(tab.querySelector("svg")); return; }
-      if (pill) { pill.style.setProperty("--i", tab.dataset.tabIndex); pill.classList.remove("opacity-0"); }
-      tabs.forEach((t) => { const on = t === tab; t.classList.toggle("text-white", on); t.classList.toggle("text-white/55", !on); on ? t.setAttribute("aria-current", "page") : t.removeAttribute("aria-current"); });
+      tabs.forEach((t) => { const on = t === tab; t.classList.toggle("is-on", on); on ? t.setAttribute("aria-current", "page") : t.removeAttribute("aria-current"); });
     }));
   })();
 

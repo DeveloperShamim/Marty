@@ -1,4 +1,4 @@
-{{-- Phone tab bar: a floating dark capsule with a pill that slides to the active tab. Not on the product page or checkout, which have their own buy bars. --}}
+{{-- Phone tab bar, in the admin bar's style. Not on the product page or checkout, which have their own buy bars. --}}
 @php
   $tabs = [
     ['key' => 'home', 'label' => 'Home', 'href' => route('home'), 'active' => request()->routeIs('home'),
@@ -16,32 +16,27 @@
   $activeIndex = collect($tabs)->search(fn ($t) => $t['active']);
 @endphp
 <style>
-  .tabbar-pill{left:6px;width:calc((100% - 12px) / 5);transform:translateX(calc(var(--i) * 100%));transition:transform .45s cubic-bezier(.34,1.4,.5,1),opacity .2s;will-change:transform}
-  .tabbar-tab svg{transition:transform .35s cubic-bezier(.34,1.5,.5,1),color .2s}
-  .tabbar-tab .tabbar-label{transition:opacity .2s,transform .3s}
-  .tabbar-tab[aria-current] svg{transform:translateY(-1px) scale(1.08)}
-  .tabbar-tab:active svg{transform:scale(.86)}
-  @keyframes tabbar-bump{0%{transform:scale(1)}40%{transform:scale(1.35)}100%{transform:scale(1)}}
+  /* Same look as the admin phone bar: a white bar docked to the bottom, the active tab's icon in a dark pill */
+  .tabbar-tab .tabbar-icon{transition:background-color .25s,color .2s,transform .3s cubic-bezier(.34,1.5,.5,1)}
+  .tabbar-tab.is-on{color:var(--brand-dark,#2B1D14);font-weight:700}
+  .tabbar-tab.is-on .tabbar-icon{background:var(--brand-dark,#2B1D14);color:#fff}
+  .tabbar-tab:active .tabbar-icon{transform:scale(.9)}
+  @keyframes tabbar-bump{0%{transform:scale(1)}40%{transform:scale(1.3)}100%{transform:scale(1)}}
   .tabbar-bump{animation:tabbar-bump .45s ease}
-  @media (prefers-reduced-motion:reduce){.tabbar,.tabbar-pill,.tabbar-tab svg{transition:none}}
+  @media (prefers-reduced-motion:reduce){.tabbar-tab .tabbar-icon{transition:none}}
 </style>
-{{-- Soft white fade behind the tab bar. It runs past the bottom edge so it also fills the space behind Safari's address bar. --}}
-<div class="md:hidden fixed inset-x-0 z-40 pointer-events-none" aria-hidden="true"
-     style="bottom: -120px; height: calc(230px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,.85) 40%, #fff 60%);"></div>
-<nav data-tabbar class="tabbar md:hidden fixed inset-x-3 z-40 rounded-[22px] text-white shadow-[0_14px_34px_-10px_rgba(43,29,20,.65)] ring-1 ring-white/10"
-     style="bottom: calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--brand-dark, #2B1D14);" aria-label="Shop navigation">
-  <ul class="relative grid grid-cols-5 h-16 px-1.5">
-    <li aria-hidden="true" data-tabbar-pill class="tabbar-pill absolute top-1.5 bottom-1.5 rounded-2xl {{ $activeIndex === false ? 'opacity-0' : '' }}"
-        style="--i: {{ $activeIndex === false ? 0 : $activeIndex }}; background: var(--brand-primary, #8B5A2B); box-shadow: inset 0 1px 0 rgba(255,255,255,.18);"></li>
+<nav data-tabbar class="md:hidden fixed inset-x-0 bottom-0 z-40 bg-white border-t border-stone-200/80 shadow-[0_-6px_20px_-12px_rgba(43,29,20,.25)]"
+     style="padding-bottom: env(safe-area-inset-bottom, 0px);" aria-label="Shop navigation">
+  <ul class="grid grid-cols-5 h-16 max-w-xl mx-auto">
     @foreach($tabs as $i => $tab)
-      <li class="relative">
+      <li>
         <a href="{{ $tab['href'] }}" data-tab-index="{{ $i }}" @if(!empty($tab['cart'])) data-open-cart @endif
-           class="tabbar-tab relative h-full flex flex-col items-center justify-center gap-1 text-[10.5px] font-semibold tracking-wide {{ $tab['active'] ? 'text-white' : 'text-white/55' }}"
+           class="tabbar-tab {{ $tab['active'] ? 'is-on' : '' }} h-full flex flex-col items-center justify-center gap-0.5 text-[11px] font-medium text-stone-500"
            @if($tab['active']) aria-current="page" @endif>
-          <span class="relative">
-            <svg class="w-[22px] h-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{{ $tab['active'] ? '2' : '1.7' }}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $tab['icon'] !!}</svg>
+          <span class="tabbar-icon relative grid h-8 w-12 place-items-center rounded-full">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $tab['icon'] !!}</svg>
             @if(!empty($tab['cart']))
-              <span class="cart-count absolute -top-1.5 -right-2.5 bg-white text-[10px] font-black h-[18px] min-w-[18px] px-1 rounded-full flex items-center justify-center leading-none {{ ($cartCount ?? 0) ? '' : 'hidden' }}" style="color: var(--brand-dark, #2B1D14); box-shadow: 0 0 0 2px var(--brand-dark, #2B1D14);">{{ $cartCount ?? 0 }}</span>
+              <span class="cart-count absolute -top-1 right-1 text-white text-[10px] font-black h-[18px] min-w-[18px] px-1 rounded-full flex items-center justify-center leading-none ring-2 ring-white {{ ($cartCount ?? 0) ? '' : 'hidden' }}" style="background: var(--brand-primary, #8B5A2B);">{{ $cartCount ?? 0 }}</span>
             @endif
           </span>
           <span class="tabbar-label leading-none">{{ $tab['label'] }}</span>
@@ -50,5 +45,5 @@
     @endforeach
   </ul>
 </nav>
-{{-- Keeps the footer's last lines clear of the floating tab bar --}}
-<div class="md:hidden h-[88px]" style="margin-bottom: env(safe-area-inset-bottom, 0px);" aria-hidden="true"></div>
+{{-- Keeps the footer's last lines clear of the tab bar --}}
+<div class="md:hidden h-16" style="margin-bottom: env(safe-area-inset-bottom, 0px);" aria-hidden="true"></div>

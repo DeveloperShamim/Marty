@@ -68,6 +68,8 @@ class HomeLayoutTest extends TestCase
         $res = $this->get('/')->assertOk();
         $html = $res->getContent();
         $this->assertStringContainsString('data-auto-row', $html);
+        $this->assertMatchesRegularExpression('/<nav data-tabbar[^>]*bottom-0[^>]*bg-white/', $html, 'Phone bar in the admin style: white, docked to the bottom');
+        $this->assertMatchesRegularExpression('/tabbar-tab is-on[^>]*>\s*<span class="tabbar-icon/', $html, 'Home tab marked open');
 
         $jfy = $res->viewData('justForYou')->pluck('name');
         $this->assertCount(\App\Http\Controllers\HomeController::JUST_FOR_YOU, $jfy);
