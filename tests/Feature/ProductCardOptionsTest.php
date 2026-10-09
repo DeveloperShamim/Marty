@@ -94,6 +94,20 @@ class ProductCardOptionsTest extends TestCase
             ->assertJsonMissingPath('cart.inCart.' . $pad->id);
     }
 
+    public function test_order_now_does_not_add_a_second_one_already_in_the_cart(): void
+    {
+        $cat = Category::firstOrCreate(['slug' => 'leather'], ['name' => 'Leather', 'is_active' => true]);
+        $pad = Product::create(['category_id' => $cat->id, 'name' => 'Mouse Pad', 'slug' => 'mouse-pad',
+            'regular_price' => 650, 'stock_quantity' => 10, 'is_published' => true]);
+
+        $this->postJson(route('cart.add'), ['product_id' => $pad->id])->assertJsonPath('cart.count', 1);
+        $this->postJson(route('cart.add'), ['product_id' => $pad->id, 'order_now' => true])->assertOk()->assertJsonPath('cart.count', 1);
+        // A bigger quantity from the picker raises it to that amount, not on top
+        $this->postJson(route('cart.add'), ['product_id' => $pad->id, 'qty' => 2, 'order_now' => true])->assertJsonPath('cart.count', 2);
+        // Plain Add to cart still adds
+        $this->postJson(route('cart.add'), ['product_id' => $pad->id])->assertJsonPath('cart.count', 3);
+    }
+
     public function test_sold_out_only_when_every_variation_is_out(): void
     {
         $this->product('Partly out', [[['Size' => '40'], null, 0], [['Size' => '41'], null, 2]]);

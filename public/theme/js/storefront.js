@@ -583,6 +583,8 @@
     try {
       const payload = { product_id: productId, qty: qty || 1, variant: variant || null };
       if (skuId) payload.sku_id = skuId;
+      // Going straight to checkout: don't add a second one if it's already in the cart
+      if (redirectUrl && /\/checkout/.test(redirectUrl)) payload.order_now = true;
       const data = await api("/cart/add", payload);
       applyCart(data);
       if (redirectUrl) {

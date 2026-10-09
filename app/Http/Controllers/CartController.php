@@ -25,7 +25,11 @@ class CartController extends Controller
             'qty'        => ['nullable', 'integer', 'min:1', 'max:3'],
             'variant'    => ['nullable', 'string', 'max:120'],
             'sku_id'     => ['nullable', 'exists:product_skus,id'],
+            'order_now'  => ['nullable', 'boolean'],
         ]);
+        // Order now on its way to checkout: make sure the cart holds at least this many, never add on top
+        // of what is already there (Add to cart then Order now must not end up with two).
+        $orderNow = $request->boolean('order_now');
 
         $product = Product::published()->findOrFail($data['product_id']);
         $qty     = min(3, max(1, (int) ($data['qty'] ?? 1)));
@@ -72,6 +76,10 @@ class CartController extends Controller
             return back()->withErrors(['cart' => $message]);
         }
 
+        if ($orderNow) {
+            $qty = max(0, $qty - $inCart);
+        }
+
         if ($inCart + $qty > $maxAllowed) {
             $label = $sku ? "{$product->name} ({$sku->attributeLabel()})" : $product->name;
             if ($availableStock < 3) {
@@ -86,7 +94,9 @@ class CartController extends Controller
             return back()->withErrors(['cart' => $message]);
         }
 
-        $this->cart->add($product->id, $qty, $variant, $skuId);
+        if ($qty > 0) {
+            $this->cart->add($product->id, $qty, $variant, $skuId);
+        }
 
         if ($request->wantsJson() || $request->ajax()) {
             return response()->json([
