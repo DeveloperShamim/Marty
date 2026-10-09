@@ -83,7 +83,8 @@ class AppServiceProvider extends ServiceProvider
                         ->orderByDesc('products_count')
                         ->orderBy('position')
                         ->get(),
-                    'hasFlashSale'  => Product::query()->published()->where('is_flash_sale', true)->exists(),
+                    // Flash links and the header button only while a timed sale is running
+                    'hasFlashSale'  => flash_sale_running() && Product::query()->published()->where('is_flash_sale', true)->exists(),
                 ];
             }
 

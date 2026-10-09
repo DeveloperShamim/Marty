@@ -27,7 +27,8 @@
     <span class="absolute top-2.5 right-2.5 z-10 bg-stone-900/90 backdrop-blur-xs text-white font-extrabold text-[9px] sm:text-[10px] tracking-wide uppercase px-2.5 py-1 rounded-lg shadow-sm">Out of Stock</span>
   @else
     <div class="absolute top-2.5 left-2.5 z-10 flex flex-wrap gap-1.5 items-center pointer-events-none">
-      @if($product->is_flash_sale)
+      {{-- The Flash Sale badge only while a timed sale runs; otherwise a plain discount tag --}}
+      @if($product->is_flash_sale && flash_sale_running())
         <span class="text-white font-extrabold text-[9px] sm:text-[10px] tracking-wider uppercase pl-2 pr-1 py-1 rounded-md shadow-sm flex items-center gap-1.5" style="background-color: var(--brand-dark, #1c1917);">
           <span class="flex items-center gap-1"><svg class="w-2.5 h-2.5 text-amber-300" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>Flash Sale</span>
           @if($discount > 0)

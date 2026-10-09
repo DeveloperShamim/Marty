@@ -10,6 +10,22 @@ if (! function_exists('setting')) {
     }
 }
 
+if (! function_exists('flash_sale_running')) {
+    /** A timed flash sale is on: Admin → Flash Sale has an "Ends at" time that has not passed yet. */
+    function flash_sale_running(): bool
+    {
+        $raw = setting('flash_sale_ends_at');
+        if (! $raw) {
+            return false;
+        }
+        try {
+            return \Illuminate\Support\Carbon::parse($raw)->isFuture();
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+}
+
 if (! function_exists('generate_3_color_matching_theme')) {
     /** Automatically calculate hover states, border highlights, and soft tints from 3 user core colors. */
     function generate_3_color_matching_theme(?string $primaryHex = null, ?string $darkHex = null, ?string $surfaceHex = null): array

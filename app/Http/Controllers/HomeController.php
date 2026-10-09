@@ -66,9 +66,7 @@ class HomeController extends Controller
 
         // The spot under the categories: Flash deals only while a timed sale is running (Admin → Flash Sale,
         // "Ends at" in the future); otherwise "Our picks", the products ticked Featured in Admin → Products.
-        $flashEndsAt = setting('flash_sale_ends_at');
-        $flashActive = $flashProducts->isNotEmpty() && $flashEndsAt
-            && rescue(fn () => \Illuminate\Support\Carbon::parse($flashEndsAt)->isFuture(), false, false);
+        $flashActive = $flashProducts->isNotEmpty() && flash_sale_running();
         $ourPicks = $flashActive ? collect() : Product::query()->tap($withImages)
             ->where('is_featured', true)->latest()->take(8)->get();
         $topSection = $flashActive ? $flashProducts : $ourPicks;

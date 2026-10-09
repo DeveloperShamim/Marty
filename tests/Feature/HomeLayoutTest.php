@@ -89,12 +89,15 @@ class HomeLayoutTest extends TestCase
         $html = $this->get('/')->assertOk()->getContent();
         $this->assertStringContainsString('data-our-picks', $html);
         $this->assertStringNotContainsString('data-home-flash', $html);
+        $this->assertStringNotContainsString('>Flash Sale</span>', $html, 'No Flash Sale badge on cards outside a sale');
+        $this->assertStringNotContainsString('class="flash-pill', $html, 'No Flash Sale button in the header outside a sale');
         $this->assertStringNotContainsString('LIMITED TIME DROPS', $html);
 
         \App\Models\Setting::put('flash_sale_ends_at', now()->addDay()->toDateTimeString());
         $html = $this->get('/')->assertOk()->getContent();
         $this->assertStringContainsString('data-home-flash', $html);
         $this->assertStringContainsString('data-countdown-end', $html);
+        $this->assertStringContainsString('>Flash Sale</span>', $html, 'Badge is back during the sale');
         $this->assertStringNotContainsString('data-our-picks', $html);
         $this->assertStringNotContainsString('LIMITED TIME DROPS', $html);
 
