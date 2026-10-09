@@ -76,7 +76,7 @@ class DashboardActionCardsTest extends TestCase
         $this->order('ORD-CANCEL', ['customer_name' => 'Cancelled Buyer', 'payment_method' => 'bkash', 'status' => 'cancelled']);
 
         $html = $this->actingAs($admin)->get('/admin')->assertOk()->getContent();
-        $approvals = Str::between($html, 'id="act-payments"', '</section>');
+        $approvals = Str::betweenFirst($html, 'id="act-payments"', '</section>');
 
         $this->assertStringContainsString('Bkash Buyer', $approvals);
         $this->assertStringNotContainsString('Cash Buyer', $approvals);

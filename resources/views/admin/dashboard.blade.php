@@ -11,17 +11,6 @@
   @endphp
   @php
 
-    // Order status rings: each status as a share of all orders
-    $statusRings = [
-      ['Active', $ordersCount ?? 0, 'var(--brand)'],
-      ['Shipped', $shippedCount ?? 0, 'var(--brand-dark)'],
-      ['Delivered', $deliveredCount ?? 0, '#10b981'],
-      ['To review', $pendingCount ?? 0, '#f59e0b'],
-      ['Returned', $returnedOrdersCount ?? 0, '#a8a29e'],
-      ['Cancelled', $cancelledOrdersCount ?? 0, '#d6d3d1'],
-    ];
-    $ringTotal = max(1, ($ordersCount ?? 0) + ($deliveredCount ?? 0) + ($returnedOrdersCount ?? 0) + ($cancelledOrdersCount ?? 0));
-
     // Order success rate: delivered vs returned
     $finished = ($deliveredCount ?? 0) + ($returnedOrdersCount ?? 0);
     $successRate = $finished > 0 ? round(($deliveredCount ?? 0) / $finished * 100, 1) : 0;
@@ -213,6 +202,81 @@
     @endif
   </section>
 
+  {{-- Orders to ship: every order still in the shop, by step, with the oldest waiting first --}}
+  @if($canOrders)
+  @php
+    $shipSteps = ['pending' => 'Pending', 'confirmed' => 'Confirmed', 'processing' => 'Processing'];
+    $shipTotal = collect($toShip)->sum('count');
+    $shipOpen = collect($toShip)->search(fn ($s) => $s['count'] > 0) ?: 'pending';
+  @endphp
+  <section class="panel p-4 sm:p-5" data-to-ship>
+    <div class="flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <h2 class="text-[15px] sm:text-base font-semibold text-gray-900">Orders to ship</h2>
+        <p class="text-xs text-gray-500 mt-0.5">{{ $shipTotal ? number_format($shipTotal) . ' ' . \Illuminate\Support\Str::plural('order', $shipTotal) . ' not with the courier yet · oldest first' : 'Nothing waiting. Every order is with the courier or done.' }}</p>
+      </div>
+      <a href="{{ route('admin.orders.index') }}" class="shrink-0 text-xs font-semibold text-gray-600 hover:text-gray-900">All orders &rarr;</a>
+    </div>
+
+    {{-- Phone: one step at a time --}}
+    <div class="sm:hidden mt-3 grid grid-cols-3 gap-1 p-1 rounded-full bg-gray-100" role="tablist">
+      @foreach($shipSteps as $key => $label)
+        <button type="button" role="tab" data-ship-tab="{{ $key }}" aria-selected="{{ $key === $shipOpen ? 'true' : 'false' }}"
+                class="h-8 rounded-full text-[12px] font-semibold transition-colors {{ $key === $shipOpen ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500' }}">
+          {{ $label }} <span class="tabular-nums">{{ $toShip[$key]['count'] }}</span>
+        </button>
+      @endforeach
+    </div>
+
+    <div class="mt-3 sm:mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+      @foreach($shipSteps as $key => $label)
+        @php $step = $toShip[$key]; @endphp
+        <div class="na-list rounded-2xl p-2.5 sm:p-3 min-w-0 {{ $key === $shipOpen ? '' : 'max-sm:hidden' }}" data-ship-col="{{ $key }}">
+          <a href="{{ route('admin.orders.index', ['status' => $key]) }}" class="flex items-baseline justify-between gap-2 px-1 group">
+            <span class="text-[13px] font-semibold text-gray-700 group-hover:text-gray-900">{{ $label }}</span>
+            <span class="text-xl sm:text-2xl font-semibold tracking-tight tabular-nums text-gray-900">{{ number_format($step['count']) }}</span>
+          </a>
+          @if($step['oldest']->isEmpty())
+            <p class="mt-2 px-1 pb-1 text-xs text-gray-500">Nothing here.</p>
+          @else
+            <ul class="mt-2 space-y-1.5">
+              @foreach($step['oldest'] as $o)
+                @php $late = $o->created_at->lt(now()->subDay()); @endphp
+                <li>
+                  <a href="{{ route('admin.orders.show', $o) }}" class="flex items-center gap-2.5 rounded-xl bg-white px-2.5 py-2 hover:shadow-sm transition-shadow">
+                    <span class="min-w-0 flex-1">
+                      <span class="block text-[12.5px] font-semibold text-gray-900 truncate">{{ $o->order_number }}</span>
+                      <span class="block text-[11px] text-gray-500 truncate">{{ $o->customer_name }} · {{ money($o->total) }}</span>
+                    </span>
+                    <span class="shrink-0 px-2 py-0.5 rounded-full text-[10.5px] font-semibold {{ $late ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-500' }}"
+                          title="Placed {{ $o->created_at->format('d M, g:i A') }}">{{ $o->created_at->diffForHumans(null, true, true) }}</span>
+                  </a>
+                </li>
+              @endforeach
+            </ul>
+            @if($step['count'] > $step['oldest']->count())
+              <a href="{{ route('admin.orders.index', ['status' => $key]) }}" class="mt-2 block px-1 text-[11.5px] font-semibold" style="color: var(--brand);">+{{ $step['count'] - $step['oldest']->count() }} more &rarr;</a>
+            @endif
+          @endif
+        </div>
+      @endforeach
+    </div>
+  </section>
+  <script>
+    document.querySelectorAll('[data-ship-tab]').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var key = tab.getAttribute('data-ship-tab');
+        document.querySelectorAll('[data-ship-tab]').forEach(function (t) {
+          var on = t === tab;
+          t.setAttribute('aria-selected', on ? 'true' : 'false');
+          t.classList.toggle('bg-white', on); t.classList.toggle('text-gray-900', on); t.classList.toggle('shadow-sm', on); t.classList.toggle('text-gray-500', !on);
+        });
+        document.querySelectorAll('[data-ship-col]').forEach(function (c) { c.classList.toggle('max-sm:hidden', c.getAttribute('data-ship-col') !== key); });
+      });
+    });
+  </script>
+  @endif
+
   {{-- Headline numbers --}}
   <div class="grid grid-cols-2 {{ $canMoney ? 'xl:grid-cols-3' : '' }} gap-3 sm:gap-4">
     @if($canMoney)
@@ -254,11 +318,11 @@
     @endif
   </div>
 
-  @if($canMoney || $canOrders)
-  <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+  @if($canMoney)
+  <div class="grid grid-cols-1 gap-4">
     @if($canMoney)
     {{-- Monthly revenue --}}
-    <div class="panel p-4 min-w-0 {{ $canOrders ? 'xl:col-span-8' : 'xl:col-span-12' }}">
+    <div class="panel p-4 min-w-0">
       <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
           <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Monthly Revenue</h2>
@@ -306,33 +370,6 @@
     </div>
     @endif
 
-    @if($canOrders)
-    {{-- Order status rings --}}
-    <div class="panel p-4 min-w-0 {{ $canMoney ? 'xl:col-span-4' : 'xl:col-span-12' }}">
-      <div class="flex items-start justify-between gap-3">
-        <div>
-          <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Order Breakdown</h2>
-          <p class="text-xs text-gray-500 mt-0.5">Share of all {{ number_format($ringTotal) }} orders by status</p>
-        </div>
-        <a href="{{ route('admin.orders.index') }}" class="shrink-0 text-xs font-semibold text-gray-600 hover:text-gray-900">Orders &rarr;</a>
-      </div>
-      <div class="mt-3 grid grid-cols-3 sm:grid-cols-6 xl:grid-cols-3 gap-y-3 gap-x-2">
-        @foreach($statusRings as [$label, $count, $color])
-          @php $pct = min(100, round($count / $ringTotal * 100)); @endphp
-          <div class="flex flex-col items-center text-center" title="{{ $label }}: {{ $count }} ({{ $pct }}%)">
-            <div class="relative h-[48px] w-[48px]">
-              <svg viewBox="0 0 40 40" class="h-full w-full -rotate-90" aria-hidden="true">
-                <circle cx="20" cy="20" r="15.5" fill="none" stroke="#f0efed" stroke-width="4.5"/>
-                <circle cx="20" cy="20" r="15.5" fill="none" stroke="{{ $color }}" stroke-width="4.5" stroke-linecap="round" pathLength="100" stroke-dasharray="{{ max($pct, $count > 0 ? 3 : 0) }} 100"/>
-              </svg>
-              <span class="absolute inset-0 grid place-items-center text-[11px] font-semibold text-gray-800 tabular-nums">{{ number_format($count) }}</span>
-            </div>
-            <span class="mt-1 text-[11px] text-gray-500">{{ $label }}</span>
-          </div>
-        @endforeach
-      </div>
-    </div>
-    @endif
   </div>
   @endif
 

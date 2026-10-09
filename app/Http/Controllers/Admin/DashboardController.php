@@ -291,6 +291,11 @@ class DashboardController extends Controller
             'itemsSold'           => $itemsSold,
             'customersCount'      => $customersCount,
             'allOrdersCount'      => (int) $statusCounts->sum(),
+            // Orders to ship: what is waiting at each step, oldest first so stuck orders surface.
+            'toShip'              => collect(['pending', 'confirmed', 'processing'])->mapWithKeys(fn ($st) => [$st => [
+                'count'  => $countOf($st),
+                'oldest' => Order::where('status', $st)->oldest()->take(3)->get(),
+            ]])->all(),
         ]);
     }
 
