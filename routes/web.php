@@ -182,6 +182,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('orders/invoices', [AdminOrderController::class, 'invoices'])->middleware('area:orders')->name('orders.invoices');
             Route::post('orders/prints', [AdminOrderController::class, 'recordPrints'])->middleware('area:orders')->name('orders.prints.record');
             Route::get('orders/prints', [AdminOrderController::class, 'printStatus'])->middleware('area:orders')->name('orders.prints.status');
+            Route::post('orders/bulk', [AdminOrderController::class, 'bulk'])->middleware('area:orders')->name('orders.bulk');
             Route::get('orders/{order}', [AdminOrderController::class, 'show'])->middleware('area:orders')->name('orders.show');
             Route::get('orders/{order}/invoice', [AdminOrderController::class, 'invoice'])->middleware('area:orders')->name('orders.invoice');
             Route::patch('orders/{order}', [AdminOrderController::class, 'update'])->middleware('area:orders')->name('orders.update');

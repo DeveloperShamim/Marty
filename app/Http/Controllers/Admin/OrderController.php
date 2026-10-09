@@ -80,7 +80,13 @@ class OrderController extends Controller
             $nextSync->addDay();
         }
 
-        return view('admin.orders.index', compact('orders', 'status', 'counts', 'courier', 'courierCounts', 'lastSync', 'autoSync', 'nextSync')
+        $bulkCouriers = collect([
+            'steadfast' => [app(SteadfastService::class), 'Steadfast'],
+            'pathao'    => [app(PathaoService::class), 'Pathao'],
+            'redx'      => [app(RedxService::class), 'RedX'],
+        ])->filter(fn ($c) => $c[0]->isConfigured())->map(fn ($c) => $c[1])->all();
+
+        return view('admin.orders.index', compact('orders', 'status', 'counts', 'courier', 'courierCounts', 'lastSync', 'autoSync', 'nextSync', 'bulkCouriers')
             + ['method' => $request->input('method'), 'q' => $term]);
     }
 
@@ -550,6 +556,18 @@ class OrderController extends Controller
             return back()->with('error', "A {$order->status} order can't be sent to a courier.");
         }
 
+        $result = $this->bookCourier($order, $provider, $steadfast, $pathao, $redx);
+
+        if ($result['success']) {
+            return back()->with('status', "Order {$order->order_number} successfully dispatched to {$order->courierLabel()}! Tracking Code: {$result['tracking_code']}");
+        }
+
+        return back()->with('error', $result['message']);
+    }
+
+    /** Book one parcel with the courier and mark the order shipped. */
+    private function bookCourier(Order $order, string $provider, SteadfastService $steadfast, PathaoService $pathao, RedxService $redx): array
+    {
         $result = match ($provider) {
             'steadfast' => $steadfast->createOrder($order),
             'pathao'    => $pathao->createOrder($order),
@@ -565,11 +583,106 @@ class OrderController extends Controller
                 'courier_sent_at'       => now(),
                 'status'                => in_array($order->status, ['pending', 'confirmed', 'processing'], true) ? 'shipped' : $order->status,
             ]);
-
-            return back()->with('status', "Order {$order->order_number} successfully dispatched to {$order->courierLabel()}! Tracking Code: {$result['tracking_code']}");
         }
 
-        return back()->with('error', $result['message']);
+        return $result;
+    }
+
+    /**
+     * Bulk actions from the order list: confirm, send to a courier, or cancel the ticked orders.
+     * Orders an action doesn't fit are skipped with a reason; nothing is changed for them.
+     */
+    public function bulk(Request $request, SteadfastService $steadfast, PathaoService $pathao, RedxService $redx)
+    {
+        $data = $request->validate([
+            'action'   => ['required', Rule::in(['confirm', 'courier', 'cancel'])],
+            'provider' => ['required_if:action,courier', 'nullable', Rule::in(['steadfast', 'pathao', 'redx'])],
+            'orders'   => ['required', 'array', 'min:1', 'max:100'],
+            'orders.*' => ['string', 'max:40'],
+        ]);
+
+        $services = ['steadfast' => $steadfast, 'pathao' => $pathao, 'redx' => $redx];
+        if ($data['action'] === 'courier' && ! $services[$data['provider']]->isConfigured()) {
+            return response()->json(['message' => 'That courier is not connected. Add its keys in Integrations.'], 422);
+        }
+        if ($data['action'] === 'courier') {
+            set_time_limit(300); // one courier request per parcel
+        }
+
+        $orders = Order::whereIn('order_number', array_unique($data['orders']))->get()->keyBy('order_number');
+        $done = $skipped = $failed = [];
+
+        foreach (array_unique($data['orders']) as $number) {
+            $order = $orders->get($number);
+            if (! $order) {
+                $skipped[] = ['order' => $number, 'reason' => 'not found'];
+                continue;
+            }
+
+            $reason = $this->bulkSkipReason($order, $data['action']);
+            if ($reason) {
+                $skipped[] = ['order' => $number, 'reason' => $reason];
+                continue;
+            }
+
+            if ($data['action'] === 'confirm') {
+                $order->update(['status' => 'confirmed']);
+                \App\Services\ActivityLogger::log('Confirmed COD Order', "Confirmed order #{$number} ({$order->customer_name}) in bulk");
+                $done[] = $number;
+            } elseif ($data['action'] === 'cancel') {
+                $order->restoreStock();
+                $order->releaseCoupon();
+                $order->update(['status' => 'cancelled', 'payment_status' => $order->payment_status === 'verified' ? 'verified' : 'rejected']);
+                \App\Services\ActivityLogger::log('Cancelled Order', "Cancelled order #{$number} ({$order->customer_name}) in bulk");
+                $done[] = $number;
+            } else {
+                try {
+                    $result = $this->bookCourier($order, $data['provider'], $steadfast, $pathao, $redx);
+                } catch (\Throwable $e) {
+                    report($e);
+                    $result = ['success' => false, 'message' => 'The courier could not be reached'];
+                }
+                if ($result['success']) {
+                    $done[] = $number;
+                } else {
+                    $failed[] = ['order' => $number, 'reason' => $result['message'] ?: 'The courier refused it'];
+                }
+            }
+        }
+
+        if ($data['action'] === 'courier' && $done) {
+            \App\Services\ActivityLogger::log('Sent Orders to Courier', count($done) . ' orders sent to ' . ucfirst($data['provider']) . ' in bulk: ' . implode(', ', $done));
+        }
+
+        return response()->json(compact('done', 'skipped', 'failed'));
+    }
+
+    /** Why a bulk action leaves this order alone, or null when it applies. */
+    private function bulkSkipReason(Order $order, string $action): ?string
+    {
+        $closed = in_array($order->status, ['cancelled', 'returned', 'delivered'], true);
+
+        return match ($action) {
+            'confirm' => match (true) {
+                $order->status !== 'pending' => "already {$order->status}",
+                $order->payment_method !== 'cod' && $order->payment_status !== 'verified' => 'payment needs checking first',
+                default => null,
+            },
+            'courier' => match (true) {
+                (bool) $order->courier_tracking_code => 'already booked with ' . $order->courierLabel(),
+                $order->isPos() => 'in-store sale',
+                $closed => "already {$order->status}",
+                $order->status === 'pending' => 'not confirmed yet',
+                $order->status === 'shipped' => 'already shipped',
+                $order->payment_method !== 'cod' && $order->payment_status !== 'verified' => 'payment needs checking first',
+                default => null,
+            },
+            'cancel' => match (true) {
+                $closed => "already {$order->status}",
+                $order->status === 'shipped' || $order->isDispatchedToCourier() => 'already with the courier',
+                default => null,
+            },
+        };
     }
 
     /** Log a phone call (with its result) or a private staff note on the order. */

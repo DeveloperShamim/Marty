@@ -195,3 +195,5 @@ body.admin-body {
 /* Orders list: the phone ⋯ menu has no disclosure triangle */
 details.order-menu > summary { list-style: none; }
 details.order-menu > summary::-webkit-details-marker { display: none; }
+details.bulk-menu > summary { list-style: none; }
+details.bulk-menu > summary::-webkit-details-marker { display: none; }

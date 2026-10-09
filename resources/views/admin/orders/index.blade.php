@@ -329,23 +329,55 @@
 {{-- Bulk printing: selection is kept while moving between pages of the list. --}}
 <div id="bulkBar" class="hidden fixed bottom-3 inset-x-3 lg:left-auto lg:right-6 lg:bottom-6 z-30 lg:max-w-3xl" role="region" aria-label="Selected orders">
   <div class="text-white rounded-[22px] shadow-2xl px-3 py-2.5 sm:px-4 flex flex-wrap items-center gap-2 sm:gap-3" style="background: var(--brand-dark);">
-    <div class="flex items-center gap-2 mr-auto">
+    <div class="flex items-center gap-2 mr-auto max-sm:basis-full">
       <span class="text-sm font-semibold"><span id="bulkCount">0</span> selected</span>
       <button type="button" id="bulkClear" class="text-xs text-gray-300 hover:text-white underline underline-offset-2">Clear</button>
     </div>
-    <label class="sr-only" for="bulkFormat">Invoice format</label>
-    <select id="bulkFormat" data-invoice-format class="h-9 rounded-xl bg-white/10 border border-white/15 text-xs font-semibold text-white pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-teal-500">
-      @foreach(\App\Http\Controllers\Admin\OrderController::INVOICE_FORMATS as $key => $label)
-        <option value="{{ $key }}">{{ $label }}</option>
-      @endforeach
-    </select>
-    <button type="button" id="bulkInvoices" class="h-9 px-4 rounded-xl bg-teal-600 hover:bg-teal-500 text-xs font-bold inline-flex items-center gap-1.5">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-      Print invoices
-    </button>
-    <button type="button" id="bulkLabels" class="h-9 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold">Print labels</button>
+    <div class="flex items-center gap-1.5 max-sm:w-full">
+      <button type="button" id="bulkConfirm" class="h-9 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold inline-flex items-center justify-center gap-1.5 max-sm:flex-1" title="Confirm the ticked new orders">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.6" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        Confirm
+      </button>
+      <button type="button" id="bulkCourier" class="h-9 px-3.5 rounded-xl bg-white hover:bg-gray-100 text-xs font-bold inline-flex items-center justify-center gap-1.5 max-sm:flex-1" style="color: var(--brand-dark);" title="Book the ticked orders with a courier">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></svg>
+        <span class="sm:hidden">Courier</span><span class="hidden sm:inline">Send to courier</span>
+      </button>
+      <details class="bulk-menu relative">
+        <summary class="h-9 px-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+          Print
+        </summary>
+        <div class="absolute bottom-full right-0 mb-2 w-60 rounded-2xl bg-white p-2 shadow-2xl ring-1 ring-gray-100 text-gray-800 space-y-1.5">
+          <label class="block px-1.5 pt-1 text-[11px] font-medium text-gray-500" for="bulkFormat">Invoice size</label>
+          <select id="bulkFormat" data-invoice-format class="w-full h-9 rounded-xl bg-gray-100 border-0 text-xs font-semibold text-gray-800 pl-3 pr-8 focus:outline-none">
+            @foreach(\App\Http\Controllers\Admin\OrderController::INVOICE_FORMATS as $key => $label)
+              <option value="{{ $key }}">{{ $label }}</option>
+            @endforeach
+          </select>
+          <p id="bulkNote" class="hidden px-1.5 text-[11px] text-gray-500"></p>
+          <button type="button" id="bulkInvoices" class="w-full h-9 px-3 rounded-xl text-left text-[13px] font-semibold hover:bg-gray-50">Print invoices</button>
+          <button type="button" id="bulkLabels" class="w-full h-9 px-3 rounded-xl text-left text-[13px] font-semibold hover:bg-gray-50">Print labels</button>
+        </div>
+      </details>
+      <details class="bulk-menu relative">
+        <summary class="h-9 w-9 rounded-xl bg-white/10 hover:bg-white/20 inline-flex items-center justify-center cursor-pointer" aria-label="More actions">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+        </summary>
+        <div class="absolute bottom-full right-0 mb-2 w-48 rounded-2xl bg-white p-1.5 shadow-2xl ring-1 ring-gray-100">
+          <button type="button" id="bulkCancel" class="w-full h-9 px-3 rounded-xl text-left text-[13px] font-semibold text-rose-700 hover:bg-rose-50">Cancel orders</button>
+        </div>
+      </details>
+    </div>
   </div>
-  <p id="bulkNote" class="hidden mt-1.5 text-center text-[11px] text-gray-600"></p>
+</div>
+
+{{-- Bulk confirm / courier / cancel: asks first where it matters, then shows what happened to each order. --}}
+<div id="bulkDialog" class="hidden fixed inset-0 z-50 bg-gray-900/50 flex items-end sm:items-center justify-center p-3" role="dialog" aria-modal="true" aria-labelledby="bulkDialogTitle">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-5 space-y-3">
+    <h2 id="bulkDialogTitle" class="text-[15px] font-semibold text-gray-900"></h2>
+    <div id="bulkDialogBody" class="text-sm text-gray-600 space-y-3"></div>
+    <div id="bulkDialogActions" class="flex flex-col sm:flex-row-reverse gap-2 pt-1"></div>
+  </div>
 </div>
 
 {{-- Shown when some selected orders were already printed. --}}
@@ -497,6 +529,115 @@
     }
     document.getElementById('bulkInvoices').addEventListener('click', function () { printWithCheck('invoice', invoicesUrl, { format: fmt.value }); });
     document.getElementById('bulkLabels').addEventListener('click', function () { printWithCheck('label', labelsUrl, {}); });
+
+    // Print / ⋯ menus on the bar: one open at a time, a tap elsewhere closes them.
+    var menus = Array.prototype.slice.call(document.querySelectorAll('details.bulk-menu'));
+    menus.forEach(function (d) { d.addEventListener('toggle', function () { if (d.open) menus.forEach(function (o) { if (o !== d) o.open = false; }); }); });
+    document.addEventListener('click', function (e) { menus.forEach(function (d) { if (d.open && !d.contains(e.target)) d.open = false; }); });
+
+    // ---- Bulk confirm / send to courier / cancel ----
+    var bulkUrl = @json(route('admin.orders.bulk'));
+    var couriers = @json($bulkCouriers);
+    var integrationsUrl = @json(route('admin.integrations.index'));
+    var csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    var dlg = document.getElementById('bulkDialog');
+    var dlgTitle = document.getElementById('bulkDialogTitle');
+    var dlgBody = document.getElementById('bulkDialogBody');
+    var dlgActions = document.getElementById('bulkDialogActions');
+    var busy = false, reloadOnClose = false;
+    var btnMain = 'h-10 px-4 rounded-xl text-white text-xs font-bold';
+    var btnSoft = 'h-10 px-4 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-800 text-xs font-bold';
+
+    function plural(n, word) { return n + ' ' + word + (n === 1 ? '' : 's'); }
+    function showDialog(title, body, actions) {
+      menus.forEach(function (d) { d.open = false; });
+      dlgTitle.textContent = title;
+      dlgBody.innerHTML = body;
+      dlgActions.innerHTML = '';
+      actions.forEach(function (a) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.textContent = a.label; b.className = a.cls;
+        if (a.style) b.setAttribute('style', a.style);
+        b.addEventListener('click', a.run);
+        dlgActions.appendChild(b);
+      });
+      dlg.classList.remove('hidden');
+      var first = dlgActions.querySelector('button'); if (first) first.focus();
+    }
+    function closeBulkDialog() {
+      if (busy) return;
+      dlg.classList.add('hidden');
+      if (reloadOnClose) window.location.reload();
+    }
+    dlg.addEventListener('click', function (e) { if (e.target === dlg) closeBulkDialog(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !dlg.classList.contains('hidden')) closeBulkDialog(); });
+
+    var verbs = { confirm: 'confirmed', courier: 'sent', cancel: 'cancelled' };
+    function runBulk(action, provider) {
+      var numbers = selected.slice();
+      busy = true;
+      showDialog(action === 'courier' ? 'Sending ' + plural(numbers.length, 'order') + ' to ' + couriers[provider] + '…' : 'Working on ' + plural(numbers.length, 'order') + '…',
+        '<p>Please keep this page open.</p>', []);
+      fetch(bulkUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+        body: JSON.stringify({ action: action, provider: provider || null, orders: numbers })
+      }).then(function (r) {
+        return r.json().then(function (d) { if (!r.ok) throw new Error(d.message || 'Something went wrong.'); return d; });
+      }).then(function (d) {
+        busy = false; reloadOnClose = true;
+        // Failed sends stay ticked so they can be fixed and tried again.
+        selected = d.failed.map(function (f) { return f.order; }); save(); render();
+        var title = d.done.length
+          ? plural(d.done.length, 'order') + ' ' + verbs[action] + (action === 'courier' ? ' to ' + couriers[provider] : '')
+          : 'Nothing was ' + verbs[action];
+        var list = function (rows, tone) {
+          return '<ul class="max-h-40 overflow-y-auto rounded-xl border border-gray-200 divide-y divide-gray-100 text-xs">' + rows.map(function (x) {
+            return '<li class="px-3 py-2"><span class="font-mono font-bold text-gray-900">' + esc(x.order) + '</span> <span class="' + tone + '">' + esc(x.reason) + '</span></li>';
+          }).join('') + '</ul>';
+        };
+        var body = '';
+        if (d.failed.length) body += '<p class="font-semibold text-rose-700">' + plural(d.failed.length, 'order') + ' failed (still ticked)</p>' + list(d.failed, 'text-rose-700');
+        if (d.skipped.length) body += '<p class="font-semibold text-gray-800">' + plural(d.skipped.length, 'order') + ' skipped</p>' + list(d.skipped, 'text-gray-500');
+        if (!body) body = '<p>All done.</p>';
+        var actions = [{ label: 'Done', cls: btnMain, style: 'background: var(--brand-dark);', run: closeBulkDialog }];
+        if (action === 'courier' && d.done.length) {
+          actions.unshift({ label: 'Print labels for ' + d.done.length, cls: 'h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold', run: function () { open(labelsUrl, d.done, {}); } });
+        }
+        showDialog(title, body, actions);
+      }).catch(function (err) {
+        busy = false;
+        showDialog('Could not finish', '<p>' + esc(err.message) + '</p>', [{ label: 'Close', cls: btnSoft, run: closeBulkDialog }]);
+      });
+    }
+
+    document.getElementById('bulkConfirm').addEventListener('click', function () { runBulk('confirm'); });
+
+    document.getElementById('bulkCourier').addEventListener('click', function () {
+      var keys = Object.keys(couriers);
+      if (!keys.length) {
+        showDialog('No courier connected', '<p>Add Steadfast, Pathao or RedX keys in <a class="underline font-semibold" href="' + integrationsUrl + '">Integrations</a> to send parcels from here.</p>',
+          [{ label: 'Close', cls: btnSoft, run: closeBulkDialog }]);
+        return;
+      }
+      var picks = keys.map(function (k, i) {
+        return '<label class="flex items-center gap-2.5 rounded-xl ring-1 ring-gray-200 px-3 py-2.5 cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-gray-900">' +
+          '<input type="radio" name="bulkProvider" value="' + k + '"' + (i === 0 ? ' checked' : '') + ' class="h-4 w-4"> <span class="font-semibold text-gray-900">' + esc(couriers[k]) + '</span></label>';
+      }).join('');
+      showDialog('Send ' + plural(selected.length, 'order') + ' to a courier?',
+        '<div class="space-y-2">' + picks + '</div><p class="text-xs text-gray-500">Each order is booked as one parcel. Orders that aren\'t confirmed yet, are already booked, or are closed are skipped.</p>',
+        [{ label: 'Send ' + plural(selected.length, 'order'), cls: btnMain, style: 'background: var(--brand-dark);', run: function () {
+            var p = dlgBody.querySelector('input[name=bulkProvider]:checked'); runBulk('courier', p ? p.value : keys[0]);
+          } },
+         { label: 'Not now', cls: btnSoft, run: closeBulkDialog }]);
+    });
+
+    document.getElementById('bulkCancel').addEventListener('click', function () {
+      showDialog('Cancel ' + plural(selected.length, 'order') + '?',
+        '<p>Their stock goes back and any coupon is released. Orders already with the courier, delivered or returned are skipped.</p>',
+        [{ label: 'Cancel ' + plural(selected.length, 'order'), cls: 'h-10 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold', run: function () { runBulk('cancel'); } },
+         { label: 'Keep them', cls: btnSoft, run: closeBulkDialog }]);
+    });
 
     render();
     fetchStatus();
