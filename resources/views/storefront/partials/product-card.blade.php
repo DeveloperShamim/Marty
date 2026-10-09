@@ -108,7 +108,7 @@
     @endif
 
     {{-- With variations: one Order now that opens the option picker (which also has Add to cart).
-         Without: Buy now straight to checkout plus a bag that adds to the cart, and shows a tick (tap to remove)
+         Without: Order now straight to checkout plus a bag that adds to the cart, and shows a tick (tap to remove)
          once the product is in the cart. The photo and name open the product page. --}}
     @php
       $cartData = [
@@ -130,7 +130,7 @@
       <div class="flex items-center gap-2 mt-auto pt-1 w-full relative z-10">
         <button type="button" class="add-to-cart flex-1 min-w-0 h-9 sm:h-10 font-semibold text-xs sm:text-[13px] flex items-center justify-center gap-1.5 text-white transition-all shadow-xs hover:shadow-md active:scale-[0.98] select-none touch-manipulation cursor-pointer btn-view-details rounded-xl" style="background-color: var(--brand-primary, #1D68FE);"
                 data-order-now="true" @foreach($cartData as $k => $v) data-{{ $k }}="{{ $v }}" @endforeach>
-          <span class="truncate">{{ $hasVariants ? 'Order now' : 'Buy now' }}</span>
+          <span class="truncate">Order now</span>
         </button>
         @unless($hasVariants)
           <button type="button" class="fk-add-btn fk-icon-only card-cart-toggle {{ $inCartKey ? 'is-in-cart' : '' }} shrink-0 transition-all active:scale-95 cursor-pointer select-none touch-manipulation"

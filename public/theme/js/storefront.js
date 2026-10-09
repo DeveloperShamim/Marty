@@ -802,7 +802,7 @@
         if (pdBuyNowBtn) pdBuyNowBtn.disabled = false;
         if (pdAddToCartText) pdAddToCartText.textContent = window.pdpDefaultCta || "ADD TO CART";
         const buyNowSpan = pdBuyNowBtn ? (pdBuyNowBtn.querySelector("#pdBuyNowText") || pdBuyNowBtn.querySelector("span")) : null;
-        if (buyNowSpan) buyNowSpan.textContent = "BUY NOW";
+        if (buyNowSpan) buyNowSpan.textContent = "ORDER NOW";
         const sAdd = $("#stickyBarAddToCart");
         const sBuy = $("#stickyBarBuyNow");
         if (sAdd) {
@@ -813,7 +813,7 @@
         if (sBuy) {
           sBuy.disabled = false;
           const sBuyText = document.getElementById('stickyBarBuyNowText') || sBuy.querySelector('span');
-          if (sBuyText) sBuyText.textContent = "BUY NOW";
+          if (sBuyText) sBuyText.textContent = "ORDER NOW";
         }
         const mobStock = document.querySelector('[data-mobile-stock]');
         if (mobStock) {

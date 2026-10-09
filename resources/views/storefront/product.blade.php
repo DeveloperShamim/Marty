@@ -246,7 +246,7 @@
 
             {{-- Buy Now (Solid Black with Eye-Catching Motion) --}}
             <button type="button" id="pdBuyNow" data-buy-now data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" data-checkout-url="{{ route('checkout.show') }}" class="buy-now-cta-effect flex-1 h-11 sm:h-12 bg-stone-950 hover:bg-black text-white font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider cursor-pointer select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
-              <span id="pdBuyNowText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : 'BUY NOW' }}</span>
+              <span id="pdBuyNowText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : 'ORDER NOW' }}</span>
             </button>
           </div>
         </div>
@@ -797,7 +797,7 @@
 
       {{-- Buy Now (Solid Black Floating Pill Button) --}}
       <button type="button" id="stickyBarBuyNow" class="buy-now-cta-effect h-12 bg-stone-950 hover:bg-black active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-white/10 select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none rounded-xl" @disabled($isOutOfStock)>
-        <span id="stickyBarBuyNowText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : 'BUY NOW' }}</span>
+        <span id="stickyBarBuyNowText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : 'ORDER NOW' }}</span>
       </button>
     </div>
   </div>
@@ -1170,7 +1170,7 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
   if (buyBtn) {
     buyBtn.disabled = !isAvailable;
     const buyBtnText = document.getElementById('pdBuyNowText') || buyBtn.querySelector('span');
-    if (buyBtnText) buyBtnText.textContent = isAvailable ? 'BUY NOW' : 'OUT OF STOCK';
+    if (buyBtnText) buyBtnText.textContent = isAvailable ? 'ORDER NOW' : 'OUT OF STOCK';
   }
 
   const mobStock = document.querySelector('[data-mobile-stock]');
@@ -1192,7 +1192,7 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
   if (stickyBuyBtn) {
     stickyBuyBtn.disabled = !isAvailable;
     const sBuyText = document.getElementById('stickyBarBuyNowText') || stickyBuyBtn.querySelector('span');
-    if (sBuyText) sBuyText.textContent = isAvailable ? 'BUY NOW' : 'OUT OF STOCK';
+    if (sBuyText) sBuyText.textContent = isAvailable ? 'ORDER NOW' : 'OUT OF STOCK';
   }
 }
 
