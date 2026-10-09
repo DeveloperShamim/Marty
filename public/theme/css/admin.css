@@ -39,14 +39,14 @@
 .admin-main main table thead { background: #faf8f6; }
 .admin-main main table tbody tr { transition: background-color .12s ease; }
 .admin-main main table tbody tr:hover { background-color: #fbf9f7; }
-/* White panels across pages become floating cards: bigger radius, no hard border, soft shadow */
+/* White panels across pages become frosted floating cards (see "Brand glass look" below) */
 .admin-main main :is(.bg-white.border.rounded-xl, .bg-white.border.rounded-2xl, .bg-white.rounded-xl.border, .bg-white.rounded-2xl.border, .card) {
-  border-color: transparent; border-radius: 16px;
-  box-shadow: 0 1px 2px rgba(28,25,23,.03), 0 12px 32px -20px rgba(28,25,23,.18);
+  border-radius: 16px;
 }
-/* ...but cards nested inside a card keep a hairline instead of a second shadow */
-.admin-main main :is(.bg-white, .card, .panel) :is(.bg-white.border.rounded-xl, .bg-white.border.rounded-2xl, .bg-white.rounded-xl.border, .bg-white.rounded-2xl.border) {
-  border-color: #eeebe8; border-radius: 12px; box-shadow: none;
+/* ...but cards nested inside a card stay solid white with a hairline instead of a second shadow */
+.admin-main main :is(.bg-white, .card, .panel, [data-tint]) :is(.bg-white.border.rounded-xl, .bg-white.border.rounded-2xl, .bg-white.rounded-xl.border, .bg-white.rounded-2xl.border) {
+  background: #fff; border-color: color-mix(in srgb, var(--brand-border) 50%, transparent); border-radius: 12px; box-shadow: none;
+  -webkit-backdrop-filter: none; backdrop-filter: none;
 }
 /* One heading per page: pages that bring their own title hide the layout one. Titles stay compact. */
 .admin-main:has(main :is(h1, .page-title)) > .page-head { display: none; }
@@ -138,39 +138,43 @@
 .pill-btn-dark .pill-ico { margin: 0 .125rem 0 0; width: 1.75rem; height: 1.75rem; background: rgba(255,255,255,.14); }
 .panel { background: #fff; border-radius: 18px; box-shadow: 0 1px 2px rgba(28,25,23,.03), 0 12px 32px -20px rgba(28,25,23,.18); }
 
-/* ---- Dashboard glass look, built only from the store's theme colours (Settings > theme):
+/* ---- Brand glass look on every admin page, built only from the store's theme colours (Settings > theme):
    --brand (primary), --brand-dark (dark), --brand-surface (surface), --brand-soft and --brand-border (tints of primary) ---- */
-body:has(.dash-glass) {
+body.admin-body {
   background-color: var(--brand-surface);
   background-image: linear-gradient(180deg, var(--brand-soft) 0, var(--brand-surface) 34rem);
   background-repeat: no-repeat;
 }
-body:has(.dash-glass) :is(#sidebar .sidebar-nav, #sidebar nav + div, #mobileRail, header.sticky),
-.dash-glass .panel {
+/* Frosted surfaces: the sidebar, icon rail, top bar and every top-level card on a page.
+   Form controls, dropdowns and anything inside a modal or popover stay solid. */
+.admin-body :is(#sidebar .sidebar-nav, #sidebar nav + div, #mobileRail, header.sticky),
+.admin-main main :is(.panel, .card, .bg-white.border.rounded-xl, .bg-white.border.rounded-2xl, .bg-white.rounded-xl.border, .bg-white.rounded-2xl.border):not(input, select, textarea, button, .absolute, .fixed, .fixed *) {
   background: rgba(255,255,255,.72);
   border: 1px solid color-mix(in srgb, var(--brand-border) 55%, transparent);
   box-shadow: 0 1px 2px color-mix(in srgb, var(--brand-dark) 5%, transparent), 0 16px 36px -26px color-mix(in srgb, var(--brand-dark) 40%, transparent);
   -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%);
 }
-/* Brand-tinted cards (Top products, Sales by day, Store performance, Recent orders) */
+/* Tables: header rows in a light brand tint, rows hover in white */
+.admin-main main table thead { background: color-mix(in srgb, var(--brand-soft) 55%, transparent); }
+.admin-main main table tbody tr:hover { background-color: rgba(255,255,255,.6); }
+.admin-body .pill-btn:not(.pill-btn-dark) { background: rgba(255,255,255,.8); border: 1px solid color-mix(in srgb, var(--brand-border) 55%, transparent); }
+/* Dashboard: brand-tinted cards (Top products, Sales by day, Store performance, Recent orders) */
 .dash-glass [data-tint] {
   background: color-mix(in srgb, var(--brand-soft) 85%, transparent);
   border: 1px solid color-mix(in srgb, var(--brand-border) 55%, transparent);
   box-shadow: 0 16px 36px -28px color-mix(in srgb, var(--brand-dark) 40%, transparent);
 }
-/* Things sitting on a card: white or light brand fills instead of grey */
 .dash-glass .tp-card { background: #fff; }
 .dash-glass .panel :is(.bg-gray-50, .bg-stone-50) { background-color: color-mix(in srgb, var(--brand-soft) 60%, #fff); }
 .dash-glass .panel .bg-gray-50\/60 { background-color: color-mix(in srgb, var(--brand-soft) 35%, #fff); }
-.dash-glass .panel :is(.bg-white.border.rounded-xl, .bg-white.border.rounded-2xl, .bg-white.rounded-xl.border, .bg-white.rounded-2xl.border) { background: #fff; border-color: color-mix(in srgb, var(--brand-border) 50%, transparent); }
-.dash-glass table thead { background: transparent; }
-.dash-glass table tbody tr:hover { background-color: rgba(255,255,255,.6); }
-body:has(.dash-glass) .pill-btn:not(.pill-btn-dark) { background: rgba(255,255,255,.8); border: 1px solid color-mix(in srgb, var(--brand-border) 55%, transparent); }
+.admin-main .dash-glass table thead { background: transparent; }
 /* Phones: no blur layers, so text stays crisp and scrolling stays smooth */
 @media (max-width: 639px) {
-  .dash-glass .panel { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(255,255,255,.85); }
+  .admin-main main :is(.panel, .card, .bg-white.border.rounded-xl, .bg-white.border.rounded-2xl, .bg-white.rounded-xl.border, .bg-white.rounded-2xl.border):not(input, select, textarea, button, .absolute, .fixed, .fixed *) {
+    -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(255,255,255,.88);
+  }
 }
-@media (max-width: 1023px) { body:has(.dash-glass) #sidebar :is(.sidebar-nav, nav + div) { background: rgba(255,255,255,.94); } }
+@media (max-width: 1023px) { .admin-body #sidebar :is(.sidebar-nav, nav + div) { background: rgba(255,255,255,.94); } }
 /* Needs action: count tiles and the lists under them, in the theme colours */
 .na-tile { background: color-mix(in srgb, var(--brand-soft) 45%, #fff); border: 1px solid transparent; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
 .na-tile .na-ico { background: #fff; color: color-mix(in srgb, var(--brand) 55%, #fff); }

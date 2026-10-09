@@ -67,7 +67,7 @@
     }
   </style>
 </head>
-<body class="admin-body bg-[#F0EFED] text-gray-800 antialiased{{ testing_mode() ? ' testing-mode' : '' }}">
+<body class="admin-body text-gray-800 antialiased{{ testing_mode() ? ' testing-mode' : '' }}">
   @if(testing_mode())
     <div class="bg-amber-50 border-b border-amber-200 text-amber-900 text-sm px-4 py-2 text-center font-medium">
       Testing mode is on &mdash; Save, Delete, and other write actions are disabled.
