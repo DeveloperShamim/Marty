@@ -43,15 +43,16 @@ class OrderPageLayoutTest extends TestCase
         $this->actingAs($admin)->get(route('admin.orders.show', $order))->assertOk()->assertDontSee('Next step');
     }
 
-    public function test_status_and_payment_show_once_and_the_manual_change_is_folded_away(): void
+    public function test_status_and_payment_show_once_and_the_change_card_is_always_open(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $html = $this->actingAs($admin)->get(route('admin.orders.show', $this->order()))->assertOk()->getContent();
 
         $this->assertStringNotContainsString('Payment Pending', $html, 'The header shows one status pill');
         $this->assertStringNotContainsString('Waiting for you', $html, 'Repeated the next-step box');
-        $this->assertMatchesRegularExpression('/<details class="card[^"]*" id="change-status"\s*>/', $html, 'Change status starts folded');
-        $this->assertLessThan(strpos($html, 'id="change-status"'), strpos($html, 'id="courier"'), 'Courier comes before the manual change');
+        $this->assertMatchesRegularExpression('/<section class="card[^"]*" id="change-status">/', $html, 'Status & payment is always open');
+        $this->assertLessThan(strpos($html, 'id="courier"'), strpos($html, 'id="change-status"'), 'Status & payment tops the right column');
+        $this->assertStringNotContainsString('data-next-status', $html, 'Orders awaiting review are confirmed from the review box');
         $this->assertStringContainsString('Connect courier history', $html);
         $this->assertStringNotContainsString('to see this customer', $html);
     }
@@ -67,5 +68,23 @@ class OrderPageLayoutTest extends TestCase
 
         $this->assertStringContainsString('Marked delivered by staff.', $html);
         $this->assertStringNotContainsString('At sorting hub', $html);
+    }
+
+    public function test_next_step_button_moves_the_order_along(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $order = $this->order(['status' => 'shipped', 'payment_method' => 'cod', 'payment_status' => 'pending', 'internal_note' => 'Fragile']);
+
+        $html = $this->actingAs($admin)->get(route('admin.orders.show', $order))->getContent();
+        $this->assertStringContainsString('Mark as delivered', $html);
+        $this->assertStringContainsString('Also marks the cash as collected.', $html);
+
+        preg_match('/<form[^>]*data-next-status>(.*?)<\/form>/s', $html, $form);
+        preg_match_all('/name="(status|payment_status|internal_note)" value="([^"]*)"/', $form[1], $f);
+        $this->actingAs($admin)->patch(route('admin.orders.update', $order), array_combine($f[1], $f[2]))->assertRedirect();
+
+        $order->refresh();
+        $this->assertSame(['delivered', 'verified', 'Fragile'], [$order->status, $order->payment_status, $order->internal_note]);
+        $this->assertStringNotContainsString('data-next-status', $this->actingAs($admin)->get(route('admin.orders.show', $order))->getContent());
     }
 }

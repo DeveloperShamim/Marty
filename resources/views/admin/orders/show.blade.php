@@ -34,7 +34,6 @@
             <x-oi name="more" /><span class="sr-only">More actions</span>
           </summary>
           <div class="{{ $menu }}">
-            <a href="#change-status" data-open-change class="{{ $menuItem }} text-slate-700 hover:bg-slate-50"><x-oi name="clipboard" /> Change status or payment</a>
             <form method="POST" action="{{ route('admin.orders.destroy', $order) }}" onsubmit="return confirm('Are you SURE you want to permanently delete order {{ $order->order_number }}? This action cannot be undone.')">
               @csrf @method('DELETE')
               <button type="submit" class="{{ $menuItem }} text-rose-600 hover:bg-rose-50"><x-oi name="trash" /> Delete order</button>
@@ -144,9 +143,6 @@
         </div>
         <a href="{{ route('admin.orders.labels', ['orders' => [$order->order_number], 'print' => 1]) }}" target="_blank" data-print-link data-print-warning="{{ $order->printWarning('label') }}" class="shrink-0 inline-flex items-center justify-center gap-1.5 h-9 px-4 text-[13px] font-medium text-slate-800 bg-white ring-1 ring-slate-200 hover:bg-slate-50 rounded-full whitespace-nowrap">
           <x-oi name="barcode" /> Label
-        </a>
-        <a href="#change-status" data-open-change class="shrink-0 inline-flex items-center justify-center gap-1.5 h-9 px-3 sm:px-4 text-[13px] font-medium text-slate-800 bg-white ring-1 ring-slate-200 hover:bg-slate-50 rounded-full whitespace-nowrap" title="Change status or payment">
-          <x-oi name="clipboard" /> <span class="hidden sm:inline">Change status</span><span class="sr-only sm:hidden">Change status</span>
         </a>
       </div>
       @if($order->prints()->exists())
@@ -337,6 +333,64 @@
 
     <div class="max-lg:contents lg:space-y-4">
 
+      {{-- ================= Status & payment: always open, it's used on most orders ================= --}}
+      @php
+        $nextStatus = ['confirmed' => 'processing', 'processing' => 'shipped', 'shipped' => 'delivered'][$order->status] ?? null;
+        if ($order->isAwaitingReview()) $nextStatus = null; // the review box above confirms these
+      @endphp
+      <section class="card max-lg:order-first" id="change-status">
+        <div class="{{ $head }}">
+          <h3 class="{{ $title }}"><x-oi name="clipboard" class="w-4 h-4 text-slate-400" /> Status &amp; payment</h3>
+        </div>
+        <div class="p-4 sm:p-5 space-y-3">
+          @if($nextStatus)
+            <form method="POST" action="{{ route('admin.orders.update', $order) }}" data-next-status>
+              @csrf @method('PATCH')
+              <input type="hidden" name="status" value="{{ $nextStatus }}">
+              <input type="hidden" name="payment_status" value="{{ $nextStatus === 'delivered' && $order->payment_method === 'cod' ? 'verified' : $order->payment_status }}">
+              <input type="hidden" name="internal_note" value="{{ $order->internal_note }}">
+              <button type="submit" class="w-full h-10 rounded-full text-white text-[13px] font-semibold inline-flex items-center justify-center gap-1.5" style="background: var(--brand-dark);">
+                <x-oi name="check" class="w-3.5 h-3.5" /> Mark as {{ $nextStatus }}
+              </button>
+              @if($nextStatus === 'delivered' && $order->payment_method === 'cod')
+                <p class="text-[11px] text-slate-500 mt-1 text-center">Also marks the cash as collected.</p>
+              @endif
+            </form>
+          @endif
+
+          <form method="POST" action="{{ route('admin.orders.update', $order) }}" class="space-y-3" data-status-form>
+            @csrf @method('PATCH')
+            <div class="grid grid-cols-2 gap-2.5">
+              <div>
+                <label for="orderFulfillmentStatusSelect" class="lbl">Order status</label>
+                <select name="status" id="orderFulfillmentStatusSelect" class="inp text-sm py-2">
+                  @foreach(\App\Models\Order::STATUSES as $s)
+                    <option value="{{ $s }}" @selected($order->status === $s)>{{ ucfirst($s) }}</option>
+                  @endforeach
+                </select>
+              </div>
+              <div>
+                <label for="orderPaymentStatusSelect" class="lbl">Payment</label>
+                <select name="payment_status" id="orderPaymentStatusSelect" class="inp text-sm py-2">
+                  @foreach(\App\Models\Order::PAYMENT_STATUSES as $s)
+                    <option value="{{ $s }}" @selected($order->payment_status === $s)>{{ ucfirst($s) }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+            <details class="group/note" @if($errors->has('internal_note')) open @endif>
+              <summary class="flex items-center justify-between gap-2 cursor-pointer text-xs text-slate-600 list-none [&::-webkit-details-marker]:hidden">
+                <span class="min-w-0 truncate">@if($order->internal_note)<span class="font-medium text-slate-700">Note:</span> {{ $order->internal_note }}@else<span class="font-medium text-slate-700">+ Courier &amp; invoice note</span>@endif</span>
+                <x-oi name="chevron-down" class="w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform group-open/note:rotate-180" />
+              </summary>
+              <textarea id="internalNote" name="internal_note" rows="2" class="inp text-sm mt-2" placeholder="e.g. Call before delivery">{{ $order->internal_note }}</textarea>
+              <p class="text-[11px] text-slate-500 mt-1">Printed on the invoice and sent to the courier. Private notes go in Calls &amp; staff notes.</p>
+            </details>
+            <button type="submit" data-status-save disabled class="w-full h-10 rounded-full text-[13px] font-semibold ring-1 ring-slate-200 text-slate-800 bg-white enabled:hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">Save changes</button>
+          </form>
+        </div>
+      </section>
+
       {{-- ================= Courier ================= --}}
       <section class="card max-lg:order-3" id="courier">
         <div class="{{ $head }}">
@@ -442,46 +496,6 @@
         </section>
       @endif
       {{-- ================= Change status or payment (folded away: Confirm/Reject and the courier cover the usual path) ================= --}}
-      <details class="card max-lg:order-6 group" id="change-status" @if($errors->hasAny(['status', 'payment_status', 'internal_note'])) open @endif>
-        <summary class="flex items-center justify-between gap-2 px-4 sm:px-5 py-3 cursor-pointer">
-          <span class="min-w-0">
-            <span class="{{ $title }}"><x-oi name="clipboard" class="w-4 h-4 text-slate-400" /> Change status or payment</span>
-            @if($order->internal_note)
-              <span class="block text-xs text-slate-500 mt-0.5 truncate" title="{{ $order->internal_note }}">Note: {{ $order->internal_note }}</span>
-            @endif
-          </span>
-          <x-oi name="chevron-down" class="w-4 h-4 text-slate-400 shrink-0 transition-transform group-open:rotate-180" />
-        </summary>
-      <form method="POST" action="{{ route('admin.orders.update', $order) }}" class="border-t border-slate-100">
-        @csrf @method('PATCH')
-        <div class="p-4 sm:p-5 space-y-3">
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label for="orderFulfillmentStatusSelect" class="lbl">Order status</label>
-              <select name="status" id="orderFulfillmentStatusSelect" class="inp text-sm py-2">
-                @foreach(\App\Models\Order::STATUSES as $s)
-                  <option value="{{ $s }}" @selected($order->status === $s)>{{ ucfirst($s) }}</option>
-                @endforeach
-              </select>
-            </div>
-            <div>
-              <label for="orderPaymentStatusSelect" class="lbl">Payment</label>
-              <select name="payment_status" id="orderPaymentStatusSelect" class="inp text-sm py-2">
-                @foreach(\App\Models\Order::PAYMENT_STATUSES as $s)
-                  <option value="{{ $s }}" @selected($order->payment_status === $s)>{{ ucfirst($s) }}</option>
-                @endforeach
-              </select>
-            </div>
-          </div>
-          <div>
-            <label for="internalNote" class="lbl">Courier &amp; invoice note</label>
-            <textarea id="internalNote" name="internal_note" rows="2" class="inp text-sm" placeholder="e.g. Call before delivery">{{ $order->internal_note }}</textarea>
-            <p class="text-[11px] text-slate-500 mt-1">Printed on the invoice and sent to the courier. Private notes go in Calls &amp; staff notes.</p>
-          </div>
-          <button type="submit" class="w-full h-10 rounded-full text-white text-[13px] font-semibold" style="background: var(--brand-dark);">Save changes</button>
-        </div>
-      </form>
-      </details>
 
     </div>
   </div>
@@ -580,11 +594,15 @@
     if (e.target.id === 'editCustomerModal') closeEditCustomerModal();
   });
 
-  document.querySelectorAll('[data-open-change]').forEach((a) => a.addEventListener('click', () => {
-    const d = document.getElementById('change-status');
-    if (d) d.open = true;
-    a.closest('details')?.removeAttribute('open');
-  }));
+  // Save only lights up once something in the status form changed.
+  const statusForm = document.querySelector('[data-status-form]');
+  if (statusForm) {
+    const save = statusForm.querySelector('[data-status-save]');
+    const initial = new FormData(statusForm);
+    const dirty = () => { save.disabled = [...new FormData(statusForm)].every(([k, v]) => initial.get(k) === v); };
+    statusForm.addEventListener('input', dirty);
+    statusForm.addEventListener('change', dirty);
+  }
 
   // Auto-sync payment status when fulfillment status changes
   const fulfillmentSelect = document.getElementById('orderFulfillmentStatusSelect');

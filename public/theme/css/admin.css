@@ -197,7 +197,7 @@ details.bulk-menu > summary::-webkit-details-marker { display: none; }
 @media (max-width: 1023.98px) {
   #sidebar { top: auto; bottom: 0; left: 0; right: 0; width: 100%; max-width: none; height: auto; max-height: 85dvh;
     border-radius: 24px 24px 0 0; padding-bottom: calc(.75rem + env(safe-area-inset-bottom)); transition: transform .25s ease; }
-  #sidebar.-translate-x-full { transform: translateY(100%) !important; }
+  #sidebar.-translate-x-full { transform: translateY(100%) !important; visibility: hidden; transition: transform .25s ease, visibility 0s .25s; }
   #sidebar:not(.-translate-x-full) { transform: none !important; }
   #sidebar::before { content: ""; display: block; width: 40px; height: 4px; border-radius: 9999px; background: #d6d3d1; margin: 0 auto 6px; }
   /* Selection bars sit just above the bottom bar */
