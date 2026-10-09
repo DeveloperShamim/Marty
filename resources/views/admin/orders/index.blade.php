@@ -25,104 +25,70 @@
       <span class="pill-ico"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M8 8v8M12 8v8M16 8v8"/></svg></span>
     </a>
   @endif
-  <a href="{{ route('admin.orders.index', ['status' => 'pending_verification']) }}" class="pill-btn pill-btn-dark">
-    <span class="pill-ico"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg></span>
-    Review orders
-    @if(($counts['pending_verification'] ?? 0) > 0)
-      <span class="ml-0.5 min-w-[22px] h-[22px] px-1.5 rounded-full bg-white text-[11px] font-bold leading-[22px] text-center" style="color: var(--brand-dark);">{{ $counts['pending_verification'] }}</span>
-    @endif
-  </a>
 @endsection
 
 @section('content')
-<div class="space-y-4 sm:space-y-5 max-w-full">
+<div class="space-y-4 max-w-full">
 
-  {{-- Order summary + courier tracking --}}
-  <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-5">
-    {{-- Order pipeline --}}
-    <section class="panel bg-white shadow-panel p-4 sm:p-5 xl:col-span-5">
-      <div class="flex items-center justify-between gap-3">
-        <h2 class="text-[15px] font-semibold text-gray-900">Order pipeline</h2>
-        <span class="text-xs text-gray-500 tabular-nums">{{ number_format($counts['all'] ?? 0) }} orders in total</span>
+  {{-- Courier tracking in one line: parcel counts filter the list below --}}
+  <section class="panel bg-white shadow-panel px-4 py-3 sm:px-5 flex flex-col lg:flex-row lg:items-center gap-2.5 lg:gap-4" data-courier-strip>
+    <div class="flex items-center justify-between gap-3 lg:shrink-0">
+      <div class="min-w-0">
+        <h2 class="text-[14px] font-semibold text-gray-900 flex items-center gap-2">
+          Courier tracking
+          @if($autoSync)
+            <span class="h-2 w-2 rounded-full bg-emerald-500" title="Auto update on: Steadfast, Pathao and RedX parcels are checked every night at 9:00 PM" aria-label="Auto update on"></span>
+          @else
+            <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[10.5px] font-semibold text-gray-600">Auto update off</span>
+          @endif
+        </h2>
+        <p class="text-[11px] text-gray-500 leading-snug">
+          @if($lastSync && !empty($lastSync['at']))
+            @php $syncedAt = \Illuminate\Support\Carbon::parse($lastSync['at'])->timezone(config('app.timezone')); @endphp
+            Last checked <span class="font-medium text-gray-700" title="{{ $syncedAt->format('d M Y, g:i A') }} · {{ $lastSync['checked'] ?? 0 }} parcels">{{ $syncedAt->isToday() ? 'today' : ($syncedAt->isYesterday() ? 'yesterday' : $syncedAt->format('d M')) }}, {{ $syncedAt->format('g:i A') }}</span>
+          @else
+            Not checked yet
+          @endif
+          <span class="hidden sm:inline">· checked every night at 9:00 PM</span>
+        </p>
       </div>
-      <div class="mt-2.5 sm:mt-4 grid grid-cols-4 sm:grid-cols-2 gap-1.5 sm:gap-2.5">
-        @foreach([
-          ['pending_verification', 'To review', 'var(--brand)'],
-          ['not_printed', 'Not printed', '#a8a29e'],
-          ['processing', 'Packing', 'var(--brand-700, #6d4520)'],
-          ['shipped', 'With courier', 'var(--brand-dark)'],
-        ] as [$key, $label, $dot])
-          <a href="{{ route('admin.orders.index', ['status' => $key]) }}"
-             class="group rounded-xl sm:rounded-2xl px-2 py-2 sm:p-3.5 transition-colors min-w-0 {{ $status === $key ? 'text-white' : 'bg-gray-50 hover:bg-gray-100' }}"
-             @if($status === $key) style="background: var(--brand-dark);" @endif>
-            <span class="flex items-center gap-1.5 text-[10.5px] sm:text-xs leading-tight {{ $status === $key ? 'text-white/70' : 'text-gray-500' }}">
-              <span class="hidden sm:block h-2 w-2 rounded-full shrink-0" style="background: {{ $status === $key ? '#fff' : $dot }};"></span>{{ $label }}
+      @if($canCourier)
+        <form method="POST" action="{{ route('admin.courier-scan.sync') }}" class="shrink-0 lg:hidden" onsubmit="this.querySelector('button').disabled = true; this.querySelector('[data-label]').textContent = 'Checking...';">
+          @csrf
+          <button type="submit" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors disabled:opacity-60">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+            <span data-label>Check now</span>
+          </button>
+        </form>
+      @endif
+    </div>
+    <div class="-mx-4 px-4 sm:-mx-5 sm:px-5 lg:mx-0 lg:px-0 lg:flex-1 overflow-x-auto no-scrollbar">
+      <div class="flex items-center gap-1.5 whitespace-nowrap lg:justify-end">
+        @foreach(\App\Http\Controllers\Admin\OrderController::COURIER_FILTERS as $key => $label)
+          @php $on = $courier === $key; $n = $courierCounts[$key] ?? 0; @endphp
+          <a href="{{ $on ? route('admin.orders.index', ['q' => $q, 'method' => $method]) : route('admin.orders.index', ['courier' => $key, 'q' => $q, 'method' => $method]) }}"
+             class="h-8 pl-2 pr-3 rounded-full inline-flex items-center gap-1.5 text-xs font-medium transition-colors {{ $on ? 'text-white' : 'bg-gray-50 ring-1 ring-gray-100 text-gray-600 hover:bg-gray-100' }}"
+             @if($on) style="background: var(--brand-dark);" aria-current="true" title="Show all orders again" @endif>
+            <span class="grid h-5 w-5 place-items-center rounded-full {{ $on ? 'bg-white/15 text-white' : $courierTone[$key] }}">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $courierStatusIcon[$key] !!}</svg>
             </span>
-            <span class="mt-0.5 sm:mt-1 block text-lg sm:text-2xl font-semibold tracking-tight tabular-nums">{{ number_format($counts[$key] ?? 0) }}</span>
+            <span class="font-semibold tabular-nums {{ $on ? 'text-white' : 'text-gray-900' }}">{{ number_format($n) }}</span>
+            {{ $label }}
           </a>
         @endforeach
-      </div>
-    </section>
-
-    {{-- Courier tracking, refreshed every night --}}
-    <section class="panel bg-white shadow-panel p-4 sm:p-5 xl:col-span-7">
-      <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-        <div class="min-w-0">
-          <h2 class="text-[15px] font-semibold text-gray-900 flex items-center gap-2">
-            Courier tracking
-            @if($autoSync)
-              <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
-                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>Auto update on
-              </span>
-            @else
-              <span class="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-600">Auto update off</span>
-            @endif
-          </h2>
-          <p class="mt-1 text-[11.5px] sm:text-xs text-gray-500 leading-snug sm:leading-relaxed">
-            Steadfast, Pathao and RedX parcels are checked every night at 9:00 PM.
-            @if($lastSync && !empty($lastSync['at']))
-              @php $syncedAt = \Illuminate\Support\Carbon::parse($lastSync['at'])->timezone(config('app.timezone')); @endphp
-              Last checked <span class="font-medium text-gray-700" title="{{ $syncedAt->format('d M Y, g:i A') }}">{{ $syncedAt->isToday() ? 'today' : ($syncedAt->isYesterday() ? 'yesterday' : $syncedAt->format('d M')) }} at {{ $syncedAt->format('g:i A') }}</span>
-              ({{ $lastSync['checked'] ?? 0 }} parcels).
-            @else
-              Not checked yet.
-            @endif
-            @if($autoSync)
-              Next check {{ $nextSync->isToday() ? 'tonight' : 'tomorrow' }} at 9:00 PM.
-            @endif
-          </p>
-        </div>
         @if($canCourier)
-          <form method="POST" action="{{ route('admin.courier-scan.sync') }}" class="shrink-0" onsubmit="this.querySelector('button').disabled = true; this.querySelector('[data-label]').textContent = 'Checking...';">
+          <form method="POST" action="{{ route('admin.courier-scan.sync') }}" class="hidden lg:block shrink-0 ml-1" onsubmit="this.querySelector('button').disabled = true; this.querySelector('[data-label]').textContent = 'Checking...';">
             @csrf
-            <button type="submit" class="h-8 sm:h-9 px-3 sm:px-3.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors disabled:opacity-60">
+            <button type="submit" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors disabled:opacity-60">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
               <span data-label>Check now</span>
             </button>
           </form>
         @endif
       </div>
-      <div class="mt-2.5 sm:mt-4 grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2.5">
-        @foreach(\App\Http\Controllers\Admin\OrderController::COURIER_FILTERS as $key => $label)
-          @php $on = $courier === $key; @endphp
-          <a href="{{ $on ? route('admin.orders.index', ['q' => $q, 'method' => $method]) : route('admin.orders.index', ['courier' => $key, 'q' => $q, 'method' => $method]) }}"
-             class="rounded-xl sm:rounded-2xl px-2.5 py-2 sm:p-3.5 transition-colors ring-1 min-w-0 {{ $on ? 'ring-transparent text-white' : 'ring-gray-100 hover:bg-gray-50' }}"
-             @if($on) style="background: var(--brand-dark);" @endif
-             @if($on) aria-current="true" title="Show all orders again" @endif>
-            <span class="flex items-center justify-between gap-2">
-              <span class="grid h-6 w-6 sm:h-8 sm:w-8 place-items-center rounded-lg sm:rounded-xl {{ $on ? 'bg-white/15 text-white' : $courierTone[$key] }}">
-                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $courierStatusIcon[$key] !!}</svg>
-              </span>
-              <span class="text-lg sm:text-2xl font-semibold tracking-tight tabular-nums">{{ number_format($courierCounts[$key] ?? 0) }}</span>
-            </span>
-            <span class="mt-1 sm:mt-2 block text-[11px] sm:text-xs leading-tight font-medium {{ $on ? 'text-white/80' : 'text-gray-600' }}">{{ $label }}</span>
-          </a>
-        @endforeach
-      </div>
-    </section>
-  </div>
+    </div>
+  </section>
 
-  {{-- Status tabs --}}
   @php
     $tabs = [
       'all'                  => 'All',
@@ -136,40 +102,41 @@
       'cancelled'            => 'Cancelled',
     ];
   @endphp
-  <nav class="-mx-3 sm:mx-0 px-3 sm:px-0 overflow-x-auto no-scrollbar" aria-label="Order status">
-    <div class="inline-flex items-center gap-1 p-1 rounded-full bg-white shadow-panel whitespace-nowrap">
-      @foreach($tabs as $key => $label)
-        @php $active = $status === $key || ($key === 'all' && !in_array($status, array_keys($tabs))); @endphp
-        <a href="{{ route('admin.orders.index', ['status' => $key, 'q' => $q, 'method' => $method]) }}"
-           class="h-9 px-3.5 rounded-full text-[13px] font-medium inline-flex items-center gap-1.5 transition-colors {{ $active ? 'text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}"
-           @if($active) style="background: var(--brand-dark);" aria-current="page" @endif>
-          {{ $label }}
-          @if(($counts[$key] ?? 0) > 0)
-            <span class="min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-semibold leading-5 text-center tabular-nums {{ $active ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600' }}">{{ $counts[$key] }}</span>
-          @endif
-        </a>
-      @endforeach
-    </div>
-  </nav>
 
-  {{-- Order list --}}
+  {{-- Order list: status tabs, search and payment filter sit together above it --}}
   <div class="card overflow-hidden">
-    <form method="GET" action="{{ route('admin.orders.index') }}" class="p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+    <nav class="px-3 sm:px-4 pt-3 sm:pt-4 overflow-x-auto no-scrollbar" aria-label="Order status">
+      <div class="inline-flex items-center gap-1 whitespace-nowrap">
+        @foreach($tabs as $key => $label)
+          @php $active = $status === $key || ($key === 'all' && !in_array($status, array_keys($tabs))); @endphp
+          <a href="{{ route('admin.orders.index', ['status' => $key, 'q' => $q, 'method' => $method]) }}"
+             class="h-9 px-3.5 rounded-full text-[13px] font-medium inline-flex items-center gap-1.5 transition-colors {{ $active ? 'text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}"
+             @if($active) style="background: var(--brand-dark);" aria-current="page" @endif>
+            {{ $label }}
+            @if(($counts[$key] ?? 0) > 0)
+              <span class="min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-semibold leading-5 text-center tabular-nums {{ $active ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600' }}">{{ $counts[$key] }}</span>
+            @endif
+          </a>
+        @endforeach
+      </div>
+    </nav>
+
+    <form method="GET" action="{{ route('admin.orders.index') }}" class="p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
       <input type="hidden" name="status" value="{{ $status }}">
       @if($courier !== '')<input type="hidden" name="courier" value="{{ $courier }}">@endif
       <label class="relative flex-1">
         <span class="sr-only">Search orders</span>
         <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" name="q" value="{{ $q }}" placeholder="Search order number, customer name or phone"
-               class="w-full h-11 pl-11 pr-10 rounded-full bg-gray-100 border border-transparent text-sm text-gray-800 placeholder-gray-500 focus:bg-white focus:border-gray-200 focus:ring-4 focus:ring-gray-900/5 outline-none transition" />
+        <input type="text" name="q" value="{{ $q }}" placeholder="Order number, name or phone"
+               class="w-full h-10 pl-11 pr-10 rounded-full bg-gray-100 border border-transparent text-sm text-gray-800 placeholder-gray-500 focus:bg-white focus:border-gray-200 focus:ring-4 focus:ring-gray-900/5 outline-none transition" />
         @if($q !== '')
           <a href="{{ route('admin.orders.index', ['status' => $status, 'method' => $method, 'courier' => $courier ?: null]) }}" class="absolute right-3.5 top-1/2 -translate-y-1/2 h-6 w-6 grid place-items-center rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-700" aria-label="Clear search">✕</a>
         @endif
       </label>
-      <div class="flex flex-wrap min-[400px]:flex-nowrap items-center gap-2">
-        <label class="relative flex-1 sm:flex-initial max-[399px]:basis-full">
+      <div class="flex items-center gap-2">
+        <label class="relative flex-1 sm:flex-initial">
           <span class="sr-only">Payment method</span>
-          <select name="method" onchange="this.form.submit()" class="w-full sm:w-auto h-11 rounded-full bg-gray-100 border border-transparent pl-4 pr-9 text-sm font-medium text-gray-800 appearance-none cursor-pointer focus:bg-white focus:border-gray-200 outline-none">
+          <select name="method" onchange="this.form.submit()" class="w-full sm:w-auto h-10 rounded-full bg-gray-100 border border-transparent pl-4 pr-9 text-sm font-medium text-gray-800 appearance-none cursor-pointer focus:bg-white focus:border-gray-200 outline-none">
             <option value="">All payments</option>
             @foreach(['bkash' => 'bKash', 'nagad' => 'Nagad', 'rocket' => 'Rocket', 'cod' => 'Cash on delivery'] as $k => $v)
               <option value="{{ $k }}" @selected($method === $k)>{{ $v }}</option>
@@ -177,9 +144,9 @@
           </select>
           <svg class="w-3.5 h-3.5 text-gray-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
         </label>
-        <button type="submit" class="h-11 px-5 rounded-full text-white text-sm font-semibold shrink-0 max-[399px]:flex-1" style="background: var(--brand-dark);">Search</button>
-        @if($q !== '' || $method !== '' || $courier !== '')
-          <a href="{{ route('admin.orders.index', ['status' => $status]) }}" class="h-11 px-4 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-100 inline-flex items-center shrink-0">Reset</a>
+        <button type="submit" class="h-10 px-5 rounded-full text-white text-sm font-semibold shrink-0 hidden sm:inline-flex items-center" style="background: var(--brand-dark);">Search</button>
+        @if($q !== '' || ($method ?? '') !== '' || $courier !== '')
+          <a href="{{ route('admin.orders.index', ['status' => $status]) }}" class="h-10 px-3 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-100 inline-flex items-center shrink-0">Reset</a>
         @endif
       </div>
     </form>
@@ -192,69 +159,70 @@
       </div>
     @endif
 
-    {{-- Phone: one card per order --}}
-    <div class="md:hidden px-3 pb-3 space-y-2.5">
+    {{-- Phone: one compact card per order; Label and Invoice sit in the ⋯ menu --}}
+    <div class="md:hidden px-3 pb-3 space-y-2">
       @forelse($orders as $order)
-        @php $risk = $order->fraudRiskLevel(); @endphp
-        <article class="rounded-2xl bg-gray-50/80 p-3.5 space-y-3">
-          <div class="flex items-start gap-3">
+        @php $risk = $order->fraudRiskLevel(); [$payText, $payTone] = $order->paymentSummary(); @endphp
+        <article class="rounded-2xl bg-gray-50/80 p-3">
+          <div class="flex items-start gap-2.5">
             <label class="-m-2 p-2 shrink-0 cursor-pointer" title="Select for printing">
               <input type="checkbox" value="{{ $order->order_number }}" class="order-select h-4 w-4 rounded border-gray-300 text-teal-700 focus:ring-teal-600 cursor-pointer" aria-label="Select order {{ $order->order_number }}">
             </label>
             <div class="flex-1 min-w-0">
-              <a href="{{ route('admin.orders.show', $order) }}" class="font-semibold text-gray-900 text-sm hover:underline">{{ $order->order_number }}</a>
-              <p class="text-[11px] text-gray-500 mt-0.5">{{ $order->created_at->format('d M, g:i A') }} · {{ $order->items_count }} {{ Str::plural('item', $order->items_count) }}</p>
-              @if($order->prints->isNotEmpty())
-                <div class="flex gap-1 mt-1">@include('admin.orders.partials.print-badges')</div>
-              @endif
+              <div class="flex items-baseline justify-between gap-2">
+                <a href="{{ route('admin.orders.show', $order) }}" class="font-semibold text-gray-900 text-sm hover:underline truncate">{{ $order->order_number }}</a>
+                <p class="text-[15px] font-semibold text-gray-900 tabular-nums shrink-0">{{ money($order->total) }}</p>
+              </div>
+              <div class="flex items-center justify-between gap-2 mt-0.5">
+                <p class="text-[12.5px] text-gray-800 truncate"><span class="font-medium">{{ $order->customer_name }}</span>@if($order->city)<span class="text-gray-500"> · {{ $order->city }}</span>@endif</p>
+                <p class="text-[11px] text-gray-500 shrink-0">{{ $order->created_at->format('d M, g:i A') }}</p>
+              </div>
+              <div class="mt-2 flex items-center gap-x-2 gap-y-1 flex-wrap">
+                <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full {{ $order->statusBadge() }}">{{ ucfirst($order->status) }}</span>
+                <span class="text-[11.5px] font-medium {{ $payTone }}">{{ $payText }}</span>
+                @if($order->payment_method !== 'cod')<span class="text-[11px] text-gray-400">{{ $order->paymentMethodLabel() }}</span>@endif
+                @if($risk !== 'low')
+                  <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full {{ $risk === 'high' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700' }}">{{ ucfirst($risk) }} risk</span>
+                @endif
+                @if($order->prints->isNotEmpty())@include('admin.orders.partials.print-badges')@endif
+              </div>
             </div>
-            <div class="text-right shrink-0">
-              <p class="text-[15px] font-semibold text-gray-900 tabular-nums">{{ money($order->total) }}</p>
-              <p class="text-[11px] text-gray-500">{{ $order->paymentMethodLabel() }}</p>
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between gap-2 rounded-xl bg-white p-2.5">
-            <div class="min-w-0">
-              <p class="text-[13px] font-semibold text-gray-900 truncate">{{ $order->customer_name }}</p>
-              @if($order->city)<p class="text-[11px] text-gray-500 truncate">{{ $order->city }}</p>@endif
-            </div>
-            @if($order->customer_phone)
-              <a href="tel:{{ $order->customer_phone }}" class="h-8 px-3 rounded-full bg-gray-100 text-gray-800 text-[11px] font-semibold tabular-nums inline-flex items-center gap-1.5 shrink-0">
-                <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
-                {{ $order->customer_phone }}
-              </a>
-            @endif
-          </div>
-
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full {{ $order->statusBadge() }}">{{ ucfirst($order->status) }}</span>
-            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full {{ $order->paymentBadge() }}">Payment {{ strtolower($order->payment_status) }}</span>
-            @if($risk !== 'low')
-              <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full {{ $risk === 'high' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700' }}">{{ ucfirst($risk) }} risk</span>
-            @endif
           </div>
 
           @if($order->isDispatchedToCourier())
-            <div class="rounded-xl bg-white p-2.5">@include('admin.orders.partials.courier-cell')</div>
+            <div class="mt-2.5 rounded-xl bg-white p-2.5">@include('admin.orders.partials.courier-cell')</div>
           @endif
 
-          @if($order->isAwaitingReview())
-            <div class="grid grid-cols-2 gap-1.5">
-              <form method="POST" action="{{ route('admin.orders.verify', $order) }}">
+          <div class="mt-2.5 flex items-center gap-1.5">
+            @if($order->isAwaitingReview())
+              <form method="POST" action="{{ route('admin.orders.verify', $order) }}" class="flex-1">
                 @csrf
                 <button type="submit" class="w-full h-9 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs cursor-pointer">{{ $order->payment_method === 'cod' ? 'Confirm' : 'Verify' }}</button>
               </form>
-              <form method="POST" action="{{ route('admin.orders.reject', $order) }}">
+              <form method="POST" action="{{ route('admin.orders.reject', $order) }}" class="flex-1">
                 @csrf
                 <button type="submit" class="w-full h-9 rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100 font-semibold text-xs cursor-pointer">Reject</button>
               </form>
-            </div>
-          @endif
-          <div class="flex items-center gap-1.5">
-            <a href="{{ route('admin.orders.show', $order) }}" class="flex-1 h-9 rounded-full text-white font-semibold text-xs inline-flex items-center justify-center" style="background: var(--brand-dark);">Details</a>
-            <a href="{{ route('admin.orders.labels', ['orders' => [$order->order_number], 'print' => 1]) }}" target="_blank" data-print-link data-print-warning="{{ $order->printWarning('label') }}" class="h-9 px-3.5 rounded-full bg-white ring-1 ring-gray-200 hover:bg-gray-100 text-gray-700 font-semibold text-xs inline-flex items-center">Label</a>
-            <a href="{{ route('admin.orders.invoice', ['order' => $order, 'print' => 1]) }}" target="_blank" data-invoice-link data-print-link data-print-warning="{{ $order->printWarning('invoice') }}" class="h-9 px-3.5 rounded-full bg-white ring-1 ring-gray-200 hover:bg-gray-100 text-gray-700 font-semibold text-xs inline-flex items-center">Invoice</a>
+            @else
+              <a href="{{ route('admin.orders.show', $order) }}" class="flex-1 h-9 rounded-full text-white font-semibold text-xs inline-flex items-center justify-center" style="background: var(--brand-dark);">Open order</a>
+            @endif
+            @if(preg_match('/\d{6,}/', (string) $order->customer_phone))
+              <a href="tel:{{ $order->customer_phone }}" class="h-9 w-9 rounded-full bg-white ring-1 ring-gray-200 text-gray-700 inline-flex items-center justify-center shrink-0" title="Call {{ $order->customer_phone }}" aria-label="Call {{ $order->customer_phone }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+              </a>
+            @endif
+            <details class="order-menu relative shrink-0">
+              <summary class="h-9 w-9 rounded-full bg-white ring-1 ring-gray-200 text-gray-700 inline-flex items-center justify-center cursor-pointer" aria-label="More for {{ $order->order_number }}">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>
+              </summary>
+              <div class="absolute right-0 bottom-full mb-1.5 z-20 w-44 rounded-2xl bg-white shadow-xl ring-1 ring-gray-100 p-1 text-[13px]">
+                @if($order->isAwaitingReview())
+                  <a href="{{ route('admin.orders.show', $order) }}" class="block px-3 py-2 rounded-xl hover:bg-gray-50 font-medium text-gray-800">Open order</a>
+                @endif
+                <a href="{{ route('admin.orders.labels', ['orders' => [$order->order_number], 'print' => 1]) }}" target="_blank" data-print-link data-print-warning="{{ $order->printWarning('label') }}" class="block px-3 py-2 rounded-xl hover:bg-gray-50 font-medium text-gray-800">Print label</a>
+                <a href="{{ route('admin.orders.invoice', ['order' => $order, 'print' => 1]) }}" target="_blank" data-invoice-link data-print-link data-print-warning="{{ $order->printWarning('invoice') }}" class="block px-3 py-2 rounded-xl hover:bg-gray-50 font-medium text-gray-800">Print invoice</a>
+              </div>
+            </details>
           </div>
         </article>
       @empty
@@ -272,7 +240,7 @@
             </th>
             <th class="py-3 px-3 lg:px-4">Order</th>
             <th class="py-3 px-3 lg:px-4">Customer</th>
-            <th class="py-3 px-3 lg:px-4">Amount</th>
+            <th class="py-3 px-3 lg:px-4 text-right">Amount</th>
             <th class="py-3 px-3 lg:px-4">Status</th>
             <th class="py-3 px-3 lg:px-4">Courier</th>
             <th class="py-3 px-3 lg:px-4 pr-4 lg:pr-5 text-right">Actions</th>
@@ -280,54 +248,53 @@
         </thead>
         <tbody class="divide-y divide-gray-100">
           @forelse($orders as $order)
-            @php $risk = $order->fraudRiskLevel(); @endphp
+            @php $risk = $order->fraudRiskLevel(); [$payText, $payTone] = $order->paymentSummary(); @endphp
             <tr class="hover:bg-gray-50/70 transition-colors align-top">
               <td class="py-3.5 pl-4 lg:pl-5 pr-0">
                 <input type="checkbox" value="{{ $order->order_number }}" class="order-select mt-0.5 h-4 w-4 rounded border-gray-300 text-teal-700 focus:ring-teal-600 cursor-pointer" aria-label="Select order {{ $order->order_number }}">
               </td>
               <td class="py-3.5 px-3 lg:px-4 whitespace-nowrap">
                 <a href="{{ route('admin.orders.show', $order) }}" class="font-semibold text-gray-900 hover:underline whitespace-nowrap">{{ $order->order_number }}</a>
-                <p class="text-[11px] text-gray-500 mt-0.5">{{ $order->created_at->format('d M Y, g:i A') }}</p>
-                <p class="text-[11px] text-gray-400">{{ $order->items_count }} {{ Str::plural('item', $order->items_count) }}</p>
+                <p class="text-[11px] text-gray-500 mt-0.5">{{ $order->created_at->format('d M, g:i A') }} · {{ $order->items_count }} {{ Str::plural('item', $order->items_count) }}</p>
                 @if($order->prints->isNotEmpty())
                   <span class="flex gap-1 mt-1">@include('admin.orders.partials.print-badges')</span>
                 @endif
               </td>
               <td class="py-3.5 px-3 lg:px-4">
                 <p class="font-semibold text-gray-900 leading-tight">{{ $order->customer_name }}</p>
-                <p class="text-gray-500 text-[11.5px] tabular-nums whitespace-nowrap mt-0.5">{{ $order->customer_phone }}</p>
-                @if($order->city)<p class="text-gray-400 text-[11px]">{{ $order->city }}</p>@endif
+                <p class="text-gray-500 text-[11.5px] whitespace-nowrap mt-0.5"><span class="tabular-nums">{{ $order->customer_phone }}</span>@if($order->city) · {{ $order->city }}@endif</p>
                 @if($risk !== 'low')
                   <span class="mt-1 inline-flex px-2 py-0.5 rounded-full text-[10.5px] font-semibold {{ $risk === 'high' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700' }}" title="Fraud score {{ $order->fraud_score }}%">{{ ucfirst($risk) }} risk</span>
                 @endif
               </td>
-              <td class="py-3.5 px-3 lg:px-4 whitespace-nowrap">
+              <td class="py-3.5 px-3 lg:px-4 whitespace-nowrap text-right">
                 <p class="font-semibold text-gray-900 tabular-nums">{{ money($order->total) }}</p>
                 <p class="text-[11px] text-gray-500 mt-0.5">{{ $order->paymentMethodLabel() }}</p>
-                <span class="mt-1 inline-block px-2 py-0.5 text-[10.5px] font-semibold rounded-full {{ $order->paymentBadge() }}">{{ ucfirst($order->payment_status) }}</span>
               </td>
               <td class="py-3.5 px-3 lg:px-4 whitespace-nowrap">
                 <span class="inline-block px-2.5 py-0.5 text-[11px] font-semibold rounded-full {{ $order->statusBadge() }}">{{ ucfirst($order->status) }}</span>
+                <p class="mt-1 text-[11px] font-medium {{ $payTone }}">{{ $payText }}</p>
+                @if($order->isAwaitingReview())
+                  <div class="mt-1.5 flex items-center gap-1">
+                    <form method="POST" action="{{ route('admin.orders.verify', $order) }}" class="inline">
+                      @csrf
+                      <button type="submit" title="{{ $order->acceptLabel() }}" class="h-7 px-2.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-semibold inline-flex items-center gap-1 cursor-pointer">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        {{ $order->payment_method === 'cod' ? 'Confirm' : 'Verify' }}
+                      </button>
+                    </form>
+                    <form method="POST" action="{{ route('admin.orders.reject', $order) }}" class="inline">
+                      @csrf
+                      <button type="submit" title="Reject order" class="h-7 px-2.5 rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100 text-[11px] font-semibold cursor-pointer">Reject</button>
+                    </form>
+                  </div>
+                @endif
               </td>
               <td class="py-3.5 px-3 lg:px-4">
                 @include('admin.orders.partials.courier-cell')
               </td>
               <td class="py-3.5 px-3 lg:px-4 pr-4 lg:pr-5 text-right whitespace-nowrap">
                 <div class="flex items-center justify-end gap-1.5">
-                  @if($order->isAwaitingReview())
-                    <form method="POST" action="{{ route('admin.orders.verify', $order) }}" class="inline">
-                      @csrf
-                      <button type="submit" title="{{ $order->acceptLabel() }}" aria-label="{{ $order->acceptLabel() }}" class="w-8 h-8 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white inline-flex items-center justify-center cursor-pointer">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                      </button>
-                    </form>
-                    <form method="POST" action="{{ route('admin.orders.reject', $order) }}" class="inline">
-                      @csrf
-                      <button type="submit" title="Reject order" aria-label="Reject order" class="w-8 h-8 rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100 inline-flex items-center justify-center cursor-pointer">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                      </button>
-                    </form>
-                  @endif
                   <a href="{{ route('admin.orders.labels', ['orders' => [$order->order_number], 'print' => 1]) }}" target="_blank" data-print-link data-print-warning="{{ $order->printWarning('label') }}" title="Print parcel label" aria-label="Print parcel label" class="w-8 h-8 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 inline-flex items-center justify-center">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5v14"/><path d="M8 5v14"/><path d="M12 5v14"/><path d="M17 5v14"/><path d="M21 5v14"/></svg>
                   </a>
@@ -533,6 +500,11 @@
 
     render();
     fetchStatus();
+
+    // Only one ⋯ menu open at a time; a tap elsewhere closes it.
+    document.addEventListener('click', function (e) {
+      document.querySelectorAll('details.order-menu[open]').forEach(function (d) { if (!d.contains(e.target)) d.removeAttribute('open'); });
+    });
   })();
 </script>
 @endpush

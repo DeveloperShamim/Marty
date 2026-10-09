@@ -300,6 +300,27 @@ class Order extends Model
             || ($this->payment_status === 'pending' && $this->payment_method !== 'cod' && ! in_array($this->status, ['cancelled', 'returned'], true));
     }
 
+    /**
+     * One short payment line for the order list: [text, tone classes]. Unpaid cash on delivery is
+     * normal until the courier collects it, so it reads as a plain note rather than a warning.
+     */
+    public function paymentSummary(): array
+    {
+        if ($this->payment_status === 'verified') {
+            return ['Paid', 'text-emerald-700'];
+        }
+        if ($this->payment_status === 'rejected') {
+            return ['Payment rejected', 'text-rose-700'];
+        }
+        if ($this->payment_method === 'cod') {
+            return in_array($this->status, ['cancelled', 'returned'], true)
+                ? ['Not collected', 'text-gray-500']
+                : ['Collect on delivery', 'text-gray-500'];
+        }
+
+        return ['Payment to verify', 'text-amber-700'];
+    }
+
     /** Label for the accept button: COD orders are confirmed, prepaid orders have their payment verified. */
     public function acceptLabel(): string
     {

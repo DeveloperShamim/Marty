@@ -3,8 +3,10 @@
   $tracked = in_array(strtolower((string) $order->courier_name), \App\Services\Courier\CourierStatusUpdater::PROVIDERS, true) && $order->courier_tracking_code;
   $trackUrl = $order->courierTrackingUrl();
 @endphp
-@if(! $order->isDispatchedToCourier())
-  <span class="text-[11px] text-gray-400">Not sent yet</span>
+@if($order->isPos())
+  <span class="text-[11px] text-gray-400">In-store sale</span>
+@elseif(! $order->isDispatchedToCourier())
+  <span class="text-[11px] text-gray-400">{{ in_array($order->status, ['cancelled', 'returned'], true) ? '—' : 'Not sent yet' }}</span>
 @else
   <div class="min-w-0 space-y-1">
     <p class="flex items-center gap-1.5 text-xs font-semibold text-gray-900">
