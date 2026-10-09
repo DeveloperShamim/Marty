@@ -587,6 +587,7 @@
       if (redirectUrl && /\/checkout/.test(redirectUrl)) payload.order_now = true;
       const data = await api("/cart/add", payload);
       applyCart(data);
+      if (data.tracked && window.vtTrack) window.vtTrack("add_to_cart", { items: [data.tracked] });
       if (redirectUrl) {
         window.location.href = redirectUrl;
         return true;

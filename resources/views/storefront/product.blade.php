@@ -1389,15 +1389,9 @@ if (pdpTabBtns.length > 0) {
   });
 }
 
-// Meta (Facebook) Pixel ViewContent Event
-if (typeof fbq === 'function') {
-  fbq('track', 'ViewContent', {
-    content_name: '{{ addslashes($product->name) }}',
-    content_ids: ['{{ $product->id }}'],
-    content_type: 'product',
-    value: {{ (float) $product->price }},
-    currency: 'BDT'
-  });
-}
+// Product view for every tracking tag (GA4 view_item, Meta ViewContent, TikTok ViewContent)
+window.vtTrack && window.vtTrack('view_item', {
+  items: [{ item_id: @json((string) $product->id), item_name: @json($product->name), price: {{ (float) $product->price }}, quantity: 1 }]
+});
 </script>
 @endpush

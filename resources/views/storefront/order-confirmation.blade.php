@@ -14,58 +14,15 @@
 @if(tracking_any_enabled())
 @push('tracking-head')
 <script>
-(function () {
-  var items = @json($trackingItems);
-  var purchase = {
+  window.vtTrack && window.vtTrack('purchase', {
     transaction_id: @json($order->order_number),
+    event_id: @json(\App\Services\ServerTracking::purchaseEventId($order)),
     value: {{ (float) $order->total }},
-    currency: @json(setting('currency_code', 'BDT')),
     tax: {{ (float) $order->tax }},
     shipping: {{ (float) $order->shipping_charge }},
     coupon: @json($order->coupon_code),
-    items: items
-  };
-
-  @if(tracking_gtm_id() || tracking_ga4_id())
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({
-    event: 'purchase',
-    ecommerce: {
-      transaction_id: purchase.transaction_id,
-      value: purchase.value,
-      currency: purchase.currency,
-      tax: purchase.tax,
-      shipping: purchase.shipping,
-      coupon: purchase.coupon || undefined,
-      items: items
-    }
+    items: @json($trackingItems)
   });
-  @endif
-
-  @if(tracking_ga4_id())
-  if (typeof gtag === 'function') {
-    gtag('event', 'purchase', {
-      transaction_id: purchase.transaction_id,
-      value: purchase.value,
-      currency: purchase.currency,
-      tax: purchase.tax,
-      shipping: purchase.shipping,
-      coupon: purchase.coupon || undefined,
-      items: items
-    });
-  }
-  @endif
-
-  @if(tracking_meta_pixel_id())
-  if (typeof fbq === 'function') {
-    fbq('track', 'Purchase', {
-      value: purchase.value,
-      currency: purchase.currency,
-      content_type: 'product'
-    });
-  }
-  @endif
-})();
 </script>
 @endpush
 @endif

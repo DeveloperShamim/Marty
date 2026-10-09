@@ -24,6 +24,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 
+        // Ad and analytics cookies are set by their own scripts in the browser, so they are never encrypted;
+        // the server reads them to match purchases sent from the server (Meta Conversions API, GA4).
+        $middleware->encryptCookies(except: ['_fbp', '_fbc', '_ga', '_ttp']);
+
         // Guests hitting an auth-protected storefront page go to the customer login.
         $middleware->redirectGuestsTo(fn () => route('login'));
     })

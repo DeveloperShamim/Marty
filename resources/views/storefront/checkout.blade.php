@@ -952,4 +952,14 @@
   })();
 })();
 </script>
+@php
+  $checkoutTrackItems = $items->map(fn ($i) => ['item_id' => (string) $i->product_id, 'item_name' => $i->name, 'item_variant' => $i->variant, 'price' => (float) $i->price, 'quantity' => (int) $i->qty])->values();
+@endphp
+<script>
+  // Checkout started: GA4 begin_checkout, Meta and TikTok InitiateCheckout
+  window.vtTrack && window.vtTrack('begin_checkout', {
+    items: {!! json_encode($checkoutTrackItems, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!},
+    value: {{ (float) $subtotal }}
+  });
+</script>
 @endpush

@@ -103,6 +103,14 @@ class CartController extends Controller
                 'ok'      => true,
                 'message' => "Added \"{$product->name}\" to cart",
                 'cart'    => $this->cart->toArray(),
+                // For the add_to_cart tracking event; empty when Order now found it already in the cart
+                'tracked' => $qty > 0 ? [
+                    'item_id'      => (string) $product->id,
+                    'item_name'    => $product->name,
+                    'item_variant' => $sku?->attributeLabel() ?? $variant,
+                    'price'        => $sku ? (float) $sku->getCalculatedSalePrice() : (float) $product->price,
+                    'quantity'     => $qty,
+                ] : null,
                 'recs'    => $this->recommendationsHtml(),
                 'drawer'  => view('storefront.partials.cart-drawer-items', [
                     'items'    => $this->cart->items(),

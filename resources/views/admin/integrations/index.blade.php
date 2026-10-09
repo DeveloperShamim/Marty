@@ -6,7 +6,7 @@
 @php
   $couriersActive = (($settings['steadfast_enabled'] ?? '0') === '1') || (($settings['pathao_enabled'] ?? '0') === '1') || (($settings['redx_enabled'] ?? '0') === '1');
   $googleActive = !empty($settings['google_client_id'] ?? config('services.google.client_id'));
-  $trackingActive = !empty($settings['tracking_gtm_id']) || !empty($settings['tracking_ga4_id']) || !empty($settings['tracking_meta_pixel_id']);
+  $trackingActive = !empty($settings['tracking_gtm_id']) || !empty($settings['tracking_ga4_id']) || !empty($settings['tracking_meta_pixel_id']) || !empty($settings['tracking_tiktok_pixel_id']) || !empty($settings['tracking_google_ads_id']);
   $mailActive = ($settings['mail_mailer'] ?? 'log') === 'smtp';
 
   $eyeIcon = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -383,31 +383,157 @@
     <form method="POST" action="{{ route('admin.integrations.update', 'tracking') }}" class="space-y-4">
       @csrf @method('PUT')
 
-      <section class="panel p-4 sm:p-5 space-y-4">
-        <div>
-          <h2 class="text-[15px] font-semibold text-gray-900">Analytics and pixels</h2>
-          <p class="text-xs text-gray-500 mt-0.5">Add tracking to your storefront without editing code.</p>
-        </div>
+      @php
+        $hasCapiToken = trim((string) ($settings['tracking_meta_capi_token'] ?? '')) !== '';
+        $hasGa4Secret = trim((string) ($settings['tracking_ga4_api_secret'] ?? '')) !== '';
+        $chip = fn (bool $on, string $label) => '<span class="shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ' . ($on ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500') . '">' . e($label) . '</span>';
+      @endphp
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <label class="lbl">Google Tag Manager ID</label>
-            <input name="tracking_gtm_id" class="inp font-mono text-[13px] uppercase" value="{{ $settings['tracking_gtm_id'] ?? '' }}" placeholder="GTM-XXXXXXX" />
+      {{-- Google: Analytics 4, Tag Manager, Ads, Search Console --}}
+      <section class="panel p-4 sm:p-5 space-y-4" data-tracking-card="google">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <h2 class="text-[15px] font-semibold text-gray-900">Google</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Analytics 4, Tag Manager, Google Ads conversions and Search Console.</p>
           </div>
+          {!! $chip(! empty($settings['tracking_ga4_id']), ! empty($settings['tracking_ga4_id']) ? 'GA4 on' : 'GA4 off') !!}
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="lbl">Google Analytics 4 ID</label>
+            <label class="lbl">GA4 Measurement ID</label>
             <input name="tracking_ga4_id" class="inp font-mono text-[13px] uppercase" value="{{ $settings['tracking_ga4_id'] ?? '' }}" placeholder="G-XXXXXXXXXX" />
+            <p class="text-[11px] text-gray-400 mt-1.5">Google Analytics → Admin → Data streams → Measurement ID.</p>
           </div>
           <div>
-            <label class="lbl">Meta Pixel ID</label>
-            <input name="tracking_meta_pixel_id" class="inp font-mono text-[13px]" value="{{ $settings['tracking_meta_pixel_id'] ?? '' }}" placeholder="1234567890" />
+            <label class="lbl">GA4 API secret <span class="font-normal text-gray-400">(server-side purchases)</span></label>
+            <div class="relative">
+              <input id="ga4_secret" name="tracking_ga4_api_secret" type="password" autocomplete="off" class="inp font-mono text-[13px] pr-11" placeholder="{{ $hasGa4Secret ? 'Saved. Type to replace' : 'API secret' }}" />
+              <button type="button" onclick="togglePass('ga4_secret', this)" class="{{ $eyeBtn }}" aria-label="Show or hide">{!! $eyeIcon !!}</button>
+            </div>
+            <p class="text-[11px] text-gray-400 mt-1.5">Data streams → Measurement Protocol API secrets.
+              @if($hasGa4Secret)<label class="inline-flex items-center gap-1 ml-1 text-rose-600 cursor-pointer"><input type="checkbox" name="tracking_ga4_api_secret_clear" value="1" class="rounded"> Remove</label>@endif
+            </p>
+          </div>
+          <div>
+            <label class="lbl">Tag Manager container ID</label>
+            <input name="tracking_gtm_id" class="inp font-mono text-[13px] uppercase" value="{{ $settings['tracking_gtm_id'] ?? '' }}" placeholder="GTM-XXXXXXX" />
+            <p class="text-[11px] text-gray-400 mt-1.5">Optional, if you manage tags in Google Tag Manager.</p>
           </div>
           <div>
             <label class="lbl">Search Console tag</label>
             <input name="google_site_verification" class="inp font-mono text-[13px]" value="{{ $settings['google_site_verification'] ?? '' }}" placeholder="Verification code" />
           </div>
+          <div>
+            <label class="lbl">Google Ads conversion ID</label>
+            <input name="tracking_google_ads_id" class="inp font-mono text-[13px] uppercase" value="{{ $settings['tracking_google_ads_id'] ?? '' }}" placeholder="AW-123456789" />
+          </div>
+          <div>
+            <label class="lbl">Google Ads purchase label</label>
+            <input name="tracking_google_ads_label" class="inp font-mono text-[13px]" value="{{ $settings['tracking_google_ads_label'] ?? '' }}" placeholder="AbC-D_efG-h123" />
+            <p class="text-[11px] text-gray-400 mt-1.5">Counts a conversion when a customer places an order.</p>
+          </div>
         </div>
       </section>
+
+      {{-- Meta: Pixel, domain verification, Conversions API --}}
+      <section class="panel p-4 sm:p-5 space-y-4" data-tracking-card="meta">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <h2 class="text-[15px] font-semibold text-gray-900">Facebook Pixel &amp; Conversions API</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Browser pixel plus server-side purchases, counted once.</p>
+          </div>
+          {!! $chip(($settings['tracking_meta_capi_enabled'] ?? '0') === '1' && $hasCapiToken, ($settings['tracking_meta_capi_enabled'] ?? '0') === '1' && $hasCapiToken ? 'CAPI on' : 'CAPI off') !!}
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="lbl">Meta Pixel / Dataset ID</label>
+            <input name="tracking_meta_pixel_id" class="inp font-mono text-[13px]" value="{{ $settings['tracking_meta_pixel_id'] ?? '' }}" placeholder="1234567890" inputmode="numeric" />
+            <p class="text-[11px] text-gray-400 mt-1.5">Meta Events Manager → Data sources.</p>
+          </div>
+          <div>
+            <label class="lbl">Domain verification</label>
+            <input name="tracking_meta_domain_verification" class="inp font-mono text-[13px]" value="{{ $settings['tracking_meta_domain_verification'] ?? '' }}" placeholder="Code or &lt;meta ... /&gt; tag" />
+            <p class="text-[11px] text-gray-400 mt-1.5">Business settings → Brand safety → Domains.</p>
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-gray-200 bg-gray-50/60 p-3.5 sm:p-4 space-y-4">
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" name="tracking_meta_capi_enabled" value="1" class="peer sr-only" @checked(($settings['tracking_meta_capi_enabled'] ?? '0') === '1') />
+            <span class="{{ $switchTrack }} shrink-0 mt-0.5"></span>
+            <span class="min-w-0">
+              <span class="block text-[13px] font-semibold text-gray-900">Conversions API (server-side)</span>
+              <span class="block text-xs text-gray-500 mt-0.5">Sends each order from your server to Meta with the customer's hashed phone and email, so sales hidden by ad-blockers and iPhone privacy still count.</span>
+            </span>
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="lbl">Access token</label>
+              <div class="relative">
+                <input id="capi_token" name="tracking_meta_capi_token" type="password" autocomplete="off" class="inp font-mono text-[13px] pr-11" placeholder="{{ $hasCapiToken ? 'Saved. Type to replace' : 'EAAG...' }}" />
+                <button type="button" onclick="togglePass('capi_token', this)" class="{{ $eyeBtn }}" aria-label="Show or hide">{!! $eyeIcon !!}</button>
+              </div>
+              <p class="text-[11px] text-gray-400 mt-1.5">Events Manager → Settings → Conversions API → Generate access token.
+                @if($hasCapiToken)<label class="inline-flex items-center gap-1 ml-1 text-rose-600 cursor-pointer"><input type="checkbox" name="tracking_meta_capi_token_clear" value="1" class="rounded"> Remove</label>@endif
+              </p>
+            </div>
+            <div>
+              <label class="lbl">Test event code <span class="font-normal text-gray-400">(optional)</span></label>
+              <input name="tracking_meta_capi_test_code" class="inp font-mono text-[13px]" value="{{ $settings['tracking_meta_capi_test_code'] ?? '' }}" placeholder="TEST12345" />
+              <p class="text-[11px] text-gray-400 mt-1.5">From Events Manager → Test events. Leave blank when live.</p>
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2.5">
+            <button type="button" id="testMetaBtn" class="h-9 px-4 rounded-full bg-white border border-gray-200 hover:bg-gray-100 text-gray-800 text-[13px] font-medium shrink-0">Test Meta connection</button>
+            <p id="testMetaResult" class="text-xs text-gray-500" hidden></p>
+          </div>
+          <p class="text-[11px] text-gray-400">Save first, then test. The test uses the saved pixel, token and test code.</p>
+        </div>
+      </section>
+
+      {{-- TikTok --}}
+      <section class="panel p-4 sm:p-5 space-y-4" data-tracking-card="tiktok">
+        <div>
+          <h2 class="text-[15px] font-semibold text-gray-900">TikTok Pixel</h2>
+          <p class="text-xs text-gray-500 mt-0.5">Tracks TikTok Ads views, add to cart, checkout and purchases.</p>
+        </div>
+        <div class="sm:max-w-sm">
+          <label class="lbl">TikTok Pixel ID</label>
+          <input name="tracking_tiktok_pixel_id" class="inp font-mono text-[13px] uppercase" value="{{ $settings['tracking_tiktok_pixel_id'] ?? '' }}" placeholder="CXXXXXXXXXXXXXXX" />
+          <p class="text-[11px] text-gray-400 mt-1.5">TikTok Ads Manager → Assets → Events.</p>
+        </div>
+      </section>
+
+      {{-- Custom scripts --}}
+      <section class="panel p-4 sm:p-5 space-y-4" data-tracking-card="custom">
+        <div>
+          <h2 class="text-[15px] font-semibold text-gray-900">Custom scripts</h2>
+          <p class="text-xs text-gray-500 mt-0.5">Paste other tracking codes (Microsoft Clarity, Hotjar, Snapchat, Pinterest…). They run on every storefront page.</p>
+        </div>
+        <div>
+          <label class="lbl">Inside &lt;head&gt;</label>
+          <textarea name="tracking_custom_head" rows="4" class="inp font-mono text-[12px] leading-relaxed" placeholder="&lt;!-- &lt;script&gt; or &lt;meta&gt; tags --&gt;" spellcheck="false">{{ $settings['tracking_custom_head'] ?? '' }}</textarea>
+        </div>
+        <div>
+          <label class="lbl">Right after &lt;body&gt;</label>
+          <textarea name="tracking_custom_body" rows="4" class="inp font-mono text-[12px] leading-relaxed" placeholder="&lt;!-- &lt;noscript&gt; or tracking tags --&gt;" spellcheck="false">{{ $settings['tracking_custom_body'] ?? '' }}</textarea>
+          <p class="text-[11px] text-gray-400 mt-1.5">Only paste code from a service you trust. It runs for every visitor.</p>
+        </div>
+      </section>
+
+      <script>
+        (function () {
+          var btn = document.getElementById('testMetaBtn'), out = document.getElementById('testMetaResult');
+          if (!btn) return;
+          btn.addEventListener('click', function () {
+            out.hidden = false; out.className = 'text-xs text-gray-600'; out.textContent = 'Sending a test event…';
+            fetch(@json(route('admin.integrations.test-meta')), { method: 'POST', headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': @json(csrf_token()) } })
+              .then(function (r) { return r.json(); })
+              .then(function (d) { out.className = 'text-xs font-semibold ' + (d.ok ? 'text-emerald-700' : 'text-rose-700'); out.textContent = d.message; })
+              .catch(function () { out.className = 'text-xs font-semibold text-rose-700'; out.textContent = 'Could not reach the server.'; });
+          });
+        })();
+      </script>
 
       <div class="flex justify-end">
         <button type="submit" class="{{ $saveBtn }}" style="background: var(--brand-dark);">Save tracking settings</button>

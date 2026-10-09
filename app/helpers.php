@@ -432,11 +432,72 @@ if (! function_exists('tracking_meta_pixel_id')) {
     }
 }
 
+if (! function_exists('tracking_google_ads_id')) {
+    /** Valid Google Ads conversion ID (AW-123456789), or null when unset/invalid. */
+    function tracking_google_ads_id(): ?string
+    {
+        $id = strtoupper(trim((string) setting('tracking_google_ads_id', '')));
+
+        return preg_match('/^AW-\d+$/', $id) ? $id : null;
+    }
+}
+
+if (! function_exists('tracking_google_ads_purchase')) {
+    /** "AW-123/label" target for the purchase conversion, or null when the ID or label is missing. */
+    function tracking_google_ads_purchase(): ?string
+    {
+        $label = trim((string) setting('tracking_google_ads_label', ''));
+
+        return tracking_google_ads_id() && preg_match('/^[A-Za-z0-9_\-]+$/', $label) ? tracking_google_ads_id() . '/' . $label : null;
+    }
+}
+
+if (! function_exists('tracking_tiktok_pixel_id')) {
+    /** Valid TikTok Pixel ID (letters and digits), or null when unset/invalid. */
+    function tracking_tiktok_pixel_id(): ?string
+    {
+        $id = strtoupper(trim((string) setting('tracking_tiktok_pixel_id', '')));
+
+        return preg_match('/^[A-Z0-9]{6,40}$/', $id) ? $id : null;
+    }
+}
+
+if (! function_exists('tracking_meta_domain_verification')) {
+    /** Facebook domain verification code; a pasted <meta ... content="..."> tag is reduced to its code. */
+    function tracking_meta_domain_verification(): ?string
+    {
+        $raw = trim((string) setting('tracking_meta_domain_verification', ''));
+        if (preg_match('/content\s*=\s*["\']([^"\']+)["\']/i', $raw, $m)) {
+            $raw = $m[1];
+        }
+
+        return preg_match('/^[A-Za-z0-9_\-]{6,100}$/', $raw) ? $raw : null;
+    }
+}
+
+if (! function_exists('tracking_meta_capi_ready')) {
+    /** Meta Conversions API switched on, with a pixel and an access token to send with. */
+    function tracking_meta_capi_ready(): bool
+    {
+        return setting('tracking_meta_capi_enabled', '0') === '1'
+            && tracking_meta_pixel_id()
+            && trim((string) setting('tracking_meta_capi_token', '')) !== '';
+    }
+}
+
+if (! function_exists('tracking_ga4_server_ready')) {
+    /** GA4 Measurement Protocol (server-side purchases) has a measurement ID and an API secret. */
+    function tracking_ga4_server_ready(): bool
+    {
+        return tracking_ga4_id() && trim((string) setting('tracking_ga4_api_secret', '')) !== '';
+    }
+}
+
 if (! function_exists('tracking_any_enabled')) {
     /** Whether any storefront tracking tag is configured. */
     function tracking_any_enabled(): bool
     {
-        return tracking_gtm_id() || tracking_ga4_id() || tracking_meta_pixel_id();
+        return tracking_gtm_id() || tracking_ga4_id() || tracking_meta_pixel_id() || tracking_google_ads_id() || tracking_tiktok_pixel_id();
     }
 }
 

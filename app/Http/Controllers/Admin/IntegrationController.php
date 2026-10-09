@@ -25,6 +25,9 @@ class IntegrationController extends Controller
             'redx_enabled', 'redx_env', 'redx_api_token', 'redx_default_area_id', 'courier_auto_sync',
             'bdcourier_api_token', 'bdcourier_auto_check',
             'tracking_gtm_id', 'tracking_ga4_id', 'tracking_meta_pixel_id', 'google_site_verification',
+            'tracking_ga4_api_secret', 'tracking_google_ads_id', 'tracking_google_ads_label', 'tracking_meta_domain_verification',
+            'tracking_meta_capi_enabled', 'tracking_meta_capi_token', 'tracking_meta_capi_test_code', 'tracking_tiktok_pixel_id',
+            'tracking_custom_head', 'tracking_custom_body',
             'google_client_id', 'google_client_secret', 'google_redirect_uri',
             'otp_enabled', 'mail_mailer', 'mail_host', 'mail_port', 'mail_username',
             'mail_encryption', 'mail_from_address', 'mail_from_name',
@@ -114,6 +117,35 @@ class IntegrationController extends Controller
         return back()->with('status', $message);
     }
 
+    /** "Test Meta CAPI connection": sends one PageView with the saved pixel and token (and test code, if set). */
+    public function testMeta(\App\Services\ServerTracking $tracking)
+    {
+        if (! tracking_meta_pixel_id() || trim((string) setting('tracking_meta_capi_token', '')) === '') {
+            return response()->json(['ok' => false, 'message' => 'Save your Meta Pixel ID and Conversions API access token first.'], 422);
+        }
+
+        $result = $tracking->sendMeta([[
+            'event_name'       => 'PageView',
+            'event_time'       => time(),
+            'event_id'         => 'test-' . \Illuminate\Support\Str::random(10),
+            'action_source'    => 'website',
+            'event_source_url' => url('/'),
+            'user_data'        => [
+                'client_ip_address' => request()->ip(),
+                'client_user_agent' => (string) request()->userAgent(),
+            ],
+        ]]);
+
+        $hint = trim((string) setting('tracking_meta_capi_test_code', '')) !== ''
+            ? ' Check Events Manager → Test events.'
+            : ' Add a test event code to see it under Events Manager → Test events.';
+
+        return response()->json([
+            'ok'      => $result['ok'],
+            'message' => $result['ok'] ? 'Connected. ' . $result['message'] . $hint : 'Not connected: ' . $result['message'],
+        ], $result['ok'] ? 200 : 422);
+    }
+
     private function rulesForSection(string $section): array
     {
         return match ($section) {
@@ -145,6 +177,16 @@ class IntegrationController extends Controller
                 'tracking_ga4_id'          => ['nullable', 'string', 'max:20', 'regex:/^(|G-[A-Z0-9]+)$/i'],
                 'tracking_meta_pixel_id'   => ['nullable', 'string', 'max:20', 'regex:/^(|\d+)$/'],
                 'google_site_verification' => ['nullable', 'string', 'max:255'],
+                'tracking_ga4_api_secret'  => ['nullable', 'string', 'max:100'],
+                'tracking_google_ads_id'   => ['nullable', 'string', 'max:20', 'regex:/^(|AW-\d+)$/i'],
+                'tracking_google_ads_label' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z0-9_\-]*$/'],
+                'tracking_meta_domain_verification' => ['nullable', 'string', 'max:500'],
+                'tracking_meta_capi_enabled' => ['nullable', 'boolean'],
+                'tracking_meta_capi_token' => ['nullable', 'string', 'max:500'],
+                'tracking_meta_capi_test_code' => ['nullable', 'string', 'max:40', 'regex:/^[A-Za-z0-9]*$/'],
+                'tracking_tiktok_pixel_id' => ['nullable', 'string', 'max:40', 'regex:/^[A-Za-z0-9]*$/'],
+                'tracking_custom_head'     => ['nullable', 'string', 'max:20000'],
+                'tracking_custom_body'     => ['nullable', 'string', 'max:20000'],
             ],
             'google' => [
                 'google_client_id'     => ['nullable', 'string', 'max:255'],
@@ -174,7 +216,11 @@ class IntegrationController extends Controller
                 'pathao_env', 'pathao_client_id', 'pathao_client_secret', 'pathao_username', 'pathao_password', 'pathao_store_id',
                 'redx_env', 'redx_api_token', 'redx_default_area_id',
             ],
-            'tracking' => ['tracking_gtm_id', 'tracking_ga4_id', 'tracking_meta_pixel_id', 'google_site_verification'],
+            'tracking' => [
+                'tracking_gtm_id', 'tracking_ga4_id', 'tracking_meta_pixel_id', 'google_site_verification',
+                'tracking_google_ads_id', 'tracking_google_ads_label', 'tracking_meta_domain_verification',
+                'tracking_meta_capi_test_code', 'tracking_tiktok_pixel_id', 'tracking_custom_head', 'tracking_custom_body',
+            ],
             'google'   => ['google_client_id', 'google_client_secret', 'google_redirect_uri'],
             'mail' => [
                 'mail_mailer', 'mail_host', 'mail_port', 'mail_username',
@@ -188,7 +234,7 @@ class IntegrationController extends Controller
                 continue;
             }
             $value = (string) ($data[$key] ?? '');
-            if (in_array($key, ['tracking_gtm_id', 'tracking_ga4_id'], true) && $value !== '') {
+            if (in_array($key, ['tracking_gtm_id', 'tracking_ga4_id', 'tracking_google_ads_id', 'tracking_tiktok_pixel_id'], true) && $value !== '') {
                 $value = strtoupper($value);
             }
             Setting::put($key, $value);
@@ -217,6 +263,18 @@ class IntegrationController extends Controller
             }
             Setting::put('bdcourier_keys', json_encode($keys));
             Setting::put('bdcourier_api_token', ''); // replaced by the key list
+        }
+
+        if ($section === 'tracking') {
+            Setting::put('tracking_meta_capi_enabled', $request->boolean('tracking_meta_capi_enabled') ? '1' : '0');
+            // Secrets are only replaced when a new one is typed (the field is shown empty); "clear" removes them.
+            foreach (['tracking_meta_capi_token', 'tracking_ga4_api_secret'] as $secret) {
+                if ($request->boolean($secret . '_clear')) {
+                    Setting::put($secret, '');
+                } elseif ($request->filled($secret)) {
+                    Setting::put($secret, trim((string) $request->input($secret)));
+                }
+            }
         }
 
         if ($section === 'mail') {

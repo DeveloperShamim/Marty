@@ -18,6 +18,12 @@ class TrackUtmSource
             }
         }
 
+        // Facebook ad click id: lets the server-side Purchase be matched to the ad when the _fbc cookie is missing
+        $clickId = (string) $request->query('fbclid', '');
+        if ($clickId !== '' && preg_match('/^[A-Za-z0-9_\-]{10,500}$/', $clickId)) {
+            session(['fbclid' => $clickId]);
+        }
+
         return $next($request);
     }
 }

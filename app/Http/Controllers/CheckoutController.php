@@ -325,6 +325,11 @@ class CheckoutController extends Controller
         // Courier delivery history lookup after the response, so checkout isn't slowed down.
         \App\Jobs\CheckCustomerCourierHistory::dispatchAfterResponse($order->id);
 
+        // Server-side Purchase (Meta Conversions API, GA4) after the response, when switched on in Integrations
+        if (tracking_meta_capi_ready() || tracking_ga4_server_ready()) {
+            \App\Jobs\SendServerPurchase::dispatchAfterResponse($order->id, \App\Services\ServerTracking::context($request));
+        }
+
         return redirect()->route('order.confirmation', $order->order_number);
     }
 
