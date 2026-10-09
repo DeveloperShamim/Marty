@@ -379,6 +379,7 @@
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
   </button>
 
+  <script src="{{ asset('theme/js/auto-row.js') }}?v={{ filemtime(public_path('theme/js/auto-row.js')) }}"></script>
   <script src="{{ asset('theme/js/storefront.js') }}?v={{ filemtime(public_path('theme/js/storefront.js')) }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   @stack('scripts')

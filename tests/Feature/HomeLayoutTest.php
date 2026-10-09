@@ -68,6 +68,7 @@ class HomeLayoutTest extends TestCase
         $res = $this->get('/')->assertOk();
         $html = $res->getContent();
         $this->assertStringContainsString('data-auto-row', $html);
+        $this->assertStringContainsString('theme/js/auto-row.js', $html, 'The sliding script loads on its own');
         $this->assertMatchesRegularExpression('/<nav data-tabbar[^>]*bottom-0[^>]*bg-white/', $html, 'Phone bar in the admin style: white, docked to the bottom');
         $this->assertMatchesRegularExpression('/tabbar-tab is-on[^>]*>\s*<span class="tabbar-icon/', $html, 'Home tab marked open');
 
