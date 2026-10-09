@@ -55,8 +55,8 @@
   <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
     <div class="xl:col-span-7 space-y-4 min-w-0">
       @if($canMoney)
-      {{-- Headline numbers --}}
-      <div class="grid grid-cols-2 gap-3 sm:gap-4">
+      {{-- Headline numbers (stacked on very small phones so the numbers and notes fit) --}}
+      <div class="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3 sm:gap-4">
         <div class="panel p-3.5 sm:p-4">
           <div class="flex items-start justify-between gap-3">
             <h2 class="text-sm sm:text-[15px] font-medium text-gray-900">Total Sales</h2>
@@ -113,7 +113,7 @@
       @endif
 
       {{-- Small numbers --}}
-      <div class="grid {{ $canMoney ? 'grid-cols-3' : 'grid-cols-1' }} gap-3 sm:gap-4">
+      <div class="grid {{ $canMoney ? 'grid-cols-2 min-[420px]:grid-cols-3' : 'grid-cols-1' }} gap-3 sm:gap-4">
         @if($canMoney)
         <div class="panel px-3.5 py-3 min-w-0">
           <span class="text-[11px] text-gray-500 block truncate">This month</span>
@@ -124,7 +124,7 @@
           <p class="mt-1 text-[15px] sm:text-lg font-semibold text-gray-900 font-mono truncate">{{ money($avgOrderValue) }}</p>
         </div>
         @endif
-        <a href="{{ route('admin.inventory.index') }}" class="panel px-3.5 py-3 min-w-0 hover:bg-gray-50 transition-colors">
+        <a href="{{ route('admin.inventory.index') }}" class="panel px-3.5 py-3 min-w-0 hover:bg-gray-50 transition-colors {{ $canMoney ? 'col-span-2 min-[420px]:col-span-1' : '' }}">
           <span class="text-[11px] text-gray-500 block truncate">Stock health</span>
           <p class="mt-1 flex items-baseline flex-wrap gap-x-1.5 min-w-0">
             <span class="text-[15px] sm:text-lg font-semibold text-gray-900 font-mono">{{ number_format($totalStockUnits) }}</span>
@@ -198,8 +198,8 @@
             <p class="mt-1 text-xs text-gray-500">{{ number_format($deliveredCount ?? 0) }} delivered &middot; {{ number_format($returnedOrdersCount ?? 0) }} returned</p>
           </div>
         </div>
-        <div class="mt-4 flex items-center justify-between gap-2 rounded-full border border-gray-200 pl-4 pr-1.5 py-1.5">
-          <span class="text-xs text-gray-600 truncate">Orders today <span class="font-semibold text-gray-900">{{ number_format($todayOrdersCount) }}</span> &middot; yesterday {{ number_format($yesterdayOrdersCount) }}</span>
+        <div class="mt-4 flex items-center justify-between gap-2 rounded-[20px] border border-gray-200 pl-4 pr-1.5 py-1.5">
+          <span class="text-xs text-gray-600 min-w-0">Orders today <span class="font-semibold text-gray-900">{{ number_format($todayOrdersCount) }}</span> &middot; yesterday {{ number_format($yesterdayOrdersCount) }}</span>
           @if($ordersTrend !== null)
             <span class="inline-flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] font-semibold shrink-0" style="background: var(--brand-soft); color: var(--brand-dark);">{{ $ordersTrend >= 0 ? '↑' : '↓' }} {{ abs($ordersTrend) }}%</span>
           @endif
@@ -305,7 +305,8 @@
           {{-- X-Axis Labels (All 12 months fit natively on mobile) --}}
           <div class="mt-2 grid grid-cols-12 text-center text-[9px] sm:text-[11px] font-semibold text-gray-400 relative z-10">
             @foreach($monthlySeries as $point)
-              <div class="flex flex-col items-center justify-center">
+              {{-- On very small phones only every other month is labelled (the current month always is) --}}
+              <div class="flex flex-col items-center justify-center {{ !$point['is_current'] && ($loop->remaining % 2 === 1) ? 'max-[419px]:invisible' : '' }}">
                 @if($point['is_current'])
                   <span class="px-1 py-0.5 rounded text-[8px] sm:text-[10px] font-bold bg-primary text-white shadow-2xs leading-none">
                     {{ $point['label'] }}
@@ -625,17 +626,17 @@
             </span>
 
             @if($item->image)
-              <img src="{{ $item->image }}" alt="{{ $item->product_name }}" class="h-9 w-9 object-cover rounded-lg border border-gray-200 shrink-0 bg-white" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'36\' height=\'36\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23a8a29e\' stroke-width=\'2\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/></svg>';" />
+              <img src="{{ $item->image }}" alt="{{ $item->product_name }}" class="h-9 w-9 object-cover rounded-lg border border-gray-200 shrink-0 bg-white max-[399px]:hidden" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'36\' height=\'36\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23a8a29e\' stroke-width=\'2\'><rect width=\'18\' height=\'18\' x=\'3\' y=\'3\' rx=\'2\'/><path d=\'m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\'/><circle cx=\'9\' cy=\'9\' r=\'2\'/></svg>';" />
             @else
-              <div class="h-9 w-9 bg-white rounded-lg flex items-center justify-center text-gray-400 font-bold text-xs shrink-0 border border-gray-200">
+              <div class="h-9 w-9 bg-white rounded-lg flex items-center justify-center text-gray-400 font-bold text-xs shrink-0 border border-gray-200 max-[399px]:hidden">
                 {{ substr($item->product_name, 0, 1) }}
               </div>
             @endif
 
             <div class="min-w-0 flex-1">
-              <span class="font-semibold text-gray-900 text-xs line-clamp-1 block">{{ $item->product_name }}</span>
-              <div class="flex items-center justify-between text-[11px] text-gray-500 mt-0.5">
-                <span>{{ number_format($item->total_units) }} units sold</span>
+              <span class="font-semibold text-gray-900 text-xs truncate block">{{ $item->product_name }}</span>
+              <div class="flex items-center justify-between gap-2 text-[11px] text-gray-500 mt-0.5">
+                <span class="whitespace-nowrap">{{ number_format($item->total_units) }} sold</span>
                 <span class="font-bold text-emerald-700 font-mono">{{ money($item->total_revenue) }}</span>
               </div>
             </div>
