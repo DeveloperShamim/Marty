@@ -58,6 +58,7 @@ class OrderController extends Controller
 
         $counts = [
             'all'                  => Order::count(),
+            'pending'              => Order::where('status', 'pending')->count(),
             'pending_verification' => Order::needsReview()->count(),
             'not_printed'          => Order::notPrinted()->count(),
             'confirmed'            => Order::where('status', 'confirmed')->count(),

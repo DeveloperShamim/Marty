@@ -43,4 +43,29 @@ class OrdersListLayoutTest extends TestCase
         $this->assertStringContainsString('Print label', $html);
         $this->assertStringContainsString('Print invoice', $html);
     }
+
+    public function test_pending_confirmed_and_processing_tabs_come_first_with_their_own_counts(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->order('ORD-P1', ['status' => 'pending']);
+        $this->order('ORD-P2', ['status' => 'pending']);
+        $this->order('ORD-C1');
+        $this->order('ORD-R1', ['status' => 'processing']);
+        $this->order('ORD-BK', ['status' => 'processing', 'payment_method' => 'bkash']);
+
+        $res = $this->actingAs($admin)->get(route('admin.orders.index'))->assertOk();
+        $counts = $res->viewData('counts');
+        $this->assertSame([2, 1, 2], [$counts['pending'], $counts['confirmed'], $counts['processing']]);
+
+        // Same names and order as the dashboard's Orders to ship board, straight after All
+        preg_match('/aria-label="Order status">(.*?)<\/nav>/s', $res->getContent(), $nav);
+        preg_match_all('/>\s*([A-Z][a-z]+(?: [a-z]+)?)\s*</', $nav[1], $labels);
+        $this->assertSame(['All', 'Pending', 'Confirmed', 'Processing', 'Needs review', 'Not printed', 'Shipped'], array_slice($labels[1], 0, 7));
+
+        // The dashboard's Pending link now lands on a lit Pending tab showing only pending orders
+        $html = $this->actingAs($admin)->get(route('admin.orders.index', ['status' => 'pending']))->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('/aria-current="page"[^>]*>\s*Pending/', $html);
+        $this->assertStringContainsString('ORD-P1', $html);
+        $this->assertStringNotContainsString('ORD-C1', $html);
+    }
 }

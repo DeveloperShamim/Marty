@@ -90,12 +90,14 @@
   </section>
 
   @php
+    // The three steps before the courier come first, named as on the dashboard's Orders to ship board
     $tabs = [
       'all'                  => 'All',
-      'pending_verification' => 'Needs review',
-      'not_printed'          => 'Not printed',
+      'pending'              => 'Pending',
       'confirmed'            => 'Confirmed',
       'processing'           => 'Processing',
+      'pending_verification' => 'Needs review',
+      'not_printed'          => 'Not printed',
       'shipped'              => 'Shipped',
       'delivered'            => 'Delivered',
       'returned'             => 'Returned',
@@ -105,12 +107,13 @@
 
   {{-- Order list: status tabs, search and payment filter sit together above it --}}
   <div class="card overflow-hidden">
-    <nav class="px-3 sm:px-4 pt-3 sm:pt-4 overflow-x-auto no-scrollbar" aria-label="Order status">
+    <nav class="px-2 sm:px-4 pt-3 sm:pt-4 overflow-x-auto no-scrollbar" aria-label="Order status">
       <div class="inline-flex items-center gap-1 whitespace-nowrap">
         @foreach($tabs as $key => $label)
+          @if($key === 'pending_verification')<span class="mx-1 h-5 w-px bg-gray-200 shrink-0" aria-hidden="true"></span>@endif
           @php $active = $status === $key || ($key === 'all' && !in_array($status, array_keys($tabs))); @endphp
           <a href="{{ route('admin.orders.index', ['status' => $key, 'q' => $q, 'method' => $method]) }}"
-             class="h-9 px-3.5 rounded-full text-[13px] font-medium inline-flex items-center gap-1.5 transition-colors {{ $active ? 'text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}"
+             class="h-9 px-2.5 sm:px-3.5 rounded-full text-[13px] font-medium inline-flex items-center gap-1 sm:gap-1.5 transition-colors {{ $active ? 'text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' }}"
              @if($active) style="background: var(--brand-dark);" aria-current="page" @endif>
             {{ $label }}
             @if(($counts[$key] ?? 0) > 0)
@@ -120,6 +123,14 @@
         @endforeach
       </div>
     </nav>
+    <script>
+      // On a phone the strip scrolls sideways, so bring the open tab into view
+      (function () {
+        var strip = document.querySelector('nav[aria-label="Order status"]');
+        var on = strip && strip.querySelector('[aria-current="page"]');
+        if (on && on.offsetLeft + on.offsetWidth > strip.clientWidth) strip.scrollLeft = on.offsetLeft - 16;
+      })();
+    </script>
 
     <form method="GET" action="{{ route('admin.orders.index') }}" class="p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
       <input type="hidden" name="status" value="{{ $status }}">
