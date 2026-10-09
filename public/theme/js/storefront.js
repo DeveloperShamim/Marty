@@ -849,6 +849,39 @@
 
   let currentQmProduct = null;
 
+  // Colour options show a small swatch before the name; anything else is plain text
+  const QM_SWATCHES = {
+    black: "#1c1917", brown: "#7b4a2a", "dark brown": "#4a2c1a", coffee: "#4a2c1a", chocolate: "#4a2c1a",
+    tan: "#c48a55", camel: "#c19a6b", beige: "#e3d3b8", cream: "#f3ead8", white: "#ffffff",
+    silver: "#c4c7cb", grey: "#8a8d91", gray: "#8a8d91", gold: "#c9a54a", "rose gold": "#d4a08a",
+    navy: "#1f2f57", blue: "#2f5fb3", red: "#b3282d", maroon: "#6b1d24", burgundy: "#6b1d24",
+    green: "#2f6b3f", olive: "#6b6b2f", pink: "#e59bb0", orange: "#e07a2c", yellow: "#e8c547", purple: "#6a3f8f",
+  };
+  function qmOptionLabel(btn, type, val) {
+    btn.textContent = "";
+    if (/colou?r/i.test(type)) {
+      const dot = document.createElement("span");
+      const hex = QM_SWATCHES[String(val).trim().toLowerCase()];
+      dot.className = "inline-block h-3.5 w-3.5 rounded-full border border-stone-300 mr-1.5 align-[-2px]";
+      dot.style.backgroundColor = hex || "#e7e5e4";
+      btn.appendChild(dot);
+    }
+    btn.appendChild(document.createTextNode(val));
+  }
+
+  // When a group has only one option left in stock, pick it so the shopper taps less
+  function qmAutoPickSingles() {
+    for (let pass = 0; pass < 3; pass++) {
+      let picked = false;
+      $$("[data-qm-variant-group]").forEach((group) => {
+        if (group.querySelector(".qm-variant-btn.is-selected")) return;
+        const open = [...group.querySelectorAll(".qm-variant-btn")].filter((b) => !b.disabled);
+        if (open.length === 1) { open[0].click(); picked = true; }
+      });
+      if (!picked) break;
+    }
+  }
+
   function updateQuickModalVariantAvailability() {
     if (!currentQmProduct || !currentQmProduct.skus) return;
 
@@ -902,7 +935,7 @@
           btn.disabled = true;
           btn.className = "qm-variant-btn relative min-w-[44px] h-10 px-3.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-400 bg-stone-100 line-through opacity-40 cursor-not-allowed pointer-events-none";
           btn.title = val + " is out of stock";
-          btn.textContent = val;
+          qmOptionLabel(btn, groupType, val);
 
           if (btn.classList.contains("is-selected")) {
             btn.classList.remove("is-selected", "border-2", "border-brand-500", "text-brand-600", "bg-brand-50/40");
@@ -915,7 +948,7 @@
             btn.className = "qm-variant-btn min-w-[44px] h-10 px-3.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-700 hover:border-stone-400 transition-all cursor-pointer";
           }
           btn.title = "";
-          btn.textContent = val;
+          qmOptionLabel(btn, groupType, val);
         }
       });
     });
@@ -991,12 +1024,12 @@
     }
 
     if (qmPrice && finalPrice > 0) {
-      qmPrice.textContent = "৳" + finalPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      qmPrice.textContent = "৳" + finalPrice.toLocaleString("en-US", { maximumFractionDigits: 0 });
     }
 
     if (qmRegPrice) {
       if (finalRegPrice > 0 && finalRegPrice > finalPrice) {
-        qmRegPrice.textContent = "৳" + finalRegPrice.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        qmRegPrice.textContent = "৳" + finalRegPrice.toLocaleString("en-US", { maximumFractionDigits: 0 });
         qmRegPrice.classList.remove("hidden");
       } else {
         qmRegPrice.classList.add("hidden");
@@ -1059,6 +1092,31 @@
         if (qmBuySpan) qmBuySpan.textContent = "Order now";
       }
     }
+
+    // Order now shows the total; the line under the price says what is picked and whether it is in stock
+    const qty = Math.min(3, Math.max(1, +(qmQtyInput ? qmQtyInput.value : 1) || 1));
+    const qmTotal = $("#qmBuyTotal");
+    if (qmTotal) qmTotal.textContent = isAvailable && finalPrice > 0 ? "· ৳" + (finalPrice * qty).toLocaleString("en-US", { maximumFractionDigits: 0 }) : "";
+    const notice = $("#qmSelectedNotice");
+    if (notice) {
+      const picked = [], missing = [];
+      $$("[data-qm-variant-group]").forEach((group) => {
+        const sel = group.querySelector(".qm-variant-btn.is-selected");
+        if (sel) picked.push(/size/i.test(group.dataset.qmVariantGroup) ? "Size " + sel.dataset.value : sel.dataset.value);
+        else missing.push((group.dataset.qmLabel || group.dataset.qmVariantGroup).toLowerCase());
+      });
+      let text, tone = "text-stone-500";
+      if (missing.length) {
+        text = "Choose " + missing.join(" and ");
+      } else {
+        const left = matchedSku ? (parseInt(matchedSku.stock, 10) || 0) : (parseInt(currentQmProduct.stock, 10) || 0);
+        const stockText = !isAvailable ? "Sold out" : (left > 0 && left <= 3 ? "Only " + left + " left" : "In stock");
+        tone = !isAvailable ? "text-stone-400" : (left > 0 && left <= 3 ? "text-amber-700" : "text-emerald-700");
+        text = picked.concat(stockText).join(" · ");
+      }
+      notice.textContent = text;
+      notice.className = "text-xs font-semibold mt-1.5 truncate " + tone;
+    }
   }
 
   function openQuickModal(data) {
@@ -1111,6 +1169,7 @@
         const label = document.createElement("p");
         label.className = "text-xs font-bold uppercase tracking-wider text-stone-600 mb-1.5";
         label.textContent = displayType;
+        groupDiv.dataset.qmLabel = displayType;
 
         const flex = document.createElement("div");
         flex.className = "flex flex-wrap gap-2";
@@ -1120,7 +1179,7 @@
           btn.type = "button";
           btn.className = "qm-variant-btn min-w-[44px] h-10 px-3.5 rounded-xl text-sm font-semibold border border-stone-200 text-stone-700 hover:border-stone-400 transition-all cursor-pointer";
           btn.setAttribute("data-value", optVal);
-          btn.textContent = optVal;
+          qmOptionLabel(btn, type, optVal);
 
           btn.addEventListener("click", () => {
             if (btn.disabled) return;
@@ -1165,6 +1224,7 @@
 
       updateQuickModalVariantAvailability();
       syncQuickModalPrice();
+      qmAutoPickSingles();
     }
 
     // Show modal
@@ -1295,11 +1355,13 @@
         return;
       }
       qmQtyInput.value = Math.min(3, cur + 1);
+      syncQuickModalPrice();
     });
   }
   if (qmQtyDec && qmQtyInput) {
     qmQtyDec.addEventListener("click", () => {
       qmQtyInput.value = Math.min(3, Math.max(1, (+qmQtyInput.value || 1) - 1));
+      syncQuickModalPrice();
       if (qmErrorAlert && qmErrorMessage && qmErrorMessage.textContent.includes("Maximum 3")) {
         qmErrorAlert.classList.add("hidden");
       }

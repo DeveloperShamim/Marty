@@ -1,31 +1,36 @@
 {{-- Quick Select Variation Modal --}}
 {{-- A sheet that slides up from the bottom on phones, a centred dialog from tablets up --}}
 <div id="quickSelectModal" class="fixed inset-0 z-[80] bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 hidden opacity-0 transition-all duration-300 pointer-events-none" aria-hidden="true">
-  <div class="relative w-full max-w-lg bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden border border-stone-200 transform scale-95 transition-all duration-300 flex flex-col max-h-[88dvh] sm:max-h-[90vh] pb-[env(safe-area-inset-bottom)]" data-modal-container>
-    {{-- Modal Header --}}
-    <div class="px-5 py-4 border-b border-stone-100 flex items-center justify-between bg-stone-50/80">
-      <div class="flex items-center gap-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-brand-500 animate-pulse"></span>
-        <h3 class="font-extrabold text-stone-900 text-base">Choose your options</h3>
-      </div>
-      <button type="button" id="closeQuickModal" class="w-8 h-8 rounded-full bg-stone-200/60 hover:bg-stone-200 text-stone-600 font-bold flex items-center justify-center text-sm transition-colors focus:outline-none" aria-label="Close Modal">✕</button>
+  <div class="relative w-full max-w-lg bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden border border-stone-200 transform scale-95 transition-all duration-300 flex flex-col max-h-[88dvh] sm:max-h-[90vh] pb-[env(safe-area-inset-bottom)]" data-modal-container role="dialog" aria-modal="true" aria-labelledby="qmHeading">
+    {{-- Drag handle on phones, then the title and close button --}}
+    <div class="sm:hidden pt-2.5 flex justify-center" aria-hidden="true"><span class="h-1 w-10 rounded-full bg-stone-300"></span></div>
+    <div class="px-5 pt-2 pb-3 sm:pt-4 border-b border-stone-100 flex items-center justify-between">
+      <h3 id="qmHeading" class="font-extrabold text-stone-900 text-base">Choose your options</h3>
+      <button type="button" id="closeQuickModal" class="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold flex items-center justify-center text-sm transition-colors" aria-label="Close">✕</button>
     </div>
 
     {{-- Modal Body --}}
     <div class="p-5 overflow-y-auto space-y-4 flex-1">
-      {{-- Product Info Summary --}}
-      <div class="flex gap-4 items-center pb-4 border-b border-stone-100">
+      {{-- Product, price, live status and quantity --}}
+      <div class="flex gap-4 items-start pb-4 border-b border-stone-100">
         <div class="w-20 h-20 rounded-xl border border-stone-200 shrink-0 bg-stone-50 overflow-hidden relative">
           <img id="qmProductImg" src="" alt="Product image" class="w-full h-full object-cover" />
-          <span id="qmDiscountBadge" class="absolute top-1 left-1 bg-red-500 text-white font-extrabold text-[9px] px-1.5 py-0.5 rounded shadow-xs hidden"></span>
+          <span id="qmDiscountBadge" class="absolute top-1 left-1 text-white font-extrabold text-[9px] px-1.5 py-0.5 rounded shadow-xs hidden" style="background-color: var(--brand-dark, #1c1917);"></span>
         </div>
         <div class="flex-1 min-w-0">
-          <h4 id="qmProductTitle" class="font-bold text-stone-900 text-sm sm:text-base leading-tight truncate"></h4>
-          <div class="flex items-baseline gap-2 mt-1.5">
-            <span id="qmPrice" class="text-xl font-extrabold text-brand-500"></span>
-            <span id="qmRegularPrice" class="text-xs text-stone-400 line-through font-normal hidden"></span>
+          <h4 id="qmProductTitle" class="font-bold text-stone-900 text-sm sm:text-base leading-tight line-clamp-2"></h4>
+          <div class="flex items-center justify-between gap-3 mt-1.5">
+            <div class="flex items-baseline gap-2 min-w-0">
+              <span id="qmPrice" class="text-xl font-extrabold text-brand-600 tabular-nums"></span>
+              <span id="qmRegularPrice" class="text-xs text-stone-400 line-through font-normal tabular-nums hidden"></span>
+            </div>
+            <div class="inline-flex items-center border border-stone-200 rounded-lg overflow-hidden bg-white shrink-0" aria-label="Quantity">
+              <button type="button" id="qmQtyDec" class="w-8 h-8 text-stone-500 hover:bg-stone-100 font-bold text-sm" aria-label="One less">−</button>
+              <input id="qmQty" value="1" class="w-7 text-center border-0 font-bold text-stone-800 focus:outline-none text-sm bg-transparent tabular-nums" readonly aria-label="Quantity" />
+              <button type="button" id="qmQtyInc" class="w-8 h-8 text-stone-500 hover:bg-stone-100 font-bold text-sm" aria-label="One more">+</button>
+            </div>
           </div>
-          <p id="qmSelectedNotice" class="text-xs text-stone-500 mt-1 truncate">Please choose your options below:</p>
+          <p id="qmSelectedNotice" class="text-xs font-semibold text-stone-500 mt-1.5 truncate" aria-live="polite"></p>
         </div>
       </div>
 
@@ -39,27 +44,18 @@
         <svg class="w-4 h-4 text-red-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <span id="qmErrorMessage">Please select a variation before continuing.</span>
       </div>
-
-      {{-- Quantity Stepper --}}
-      <div class="flex items-center justify-between pt-2 border-t border-stone-100">
-        <span class="text-xs font-bold uppercase tracking-wider text-stone-600">Quantity</span>
-        <div class="inline-flex items-center border border-stone-300 rounded-lg overflow-hidden bg-white shadow-xs">
-          <button type="button" id="qmQtyDec" class="px-3 py-1.5 text-stone-500 hover:bg-stone-100 font-bold text-sm transition-colors">−</button>
-          <input id="qmQty" value="1" class="w-10 text-center border-0 font-bold text-stone-800 focus:outline-none text-sm bg-transparent" readonly />
-          <button type="button" id="qmQtyInc" class="px-3 py-1.5 text-stone-500 hover:bg-stone-100 font-bold text-sm transition-colors">+</button>
-        </div>
-      </div>
     </div>
 
-    {{-- Modal Footer Action Buttons --}}
-    <div class="p-4 bg-stone-50 border-t border-stone-100 grid grid-cols-2 gap-3">
-      <button type="button" id="qmAddToCartBtn" class="w-full border-2 border-brand-500 bg-transparent text-brand-500 hover:bg-brand-500 hover:text-white font-extrabold py-3 px-4 rounded-xl shadow transition-all flex items-center justify-center gap-1.5 text-xs sm:text-sm uppercase tracking-wide cursor-pointer select-none touch-manipulation disabled:bg-stone-100 disabled:text-stone-400 disabled:border-stone-200 disabled:cursor-not-allowed disabled:pointer-events-none">
-        <svg class="w-4 h-4 shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-        <span class="relative z-10 pointer-events-auto select-none">Add to cart</span>
+    {{-- Order now leads with the total; Add to cart is the smaller button beside it --}}
+    <div class="p-4 bg-stone-50 border-t border-stone-100 flex gap-3">
+      <button type="button" id="qmAddToCartBtn" class="w-12 h-12 shrink-0 rounded-xl flex items-center justify-center transition-all cursor-pointer select-none touch-manipulation disabled:cursor-not-allowed" aria-label="Add to cart" title="Add to cart">
+        <svg class="w-5 h-5 shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        <span class="sr-only">Add to cart</span>
       </button>
 
-      <button type="button" id="qmBuyNowBtn" style="background-color: var(--brand-dark, #1c1917);" class="w-full hover:brightness-95 text-white font-extrabold py-3 px-4 rounded-xl shadow transition-all flex items-center justify-center text-xs sm:text-sm uppercase tracking-wide cursor-pointer select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none">
+      <button type="button" id="qmBuyNowBtn" style="background-color: var(--brand-dark, #1c1917);" class="flex-1 min-w-0 h-12 hover:brightness-95 text-white font-extrabold px-4 rounded-xl shadow transition-all flex items-center justify-center gap-1.5 text-sm cursor-pointer select-none touch-manipulation disabled:cursor-not-allowed">
         <span class="relative z-10 pointer-events-auto select-none">Order now</span>
+        <span id="qmBuyTotal" class="relative z-10 pointer-events-auto select-none font-semibold opacity-90 tabular-nums"></span>
       </button>
     </div>
   </div>

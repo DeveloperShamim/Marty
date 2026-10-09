@@ -69,4 +69,16 @@ class ProductCardOptionsTest extends TestCase
         $html = $this->get(route('shop'))->assertOk()->getContent();
         $this->assertStringContainsString('>Sold out</button>', $html);
     }
+
+    public function test_option_picker_leads_with_order_now_and_a_live_status_line(): void
+    {
+        $html = $this->get(route('shop'))->assertOk()->getContent();
+        preg_match('/<div id="quickSelectModal".*?<\/div>\s*<\/div>\s*<\/div>/s', $html, $m);
+        $sheet = $m[0] ?? '';
+        $this->assertStringContainsString('id="qmBuyTotal"', $sheet, 'Order now carries the total');
+        $this->assertStringContainsString('aria-live="polite"', $sheet, 'Status line under the price');
+        $this->assertStringNotContainsString('animate-pulse', $sheet);
+        $this->assertStringNotContainsString('bg-red-500', $sheet, 'Discount badge uses the theme colour');
+        $this->assertStringNotContainsString('Please choose your options below', $sheet);
+    }
 }
