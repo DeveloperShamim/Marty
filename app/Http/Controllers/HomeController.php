@@ -65,7 +65,7 @@ class HomeController extends Controller
             ->get();
 
         // The spot under the categories: Flash deals only while a timed sale is running (Admin → Flash Sale,
-        // "Ends at" in the future); otherwise "Our picks", the products ticked Featured in Admin → Products.
+        // "Ends at" in the future); otherwise "Top Selling Products", the products ticked Featured in Admin → Products.
         $flashActive = $flashProducts->isNotEmpty() && flash_sale_running();
         $ourPicks = $flashActive ? collect() : Product::query()->tap($withImages)
             ->where('is_featured', true)->latest()->take(8)->get();
@@ -77,7 +77,7 @@ class HomeController extends Controller
             ->take(6) // 3 + 3 on desktop, 2 + 2 + 2 on tablets
             ->get();
 
-        // Featured categories get one sliding row each. A product already shown in Flash deals / Our picks or
+        // Featured categories get one sliding row each. A product already shown in Flash deals / Top Selling Products or
         // Best sellers is skipped, so the page doesn't repeat itself; a small catalogue tops a row
         // back up to 4 rather than leave it half empty.
         $shown = $topSection->take(8)->pluck('id')->merge($bestSellers->take(8)->pluck('id'));

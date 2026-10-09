@@ -162,7 +162,7 @@ class DatabaseSeeder extends Seeder
             'ticker_show_countdown' => '1',
             'shop_subtitle' => 'Genuine leather wallets, belts, watches, shoes and desk accessories',
             'delivery_eta_text' => 'Estimated delivery within 1–3 business days',
-            'home_categories_title' => 'Shop by Category',
+            'home_categories_title' => 'Featured Categories',
             'home_categories_subtitle' => 'Genuine leather wallets, belts, watches, shoes and desk mats',
             'home_hot_deal_title' => 'Flash Sale Deals',
             'home_featured_title' => 'Best of Vant',

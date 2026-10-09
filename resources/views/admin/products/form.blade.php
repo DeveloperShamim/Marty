@@ -605,7 +605,7 @@
         @php
           $toggles = [
             'is_published'   => ['Published', 'Visible to shoppers'],
-            'is_featured'    => ['Featured', 'Shown in Our picks on the home page'],
+            'is_featured'    => ['Featured', 'Shown in Top Selling Products on the home page'],
             'is_flash_sale'  => ['Flash sale', 'Listed in the flash sale section'],
             'is_best_seller' => ['Best seller', 'Best seller badge on the card'],
             'is_new_arrival' => ['New arrival', 'New arrival badge on the card'],

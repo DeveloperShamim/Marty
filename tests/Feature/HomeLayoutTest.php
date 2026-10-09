@@ -107,6 +107,21 @@ class HomeLayoutTest extends TestCase
         $this->assertStringContainsString('data-our-picks', $this->get('/')->assertOk()->getContent(), 'An ended sale goes back to Our picks');
     }
 
+    public function test_featured_categories_and_top_selling_have_centred_headings_and_no_subtitles(): void
+    {
+        $cat = Category::create(['name' => 'Wallets', 'slug' => 'wallets', 'is_active' => true]);
+        $this->product($cat, 'Picked Wallet', ['is_featured' => true]);
+        \App\Models\Setting::put('home_categories_subtitle', 'Shop our collection by category');
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertSame(2, substr_count($html, 'data-centered-heading'));
+        $this->assertStringContainsString('Featured Categories', $html);
+        $this->assertStringContainsString('Top Selling Products', $html);
+        $this->assertStringNotContainsString('Shop our collection by category', $html);
+        $this->assertStringNotContainsString('Handpicked for you', $html);
+        $this->assertStringNotContainsString('Apply promo codes at checkout', $html);
+    }
+
     public function test_you_may_also_like_is_one_sliding_row_ending_in_see_all(): void
     {
         $cat = Category::create(['name' => 'Wallets', 'slug' => 'wallets', 'is_active' => true]);

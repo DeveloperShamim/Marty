@@ -151,14 +151,15 @@
     {{-- 3. SHOP BY CATEGORY --}}
     @if($categories->isNotEmpty())
       <section class="mt-8 sm:mt-12" data-reveal>
-        <div class="flex items-end justify-between mb-3 sm:mb-5 border-b border-stone-200/80 pb-2.5 sm:pb-3">
-          <div>
+        {{-- Centred heading with a short brand bar; arrows sit on the right --}}
+        <div class="relative flex items-center justify-center mb-4 sm:mb-6" data-centered-heading>
+          <div class="text-center">
             <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">
-              {{ setting('home_categories_title', 'Explore Categories') }}
+              {{ setting('home_categories_title', 'Featured Categories') }}
             </h2>
-            @if(setting('home_categories_subtitle', 'Shop our collection by category'))<p class="text-xs text-stone-500 mt-1">{{ setting('home_categories_subtitle', 'Shop our collection by category') }}</p>@endif
+            <span class="block mx-auto mt-2 h-1 w-10 rounded-full" style="background-color: var(--brand-primary, #8B5A2B);" aria-hidden="true"></span>
           </div>
-          <div class="flex items-center gap-1.5 sm:gap-2">
+          <div class="absolute right-0 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1.5 sm:gap-2">
             <button type="button" id="catPrev" class="h-7 w-7 sm:h-8 sm:w-8 rounded-full border border-stone-200 bg-white hover:bg-brand-500 hover:text-white hover:border-brand-500 text-stone-600 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Previous Category">
               <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
             </button>
@@ -214,7 +215,7 @@
                 </div>
               @endif
             </div>
-            <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">
+            <h2 class="text-base sm:text-xl font-semibold text-stone-900 leading-tight">
               {{ setting('home_hot_deal_title', 'Special Flash Discounts') }}
             </h2>
           </div>
@@ -233,11 +234,9 @@
       </section>
     @elseif($ourPicks->isNotEmpty())
       <section class="mt-10 sm:mt-14" data-reveal data-our-picks>
-        <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-4 sm:mb-6 gap-3">
-          <div>
-            <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">{{ setting('home_picks_title', 'Our picks') }}</h2>
-            <p class="text-xs text-stone-500 mt-1">{{ setting('home_picks_subtitle', 'Handpicked for you') }}</p>
-          </div>
+        <div class="text-center mb-4 sm:mb-6" data-centered-heading>
+          <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">{{ setting('home_picks_title', 'Top Selling Products') }}</h2>
+          <span class="block mx-auto mt-2 h-1 w-10 rounded-full" style="background-color: var(--brand-primary, #8B5A2B);" aria-hidden="true"></span>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
           @foreach($ourPicks as $product)
@@ -247,7 +246,7 @@
             </div>
           @endforeach
         </div>
-        @include('storefront.partials.see-all', ['href' => route('shop', ['featured' => 1]), 'label' => 'our picks'])
+        @include('storefront.partials.see-all', ['href' => route('shop', ['featured' => 1]), 'label' => 'top selling'])
       </section>
     @endif
 
@@ -255,10 +254,9 @@
     <section class="mt-12 sm:mt-16" data-reveal>
       <div class="flex flex-col sm:flex-row sm:items-end justify-between border-b border-stone-200/80 pb-3 sm:pb-4 mb-4 sm:mb-6 gap-3 sm:gap-4">
         <div>
-          <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">
+          <h2 class="text-base sm:text-xl font-semibold text-stone-900 leading-tight">
             Curated Collection
           </h2>
-          <p class="text-xs text-stone-500 mt-1">What customers buy most, and what just came in</p>
         </div>
 
         {{-- Segmented Tab Switcher --}}
@@ -306,10 +304,9 @@
       <section class="mt-14 sm:mt-16" data-reveal>
         <div class="flex items-end justify-between mb-3 sm:mb-4 border-b border-stone-200/80 pb-2.5 sm:pb-3">
           <div>
-            <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">
+            <h2 class="text-base sm:text-xl font-semibold text-stone-900 leading-tight">
               {{ setting('home_featured_brands_title', 'Official Brands') }}
             </h2>
-            <p class="text-xs text-stone-500 mt-1">{{ setting('home_featured_brands_subtitle', '100% genuine products sourced directly from authorized channels') }}</p>
           </div>
           <div class="flex items-center gap-1.5 sm:gap-2">
             <a href="{{ route('shop') }}" class="text-xs font-bold text-stone-600 hover:text-brand-600 mr-2 hidden sm:inline-block transition-colors">View All Brands &rarr;</a>
@@ -352,7 +349,7 @@
         @if($featuredCat->products->isNotEmpty())
           <section class="mt-12 sm:mt-16" data-reveal>
             <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-4 sm:mb-6 gap-3">
-              <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">{{ $featuredCat->name }}</h2>
+              <h2 class="text-base sm:text-xl font-semibold text-stone-900 leading-tight">{{ $featuredCat->name }}</h2>
             </div>
 
             {{-- One row that slides by itself (pauses on touch or hover); swipe sideways too. 2 visible on phones, 4 from tablets up --}}
@@ -387,12 +384,9 @@
             <span class="text-amber-500 tracking-wider">★★★★★</span>
             <span>Real Verified Buyers</span>
           </div>
-          <h2 class="text-xl sm:text-2xl lg:text-3xl font-extrabold text-stone-900 tracking-tight">
+          <h2 class="text-base sm:text-xl font-semibold text-stone-900 leading-tight">
             {{ setting('home_reviews_title', 'Customer Feedback') }}
           </h2>
-          <p class="text-xs sm:text-sm text-stone-500 mt-1">
-            {{ setting('home_reviews_subtitle', 'What our customers say about our authentic products and service') }}
-          </p>
         </div>
 
         {{-- Review Cards: swipe row on phones, 2 columns on tablets, 3 on desktop --}}
@@ -462,8 +456,7 @@
       <section class="mt-12 sm:mt-16 last:mb-12" data-reveal data-just-for-you>
         <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-4 sm:mb-6 gap-3">
           <div>
-            <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">Just for you</h2>
-            <p class="text-xs text-stone-500 mt-1">Picked from what you're browsing</p>
+            <h2 class="text-base sm:text-xl font-semibold text-stone-900 leading-tight">Just for you</h2>
           </div>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
@@ -483,10 +476,9 @@
       <section class="mt-12 sm:mt-16 last:mb-12" data-reveal data-home-coupons>
         <div class="flex items-end justify-between mb-4 border-b border-stone-200/80 pb-3">
           <div>
-            <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">
+            <h2 class="text-base sm:text-xl font-semibold text-stone-900 leading-tight">
               Exclusive Vouchers &amp; Offers
             </h2>
-            <p class="text-xs text-stone-500 mt-1">Apply promo codes at checkout for instant savings</p>
           </div>
           <div class="flex items-center gap-2">
             <button type="button" id="couponPrev" class="h-8 w-8 rounded-full bg-white hover:bg-brand-500 hover:text-white border border-stone-200 hover:border-brand-500 text-stone-700 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Previous Coupon">
