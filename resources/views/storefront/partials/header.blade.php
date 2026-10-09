@@ -23,6 +23,9 @@
 
   $visibleCount = max(4, min(7, $visibleCount));
 
+  // A More menu holding a single category is pointless: show that one in the bar too
+  if ($navCats->count() === $visibleCount + 1) $visibleCount++;
+
   $topCats = $navCats->take($visibleCount);
   $moreCats = $navCats->skip($visibleCount);
   $dropdownCats = $moreCats->isNotEmpty() ? $moreCats : $navCats;
@@ -177,7 +180,7 @@
   {{-- ROW 2: Secondary Navigation Bar --}}
   <div class="hidden lg:block bg-white border-b border-stone-200/80 text-stone-700 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-5 h-11 text-sm font-semibold">
-      <nav class="flex items-center justify-between h-full py-1">
+      <nav class="flex items-center gap-1 xl:gap-2 h-full py-1">
         {{-- 1. Home --}}
         <a href="{{ route('home') }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ request()->routeIs('home') ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">Home</a>
         
@@ -218,16 +221,13 @@
           </div>
         @endif
 
-        {{-- 5. Brands Dropdown --}}
-        @if($navBrs->isNotEmpty())
+        {{-- 5. Brands Dropdown: only worth a menu with more than one brand (same rule as the homepage logo row) --}}
+        @if($navBrs->count() > 1)
           <div class="relative group/branddropdown" id="brandDropdownContainer">
             <button type="button" 
                     data-nav-dropdown-toggle="brandDropdownMenu" aria-expanded="false" aria-haspopup="true"
                     class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ request()->routeIs('shop.brand') || request('brand') ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }} inline-flex items-center gap-1 cursor-pointer">
-              <span class="inline-flex items-center gap-1">
-                <span>Brands</span>
-                <span class="h-2 w-2 rounded-full bg-brand-500 animate-pulse"></span>
-              </span>
+              <span>Brands</span>
               <svg class="w-3.5 h-3.5 transition-transform group-hover/branddropdown:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
             </button>
             <div id="brandDropdownMenu" data-nav-dropdown class="absolute left-0 top-full pt-1.5 hidden group-hover/branddropdown:block z-50 w-[420px]">
@@ -257,6 +257,16 @@
         @endif
 
         {{-- Flash sale deals: the Flash Sale button in the top bar --}}
+
+        {{-- Hotline at the right end (Admin → Settings → contact phone) --}}
+        @php($navPhone = trim((string) setting('contact_phone', '')))
+        @if($navPhone !== '')
+          <a href="tel:{{ preg_replace('/\s+/', '', $navPhone) }}" class="ml-auto inline-flex items-center gap-2 pl-3 py-1.5 whitespace-nowrap text-stone-700 hover:text-brand-600 transition-colors" data-nav-hotline>
+            <svg class="w-4 h-4 text-brand-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+            <span class="hidden xl:inline text-stone-500 font-medium">Hotline</span>
+            <span class="font-bold tabular-nums">{{ $navPhone }}</span>
+          </a>
+        @endif
       </nav>
     </div>
   </div>
