@@ -13,11 +13,13 @@ class ProductController extends Controller
 
         $product->load('images', 'variants', 'skus', 'category');
 
+        // "You may also like": one sliding row of up to 8 from the same category
         $related = Product::published()
-            ->with('images')
+            ->with('images', 'category', 'brand', 'variants', 'skus')
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
-            ->take(5)
+            ->inRandomOrder()
+            ->take(8)
             ->get();
 
         $variantGroups = collect();

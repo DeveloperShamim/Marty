@@ -761,19 +761,26 @@
     @endif
   </section>
 
-  {{-- Related Products --}}
+  {{-- Related Products: one row that slides by itself, ending in a See all card --}}
   @if($related->isNotEmpty())
-    <section class="mt-10">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-lg sm:text-xl font-bold text-stone-900 tracking-tight">You may also like</h2>
-        <a href="{{ route('shop') }}" class="inline-flex items-center gap-1 text-sm font-bold text-brand-600 hover:underline">
-          See All <span class="text-base">→</span>
-        </a>
+    <section class="mt-10" data-related>
+      <div class="flex items-end justify-between border-b border-stone-200/80 pb-3 mb-4 sm:mb-6 gap-3">
+        <h2 class="text-lg sm:text-2xl font-extrabold text-stone-900 leading-tight">You may also like</h2>
       </div>
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div class="flex gap-2.5 sm:gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth scroll-px-3 sm:scroll-px-0 -mx-3 px-3 sm:mx-0 sm:px-0 pb-1" data-auto-row>
         @foreach($related as $rel)
-          @include('storefront.partials.product-card', ['product' => $rel])
+          <div class="w-[46%] shrink-0 snap-start sm:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-3rem)/4)] grid min-w-0">
+            @include('storefront.partials.product-card', ['product' => $rel])
+          </div>
         @endforeach
+        @if($product->category)
+          <a href="{{ route('shop.category', $product->category) }}" class="w-[46%] shrink-0 snap-start sm:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-3rem)/4)] flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-stone-300 bg-stone-50/80 hover:border-brand-500/50 text-stone-800 hover:text-brand-600 transition-colors p-4 text-center" data-row-see-all>
+            <span class="h-11 w-11 rounded-full bg-white border border-stone-200 flex items-center justify-center shadow-2xs">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            </span>
+            <span class="text-sm font-bold leading-snug">See all<br>{{ $product->category->name }}</span>
+          </a>
+        @endif
       </div>
     </section>
   @endif

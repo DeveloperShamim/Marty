@@ -107,6 +107,19 @@ class HomeLayoutTest extends TestCase
         $this->assertStringContainsString('data-our-picks', $this->get('/')->assertOk()->getContent(), 'An ended sale goes back to Our picks');
     }
 
+    public function test_you_may_also_like_is_one_sliding_row_ending_in_see_all(): void
+    {
+        $cat = Category::create(['name' => 'Wallets', 'slug' => 'wallets', 'is_active' => true]);
+        $main = $this->product($cat, 'Main Wallet');
+        foreach (range(1, 10) as $i) $this->product($cat, "Other Wallet $i");
+
+        $html = $this->get(route('product.show', $main))->assertOk()->getContent();
+        $section = substr($html, strpos($html, 'data-related'));
+        $this->assertStringContainsString('data-auto-row', $section);
+        $this->assertSame(8, substr_count(substr($section, 0, strpos($section, 'data-row-see-all')), '<article'), 'Up to 8 products, then See all');
+        $this->assertStringContainsString('See all<br>Wallets', $section);
+    }
+
     public function test_brands_show_as_logos_only_when_there_is_more_than_one(): void
     {
         $cat = Category::create(['name' => 'Wallets', 'slug' => 'wallets', 'is_active' => true]);

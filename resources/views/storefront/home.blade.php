@@ -735,32 +735,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ---------------- Category rows slide by themselves ----------------
-     One card every few seconds, back to the start at the end. Waits while the row is touched, hovered
-     or off screen, and stays still for people who prefer reduced motion. */
-  const autoRows = document.querySelectorAll('[data-auto-row]');
-  if (autoRows.length && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const ROW_STEP_MS = 3500, ROW_PAUSE_MS = 6000;
-    autoRows.forEach(function (row) {
-      let pausedUntil = 0, visible = false;
-      const pause = function () { pausedUntil = Date.now() + ROW_PAUSE_MS; };
-      ['pointerdown', 'touchstart', 'wheel', 'focusin'].forEach(function (ev) { row.addEventListener(ev, pause, { passive: true }); });
-      row.addEventListener('mouseenter', function () { pausedUntil = Infinity; });
-      row.addEventListener('mouseleave', function () { pausedUntil = Date.now() + 1500; });
-      if ('IntersectionObserver' in window) {
-        new IntersectionObserver(function (entries) { visible = entries[0].isIntersecting; }, { threshold: 0.5 }).observe(row);
-      } else { visible = true; }
-      setInterval(function () {
-        if (!visible || document.hidden || Date.now() < pausedUntil) return;
-        const card = row.firstElementChild;
-        if (!card || row.scrollWidth <= row.clientWidth + 4) return;
-        const atEnd = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4;
-        if (atEnd) row.scrollTo({ left: 0, behavior: 'smooth' });
-        else row.scrollBy({ left: card.getBoundingClientRect().width + parseFloat(getComputedStyle(row).columnGap || 0), behavior: 'smooth' });
-      }, ROW_STEP_MS);
-    });
-  }
-
 });
 
 /* ---------------- Coupon 1-Tap Copy & Auto-Apply ---------------- */
