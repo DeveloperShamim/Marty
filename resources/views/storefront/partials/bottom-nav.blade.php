@@ -25,6 +25,9 @@
   .tabbar-bump{animation:tabbar-bump .45s ease}
   @media (prefers-reduced-motion:reduce){.tabbar,.tabbar-pill,.tabbar-tab svg{transition:none}}
 </style>
+{{-- Soft white fade behind the tab bar. It runs past the bottom edge so it also fills the space behind Safari's address bar. --}}
+<div class="md:hidden fixed inset-x-0 z-40 pointer-events-none" aria-hidden="true"
+     style="bottom: -120px; height: calc(230px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,.85) 40%, #fff 60%);"></div>
 <nav data-tabbar class="tabbar md:hidden fixed inset-x-3 z-40 rounded-[22px] text-white shadow-[0_14px_34px_-10px_rgba(43,29,20,.65)] ring-1 ring-white/10"
      style="bottom: calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--brand-dark, #2B1D14);" aria-label="Shop navigation">
   <ul class="relative grid grid-cols-5 h-16 px-1.5">
