@@ -80,6 +80,24 @@ class TrackingTest extends TestCase
         $this->assertStringContainsString('সেভ করুন', $page);
     }
 
+    public function test_a_browser_filled_login_password_is_never_saved_as_a_secret(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'password' => bcrypt('my-login-pass')]);
+        Setting::put('tracking_meta_capi_token', 'my-login-pass'); // filled by a password manager earlier
+
+        $page = $this->actingAs($admin)->get(route('admin.integrations.index'))->assertOk()->getContent();
+        $this->assertEmpty(setting('tracking_meta_capi_token'));
+        $this->assertStringNotContainsString('type="password" class=', $page);
+        $this->assertStringContainsString('name="tracking_ga4_api_secret" type="password" autocomplete="new-password"', $page);
+
+        $this->actingAs($admin)->put(route('admin.integrations.update', 'tracking'), [
+            'tracking_ga4_id' => 'G-ABC123', 'tracking_ga4_api_secret' => 'my-login-pass', 'tracking_meta_capi_token' => 'EAAreal',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertEmpty(setting('tracking_ga4_api_secret'));
+        $this->assertSame('EAAreal', setting('tracking_meta_capi_token'));
+    }
+
     public function test_storefront_loads_every_tag_and_fires_shop_events(): void
     {
         $this->saveAll();

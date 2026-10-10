@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class IntegrationController extends Controller
@@ -16,8 +17,15 @@ class IntegrationController extends Controller
         'mail',
     ];
 
-    public function index()
+    public function index(Request $request)
     {
+        // Undo secrets that a password manager filled with the admin's login password before this was blocked.
+        foreach (['tracking_ga4_api_secret', 'tracking_meta_capi_token'] as $secret) {
+            if ($this->isOwnPassword($request, setting($secret))) {
+                Setting::put($secret, '');
+            }
+        }
+
         $dbSettings = Setting::pluck('value', 'key')->toArray();
         $keys = [
             'steadfast_enabled', 'steadfast_api_key', 'steadfast_secret_key',
@@ -271,7 +279,7 @@ class IntegrationController extends Controller
             foreach (['tracking_meta_capi_token', 'tracking_ga4_api_secret'] as $secret) {
                 if ($request->boolean($secret . '_clear')) {
                     Setting::put($secret, '');
-                } elseif ($request->filled($secret)) {
+                } elseif ($request->filled($secret) && ! $this->isOwnPassword($request, $request->input($secret))) {
                     Setting::put($secret, trim((string) $request->input($secret)));
                 }
             }
@@ -279,9 +287,20 @@ class IntegrationController extends Controller
 
         if ($section === 'mail') {
             Setting::put('otp_enabled', $request->boolean('otp_enabled') ? '1' : '0');
-            if ($request->filled('mail_password')) {
+            if ($request->filled('mail_password') && ! $this->isOwnPassword($request, $request->input('mail_password'))) {
                 Setting::put('mail_password', (string) $request->input('mail_password'));
             }
         }
+    }
+
+    /**
+     * A browser's password manager can fill the admin's own login password into these
+     * write-only secret boxes. That is never a real API secret, so it is ignored.
+     */
+    private function isOwnPassword(Request $request, mixed $value): bool
+    {
+        $hash = $request->user()?->getAuthPassword();
+
+        return is_string($value) && $hash && Hash::check($value, $hash);
     }
 }

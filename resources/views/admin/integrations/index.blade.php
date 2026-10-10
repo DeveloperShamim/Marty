@@ -83,7 +83,7 @@
 
   {{-- SECTION 1: COURIER APIS --}}
   <div id="sec-couriers" class="integration-section space-y-4">
-    <form method="POST" action="{{ route('admin.integrations.update', 'couriers') }}" class="space-y-4">
+    <form method="POST" action="{{ route('admin.integrations.update', 'couriers') }}" class="space-y-4" autocomplete="off">
       @csrf @method('PUT')
 
       {{-- Steadfast --}}
@@ -107,7 +107,7 @@
           <div>
             <label class="lbl">Secret key</label>
             <div class="relative">
-              <input id="st_sec" name="steadfast_secret_key" type="password" class="inp font-mono text-[13px] pr-11" value="{{ $settings['steadfast_secret_key'] ?? '' }}" placeholder="••••••••••••••••" />
+              <input id="st_sec" name="steadfast_secret_key" type="password" autocomplete="new-password" data-lpignore="true" data-1p-ignore data-bwignore class="inp font-mono text-[13px] pr-11" value="{{ $settings['steadfast_secret_key'] ?? '' }}" placeholder="••••••••••••••••" />
               <button type="button" onclick="togglePass('st_sec', this)" class="{{ $eyeBtn }}" aria-label="Show or hide">{!! $eyeIcon !!}</button>
             </div>
           </div>
@@ -142,7 +142,7 @@
           <div>
             <label class="lbl">Client secret</label>
             <div class="relative">
-              <input id="pt_sec" name="pathao_client_secret" type="password" class="inp font-mono text-[13px] pr-11" value="{{ $settings['pathao_client_secret'] ?? '' }}" placeholder="••••••••" />
+              <input id="pt_sec" name="pathao_client_secret" type="password" autocomplete="new-password" data-lpignore="true" data-1p-ignore data-bwignore class="inp font-mono text-[13px] pr-11" value="{{ $settings['pathao_client_secret'] ?? '' }}" placeholder="••••••••" />
               <button type="button" onclick="togglePass('pt_sec', this)" class="{{ $eyeBtn }}" aria-label="Show or hide">{!! $eyeIcon !!}</button>
             </div>
           </div>
@@ -153,7 +153,7 @@
           <div>
             <label class="lbl">Password</label>
             <div class="relative">
-              <input id="pt_pass" name="pathao_password" type="password" class="inp text-[13px] pr-11" value="{{ $settings['pathao_password'] ?? '' }}" placeholder="••••••••" />
+              <input id="pt_pass" name="pathao_password" type="password" autocomplete="new-password" data-lpignore="true" data-1p-ignore data-bwignore class="inp text-[13px] pr-11" value="{{ $settings['pathao_password'] ?? '' }}" placeholder="••••••••" />
               <button type="button" onclick="togglePass('pt_pass', this)" class="{{ $eyeBtn }}" aria-label="Show or hide">{!! $eyeIcon !!}</button>
             </div>
           </div>
@@ -188,7 +188,7 @@
           <div class="sm:col-span-2">
             <label class="lbl">API access token</label>
             <div class="relative">
-              <input id="rx_token" name="redx_api_token" type="password" class="inp font-mono text-[13px] pr-11" value="{{ $settings['redx_api_token'] ?? '' }}" placeholder="Bearer access token..." />
+              <input id="rx_token" name="redx_api_token" type="password" autocomplete="new-password" data-lpignore="true" data-1p-ignore data-bwignore class="inp font-mono text-[13px] pr-11" value="{{ $settings['redx_api_token'] ?? '' }}" placeholder="Bearer access token..." />
               <button type="button" onclick="togglePass('rx_token', this)" class="{{ $eyeBtn }}" aria-label="Show or hide">{!! $eyeIcon !!}</button>
             </div>
           </div>
@@ -258,7 +258,7 @@
               <div class="bdc-key grid grid-cols-12 gap-2 items-center rounded-2xl sm:rounded-none bg-gray-50 sm:bg-transparent p-2.5 sm:p-0">
                 <input type="hidden" name="bdcourier_keys[{{ $i }}][id]" value="{{ $k['id'] }}">
                 <input name="bdcourier_keys[{{ $i }}][label]" value="{{ $k['label'] }}" placeholder="e.g. Main account" maxlength="60" class="inp col-span-12 sm:col-span-3 h-9 py-0 text-[13px]" aria-label="Key name">
-                <input name="bdcourier_keys[{{ $i }}][token]" value="{{ $k['token'] }}" type="password" autocomplete="off" placeholder="Paste API token" class="inp col-span-12 sm:col-span-4 h-9 py-0 font-mono text-[13px]" aria-label="API token">
+                <input name="bdcourier_keys[{{ $i }}][token]" value="{{ $k['token'] }}" type="password" autocomplete="new-password" data-lpignore="true" data-1p-ignore data-bwignore placeholder="Paste API token" class="inp col-span-12 sm:col-span-4 h-9 py-0 font-mono text-[13px]" aria-label="API token">
                 <input name="bdcourier_keys[{{ $i }}][limit]" value="{{ $k['limit'] }}" type="number" min="0" placeholder="No limit" class="inp col-span-5 sm:col-span-2 h-9 py-0 font-mono text-[13px]" aria-label="Searches per day">
                 <span class="col-span-5 sm:col-span-2 text-xs {{ $k['blocked'] ? 'text-rose-700' : 'text-gray-600' }}" @if($k['blocked']) title="{{ $k['blocked'] }}" @endif>
                   @if($k['id'] !== '')
@@ -336,7 +336,7 @@
 
   {{-- SECTION 2: GOOGLE OAUTH SOCIAL LOGIN --}}
   <div id="sec-google" class="integration-section hidden space-y-4">
-    <form method="POST" action="{{ route('admin.integrations.update', 'google') }}" class="space-y-4">
+    <form method="POST" action="{{ route('admin.integrations.update', 'google') }}" class="space-y-4" autocomplete="off">
       @csrf @method('PUT')
 
       <section class="panel p-4 sm:p-5 space-y-4">
@@ -353,7 +353,7 @@
           <div>
             <label class="lbl">Client secret</label>
             <div class="relative">
-              <input id="gg_sec" name="google_client_secret" type="password" class="inp font-mono text-[13px] pr-11" value="{{ $settings['google_client_secret'] ?? env('GOOGLE_CLIENT_SECRET', '') }}" placeholder="GOCSPX-••••••••••••••••" />
+              <input id="gg_sec" name="google_client_secret" type="password" autocomplete="new-password" data-lpignore="true" data-1p-ignore data-bwignore class="inp font-mono text-[13px] pr-11" value="{{ $settings['google_client_secret'] ?? env('GOOGLE_CLIENT_SECRET', '') }}" placeholder="GOCSPX-••••••••••••••••" />
               <button type="button" onclick="togglePass('gg_sec', this)" class="{{ $eyeBtn }}" aria-label="Show or hide">{!! $eyeIcon !!}</button>
             </div>
           </div>
@@ -380,7 +380,7 @@
 
   {{-- SECTION 3: MARKETING & TRACKING APIS --}}
   <div id="sec-tracking" class="integration-section hidden space-y-4">
-    <form method="POST" action="{{ route('admin.integrations.update', 'tracking') }}" class="space-y-4">
+    <form method="POST" action="{{ route('admin.integrations.update', 'tracking') }}" class="space-y-4" autocomplete="off">
       @csrf @method('PUT')
 
       @php
@@ -407,7 +407,7 @@
           <div>
             <label class="lbl">GA4 API secret <span class="font-normal text-gray-400">(server-side purchases)</span></label>
             <div class="relative">
-              <input id="ga4_secret" name="tracking_ga4_api_secret" type="password" autocomplete="off" class="inp font-mono text-[13px] pr-11" placeholder="{{ $hasGa4Secret ? 'Saved. Type to replace' : 'API secret' }}" />
+              <input id="ga4_secret" name="tracking_ga4_api_secret" type="password" autocomplete="new-password" data-lpignore="true" data-1p-ignore data-bwignore class="inp font-mono text-[13px] pr-11" placeholder="{{ $hasGa4Secret ? 'Saved. Type to replace' : 'API secret' }}" />
               <button type="button" onclick="togglePass('ga4_secret', this)" class="{{ $eyeBtn }}" aria-label="Show or hide">{!! $eyeIcon !!}</button>
             </div>
             <p class="text-[11px] text-gray-400 mt-1.5">Data streams → Measurement Protocol API secrets.
@@ -470,7 +470,7 @@
             <div>
               <label class="lbl">Access token</label>
               <div class="relative">
-                <input id="capi_token" name="tracking_meta_capi_token" type="password" autocomplete="off" class="inp font-mono text-[13px] pr-11" placeholder="{{ $hasCapiToken ? 'Saved. Type to replace' : 'EAAG...' }}" />
+                <input id="capi_token" name="tracking_meta_capi_token" type="password" autocomplete="new-password" data-lpignore="true" data-1p-ignore data-bwignore class="inp font-mono text-[13px] pr-11" placeholder="{{ $hasCapiToken ? 'Saved. Type to replace' : 'EAAG...' }}" />
                 <button type="button" onclick="togglePass('capi_token', this)" class="{{ $eyeBtn }}" aria-label="Show or hide">{!! $eyeIcon !!}</button>
               </div>
               <p class="text-[11px] text-gray-400 mt-1.5">Events Manager → Settings → Conversions API → Generate access token.
@@ -544,7 +544,7 @@
 
   {{-- SECTION 4: EMAIL SERVER & OTP --}}
   <div id="sec-mail" class="integration-section hidden space-y-4">
-    <form method="POST" action="{{ route('admin.integrations.update', 'mail') }}" class="space-y-4">
+    <form method="POST" action="{{ route('admin.integrations.update', 'mail') }}" class="space-y-4" autocomplete="off">
       @csrf @method('PUT')
 
       <section class="panel p-4 sm:p-5 space-y-4">
@@ -583,7 +583,7 @@
           <div>
             <label class="lbl">SMTP password</label>
             <div class="relative">
-              <input id="smtp_pass" name="mail_password" type="password" class="inp text-[13px] pr-11" placeholder="••••••••••••" />
+              <input id="smtp_pass" name="mail_password" type="password" autocomplete="new-password" data-lpignore="true" data-1p-ignore data-bwignore class="inp text-[13px] pr-11" placeholder="••••••••••••" />
               <button type="button" onclick="togglePass('smtp_pass', this)" class="{{ $eyeBtn }}" aria-label="Show or hide">{!! $eyeIcon !!}</button>
             </div>
           </div>
