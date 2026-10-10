@@ -66,6 +66,20 @@ class TrackingTest extends TestCase
         $this->assertStringContainsString('Test Meta connection', $page);
     }
 
+    public function test_each_tracking_card_has_a_guide_in_english_and_bangla(): void
+    {
+        $page = $this->actingAs(User::factory()->create(['role' => 'admin']))->get(route('admin.integrations.index'))->assertOk()->getContent();
+
+        foreach (['google', 'meta', 'tiktok', 'custom'] as $card) {
+            $this->assertStringContainsString('data-guide-open="' . $card . '"', $page);
+            $this->assertStringContainsString('id="guide-' . $card . '"', $page);
+        }
+        $this->assertSame(4, substr_count($page, 'data-guide-body="en"'));
+        $this->assertSame(4, substr_count($page, 'data-guide-body="bn"'));
+        $this->assertStringContainsString('Measurement ID', $page);
+        $this->assertStringContainsString('সেভ করুন', $page);
+    }
+
     public function test_storefront_loads_every_tag_and_fires_shop_events(): void
     {
         $this->saveAll();

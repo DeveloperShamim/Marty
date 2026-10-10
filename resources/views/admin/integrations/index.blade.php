@@ -393,7 +393,7 @@
       <section class="panel p-4 sm:p-5 space-y-4" data-tracking-card="google">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <h2 class="text-[15px] font-semibold text-gray-900">Google</h2>
+            <h2 class="text-[15px] font-semibold text-gray-900 flex flex-wrap items-center gap-x-2 gap-y-1">Google <button type="button" data-guide-open="google" class="inline-flex items-center gap-1 h-6 pl-1.5 pr-2 rounded-full bg-gray-100 hover:bg-gray-200 text-[11px] font-medium text-gray-700 align-middle" aria-label="Setup guide"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.3"/><path d="M12 17h.01"/></svg>Guide</button></h2>
             <p class="text-xs text-gray-500 mt-0.5">Analytics 4, Tag Manager, Google Ads conversions and Search Console.</p>
           </div>
           {!! $chip(! empty($settings['tracking_ga4_id']), ! empty($settings['tracking_ga4_id']) ? 'GA4 on' : 'GA4 off') !!}
@@ -439,7 +439,7 @@
       <section class="panel p-4 sm:p-5 space-y-4" data-tracking-card="meta">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <h2 class="text-[15px] font-semibold text-gray-900">Facebook Pixel &amp; Conversions API</h2>
+            <h2 class="text-[15px] font-semibold text-gray-900 flex flex-wrap items-center gap-x-2 gap-y-1">Facebook Pixel &amp; Conversions API <button type="button" data-guide-open="meta" class="inline-flex items-center gap-1 h-6 pl-1.5 pr-2 rounded-full bg-gray-100 hover:bg-gray-200 text-[11px] font-medium text-gray-700 align-middle" aria-label="Setup guide"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.3"/><path d="M12 17h.01"/></svg>Guide</button></h2>
             <p class="text-xs text-gray-500 mt-0.5">Browser pixel plus server-side purchases, counted once.</p>
           </div>
           {!! $chip(($settings['tracking_meta_capi_enabled'] ?? '0') === '1' && $hasCapiToken, ($settings['tracking_meta_capi_enabled'] ?? '0') === '1' && $hasCapiToken ? 'CAPI on' : 'CAPI off') !!}
@@ -494,7 +494,7 @@
       {{-- TikTok --}}
       <section class="panel p-4 sm:p-5 space-y-4" data-tracking-card="tiktok">
         <div>
-          <h2 class="text-[15px] font-semibold text-gray-900">TikTok Pixel</h2>
+          <h2 class="text-[15px] font-semibold text-gray-900 flex flex-wrap items-center gap-x-2 gap-y-1">TikTok Pixel <button type="button" data-guide-open="tiktok" class="inline-flex items-center gap-1 h-6 pl-1.5 pr-2 rounded-full bg-gray-100 hover:bg-gray-200 text-[11px] font-medium text-gray-700 align-middle" aria-label="Setup guide"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.3"/><path d="M12 17h.01"/></svg>Guide</button></h2>
           <p class="text-xs text-gray-500 mt-0.5">Tracks TikTok Ads views, add to cart, checkout and purchases.</p>
         </div>
         <div class="sm:max-w-sm">
@@ -507,7 +507,7 @@
       {{-- Custom scripts --}}
       <section class="panel p-4 sm:p-5 space-y-4" data-tracking-card="custom">
         <div>
-          <h2 class="text-[15px] font-semibold text-gray-900">Custom scripts</h2>
+          <h2 class="text-[15px] font-semibold text-gray-900 flex flex-wrap items-center gap-x-2 gap-y-1">Custom scripts <button type="button" data-guide-open="custom" class="inline-flex items-center gap-1 h-6 pl-1.5 pr-2 rounded-full bg-gray-100 hover:bg-gray-200 text-[11px] font-medium text-gray-700 align-middle" aria-label="Setup guide"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.3"/><path d="M12 17h.01"/></svg>Guide</button></h2>
           <p class="text-xs text-gray-500 mt-0.5">Paste other tracking codes (Microsoft Clarity, Hotjar, Snapchat, Pinterest…). They run on every storefront page.</p>
         </div>
         <div>
@@ -539,6 +539,7 @@
         <button type="submit" class="{{ $saveBtn }}" style="background: var(--brand-dark);">Save tracking settings</button>
       </div>
     </form>
+    @include('admin.integrations.partials.tracking-guides')
   </div>
 
   {{-- SECTION 4: EMAIL SERVER & OTP --}}
