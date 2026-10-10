@@ -7,20 +7,20 @@
 @endphp
 
 @section('content')
-<!-- Hero Section with Glowing Background Elements -->
+{{-- Hero Section with Glowing Background Elements --}}
 <section class="relative overflow-hidden bg-slate-900 text-white py-14 sm:py-20">
-  <!-- Glowing Ambient Accents -->
+  {{-- Glowing Ambient Accents --}}
   <div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-brand-600/15 blur-3xl pointer-events-none"></div>
   <div class="absolute -bottom-32 right-10 w-96 h-96 rounded-full bg-amber-500/10 blur-3xl pointer-events-none"></div>
 
   <div class="relative max-w-7xl mx-auto px-4 sm:px-5 text-center flex flex-col items-center space-y-6">
     
-    <!-- Animated Graphic Badge -->
+    {{-- Animated Graphic Badge --}}
     <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-800/90 border border-slate-700/80 text-xs font-black tracking-wide text-amber-400 shadow-inner backdrop-blur-md animate-pulse">
       <span>🛸 ERROR 404 • UNCHARTED TERRITORY</span>
     </div>
 
-    <!-- Big Visual 404 Display -->
+    {{-- Big Visual 404 Display --}}
     <div class="relative inline-block select-none my-2">
       <span class="font-display font-black text-8xl sm:text-9xl lg:text-[12rem] leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-slate-500 opacity-90 drop-shadow-2xl">
         404
@@ -30,7 +30,7 @@
       </div>
     </div>
 
-    <!-- Title & Explanation -->
+    {{-- Title & Explanation --}}
     <div class="space-y-2.5 max-w-xl mx-auto text-center">
       <h1 class="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
         Oops! Page Lost in Transit
@@ -40,7 +40,7 @@
       </p>
     </div>
 
-    <!-- Search Form -->
+    {{-- Search Form --}}
     <div class="w-full max-w-lg mx-auto">
       <form action="{{ route('shop') }}" method="GET" class="relative flex items-center w-full">
         <input 
@@ -59,7 +59,7 @@
       </form>
     </div>
 
-    <!-- Quick Navigation Action Buttons -->
+    {{-- Quick Navigation Action Buttons --}}
     <div class="pt-2 flex flex-wrap items-center justify-center gap-3">
       <a href="{{ route('home') }}" class="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-white text-slate-900 font-extrabold text-xs hover:bg-slate-100 transition shadow-lg flex items-center gap-2 group">
         <span>🏠</span> Return to Homepage
@@ -75,7 +75,7 @@
   </div>
 </section>
 
-<!-- Popular Categories Section -->
+{{-- Popular Categories Section --}}
 @if($popularCategories->isNotEmpty())
 <section class="py-10 sm:py-12 bg-white border-b border-slate-100">
   <div class="max-w-7xl mx-auto px-4 sm:px-5 space-y-6">
@@ -96,7 +96,7 @@
 </section>
 @endif
 
-<!-- Recommended Products Discovery Section -->
+{{-- Recommended Products Discovery Section --}}
 @if($suggestedProducts->isNotEmpty())
 <section class="py-10 sm:py-12 bg-slate-50/60">
   <div class="max-w-7xl mx-auto px-4 sm:px-5 space-y-6">
@@ -121,7 +121,7 @@
 </section>
 @endif
 
-<!-- Need Help Contact Banner -->
+{{-- Need Help Contact Banner --}}
 <section class="border-t border-slate-200 bg-white py-10">
   <div class="max-w-7xl mx-auto px-4 sm:px-5 text-center flex flex-col items-center space-y-3">
     <h3 class="font-display text-xl sm:text-2xl font-extrabold text-slate-900">Still can't find what you're looking for?</h3>

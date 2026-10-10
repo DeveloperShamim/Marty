@@ -72,10 +72,10 @@
   {{-- Main Floating Trigger Button (Universal Customer Support Chat Theme) --}}
   <button type="button" id="chatSpeedDialToggleBtn" class="pointer-events-auto group relative flex items-center justify-center w-12 h-12 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border-2 border-white/80" aria-label="Toggle Customer Support Chat" aria-expanded="false">
     
-    <!-- Pulse ring (visible when closed) -->
+    {{-- Pulse ring (visible when closed) --}}
     <span id="chatSpeedDialPulseRing" class="absolute -inset-0.5 rounded-full bg-brand-500 opacity-40 animate-ping pointer-events-none"></span>
 
-    <!-- Modern Universal Chat Bubble with Conversation Dots (Closed state) -->
+    {{-- Modern Universal Chat Bubble with Conversation Dots (Closed state) --}}
     <div id="chatSpeedDialIconNormal" class="relative z-10 transition-all duration-300 transform group-hover:scale-110 flex items-center justify-center">
       <svg class="w-6 h-6 fill-none stroke-current" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
         <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
@@ -85,17 +85,17 @@
       </svg>
     </div>
 
-    <!-- Close '✕' Icon (Opened state) -->
+    {{-- Close '✕' Icon (Opened state) --}}
     <div id="chatSpeedDialIconClose" class="hidden relative z-10 transition-all duration-300 transform">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
       </svg>
     </div>
 
-    <!-- Online green indicator dot -->
+    {{-- Online green indicator dot --}}
     <span id="chatSpeedDialOnlineDot" class="absolute top-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-white rounded-full"></span>
 
-    <!-- Hover tooltip on desktop -->
+    {{-- Hover tooltip on desktop --}}
     <span class="hidden sm:block absolute right-14 top-1/2 -translate-y-1/2 px-2.5 py-1 text-[11px] font-extrabold bg-stone-900 text-white rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md">
       Live Support Chat
     </span>

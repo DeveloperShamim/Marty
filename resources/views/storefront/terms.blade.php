@@ -5,14 +5,14 @@
 @endphp
 
 @section('content')
-<!-- Hero Header Section -->
+{{-- Hero Header Section --}}
 <section class="relative overflow-hidden bg-slate-900 text-white py-12 sm:py-16">
-  <!-- Subtle Background Glow Effects -->
+  {{-- Subtle Background Glow Effects --}}
   <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-brand-600/20 blur-3xl pointer-events-none"></div>
   <div class="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-amber-500/10 blur-3xl pointer-events-none"></div>
 
   <div class="relative max-w-7xl mx-auto px-4 sm:px-5">
-    <!-- Breadcrumb Navigation -->
+    {{-- Breadcrumb Navigation --}}
     <nav class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-4">
       <a href="{{ route('home') }}" class="hover:text-white transition-colors">Home</a>
       <span class="text-slate-600">/</span>
@@ -34,7 +34,7 @@
         Welcome to {{ $site }}. Please read these terms carefully before exploring our catalog, registering an account, or placing an order.
       </p>
 
-      <!-- Key Metadata Badges -->
+      {{-- Key Metadata Badges --}}
       <div class="pt-3 flex flex-wrap items-center gap-3 text-xs text-slate-400">
         <span class="flex items-center gap-1.5 bg-slate-800/60 px-3 py-1.5 rounded-xl border border-slate-700/50">
           <span>📅</span> Updated: <strong>August 2026</strong>
@@ -50,7 +50,7 @@
   </div>
 </section>
 
-<!-- Trust Highlights Bar -->
+{{-- Trust Highlights Bar --}}
 <section class="border-b border-slate-200 bg-white py-6 shadow-2xs">
   <div class="max-w-7xl mx-auto px-4 sm:px-5">
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -89,15 +89,15 @@
   </div>
 </section>
 
-<!-- Main Terms Content & Navigation Grid -->
+{{-- Main Terms Content & Navigation Grid --}}
 <section class="py-12 bg-slate-50/60">
   <div class="max-w-7xl mx-auto px-4 sm:px-5">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-      <!-- Left Sidebar: Sticky Table of Contents & Quick Action Box -->
+      {{-- Left Sidebar: Sticky Table of Contents & Quick Action Box --}}
       <aside class="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
         
-        <!-- Table of Contents Card -->
+        {{-- Table of Contents Card --}}
         <div class="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-4">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 class="font-extrabold text-sm text-slate-900 flex items-center gap-2">
@@ -173,7 +173,7 @@
           </nav>
         </div>
 
-        <!-- Print & Related Policies Box -->
+        {{-- Print & Related Policies Box --}}
         <div class="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm space-y-3">
           <h4 class="font-extrabold text-xs uppercase tracking-wider text-slate-400">Actions & Related Policies</h4>
 
@@ -191,10 +191,10 @@
 
       </aside>
 
-      <!-- Right Area: Detailed Terms Articles -->
+      {{-- Right Area: Detailed Terms Articles --}}
       <main class="lg:col-span-8 space-y-8">
         
-        <!-- Custom Content Override from Settings (If Configured) -->
+        {{-- Custom Content Override from Settings (If Configured) --}}
         @if(!empty($customContent))
           <div class="rounded-3xl border border-brand-200 bg-brand-50/40 p-6 sm:p-8 space-y-4">
             <div class="flex items-center gap-2 text-xs font-bold text-brand-700">
@@ -208,9 +208,9 @@
           </div>
         @endif
 
-        <!-- Standard Terms Sections -->
+        {{-- Standard Terms Sections --}}
 
-        <!-- Section 01 -->
+        {{-- Section 01 --}}
         <article id="section-1" class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-sm space-y-4 scroll-mt-24">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div class="flex items-center gap-3">
@@ -234,7 +234,7 @@
           </div>
         </article>
 
-        <!-- Section 02 -->
+        {{-- Section 02 --}}
         <article id="section-2" class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-sm space-y-4 scroll-mt-24">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div class="flex items-center gap-3">
@@ -256,7 +256,7 @@
           </div>
         </article>
 
-        <!-- Section 03 -->
+        {{-- Section 03 --}}
         <article id="section-3" class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-sm space-y-4 scroll-mt-24">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div class="flex items-center gap-3">
@@ -291,7 +291,7 @@
           </div>
         </article>
 
-        <!-- Section 04 -->
+        {{-- Section 04 --}}
         <article id="section-4" class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-sm space-y-4 scroll-mt-24">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div class="flex items-center gap-3">
@@ -320,7 +320,7 @@
           </div>
         </article>
 
-        <!-- Section 05 -->
+        {{-- Section 05 --}}
         <article id="section-5" class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-sm space-y-4 scroll-mt-24">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div class="flex items-center gap-3">
@@ -342,7 +342,7 @@
           </div>
         </article>
 
-        <!-- Section 06 -->
+        {{-- Section 06 --}}
         <article id="section-6" class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-sm space-y-4 scroll-mt-24">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div class="flex items-center gap-3">
@@ -372,7 +372,7 @@
           </div>
         </article>
 
-        <!-- Section 07 -->
+        {{-- Section 07 --}}
         <article id="section-7" class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-sm space-y-4 scroll-mt-24">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div class="flex items-center gap-3">
@@ -387,7 +387,7 @@
           </p>
         </article>
 
-        <!-- Section 08 -->
+        {{-- Section 08 --}}
         <article id="section-8" class="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-sm space-y-4 scroll-mt-24">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div class="flex items-center gap-3">
@@ -423,7 +423,7 @@
   </div>
 </section>
 
-<!-- Footer Banner CTA -->
+{{-- Footer Banner CTA --}}
 <section class="border-t border-slate-200 bg-white py-10">
   <div class="mx-auto max-w-4xl px-4 text-center space-y-3">
     <h3 class="font-display text-2xl font-extrabold text-slate-900">Have questions about your order or our policies?</h3>

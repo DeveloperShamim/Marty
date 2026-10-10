@@ -4,14 +4,14 @@
 @section('content')
 <main class="max-w-md mx-auto px-4 sm:px-6 py-12">
   <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xl overflow-hidden">
-    <!-- Header Tabs -->
+    {{-- Header Tabs --}}
     <div class="grid grid-cols-2 text-center font-bold text-sm bg-slate-50 border-b border-slate-200">
       <a href="{{ route('login') }}" class="py-4 text-slate-500 hover:text-slate-900 transition-colors">Login</a>
       <span class="py-4 bg-white text-brand-600 border-b-2 border-brand-600">Register</span>
     </div>
 
     <div class="p-6 sm:p-8">
-      <!-- Google 1-Click Login Button -->
+      {{-- Google 1-Click Login Button --}}
       <a href="{{ route('auth.google') }}" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-3 px-4 rounded-xl shadow-sm hover:shadow transition-all text-sm mb-4">
         <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -22,7 +22,7 @@
         <span>Sign up with Google</span>
       </a>
 
-      <!-- Divider -->
+      {{-- Divider --}}
       <div class="relative my-6 text-center text-xs text-slate-400 font-medium">
         <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
         <span class="relative bg-white px-3 text-slate-400 uppercase tracking-wider text-[11px]">or register with email</span>
