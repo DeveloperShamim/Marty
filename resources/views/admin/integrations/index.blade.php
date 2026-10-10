@@ -360,7 +360,8 @@
         </div>
 
         @php
-          $redirectUri = $settings['google_redirect_uri'] ?? (config('services.google.redirect') ?: url('/auth/google/callback'));
+          // A box saved empty falls back to the built-in callback, always as a full https:// address.
+          $redirectUri = trim((string) ($settings['google_redirect_uri'] ?? '')) ?: url(config('services.google.redirect') ?: '/auth/google/callback');
         @endphp
         <div>
           <label class="lbl">Redirect URI (callback URL)</label>

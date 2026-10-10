@@ -24,6 +24,16 @@ class GoogleLoginTest extends TestCase
         Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
     }
 
+    public function test_admin_redirect_uri_box_shows_the_callback_even_after_saving_it_empty(): void
+    {
+        Setting::put('google_redirect_uri', '');
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->get(route('admin.integrations.index'))
+            ->assertOk()
+            ->assertSee('name="google_redirect_uri" type="text" class="inp font-mono text-[13px] min-w-0" value="' . url('/auth/google/callback') . '"', false);
+    }
+
     public function test_without_keys_the_button_explains_what_is_missing(): void
     {
         config(['services.google.client_id' => null, 'services.google.client_secret' => null]);
