@@ -59,6 +59,9 @@
           <a href="{{ route('login') }}" class="h-11 grid place-items-center rounded-xl bg-white text-sm font-bold transition hover:bg-white/90" style="color: var(--brand-dark, #2B1D14);">Sign in</a>
           <a href="{{ route('register') }}" class="h-11 grid place-items-center rounded-xl text-sm font-bold text-white ring-1 ring-white/30 transition hover:bg-white/10">Create account</a>
         </div>
+        @if(google_login_enabled())
+          <div class="mt-2">@include('partials.google-button', ['href' => route('auth.google'), 'class' => 'h-11 px-3 text-sm ring-0'])</div>
+        @endif
       </div>
     @endauth
   </div>

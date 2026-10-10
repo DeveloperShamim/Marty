@@ -62,6 +62,9 @@
       <div class="p-3 space-y-2">
         <a href="{{ route('login') }}" role="menuitem" class="flex items-center justify-center rounded-xl bg-brand-600 px-3 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">Sign in</a>
         <a href="{{ route('register') }}" role="menuitem" class="flex items-center justify-center rounded-xl bg-white px-3 py-2.5 text-sm font-semibold text-ink ring-1 ring-slate-200 hover:bg-brand-50">Create account</a>
+        @if(google_login_enabled())
+          @include('partials.google-button', ['href' => route('auth.google'), 'class' => 'px-3 py-2.5 text-sm'])
+        @endif
       </div>
       <div class="border-t border-slate-100 p-1.5">
         <a href="{{ route('track') }}" role="menuitem" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-800">

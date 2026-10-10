@@ -229,7 +229,7 @@ class IntegrationController extends Controller
                 'tracking_google_ads_id', 'tracking_google_ads_label', 'tracking_meta_domain_verification',
                 'tracking_meta_capi_test_code', 'tracking_tiktok_pixel_id', 'tracking_custom_head', 'tracking_custom_body',
             ],
-            'google'   => ['google_client_id', 'google_client_secret', 'google_redirect_uri'],
+            'google'   => ['google_client_id', 'google_client_secret'],
             'mail' => [
                 'mail_mailer', 'mail_host', 'mail_port', 'mail_username',
                 'mail_encryption', 'mail_from_address', 'mail_from_name',

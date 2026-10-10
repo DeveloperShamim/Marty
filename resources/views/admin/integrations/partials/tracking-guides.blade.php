@@ -1,7 +1,48 @@
-{{-- Step-by-step setup guides for the Tracking cards, in English and Bangla.
+{{-- Step-by-step setup guides for the Integrations cards, in English and Bangla.
      Each card's "Guide" button opens the matching dialog; the language choice is remembered. --}}
 @php
+  $cb = '<code>' . e(google_callback_url()) . '</code>';
   $guides = [
+    'googlelogin' => [
+      'title' => 'Google sign-in setup guide',
+      'en' => [
+        ['h' => 'Create the Google app', 'steps' => [
+          'Open <b>console.cloud.google.com</b> and sign in. Click the project picker at the top → <b>New project</b>, name it after your shop and create it.',
+          'Go to <b>APIs &amp; Services</b> → <b>OAuth consent screen</b>. Choose <b>External</b>, fill in the app name, support email and your website, then save.',
+          'Under <b>Audience</b> (or Publishing status) click <b>Publish app</b>, so every customer can sign in, not only test users.',
+        ]],
+        ['h' => 'Create the login keys', 'steps' => [
+          'Go to <b>APIs &amp; Services</b> → <b>Credentials</b> → <b>Create credentials</b> → <b>OAuth client ID</b>. Choose <b>Web application</b>.',
+          'Under <b>Authorized redirect URIs</b> click <b>Add URI</b> and paste ' . $cb . '. It is the Redirect URI on this card; use its <b>Copy</b> button. If your site also opens with or without www, add that version too.',
+          'Authorized JavaScript origins can stay empty.',
+          'Click <b>Create</b>. Copy the <b>Client ID</b> and <b>Client secret</b> into the boxes on this card and click <b>Save Google settings</b>.',
+        ]],
+        ['h' => 'Check it', 'steps' => [
+          'Open your shop in a private window, tap <b>Sign in</b> and then <b>Continue with Google</b>.',
+          'Staff can also use <b>Continue with Google</b> on the admin login page, with the Google account that has the same email as their staff account.',
+        ]],
+      ],
+      'en_note' => 'If Google shows "redirect_uri_mismatch", the address in Google is not exactly the Redirect URI shown here. Check https, www and that there is no slash at the end.',
+      'bn' => [
+        ['h' => 'Google অ্যাপ তৈরি করুন', 'steps' => [
+          '<b>console.cloud.google.com</b> খুলে সাইন ইন করুন। উপরের প্রজেক্ট তালিকা থেকে <b>New project</b> চাপুন, শপের নামে নাম দিয়ে তৈরি করুন।',
+          '<b>APIs &amp; Services</b> → <b>OAuth consent screen</b> এ যান। <b>External</b> বেছে অ্যাপের নাম, সাপোর্ট ইমেইল ও ওয়েবসাইট দিয়ে সেভ করুন।',
+          '<b>Audience</b> (বা Publishing status) এ <b>Publish app</b> চাপুন, যাতে শুধু টেস্ট ইউজার না, সব কাস্টমার সাইন ইন করতে পারে।',
+        ]],
+        ['h' => 'লগইন কী তৈরি করুন', 'steps' => [
+          '<b>APIs &amp; Services</b> → <b>Credentials</b> → <b>Create credentials</b> → <b>OAuth client ID</b> চাপুন। <b>Web application</b> বেছে নিন।',
+          '<b>Authorized redirect URIs</b> এ <b>Add URI</b> চেপে ' . $cb . ' পেস্ট করুন। এটি এই কার্ডের Redirect URI, <b>Copy</b> বাটন দিয়ে কপি করুন। সাইট www দিয়ে বা www ছাড়াও খুললে সেই ঠিকানাটিও যোগ করুন।',
+          'Authorized JavaScript origins খালি রাখতে পারেন।',
+          '<b>Create</b> চাপুন। <b>Client ID</b> ও <b>Client secret</b> কপি করে এই কার্ডের ঘরে দিন এবং <b>Save Google settings</b> চাপুন।',
+        ]],
+        ['h' => 'যাচাই করুন', 'steps' => [
+          'প্রাইভেট উইন্ডোতে শপ খুলে <b>Sign in</b> → <b>Continue with Google</b> চাপুন।',
+          'স্টাফরাও অ্যাডমিন লগইন পেজে <b>Continue with Google</b> দিয়ে ঢুকতে পারবেন, যে Google অ্যাকাউন্টের ইমেইল তাদের স্টাফ অ্যাকাউন্টের ইমেইলের সাথে মেলে।',
+        ]],
+      ],
+      'bn_note' => 'Google যদি "redirect_uri_mismatch" দেখায়, তাহলে Google এ দেওয়া ঠিকানা এখানের Redirect URI এর সাথে হুবহু মেলেনি। https, www আর শেষে স্ল্যাশ নেই কিনা দেখে নিন।',
+    ],
+
     'google' => [
       'title' => 'Google setup guide',
       'en' => [
@@ -170,7 +211,7 @@
       </div>
       <div class="overflow-y-auto px-4 sm:px-5 py-4">
         @foreach(['en', 'bn'] as $lang)
-          <div data-guide-body="{{ $lang }}" lang="{{ $lang }}" class="space-y-5 text-[13px] leading-relaxed text-gray-700 [&_b]:font-semibold [&_b]:text-gray-900 [&_code]:font-mono [&_code]:text-[12px] [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:rounded" @if($lang === 'bn') style="display:none" @endif>
+          <div data-guide-body="{{ $lang }}" lang="{{ $lang }}" class="space-y-5 text-[13px] leading-relaxed text-gray-700 [&_b]:font-semibold [&_b]:text-gray-900 [&_code]:font-mono [&_code]:text-[12px] [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:rounded [&_code]:break-all" @if($lang === 'bn') style="display:none" @endif>
             @foreach($g[$lang] as $section)
               <div>
                 <h4 class="text-[13px] font-semibold text-gray-900 mb-2">{{ $section['h'] }}</h4>

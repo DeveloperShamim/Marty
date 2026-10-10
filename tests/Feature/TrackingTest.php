@@ -70,12 +70,12 @@ class TrackingTest extends TestCase
     {
         $page = $this->actingAs(User::factory()->create(['role' => 'admin']))->get(route('admin.integrations.index'))->assertOk()->getContent();
 
-        foreach (['google', 'meta', 'tiktok', 'custom'] as $card) {
+        foreach (['googlelogin', 'google', 'meta', 'tiktok', 'custom'] as $card) {
             $this->assertStringContainsString('data-guide-open="' . $card . '"', $page);
             $this->assertStringContainsString('id="guide-' . $card . '"', $page);
         }
-        $this->assertSame(4, substr_count($page, 'data-guide-body="en"'));
-        $this->assertSame(4, substr_count($page, 'data-guide-body="bn"'));
+        $this->assertSame(5, substr_count($page, 'data-guide-body="en"'));
+        $this->assertSame(5, substr_count($page, 'data-guide-body="bn"'));
         $this->assertStringContainsString('Measurement ID', $page);
         $this->assertStringContainsString('সেভ করুন', $page);
     }

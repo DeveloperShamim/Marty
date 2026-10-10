@@ -341,7 +341,7 @@
 
       <section class="panel p-4 sm:p-5 space-y-4">
         <div>
-          <h2 class="text-[15px] font-semibold text-gray-900">Google sign-in</h2>
+          <h2 class="text-[15px] font-semibold text-gray-900 flex flex-wrap items-center gap-x-2 gap-y-1">Google sign-in @include('admin.integrations.partials.guide-button', ['guide' => 'googlelogin'])</h2>
           <p class="text-xs text-gray-500 mt-0.5">Let customers sign in with Google on checkout, login and registration.</p>
         </div>
 
@@ -359,17 +359,14 @@
           </div>
         </div>
 
-        @php
-          // A box saved empty falls back to the built-in callback, always as a full https:// address.
-          $redirectUri = trim((string) ($settings['google_redirect_uri'] ?? '')) ?: url(config('services.google.redirect') ?: '/auth/google/callback');
-        @endphp
+        @php $redirectUri = google_callback_url(); @endphp
         <div>
           <label class="lbl">Redirect URI (callback URL)</label>
           <div class="flex items-center gap-2">
-            <input name="google_redirect_uri" type="text" class="inp font-mono text-[13px] min-w-0" value="{{ $redirectUri }}" />
+            <input id="googleRedirectUri" type="text" readonly class="inp font-mono text-[13px] min-w-0 bg-gray-50 text-gray-700" value="{{ $redirectUri }}" onclick="this.select()" />
             <button type="button" onclick="copyText('{{ $redirectUri }}', this)" class="h-9 px-3.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-[13px] font-medium shrink-0">Copy</button>
           </div>
-          <p class="text-[11px] text-gray-400 mt-1.5">Add this exact URL as an authorized redirect URI in your Google Cloud Console web client.</p>
+          <p class="text-[11px] text-gray-400 mt-1.5">Filled in from your live web address. Paste it in Google Cloud under Authorized redirect URIs.</p>
         </div>
       </section>
 
@@ -394,7 +391,7 @@
       <section class="panel p-4 sm:p-5 space-y-4" data-tracking-card="google">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <h2 class="text-[15px] font-semibold text-gray-900 flex flex-wrap items-center gap-x-2 gap-y-1">Google <button type="button" data-guide-open="google" class="inline-flex items-center gap-1 h-6 pl-1.5 pr-2 rounded-full bg-gray-100 hover:bg-gray-200 text-[11px] font-medium text-gray-700 align-middle" aria-label="Setup guide"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.3"/><path d="M12 17h.01"/></svg>Guide</button></h2>
+            <h2 class="text-[15px] font-semibold text-gray-900 flex flex-wrap items-center gap-x-2 gap-y-1">Google @include('admin.integrations.partials.guide-button', ['guide' => 'google'])</h2>
             <p class="text-xs text-gray-500 mt-0.5">Analytics 4, Tag Manager, Google Ads conversions and Search Console.</p>
           </div>
           {!! $chip(! empty($settings['tracking_ga4_id']), ! empty($settings['tracking_ga4_id']) ? 'GA4 on' : 'GA4 off') !!}
@@ -440,7 +437,7 @@
       <section class="panel p-4 sm:p-5 space-y-4" data-tracking-card="meta">
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
-            <h2 class="text-[15px] font-semibold text-gray-900 flex flex-wrap items-center gap-x-2 gap-y-1">Facebook Pixel &amp; Conversions API <button type="button" data-guide-open="meta" class="inline-flex items-center gap-1 h-6 pl-1.5 pr-2 rounded-full bg-gray-100 hover:bg-gray-200 text-[11px] font-medium text-gray-700 align-middle" aria-label="Setup guide"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.3"/><path d="M12 17h.01"/></svg>Guide</button></h2>
+            <h2 class="text-[15px] font-semibold text-gray-900 flex flex-wrap items-center gap-x-2 gap-y-1">Facebook Pixel &amp; Conversions API @include('admin.integrations.partials.guide-button', ['guide' => 'meta'])</h2>
             <p class="text-xs text-gray-500 mt-0.5">Browser pixel plus server-side purchases, counted once.</p>
           </div>
           {!! $chip(($settings['tracking_meta_capi_enabled'] ?? '0') === '1' && $hasCapiToken, ($settings['tracking_meta_capi_enabled'] ?? '0') === '1' && $hasCapiToken ? 'CAPI on' : 'CAPI off') !!}
@@ -495,7 +492,7 @@
       {{-- TikTok --}}
       <section class="panel p-4 sm:p-5 space-y-4" data-tracking-card="tiktok">
         <div>
-          <h2 class="text-[15px] font-semibold text-gray-900 flex flex-wrap items-center gap-x-2 gap-y-1">TikTok Pixel <button type="button" data-guide-open="tiktok" class="inline-flex items-center gap-1 h-6 pl-1.5 pr-2 rounded-full bg-gray-100 hover:bg-gray-200 text-[11px] font-medium text-gray-700 align-middle" aria-label="Setup guide"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.3"/><path d="M12 17h.01"/></svg>Guide</button></h2>
+          <h2 class="text-[15px] font-semibold text-gray-900 flex flex-wrap items-center gap-x-2 gap-y-1">TikTok Pixel @include('admin.integrations.partials.guide-button', ['guide' => 'tiktok'])</h2>
           <p class="text-xs text-gray-500 mt-0.5">Tracks TikTok Ads views, add to cart, checkout and purchases.</p>
         </div>
         <div class="sm:max-w-sm">
@@ -508,7 +505,7 @@
       {{-- Custom scripts --}}
       <section class="panel p-4 sm:p-5 space-y-4" data-tracking-card="custom">
         <div>
-          <h2 class="text-[15px] font-semibold text-gray-900 flex flex-wrap items-center gap-x-2 gap-y-1">Custom scripts <button type="button" data-guide-open="custom" class="inline-flex items-center gap-1 h-6 pl-1.5 pr-2 rounded-full bg-gray-100 hover:bg-gray-200 text-[11px] font-medium text-gray-700 align-middle" aria-label="Setup guide"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.3"/><path d="M12 17h.01"/></svg>Guide</button></h2>
+          <h2 class="text-[15px] font-semibold text-gray-900 flex flex-wrap items-center gap-x-2 gap-y-1">Custom scripts @include('admin.integrations.partials.guide-button', ['guide' => 'custom'])</h2>
           <p class="text-xs text-gray-500 mt-0.5">Paste other tracking codes (Microsoft Clarity, Hotjar, Snapchat, Pinterest…). They run on every storefront page.</p>
         </div>
         <div>
@@ -540,7 +537,6 @@
         <button type="submit" class="{{ $saveBtn }}" style="background: var(--brand-dark);">Save tracking settings</button>
       </div>
     </form>
-    @include('admin.integrations.partials.tracking-guides')
   </div>
 
   {{-- SECTION 4: EMAIL SERVER & OTP --}}
@@ -629,5 +625,6 @@
     </form>
   </div>
 
+  @include('admin.integrations.partials.tracking-guides')
 </div>
 @endsection

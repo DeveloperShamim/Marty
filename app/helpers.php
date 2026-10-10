@@ -550,3 +550,25 @@ if (! function_exists('courier_webhook_secret')) {
         return $secret;
     }
 }
+
+if (! function_exists('google_login_enabled')) {
+    /** Google sign-in is on once a client ID and secret are saved (Admin → Integrations) or set in .env. */
+    function google_login_enabled(): bool
+    {
+        return (bool) (setting('google_client_id') ?: config('services.google.client_id'))
+            && (bool) (setting('google_client_secret') ?: config('services.google.client_secret'));
+    }
+}
+
+if (! function_exists('google_callback_url')) {
+    /**
+     * The Google sign-in callback on the domain the site is being opened on, so it is always the live
+     * address. Kept on https when the site runs on https behind a proxy that reports plain http.
+     */
+    function google_callback_url(): string
+    {
+        $url = route('auth.google.callback');
+
+        return str_starts_with((string) config('app.url'), 'https://') ? preg_replace('#^http://#', 'https://', $url) : $url;
+    }
+}

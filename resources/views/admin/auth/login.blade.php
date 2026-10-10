@@ -111,6 +111,11 @@
         </label>
         <button type="submit" class="w-full h-12 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl transition shadow-[0_10px_20px_-12px_var(--brand)] active:translate-y-px">Sign in</button>
       </form>
+      @if(google_login_enabled())
+        <div class="flex items-center gap-3 my-5 text-[11px] font-semibold uppercase tracking-wider text-stone-400"><span class="h-px flex-1 bg-stone-200"></span>or<span class="h-px flex-1 bg-stone-200"></span></div>
+        @include('partials.google-button', ['href' => route('auth.google', ['for' => 'admin']), 'class' => 'h-12 px-4 text-sm'])
+        <p class="text-center text-[11px] text-stone-400 mt-2">Use the Google account with the same email as your staff account.</p>
+      @endif
         </div>
 
         <p class="text-center mt-6"><a href="{{ route('home') }}" class="inline-flex items-center gap-1.5 text-sm font-semibold text-stone-500 hover:text-brand-600"><svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M11 18l-6-6 6-6"/></svg>Back to store</a></p>

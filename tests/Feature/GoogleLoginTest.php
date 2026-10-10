@@ -14,6 +14,12 @@ class GoogleLoginTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Setting::forgetCache();
+    }
+
     private function fakeGoogle(string $email, string $id = 'g-123', bool $verified = true): void
     {
         $googleUser = (new GoogleUser())->setRaw(['email_verified' => $verified])->map([
@@ -24,14 +30,63 @@ class GoogleLoginTest extends TestCase
         Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
     }
 
-    public function test_admin_redirect_uri_box_shows_the_callback_even_after_saving_it_empty(): void
+    public function test_redirect_uri_is_always_the_live_domain_callback(): void
     {
-        Setting::put('google_redirect_uri', '');
+        Setting::put('google_redirect_uri', 'https://www.vantbd.com'); // an old, wrong value is ignored
+        Setting::put('google_client_id', 'abc.apps.googleusercontent.com');
+        Setting::put('google_client_secret', 'secret');
         $admin = User::factory()->create(['role' => 'admin']);
+        $callback = url('/auth/google/callback');
 
         $this->actingAs($admin)->get(route('admin.integrations.index'))
             ->assertOk()
-            ->assertSee('name="google_redirect_uri" type="text" class="inp font-mono text-[13px] min-w-0" value="' . url('/auth/google/callback') . '"', false);
+            ->assertSee('value="' . $callback . '"', false)
+            ->assertSee('data-guide-open="googlelogin"', false);
+
+        auth()->logout();
+        $this->get(route('auth.google'))->assertRedirectContains('redirect_uri=' . urlencode($callback));
+    }
+
+    public function test_staff_signs_in_to_the_admin_panel_with_google(): void
+    {
+        $staff = User::factory()->create(['email' => 'manager@vantbd.com', 'role' => 'order_manager']);
+        $this->fakeGoogle('Manager@vantbd.com');
+
+        $this->withSession(['google_login_for' => 'admin'])
+            ->get(route('auth.google.callback'))
+            ->assertRedirect(\App\Support\StaffAccess::home($staff));
+
+        $this->assertAuthenticatedAs($staff->fresh());
+        $this->assertSame('g-123', $staff->fresh()->google_id);
+    }
+
+    public function test_admin_google_login_refuses_customers_and_suspended_staff(): void
+    {
+        User::factory()->create(['email' => 'rahim@gmail.com', 'role' => 'customer']);
+        $this->fakeGoogle('rahim@gmail.com');
+        $this->withSession(['google_login_for' => 'admin'])
+            ->get(route('auth.google.callback'))
+            ->assertRedirect(route('admin.login'))
+            ->assertSessionHasErrors('email');
+        $this->assertGuest();
+
+        User::factory()->create(['email' => 'old@vantbd.com', 'role' => 'admin', 'is_suspended' => true]);
+        $this->fakeGoogle('old@vantbd.com', 'g-999');
+        $this->withSession(['google_login_for' => 'admin'])
+            ->get(route('auth.google.callback'))
+            ->assertRedirect(route('admin.login'));
+        $this->assertGuest();
+    }
+
+    public function test_google_button_shows_in_the_sign_in_popup_and_admin_login_once_set_up(): void
+    {
+        config(['services.google.client_id' => null, 'services.google.client_secret' => null]);
+        $this->get(route('home'))->assertDontSee('Continue with Google');
+
+        Setting::put('google_client_id', 'abc.apps.googleusercontent.com');
+        Setting::put('google_client_secret', 'secret');
+        $this->get(route('home'))->assertSee('Continue with Google');
+        $this->get(route('admin.login'))->assertSee(route('auth.google', ['for' => 'admin']), false);
     }
 
     public function test_without_keys_the_button_explains_what_is_missing(): void
