@@ -55,23 +55,34 @@
         </form>
       </div>
     @else
-      <div class="px-4 py-3.5 bg-gradient-to-br from-brand-50 to-white border-b border-slate-100">
-        <p class="text-sm font-semibold text-ink">Welcome to {{ site_name() }}</p>
-        <p class="text-xs text-slate-500 mt-0.5">Sign in to continue</p>
+      {{-- Signed out: one clean card. Google first when it is set up, then email sign in / create account. --}}
+      <div class="p-4">
+        <div class="flex items-center gap-3">
+          <span class="grid h-10 w-10 place-items-center rounded-full bg-brand-50 text-brand-700 shrink-0">
+            <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+          </span>
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-ink leading-tight">Welcome to {{ site_name() }}</p>
+            <p class="text-xs text-slate-500 mt-0.5">Sign in to track orders and check out faster.</p>
+          </div>
+        </div>
+
+        <div class="mt-4 space-y-2">
+          @if(google_login_enabled())
+            @include('partials.google-button', ['href' => route('auth.google'), 'class' => 'h-10 px-3 text-[13px] ring-slate-200 text-ink'])
+            <div class="flex items-center gap-2 py-0.5 text-[11px] text-slate-400" aria-hidden="true"><span class="h-px flex-1 bg-slate-100"></span>or<span class="h-px flex-1 bg-slate-100"></span></div>
+          @endif
+          <div class="grid grid-cols-2 gap-2">
+            <a href="{{ route('login') }}" role="menuitem" class="h-10 flex items-center justify-center rounded-xl bg-brand-600 px-3 text-[13px] font-semibold text-white hover:bg-brand-700">Sign in</a>
+            <a href="{{ route('register') }}" role="menuitem" class="h-10 flex items-center justify-center rounded-xl bg-white px-3 text-[13px] font-semibold text-ink ring-1 ring-slate-200 hover:bg-slate-50">Create account</a>
+          </div>
+        </div>
       </div>
-      <div class="p-3 space-y-2">
-        <a href="{{ route('login') }}" role="menuitem" class="flex items-center justify-center rounded-xl bg-brand-600 px-3 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">Sign in</a>
-        <a href="{{ route('register') }}" role="menuitem" class="flex items-center justify-center rounded-xl bg-white px-3 py-2.5 text-sm font-semibold text-ink ring-1 ring-slate-200 hover:bg-brand-50">Create account</a>
-        @if(google_login_enabled())
-          @include('partials.google-button', ['href' => route('auth.google'), 'class' => 'px-3 py-2.5 text-sm'])
-        @endif
-      </div>
-      <div class="border-t border-slate-100 p-1.5">
-        <a href="{{ route('track') }}" role="menuitem" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-700 hover:bg-brand-50 hover:text-brand-800">
-          <svg class="h-4 w-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7h11v8H3zM14 10h4l3 3v2h-7"/><circle cx="7" cy="18" r="1.5"/><circle cx="17" cy="18" r="1.5"/></svg>
-          Track order
-        </a>
-      </div>
+      <a href="{{ route('track') }}" role="menuitem" class="flex items-center gap-3 border-t border-slate-100 px-4 py-3 text-[13px] text-slate-600 hover:bg-slate-50 hover:text-ink">
+        <svg class="h-4 w-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v8H3zM14 10h4l3 3v2h-7"/><circle cx="7" cy="18" r="1.5"/><circle cx="17" cy="18" r="1.5"/></svg>
+        <span class="flex-1">Track an order</span>
+        <svg class="h-3.5 w-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/></svg>
+      </a>
     @endauth
   </div>
 </div>

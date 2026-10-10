@@ -113,7 +113,7 @@
       </form>
       @if(google_login_enabled())
         <div class="flex items-center gap-3 my-5 text-[11px] font-semibold uppercase tracking-wider text-stone-400"><span class="h-px flex-1 bg-stone-200"></span>or<span class="h-px flex-1 bg-stone-200"></span></div>
-        @include('partials.google-button', ['href' => route('auth.google', ['for' => 'admin']), 'class' => 'h-12 px-4 text-sm'])
+        @include('partials.google-button', ['href' => route('auth.google', ['for' => 'admin']), 'class' => 'h-12 px-4 text-sm text-stone-700 ring-stone-200'])
         <p class="text-center text-[11px] text-stone-400 mt-2">Use the Google account with the same email as your staff account.</p>
       @endif
         </div>
