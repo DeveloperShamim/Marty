@@ -449,7 +449,7 @@
         </div>
         <div>
           <label class="lbl">Order ID prefix</label>
-          <input name="order_number_prefix" maxlength="6" class="inp text-[13px] uppercase sm:max-w-[10rem]" value="{{ $settings['order_number_prefix'] ?? 'VB' }}" placeholder="VB" />
+          <input name="order_number_prefix" maxlength="6" class="inp text-[13px] uppercase sm:max-w-[10rem]" value="{{ $settings['order_number_prefix'] ?? 'VT' }}" placeholder="VB" />
           <p class="text-[11px] text-gray-500 mt-1">Letters and numbers, up to 6. New orders look like <b class="font-mono font-medium text-gray-700">{{ \App\Support\OrderNumber::prefix() }}-482913</b> (POS: <b class="font-mono font-medium text-gray-700">{{ \App\Support\OrderNumber::prefix() }}-P-482913</b>). Existing orders keep their numbers.</p>
         </div>
       </div>

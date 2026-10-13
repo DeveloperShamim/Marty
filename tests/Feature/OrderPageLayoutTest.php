@@ -14,7 +14,7 @@ class OrderPageLayoutTest extends TestCase
     private function order(array $attrs = []): Order
     {
         return Order::create(array_merge([
-            'order_number' => 'VB-200001', 'customer_name' => 'Karim', 'customer_phone' => '01711000000', 'city' => 'Dhaka',
+            'order_number' => 'VT-200001', 'customer_name' => 'Karim', 'customer_phone' => '01711000000', 'city' => 'Dhaka',
             'shipping_address' => 'House 1', 'subtotal' => 1000, 'shipping_charge' => 60, 'total' => 1060,
             'payment_method' => 'cod', 'payment_status' => 'pending', 'status' => 'pending',
         ], $attrs));

@@ -18,15 +18,15 @@ class ProductSeeder extends Seeder
         $categories = Category::all()->keyBy('slug');
         $brand = Brand::firstOrCreate(
             ['slug' => 'vant'],
-            ['name' => 'Vant', 'is_featured' => true]
+            ['name' => 'Vantor', 'is_featured' => true]
         );
 
         $productsData = [
             // ================= 1. WALLETS & CARD HOLDERS (3 products) =================
             [
-                'name' => 'Vant Classic Bifold Leather Wallet',
-                'slug' => 'vant-classic-bifold-wallet',
-                'brand' => 'Vant',
+                'name' => 'Vantor Classic Bifold Leather Wallet',
+                'slug' => 'vantor-classic-bifold-wallet',
+                'brand' => 'Vantor',
                 'category' => 'wallets',
                 'regular_price' => 1450,
                 'sale_price' => 1190,
@@ -42,9 +42,9 @@ class ProductSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Slim Leather Card Holder',
-                'slug' => 'vant-slim-card-holder',
-                'brand' => 'Vant',
+                'name' => 'Vantor Slim Leather Card Holder',
+                'slug' => 'vantor-slim-card-holder',
+                'brand' => 'Vantor',
                 'category' => 'wallets',
                 'regular_price' => 750,
                 'sale_price' => 650,
@@ -60,9 +60,9 @@ class ProductSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Long Zip Leather Wallet',
-                'slug' => 'vant-long-zip-wallet',
-                'brand' => 'Vant',
+                'name' => 'Vantor Long Zip Leather Wallet',
+                'slug' => 'vantor-long-zip-wallet',
+                'brand' => 'Vantor',
                 'category' => 'wallets',
                 'regular_price' => 1850,
                 'sale_price' => 1590,
@@ -80,9 +80,9 @@ class ProductSeeder extends Seeder
 
             // ================= 2. BELTS (3 products) =================
             [
-                'name' => 'Vant Formal Leather Belt (Pin Buckle)',
-                'slug' => 'vant-formal-leather-belt',
-                'brand' => 'Vant',
+                'name' => 'Vantor Formal Leather Belt (Pin Buckle)',
+                'slug' => 'vantor-formal-leather-belt',
+                'brand' => 'Vantor',
                 'category' => 'belts',
                 'regular_price' => 1650,
                 'sale_price' => 1390,
@@ -98,9 +98,9 @@ class ProductSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Casual Tan Leather Belt',
-                'slug' => 'vant-casual-tan-belt',
-                'brand' => 'Vant',
+                'name' => 'Vantor Casual Tan Leather Belt',
+                'slug' => 'vantor-casual-tan-belt',
+                'brand' => 'Vantor',
                 'category' => 'belts',
                 'regular_price' => 1550,
                 'sale_price' => 1290,
@@ -116,9 +116,9 @@ class ProductSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Reversible Black & Brown Belt',
-                'slug' => 'vant-reversible-belt',
-                'brand' => 'Vant',
+                'name' => 'Vantor Reversible Black & Brown Belt',
+                'slug' => 'vantor-reversible-belt',
+                'brand' => 'Vantor',
                 'category' => 'belts',
                 'regular_price' => 1850,
                 'sale_price' => 1590,
@@ -136,9 +136,9 @@ class ProductSeeder extends Seeder
 
             // ================= 3. WATCHES (2 products) =================
             [
-                'name' => 'Vant Classic Leather Strap Watch',
-                'slug' => 'vant-classic-leather-watch',
-                'brand' => 'Vant',
+                'name' => 'Vantor Classic Leather Strap Watch',
+                'slug' => 'vantor-classic-leather-watch',
+                'brand' => 'Vantor',
                 'category' => 'watches',
                 'regular_price' => 3450,
                 'sale_price' => 2990,
@@ -154,9 +154,9 @@ class ProductSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Chronograph Steel Watch',
-                'slug' => 'vant-chronograph-steel-watch',
-                'brand' => 'Vant',
+                'name' => 'Vantor Chronograph Steel Watch',
+                'slug' => 'vantor-chronograph-steel-watch',
+                'brand' => 'Vantor',
                 'category' => 'watches',
                 'regular_price' => 5450,
                 'sale_price' => 4790,
@@ -174,9 +174,9 @@ class ProductSeeder extends Seeder
 
             // ================= 4. SHOES (2 products) =================
             [
-                'name' => 'Vant Leather Oxford Shoes',
-                'slug' => 'vant-leather-oxford-shoes',
-                'brand' => 'Vant',
+                'name' => 'Vantor Leather Oxford Shoes',
+                'slug' => 'vantor-leather-oxford-shoes',
+                'brand' => 'Vantor',
                 'category' => 'shoes',
                 'regular_price' => 4250,
                 'sale_price' => 3690,
@@ -192,9 +192,9 @@ class ProductSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Double Monk Strap Shoes',
-                'slug' => 'vant-double-monk-strap',
-                'brand' => 'Vant',
+                'name' => 'Vantor Double Monk Strap Shoes',
+                'slug' => 'vantor-double-monk-strap',
+                'brand' => 'Vantor',
                 'category' => 'shoes',
                 'regular_price' => 4650,
                 'sale_price' => 3990,
@@ -212,9 +212,9 @@ class ProductSeeder extends Seeder
 
             // ================= 5. LEATHER MOUSE PADS (2 products) =================
             [
-                'name' => 'Vant Leather Desk Mat (80 x 40 cm)',
-                'slug' => 'vant-leather-desk-mat',
-                'brand' => 'Vant',
+                'name' => 'Vantor Leather Desk Mat (80 x 40 cm)',
+                'slug' => 'vantor-leather-desk-mat',
+                'brand' => 'Vantor',
                 'category' => 'mouse-pads',
                 'regular_price' => 1650,
                 'sale_price' => 1390,
@@ -230,9 +230,9 @@ class ProductSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Leather Mouse Pad (30 x 25 cm)',
-                'slug' => 'vant-leather-mouse-pad',
-                'brand' => 'Vant',
+                'name' => 'Vantor Leather Mouse Pad (30 x 25 cm)',
+                'slug' => 'vantor-leather-mouse-pad',
+                'brand' => 'Vantor',
                 'category' => 'mouse-pads',
                 'regular_price' => 650,
                 'sale_price' => 550,
@@ -264,10 +264,10 @@ class ProductSeeder extends Seeder
                     'category_id'         => $category->id,
                     'brand_id'            => $brand->id,
                     'name'                => $pData['name'],
-                    'sku'                 => 'VANT-' . strtoupper(Str::substr(md5($pData['slug']), 0, 6)),
+                    'sku'                 => 'VT-' . strtoupper(Str::substr(md5($pData['slug']), 0, 6)),
                     'brand'               => $pData['brand'],
                     'short_description'   => "Genuine leather {$pData['name']}: neat stitching, solid finish, made for everyday use.",
-                    'description'         => "The {$pData['name']} is part of the Vant Bangladesh leather collection. Every piece is crafted from premium genuine leather and inspected by hand. Order with cash on delivery and fast nationwide shipping across all 64 districts in Bangladesh.",
+                    'description'         => "The {$pData['name']} is part of the Vantor Store leather collection. Every piece is crafted from premium genuine leather and inspected by hand. Order with cash on delivery and fast nationwide shipping across all 64 districts in Bangladesh.",
                     'regular_price'       => $pData['regular_price'],
                     'sale_price'          => $pData['sale_price'],
                     'cost_price'          => round(($pData['sale_price'] ?: $pData['regular_price']) * 0.65, 2),
@@ -283,8 +283,8 @@ class ProductSeeder extends Seeder
                     'flash_sale_progress' => 50,
                     'rating'              => $ratings[array_rand($ratings)],
                     'reviews_count'       => random_int(14, 52),
-                    'meta_title'          => "Buy {$pData['name']} Online in Bangladesh — Vant",
-                    'meta_description'    => "Order the {$pData['name']} at Vant Bangladesh. Genuine leather, cash on delivery and fast delivery across Bangladesh.",
+                    'meta_title'          => "Buy {$pData['name']} Online in Bangladesh — Vantor",
+                    'meta_description'    => "Order the {$pData['name']} at Vantor Store. Genuine leather, cash on delivery and fast delivery across Bangladesh.",
                 ]
             );
 

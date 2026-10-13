@@ -23,7 +23,7 @@ class ShopPopularSortTest extends TestCase
 
     private function sell(Product $product, int $qty, string $status = 'delivered'): void
     {
-        $order = Order::create(['order_number' => 'VB-' . uniqid(), 'customer_name' => 'Buyer', 'customer_phone' => '01711000000',
+        $order = Order::create(['order_number' => 'VT-' . uniqid(), 'customer_name' => 'Buyer', 'customer_phone' => '01711000000',
             'shipping_address' => 'House 1', 'city' => 'Dhaka', 'subtotal' => 1000, 'shipping_charge' => 60, 'total' => 1060,
             'payment_method' => 'cod', 'payment_status' => 'pending', 'status' => $status]);
         OrderItem::create(['order_id' => $order->id, 'product_id' => $product->id, 'product_name' => $product->name,

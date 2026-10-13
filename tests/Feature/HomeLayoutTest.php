@@ -139,12 +139,12 @@ class HomeLayoutTest extends TestCase
     public function test_brands_show_as_logos_only_when_there_is_more_than_one(): void
     {
         $cat = Category::create(['name' => 'Wallets', 'slug' => 'wallets', 'is_active' => true]);
-        $one = Brand::create(['name' => 'Vant', 'slug' => 'vant', 'is_active' => true, 'is_featured' => true]);
+        $one = Brand::create(['name' => 'Vantor', 'slug' => 'vant', 'is_active' => true, 'is_featured' => true]);
         $this->product($cat, 'Bifold', ['brand_id' => $one->id]);
 
         $html = $this->get('/')->assertOk()->getContent();
         $this->assertStringNotContainsString('swiper brandsSwiper', $html, 'A single brand needs no brand row');
-        $this->assertStringNotContainsString('Explore Vant', $html, 'Brands no longer get their own product section');
+        $this->assertStringNotContainsString('Explore Vantor', $html, 'Brands no longer get their own product section');
 
         $two = Brand::create(['name' => 'Hide Co', 'slug' => 'hide-co', 'is_active' => true]);
         $this->product($cat, 'Belt', ['brand_id' => $two->id]);
@@ -152,7 +152,7 @@ class HomeLayoutTest extends TestCase
 
         $res = $this->get('/')->assertOk();
         $this->assertStringContainsString('swiper brandsSwiper', $res->getContent());
-        $this->assertSame(['Vant', 'Hide Co'], $res->viewData('featuredBrands')->pluck('name')->all(), 'Featured first, brands without products left out');
+        $this->assertSame(['Vantor', 'Hide Co'], $res->viewData('featuredBrands')->pluck('name')->all(), 'Featured first, brands without products left out');
     }
 
     public function test_desktop_menu_lists_categories_with_products_and_the_hotline(): void
@@ -162,8 +162,8 @@ class HomeLayoutTest extends TestCase
             $this->product($cat, $name.' One');
         }
         Category::create(['name' => 'Empty Shelf', 'slug' => 'empty-shelf', 'is_active' => true, 'position' => 9]);
-        Brand::create(['name' => 'Vant', 'slug' => 'vant', 'is_active' => true]);
-        \App\Models\Setting::put('contact_phone', '01775-075543');
+        Brand::create(['name' => 'Vantor', 'slug' => 'vant', 'is_active' => true]);
+        \App\Models\Setting::put('contact_phone', '01700-000000');
 
         $html = $this->get('/')->assertOk()->getContent();
         $this->assertSame(5, substr_count($html, 'data-nav-cat="'), 'Every category with products is in the bar; the script moves what does not fit under More');
@@ -171,6 +171,6 @@ class HomeLayoutTest extends TestCase
         $this->assertStringNotContainsString('href="'.route('shop.category', 'empty-shelf').'" data-nav-cat=', $html, 'Categories without products stay out of the menu');
         $this->assertStringNotContainsString('id="brandDropdownContainer"', $html, 'No Brands menu with only one brand');
         $this->assertStringNotContainsString('animate-pulse"></span>', $html);
-        $this->assertMatchesRegularExpression('/<a href="tel:01775-075543"[^>]*data-nav-hotline/', $html);
+        $this->assertMatchesRegularExpression('/<a href="tel:01700-000000"[^>]*data-nav-hotline/', $html);
     }
 }

@@ -106,7 +106,7 @@ class CourierScanController extends Controller
                 ->first();
         }
 
-        // 3. Just the 6 digits of an order ID, e.g. "482913" for VB-482913 (or VB-P-482913)
+        // 3. Just the 6 digits of an order ID, e.g. "482913" for VT-482913 (or VT-P-482913)
         if (!$order) {
             $order = Order::with('items')->whereIn('order_number', \App\Support\OrderNumber::candidates($clean))->first();
         }

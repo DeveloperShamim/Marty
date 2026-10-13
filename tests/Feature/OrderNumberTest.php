@@ -36,17 +36,17 @@ class OrderNumberTest extends TestCase
 
     public function test_shop_and_pos_orders_get_prefix_plus_six_digits(): void
     {
-        $this->assertMatchesRegularExpression('/^VB-\d{6}$/', $this->checkout()->order_number);
+        $this->assertMatchesRegularExpression('/^VT-\d{6}$/', $this->checkout()->order_number);
 
         $admin = User::factory()->create(['role' => 'admin']);
         $this->actingAs($admin)->postJson(route('admin.pos.order'), [
             'items' => [['product_id' => Product::first()->id, 'quantity' => 1, 'price' => 1000]],
             'payment_method' => 'cash',
         ])->assertJson(['success' => true]);
-        $this->assertMatchesRegularExpression('/^VB-P-\d{6}$/', Order::latest('id')->value('order_number'));
+        $this->assertMatchesRegularExpression('/^VT-P-\d{6}$/', Order::latest('id')->value('order_number'));
 
-        Setting::put('order_number_prefix', 'vant');
-        $this->assertMatchesRegularExpression('/^VANT-\d{6}$/', OrderNumber::generate());
+        Setting::put('order_number_prefix', 'shop');
+        $this->assertMatchesRegularExpression('/^SHOP-\d{6}$/', OrderNumber::generate());
     }
 
     public function test_track_order_and_courier_scan_accept_just_the_digits(): void

@@ -17,7 +17,7 @@ class OrderActivityTest extends TestCase
     private function order(array $attrs = []): Order
     {
         return Order::create(array_merge([
-            'order_number' => 'VB-300001', 'customer_name' => 'Karim', 'customer_phone' => '01711000000', 'city' => 'Dhaka',
+            'order_number' => 'VT-300001', 'customer_name' => 'Karim', 'customer_phone' => '01711000000', 'city' => 'Dhaka',
             'shipping_address' => 'House 1', 'subtotal' => 1000, 'shipping_charge' => 60, 'total' => 1060,
             'payment_method' => 'cod', 'payment_status' => 'pending', 'status' => 'pending',
         ], $attrs));
@@ -65,7 +65,7 @@ class OrderActivityTest extends TestCase
     public function test_status_payment_and_auto_confirm_changes_are_logged(): void
     {
         $staff = User::factory()->create(['role' => 'admin', 'name' => 'Admin Rahim']);
-        $order = $this->order(['order_number' => 'VB-300002']);
+        $order = $this->order(['order_number' => 'VT-300002']);
 
         $this->actingAs($staff)->patch(route('admin.orders.update', $order), ['status' => 'delivered', 'payment_status' => 'pending']);
         $this->assertSame(['Payment: Pending → Verified', 'Status: Pending → Delivered'],
@@ -74,7 +74,7 @@ class OrderActivityTest extends TestCase
 
         auth()->logout();
         Setting::put('cod_auto_confirm', '1');
-        $repeat = $this->order(['order_number' => 'VB-300003']);
+        $repeat = $this->order(['order_number' => 'VT-300003']);
         CodAutoConfirm::apply($repeat, null);
         $log = $repeat->activities()->firstOrFail();
         $this->assertSame('System', $log->staff_name);

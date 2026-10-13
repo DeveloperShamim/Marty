@@ -22,13 +22,13 @@ class OrderSeeder extends Seeder
 
         $insideFee = (float) setting('shipping_inside_dhaka', 70);
         $outsideFee = (float) setting('shipping_outside_dhaka', 130);
-        $customerUser = User::where('email', 'customer@vantbd.com')->first();
+        $customerUser = User::where('email', 'customer@example.com')->first();
         $adminUser = User::where('role', 'admin')->first();
 
         $customerPool = [
             ['Nusrat Jahan', '01711-223344', 'nusrat@gmail.com', 'House 24, Road 7, Dhanmondi', 'Dhaka', 'inside_dhaka'],
             ['Tanvir Ahmed', '01822-334455', 'tanvir@gmail.com', 'Flat 5A, GEC Circle', 'Chattogram', 'outside_dhaka'],
-            ['Mim Islam', '01933-445566', 'customer@vantbd.com', 'House 8, Sector 11, Uttara', 'Dhaka', 'inside_dhaka'],
+            ['Mim Islam', '01933-445566', 'customer@example.com', 'House 8, Sector 11, Uttara', 'Dhaka', 'inside_dhaka'],
             ['Sakib Hasan', '01644-556677', 'sakib@gmail.com', 'Zindabazar Main Road', 'Sylhet', 'outside_dhaka'],
             ['Farhana Akter', '01755-667788', 'farhana@yahoo.com', 'College Road', 'Rajshahi', 'outside_dhaka'],
             ['Kazi Mahmud', '01866-778899', 'mahmud@gmail.com', 'Shibbari More', 'Khulna', 'outside_dhaka'],
@@ -64,7 +64,7 @@ class OrderSeeder extends Seeder
             $orderDate = now()->subDays($daysAgo)->subHours(random_int(1, 8));
 
             $order = Order::create([
-                'user_id'               => $cEmail === 'customer@vantbd.com' ? $customerUser?->id : null,
+                'user_id'               => $cEmail === 'customer@example.com' ? $customerUser?->id : null,
                 'order_number'          => OrderNumber::generate(),
                 'order_type'            => 'online',
                 'customer_name'         => $cName,

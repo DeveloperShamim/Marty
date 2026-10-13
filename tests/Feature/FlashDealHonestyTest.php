@@ -22,7 +22,7 @@ class FlashDealHonestyTest extends TestCase
 
     private function sell(Product $product, int $qty, string $status): void
     {
-        $order = Order::create(['order_number' => 'VB-' . random_int(100000, 999999), 'customer_name' => 'K', 'customer_phone' => '01711000000',
+        $order = Order::create(['order_number' => 'VT-' . random_int(100000, 999999), 'customer_name' => 'K', 'customer_phone' => '01711000000',
             'city' => 'Dhaka', 'shipping_address' => 'H1', 'subtotal' => 800, 'shipping_charge' => 60, 'total' => 860,
             'payment_method' => 'cod', 'payment_status' => 'pending', 'status' => $status]);
         $order->items()->create(['product_id' => $product->id, 'product_name' => 'Bifold', 'quantity' => $qty, 'unit_price' => 800, 'line_total' => 800 * $qty]);

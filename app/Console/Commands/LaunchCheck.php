@@ -39,7 +39,7 @@ class LaunchCheck extends Command
             ->filter(fn ($u) => Hash::check('password', $u->password))->pluck('email');
         $this->check($weak->isEmpty(), 'No staff account uses the password "password"', 'Change the password of: ' . $weak->implode(', '), 'fail');
         $demo = User::where('email', 'like', '%@marty.com')
-            ->orWhereIn('email', ['manager@vantbd.com', 'orders@vantbd.com', 'inventory@vantbd.com', 'customer@vantbd.com'])
+            ->orWhereIn('email', ['manager@example.com', 'orders@example.com', 'inventory@example.com', 'customer@example.com'])
             ->pluck('email');
         $this->check($demo->isEmpty(), 'No demo accounts', 'Delete or rename demo accounts: ' . $demo->implode(', '), 'warn');
 

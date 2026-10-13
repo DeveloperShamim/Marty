@@ -24,7 +24,7 @@
     <img src="{{ logo_url() }}" alt="{{ $name }}" class="{{ $customClass }} {{ $logoClass ?? '' }} object-contain" />
   @else
     @php
-      // Phones (header only): a long name like "Vant Bangladesh" becomes a stacked wordmark, VANT / BANGLADESH.
+      // Phones (header only): a long name like "Vantor Store" becomes a stacked wordmark, VANTOR / STORE.
       // Below 430px the square icon is dropped so the wordmark never runs under the Flash Sale button.
       $nameParts = ($compactMobile ?? false) ? explode(' ', trim($name), 2) : [$name];
       $stacked = count($nameParts) === 2;

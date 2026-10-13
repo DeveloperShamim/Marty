@@ -5,7 +5,7 @@ namespace App\Support;
 use App\Models\Order;
 
 /**
- * Order IDs like "VB-482913" (shop) and "VB-P-482913" (POS): the store prefix plus 6 random digits.
+ * Order IDs like "VT-482913" (shop) and "VT-P-482913" (POS): the store prefix plus 6 random digits.
  * Digits only, so customers can read them over the phone; random, so they don't reveal sales volume.
  * The prefix is set in Store Settings → Payments → "Order ID prefix".
  */
@@ -13,9 +13,9 @@ class OrderNumber
 {
     public static function prefix(): string
     {
-        $prefix = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) setting('order_number_prefix', 'VB')));
+        $prefix = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) setting('order_number_prefix', 'VT')));
 
-        return $prefix !== '' ? substr($prefix, 0, 6) : 'VB';
+        return $prefix !== '' ? substr($prefix, 0, 6) : 'VT';
     }
 
     public static function generate(bool $pos = false): string
@@ -30,7 +30,7 @@ class OrderNumber
     }
 
     /**
-     * Order numbers a typed value could mean: "vb-482913" → "VB-482913", "482913" → "VB-482913" or "VB-P-482913".
+     * Order numbers a typed value could mean: "vt-482913" → "VT-482913", "482913" → "VT-482913" or "VT-P-482913".
      *
      * @return list<string>
      */

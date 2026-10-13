@@ -53,7 +53,7 @@ class CodAutoConfirmTest extends TestCase
     {
         $this->fakeBdCourier(20, 18);
 
-        $order = $this->runCheck($this->order('VB-100001'));
+        $order = $this->runCheck($this->order('VT-100001'));
 
         $this->assertSame('confirmed', $order->status);
         $this->assertSame('pending', $order->payment_status);
@@ -76,7 +76,7 @@ class CodAutoConfirmTest extends TestCase
                 'success_ratio' => $total ? round($delivered / $total * 100, 2) : 0]]]);
         });
 
-        foreach (['VB-100002' => '01711000000', 'VB-100003' => '01811000000', 'VB-100004' => '01911000000'] as $number => $phone) {
+        foreach (['VT-100002' => '01711000000', 'VT-100003' => '01811000000', 'VT-100004' => '01911000000'] as $number => $phone) {
             $order = $this->runCheck($this->order($number, ['customer_phone' => $phone]));
             $this->assertSame('pending', $order->status, $phone);
             $this->assertNull($order->auto_confirmed_reason);
@@ -87,10 +87,10 @@ class CodAutoConfirmTest extends TestCase
     public function test_repeat_customer_with_no_returns_is_confirmed_without_a_courier_search(): void
     {
         Http::fake();
-        $this->order('VB-100010', ['status' => 'delivered', 'payment_status' => 'verified']);
-        $this->order('VB-100011', ['status' => 'delivered', 'payment_status' => 'verified']);
+        $this->order('VT-100010', ['status' => 'delivered', 'payment_status' => 'verified']);
+        $this->order('VT-100011', ['status' => 'delivered', 'payment_status' => 'verified']);
 
-        $order = $this->runCheck($this->order('VB-100012'));
+        $order = $this->runCheck($this->order('VT-100012'));
 
         Http::assertNothingSent(); // trusted repeat customers skip the BD Courier search
         $this->assertSame('confirmed', $order->status);
@@ -102,15 +102,15 @@ class CodAutoConfirmTest extends TestCase
         $this->fakeBdCourier(20, 20);
 
         Setting::put('cod_auto_confirm', '0');
-        $this->assertSame('pending', $this->runCheck($this->order('VB-100020'))->status);
+        $this->assertSame('pending', $this->runCheck($this->order('VT-100020'))->status);
         Setting::put('cod_auto_confirm', '1');
 
         Blacklist::create(['type' => 'phone', 'value' => '01611000000', 'reason' => 'test']);
-        $this->assertSame('pending', $this->runCheck($this->order('VB-100021', ['customer_phone' => '01611000000']))->status);
+        $this->assertSame('pending', $this->runCheck($this->order('VT-100021', ['customer_phone' => '01611000000']))->status);
 
-        $this->assertSame('pending', $this->runCheck($this->order('VB-100022', ['fraud_score' => 40]))->status);
+        $this->assertSame('pending', $this->runCheck($this->order('VT-100022', ['fraud_score' => 40]))->status);
 
-        $prepaid = $this->runCheck($this->order('VB-100023', ['payment_method' => 'bkash']));
+        $prepaid = $this->runCheck($this->order('VT-100023', ['payment_method' => 'bkash']));
         $this->assertSame('pending', $prepaid->status);
         $this->assertNull($prepaid->auto_confirmed_reason);
     }

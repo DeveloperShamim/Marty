@@ -46,19 +46,19 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Super Admin
         User::updateOrCreate(
-            ['email' => 'admin@vantbd.com'],
+            ['email' => 'admin@example.com'],
             [
-                'name' => 'Vant Admin',
+                'name' => 'Store Admin',
                 'password' => Hash::make('password'),
                 'role' => 'admin',
-                'phone' => '01775-075543',
+                'phone' => '01700-000000',
                 'email_verified_at' => now(),
             ]
         );
 
         // 2. Store Manager
         User::updateOrCreate(
-            ['email' => 'manager@vantbd.com'],
+            ['email' => 'manager@example.com'],
             [
                 'name' => 'Tanvir Alam (Store Manager)',
                 'password' => Hash::make('password'),
@@ -70,7 +70,7 @@ class DatabaseSeeder extends Seeder
 
         // 3. Order Manager
         User::updateOrCreate(
-            ['email' => 'orders@vantbd.com'],
+            ['email' => 'orders@example.com'],
             [
                 'name' => 'Rafi Ahmed (Order Manager)',
                 'password' => Hash::make('password'),
@@ -82,7 +82,7 @@ class DatabaseSeeder extends Seeder
 
         // 4. Inventory Manager
         User::updateOrCreate(
-            ['email' => 'inventory@vantbd.com'],
+            ['email' => 'inventory@example.com'],
             [
                 'name' => 'Kalam Hossain (Inventory Manager)',
                 'password' => Hash::make('password'),
@@ -94,7 +94,7 @@ class DatabaseSeeder extends Seeder
 
         // 5. Customer Account
         User::updateOrCreate(
-            ['email' => 'customer@vantbd.com'],
+            ['email' => 'customer@example.com'],
             [
                 'name' => 'Nusrat Jahan',
                 'password' => Hash::make('password'),
@@ -112,27 +112,27 @@ class DatabaseSeeder extends Seeder
     private function defaultSettings(): array
     {
         return [
-            'site_name' => 'Vant Bangladesh',
+            'site_name' => 'Vantor Store',
             'tagline' => 'Genuine Leather. Timeless Style.',
             'logo' => '',     // no logo yet: the site name is shown instead
             'favicon' => '',
-            'footer_text' => 'Vant Bangladesh brings you genuine leather wallets, belts, watches, shoes and desk accessories, made to last and delivered anywhere in Bangladesh with cash on delivery.',
-            'contact_phone' => '01775-075543',
-            'whatsapp_number' => '01775-075543',
-            'order_hotline' => '01775-075543',
-            'order_number_prefix' => 'VB',
+            'footer_text' => 'Vantor Store brings you genuine leather wallets, belts, watches, shoes and desk accessories, made to last and delivered anywhere in Bangladesh with cash on delivery.',
+            'contact_phone' => '01700-000000',
+            'whatsapp_number' => '01700-000000',
+            'order_hotline' => '01700-000000',
+            'order_number_prefix' => 'VT',
             'messenger_url' => '',
             'size_guide_enabled' => '0',
-            'contact_email' => 'help@vantbd.com',
-            'contact_address' => 'Online store — warehouse: Green Model Town, Dhaka, Bangladesh',
+            'contact_email' => 'help@example.com',
+            'contact_address' => 'Online store — Dhaka, Bangladesh',
             'contact_hours' => '9:00 AM – 6:00 PM',
             'contact_title' => 'Customer Support',
-            'contact_intro' => 'Need help choosing a wallet, finding your belt or shoe size, or tracking an order? Call or WhatsApp the Vant team.',
+            'contact_intro' => 'Need help choosing a wallet, finding your belt or shoe size, or tracking an order? Call or WhatsApp the Vantor team.',
             'search_placeholder' => 'Type your product...',
             'facebook_url' => '',
             'instagram_url' => '',
             'twitter_url' => '',
-            'bkash_number' => '01521-311052',
+            'bkash_number' => '01700-000000',
             'bkash_account_type' => 'personal',
             'nagad_number' => '',
             'rocket_number' => '',
@@ -148,14 +148,14 @@ class DatabaseSeeder extends Seeder
             'shipping_outside_label' => 'Outside Dhaka',
             'currency_symbol' => '৳',
             'currency_code' => 'BDT',
-            'default_meta_title' => 'Vant Bangladesh — Genuine Leather Wallets, Belts, Watches & Shoes',
-            'default_meta_description' => 'Shop genuine leather wallets, belts, watches, shoes and desk mats at Vant Bangladesh. Cash on delivery and fast delivery across Bangladesh.',
-            'default_meta_keywords' => 'Vant Bangladesh, vantbd, leather wallet Bangladesh, leather belt, card holder, men\'s watch, leather shoes, leather desk mat, mouse pad',
+            'default_meta_title' => 'Vantor Store — Genuine Leather Wallets, Belts, Watches & Shoes',
+            'default_meta_description' => 'Shop genuine leather wallets, belts, watches, shoes and desk mats at Vantor Store. Cash on delivery and fast delivery across Bangladesh.',
+            'default_meta_keywords' => 'Vantor Store, vantor, leather wallet Bangladesh, leather belt, card holder, men\'s watch, leather shoes, leather desk mat, mouse pad',
             'tracking_gtm_id' => '',
             'tracking_ga4_id' => '',
             'tracking_meta_pixel_id' => '',
             'otp_enabled' => '1',
-            'header_promo_text' => "Cash on delivery all over Bangladesh\nUse code VANT10 for 10% OFF\nFree delivery when you pay with bKash",
+            'header_promo_text' => "Cash on delivery all over Bangladesh\nUse code SAVE10 for 10% OFF\nFree delivery when you pay with bKash",
             'header_promo_link' => '/shop',
             'ticker_label' => 'Hot Deals',
             'ticker_label_style' => 'dark',
@@ -165,11 +165,11 @@ class DatabaseSeeder extends Seeder
             'home_categories_title' => 'Featured Categories',
             'home_categories_subtitle' => 'Genuine leather wallets, belts, watches, shoes and desk mats',
             'home_hot_deal_title' => 'Flash Sale Deals',
-            'home_featured_title' => 'Best of Vant',
+            'home_featured_title' => 'Best of Vantor',
             'home_reviews_title' => 'What Our Customers Say',
             'home_view_more_label' => 'View All Products',
             'default_cta_text' => 'Add to Cart',
-            'hero_fallback_badge' => 'Vant Bangladesh',
+            'hero_fallback_badge' => 'Vantor Store',
             'hero_fallback_title' => "Genuine Leather,\nMade to Last",
             'hero_fallback_subtitle' => 'Wallets, belts, watches, shoes and desk mats in real leather, delivered to your door with cash on delivery.',
             'show_featured_brands' => '0', // one house brand: no brand carousel
@@ -183,8 +183,8 @@ class DatabaseSeeder extends Seeder
             'mail_username' => '',
             'mail_password' => '',
             'mail_encryption' => 'tls',
-            'mail_from_address' => 'no-reply@vantbd.com',
-            'mail_from_name'    => 'Vant Bangladesh',
+            'mail_from_address' => 'no-reply@example.com',
+            'mail_from_name'    => 'Vantor Store',
             // Leather theme: saddle brown, espresso, warm cream
             'theme_primary_color'  => '#8B5A2B',
             'theme_dark_color'     => '#2B1D14',
@@ -209,11 +209,11 @@ class DatabaseSeeder extends Seeder
     private function seedProductionEssentials(): void
     {
         if (! User::where('role', 'admin')->exists()) {
-            $email = env('ADMIN_EMAIL') ?: 'admin@vantbd.com';
+            $email = env('ADMIN_EMAIL') ?: 'admin@example.com';
             $password = env('ADMIN_PASSWORD') ?: Str::password(16, symbols: false);
 
             User::create([
-                'name'              => 'Vant Admin',
+                'name'              => 'Store Admin',
                 'email'             => $email,
                 'password'          => Hash::make($password),
                 'role'              => 'admin',
@@ -223,7 +223,7 @@ class DatabaseSeeder extends Seeder
             $this->command?->warn("Admin account: {$email}" . (env('ADMIN_PASSWORD') ? ' (password from ADMIN_PASSWORD)' : "  password: {$password}  <- save it now, it is not shown again"));
         }
 
-        // The defaults are Vant Bangladesh's real details. Only things not set up yet stay blank.
+        // The defaults are demo store's details. Only things not set up yet stay blank.
         $blank = [
             'messenger_url', 'facebook_url', 'instagram_url', 'twitter_url',
             'nagad_number', 'rocket_number', 'flash_sale_ends_at',
@@ -239,7 +239,7 @@ class DatabaseSeeder extends Seeder
 
         $this->seedAttributes();
 
-        // The real shop set-up (categories, Vant brand, trust strip, coupons, text banners) — only into
+        // The real shop set-up (categories, Vantor brand, trust strip, coupons, text banners) — only into
         // empty tables, so anything edited in admin is never overwritten. Still no demo products.
         if (Category::count() === 0) {
             $this->seedCategories();
@@ -282,8 +282,8 @@ class DatabaseSeeder extends Seeder
                     'position' => $index,
                     'is_active' => true,
                     'is_featured' => true,
-                    'meta_title' => "{$name} — Vant Bangladesh",
-                    'meta_description' => "Shop genuine leather {$name} in Bangladesh at Vant. Cash on delivery and fast delivery.",
+                    'meta_title' => "{$name} — Vantor Store",
+                    'meta_description' => "Shop genuine leather {$name} in Bangladesh at Vantor. Cash on delivery and fast delivery.",
                 ]
             );
         }
@@ -296,20 +296,20 @@ class DatabaseSeeder extends Seeder
         Brand::query()->delete();
 
         $vant = Brand::create([
-            'name' => 'Vant',
+            'name' => 'Vantor',
             'slug' => 'vant',
             'logo' => null,
             'banner' => 'https://images.unsplash.com/photo-1606503825008-909a67e63c3d?auto=format&fit=crop&w=800&h=800&q=80',
-            'description' => 'Vant Bangladesh house brand: genuine leather goods made for everyday use.',
-            'website' => 'https://vantbd.com',
+            'description' => 'Vantor Store house brand: genuine leather goods made for everyday use.',
+            'website' => '',
             'position' => 0,
             'is_active' => true,
             'is_featured' => true,
-            'meta_title' => 'Vant Leather Products — Vant Bangladesh',
-            'meta_description' => 'Shop Vant genuine leather wallets, belts, watches, shoes and desk mats in Bangladesh.',
+            'meta_title' => 'Vantor Leather Products — Vantor Store',
+            'meta_description' => 'Shop Vantor genuine leather wallets, belts, watches, shoes and desk mats in Bangladesh.',
         ]);
 
-        return ['Vant' => $vant];
+        return ['Vantor' => $vant];
     }
 
     private function seedFeatures(): void
@@ -323,7 +323,7 @@ class DatabaseSeeder extends Seeder
                 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z', 1],
             ['Nationwide Delivery', 'Tracked parcels to all 64 districts',
                 'M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0', 2],
-            ['Help 9 AM – 6 PM', 'Call or WhatsApp 01775-075543',
+            ['Help 9 AM – 6 PM', 'Call or WhatsApp 01700-000000',
                 'M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z', 3],
         ];
 
@@ -343,7 +343,7 @@ class DatabaseSeeder extends Seeder
         Coupon::query()->delete();
 
         Coupon::create([
-            'code' => 'VANT10',
+            'code' => 'SAVE10',
             'description' => '10% off orders of ৳1,500 or more',
             'type' => 'percentage',
             'value' => 10,
@@ -373,9 +373,9 @@ class DatabaseSeeder extends Seeder
         $productsData = [
             // ================= WALLETS & CARD HOLDERS =================
             [
-                'name' => 'Vant Classic Bifold Leather Wallet',
-                'slug' => 'vant-classic-bifold-wallet',
-                'brand' => 'Vant',
+                'name' => 'Vantor Classic Bifold Leather Wallet',
+                'slug' => 'vantor-classic-bifold-wallet',
+                'brand' => 'Vantor',
                 'category' => 'wallets',
                 'regular_price' => 1450,
                 'sale_price' => 1190,
@@ -391,9 +391,9 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Slim Leather Card Holder',
-                'slug' => 'vant-slim-card-holder',
-                'brand' => 'Vant',
+                'name' => 'Vantor Slim Leather Card Holder',
+                'slug' => 'vantor-slim-card-holder',
+                'brand' => 'Vantor',
                 'category' => 'wallets',
                 'regular_price' => 750,
                 'sale_price' => 650,
@@ -409,9 +409,9 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Long Zip Leather Wallet',
-                'slug' => 'vant-long-zip-wallet',
-                'brand' => 'Vant',
+                'name' => 'Vantor Long Zip Leather Wallet',
+                'slug' => 'vantor-long-zip-wallet',
+                'brand' => 'Vantor',
                 'category' => 'wallets',
                 'regular_price' => 1850,
                 'sale_price' => 1590,
@@ -427,9 +427,9 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Trifold Leather Wallet',
-                'slug' => 'vant-trifold-wallet',
-                'brand' => 'Vant',
+                'name' => 'Vantor Trifold Leather Wallet',
+                'slug' => 'vantor-trifold-wallet',
+                'brand' => 'Vantor',
                 'category' => 'wallets',
                 'regular_price' => 1350,
                 'sale_price' => 1150,
@@ -446,9 +446,9 @@ class DatabaseSeeder extends Seeder
             ],
             // ================= BELTS =================
             [
-                'name' => 'Vant Formal Leather Belt (Pin Buckle)',
-                'slug' => 'vant-formal-leather-belt',
-                'brand' => 'Vant',
+                'name' => 'Vantor Formal Leather Belt (Pin Buckle)',
+                'slug' => 'vantor-formal-leather-belt',
+                'brand' => 'Vantor',
                 'category' => 'belts',
                 'regular_price' => 1650,
                 'sale_price' => 1390,
@@ -464,9 +464,9 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Casual Tan Leather Belt',
-                'slug' => 'vant-casual-tan-belt',
-                'brand' => 'Vant',
+                'name' => 'Vantor Casual Tan Leather Belt',
+                'slug' => 'vantor-casual-tan-belt',
+                'brand' => 'Vantor',
                 'category' => 'belts',
                 'regular_price' => 1550,
                 'sale_price' => 1290,
@@ -482,9 +482,9 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Reversible Black & Brown Belt',
-                'slug' => 'vant-reversible-belt',
-                'brand' => 'Vant',
+                'name' => 'Vantor Reversible Black & Brown Belt',
+                'slug' => 'vantor-reversible-belt',
+                'brand' => 'Vantor',
                 'category' => 'belts',
                 'regular_price' => 1850,
                 'sale_price' => 1590,
@@ -501,9 +501,9 @@ class DatabaseSeeder extends Seeder
             ],
             // ================= WATCHES =================
             [
-                'name' => 'Vant Classic Leather Strap Watch',
-                'slug' => 'vant-classic-leather-watch',
-                'brand' => 'Vant',
+                'name' => 'Vantor Classic Leather Strap Watch',
+                'slug' => 'vantor-classic-leather-watch',
+                'brand' => 'Vantor',
                 'category' => 'watches',
                 'regular_price' => 3450,
                 'sale_price' => 2990,
@@ -519,9 +519,9 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Rose Dial Ladies Watch',
-                'slug' => 'vant-rose-dial-ladies-watch',
-                'brand' => 'Vant',
+                'name' => 'Vantor Rose Dial Ladies Watch',
+                'slug' => 'vantor-rose-dial-ladies-watch',
+                'brand' => 'Vantor',
                 'category' => 'watches',
                 'regular_price' => 3250,
                 'sale_price' => 2850,
@@ -537,9 +537,9 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Chronograph Steel Watch',
-                'slug' => 'vant-chronograph-steel-watch',
-                'brand' => 'Vant',
+                'name' => 'Vantor Chronograph Steel Watch',
+                'slug' => 'vantor-chronograph-steel-watch',
+                'brand' => 'Vantor',
                 'category' => 'watches',
                 'regular_price' => 5450,
                 'sale_price' => 4790,
@@ -555,9 +555,9 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Diver Stainless Steel Watch',
-                'slug' => 'vant-diver-steel-watch',
-                'brand' => 'Vant',
+                'name' => 'Vantor Diver Stainless Steel Watch',
+                'slug' => 'vantor-diver-steel-watch',
+                'brand' => 'Vantor',
                 'category' => 'watches',
                 'regular_price' => 4950,
                 'sale_price' => 4450,
@@ -574,9 +574,9 @@ class DatabaseSeeder extends Seeder
             ],
             // ================= SHOES =================
             [
-                'name' => 'Vant Leather Oxford Shoes',
-                'slug' => 'vant-leather-oxford-shoes',
-                'brand' => 'Vant',
+                'name' => 'Vantor Leather Oxford Shoes',
+                'slug' => 'vantor-leather-oxford-shoes',
+                'brand' => 'Vantor',
                 'category' => 'shoes',
                 'regular_price' => 4250,
                 'sale_price' => 3690,
@@ -592,9 +592,9 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Double Monk Strap Shoes',
-                'slug' => 'vant-double-monk-strap',
-                'brand' => 'Vant',
+                'name' => 'Vantor Double Monk Strap Shoes',
+                'slug' => 'vantor-double-monk-strap',
+                'brand' => 'Vantor',
                 'category' => 'shoes',
                 'regular_price' => 4650,
                 'sale_price' => 3990,
@@ -610,9 +610,9 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Classic Derby Shoes',
-                'slug' => 'vant-classic-derby-shoes',
-                'brand' => 'Vant',
+                'name' => 'Vantor Classic Derby Shoes',
+                'slug' => 'vantor-classic-derby-shoes',
+                'brand' => 'Vantor',
                 'category' => 'shoes',
                 'regular_price' => 3950,
                 'sale_price' => 3450,
@@ -628,9 +628,9 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Brogue Leather Boots',
-                'slug' => 'vant-brogue-leather-boots',
-                'brand' => 'Vant',
+                'name' => 'Vantor Brogue Leather Boots',
+                'slug' => 'vantor-brogue-leather-boots',
+                'brand' => 'Vantor',
                 'category' => 'shoes',
                 'regular_price' => 5450,
                 'sale_price' => 4790,
@@ -646,9 +646,9 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Leather Chelsea Boots',
-                'slug' => 'vant-chelsea-boots',
-                'brand' => 'Vant',
+                'name' => 'Vantor Leather Chelsea Boots',
+                'slug' => 'vantor-chelsea-boots',
+                'brand' => 'Vantor',
                 'category' => 'shoes',
                 'regular_price' => 5250,
                 'sale_price' => 4590,
@@ -664,9 +664,9 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Leather Comfort Sandals',
-                'slug' => 'vant-leather-sandals',
-                'brand' => 'Vant',
+                'name' => 'Vantor Leather Comfort Sandals',
+                'slug' => 'vantor-leather-sandals',
+                'brand' => 'Vantor',
                 'category' => 'shoes',
                 'regular_price' => 1850,
                 'sale_price' => 1590,
@@ -682,9 +682,9 @@ class DatabaseSeeder extends Seeder
             ],
             // ================= LEATHER MOUSE PADS =================
             [
-                'name' => 'Vant Leather Desk Mat (80 x 40 cm)',
-                'slug' => 'vant-leather-desk-mat',
-                'brand' => 'Vant',
+                'name' => 'Vantor Leather Desk Mat (80 x 40 cm)',
+                'slug' => 'vantor-leather-desk-mat',
+                'brand' => 'Vantor',
                 'category' => 'mouse-pads',
                 'regular_price' => 1650,
                 'sale_price' => 1390,
@@ -700,9 +700,9 @@ class DatabaseSeeder extends Seeder
                 ],
             ],
             [
-                'name' => 'Vant Leather Mouse Pad (30 x 25 cm)',
-                'slug' => 'vant-leather-mouse-pad',
-                'brand' => 'Vant',
+                'name' => 'Vantor Leather Mouse Pad (30 x 25 cm)',
+                'slug' => 'vantor-leather-mouse-pad',
+                'brand' => 'Vantor',
                 'category' => 'mouse-pads',
                 'regular_price' => 650,
                 'sale_price' => 550,
@@ -735,10 +735,10 @@ class DatabaseSeeder extends Seeder
                     'category_id' => $category->id,
                     'brand_id'    => $brandObj?->id,
                     'name' => $pData['name'],
-                    'sku' => 'VANT-' . strtoupper(Str::substr(md5($pData['slug']), 0, 6)),
+                    'sku' => 'VT-' . strtoupper(Str::substr(md5($pData['slug']), 0, 6)),
                     'brand' => $pData['brand'],
                     'short_description' => "Genuine leather {$pData['name']}: neat stitching, solid finish, made for everyday use.",
-                    'description' => "The {$pData['name']} is part of the Vant Bangladesh leather collection. Every piece is checked by hand before it ships. Order with cash on delivery and get it anywhere in Bangladesh.",
+                    'description' => "The {$pData['name']} is part of the Vantor Store leather collection. Every piece is checked by hand before it ships. Order with cash on delivery and get it anywhere in Bangladesh.",
                     'regular_price' => $pData['regular_price'],
                     'sale_price' => $pData['sale_price'],
                     'cost_price' => round(($pData['sale_price'] ?: $pData['regular_price']) * 0.65, 2),
@@ -754,8 +754,8 @@ class DatabaseSeeder extends Seeder
                     'flash_sale_progress' => 50,
                     'rating' => $ratings[array_rand($ratings)],
                     'reviews_count' => random_int(14, 52),
-                    'meta_title' => "Buy {$pData['name']} Online in Bangladesh — Vant",
-                    'meta_description' => "Order the {$pData['name']} at Vant Bangladesh. Genuine leather, cash on delivery and fast delivery across Bangladesh.",
+                    'meta_title' => "Buy {$pData['name']} Online in Bangladesh — Vantor",
+                    'meta_description' => "Order the {$pData['name']} at Vantor Store. Genuine leather, cash on delivery and fast delivery across Bangladesh.",
                 ]
             );
 
@@ -894,13 +894,13 @@ class DatabaseSeeder extends Seeder
 
         $insideFee = (float) setting('shipping_inside_dhaka', 70);
         $outsideFee = (float) setting('shipping_outside_dhaka', 130);
-        $customerUser = User::where('email', 'customer@vantbd.com')->first();
+        $customerUser = User::where('email', 'customer@example.com')->first();
         $adminUser = User::where('role', 'admin')->first();
 
         $customerPool = [
             ['Nusrat Jahan', '01711-223344', 'nusrat@gmail.com', 'House 24, Road 7, Dhanmondi', 'Dhaka', 'inside_dhaka'],
             ['Tanvir Ahmed', '01822-334455', 'tanvir@gmail.com', 'Flat 5A, GEC Circle', 'Chattogram', 'outside_dhaka'],
-            ['Mim Islam', '01933-445566', 'customer@vantbd.com', 'House 8, Sector 11, Uttara', 'Dhaka', 'inside_dhaka'],
+            ['Mim Islam', '01933-445566', 'customer@example.com', 'House 8, Sector 11, Uttara', 'Dhaka', 'inside_dhaka'],
             ['Sakib Hasan', '01644-556677', 'sakib@gmail.com', 'Zindabazar Main Road', 'Sylhet', 'outside_dhaka'],
             ['Farhana Akter', '01755-667788', 'farhana@yahoo.com', 'College Road', 'Rajshahi', 'outside_dhaka'],
             ['Kazi Mahmud', '01866-778899', 'mahmud@gmail.com', 'Shibbari More', 'Khulna', 'outside_dhaka'],
@@ -944,7 +944,7 @@ class DatabaseSeeder extends Seeder
             $orderDate = now()->subDays($daysAgo)->subHours(random_int(1, 8));
 
             $order = Order::create([
-                'user_id'               => $cEmail === 'customer@vantbd.com' ? $customerUser?->id : null,
+                'user_id'               => $cEmail === 'customer@example.com' ? $customerUser?->id : null,
                 'order_number'          => \App\Support\OrderNumber::generate(),
                 'order_type'            => 'online',
                 'customer_name'         => $cName,
@@ -1084,10 +1084,10 @@ class DatabaseSeeder extends Seeder
         $logs = [
             [
                 'user_id'     => $superAdmin?->id,
-                'staff_name'  => $superAdmin?->name ?? 'Vant Admin',
+                'staff_name'  => $superAdmin?->name ?? 'Store Admin',
                 'staff_role'  => 'admin',
                 'action'      => 'System Initialization',
-                'description' => 'Configured the Vant Bangladesh leather catalog, categories and payment methods.',
+                'description' => 'Configured the Vantor Store leather catalog, categories and payment methods.',
                 'ip_address'  => '127.0.0.1',
                 'created_at'  => now()->subDays(3),
             ],

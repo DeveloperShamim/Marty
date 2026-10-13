@@ -32,7 +32,7 @@ class GoogleLoginTest extends TestCase
 
     public function test_redirect_uri_is_always_the_live_domain_callback(): void
     {
-        Setting::put('google_redirect_uri', 'https://www.vantbd.com'); // an old, wrong value is ignored
+        Setting::put('google_redirect_uri', 'https://www.vantor.com'); // an old, wrong value is ignored
         Setting::put('google_client_id', 'abc.apps.googleusercontent.com');
         Setting::put('google_client_secret', 'secret');
         $admin = User::factory()->create(['role' => 'admin']);
@@ -49,8 +49,8 @@ class GoogleLoginTest extends TestCase
 
     public function test_staff_signs_in_to_the_admin_panel_with_google(): void
     {
-        $staff = User::factory()->create(['email' => 'manager@vantbd.com', 'role' => 'order_manager']);
-        $this->fakeGoogle('Manager@vantbd.com');
+        $staff = User::factory()->create(['email' => 'manager@example.com', 'role' => 'order_manager']);
+        $this->fakeGoogle('Manager@example.com');
 
         $this->withSession(['google_login_for' => 'admin'])
             ->get(route('auth.google.callback'))
@@ -70,8 +70,8 @@ class GoogleLoginTest extends TestCase
             ->assertSessionHasErrors('email');
         $this->assertGuest();
 
-        User::factory()->create(['email' => 'old@vantbd.com', 'role' => 'admin', 'is_suspended' => true]);
-        $this->fakeGoogle('old@vantbd.com', 'g-999');
+        User::factory()->create(['email' => 'old@example.com', 'role' => 'admin', 'is_suspended' => true]);
+        $this->fakeGoogle('old@example.com', 'g-999');
         $this->withSession(['google_login_for' => 'admin'])
             ->get(route('auth.google.callback'))
             ->assertRedirect(route('admin.login'));
@@ -132,8 +132,8 @@ class GoogleLoginTest extends TestCase
 
     public function test_staff_suspended_and_unverified_accounts_are_refused(): void
     {
-        User::factory()->create(['email' => 'admin@vantbd.com', 'role' => 'admin']);
-        $this->fakeGoogle('admin@vantbd.com');
+        User::factory()->create(['email' => 'admin@example.com', 'role' => 'admin']);
+        $this->fakeGoogle('admin@example.com');
         $this->get(route('auth.google.callback'))->assertRedirect(route('login'))->assertSessionHas('error');
         $this->assertGuest();
 

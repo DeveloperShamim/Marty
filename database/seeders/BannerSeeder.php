@@ -18,7 +18,7 @@ class BannerSeeder extends Seeder
             [
                 'title'       => 'Genuine Leather, Made to Last',
                 'subtitle'    => 'Wallets, belts, watches, shoes and desk mats. Cash on delivery all over Bangladesh.',
-                'badge'       => 'VANT BANGLADESH',
+                'badge'       => 'VANTOR STORE',
                 'image'       => null,
                 'link_url'    => '/shop',
                 'button_text' => 'Shop Now',
@@ -41,7 +41,7 @@ class BannerSeeder extends Seeder
             ],
             [
                 'title'       => 'Pay with bKash, Get Free Delivery',
-                'subtitle'    => 'Pay online at checkout and we deliver for free. Use code VANT10 for 10% off.',
+                'subtitle'    => 'Pay online at checkout and we deliver for free. Use code SAVE10 for 10% off.',
                 'badge'       => 'OFFER',
                 'image'       => null,
                 'link_url'    => '/shop',

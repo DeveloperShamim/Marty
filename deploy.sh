@@ -6,7 +6,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 PHP="${PHP:-php}"
-BRANCH="${BRANCH:-VantBangladesh}"
+BRANCH="${BRANCH:-$(git rev-parse --abbrev-ref HEAD)}"
 
 if command -v composer >/dev/null 2>&1; then
     COMPOSER=(composer)
