@@ -1,186 +1,86 @@
-# SoleBd — Premium E-Commerce Storefront (Laravel)
+# Vantor — Laravel E-Commerce for Bangladeshi Online Shops
 
-A full-featured Laravel e-commerce application for a fashion & lifestyle store (shoes, luxury watches, genuine leather goods, bags & eyewear). Includes a high-converting storefront and a comprehensive admin panel.
+A ready-to-launch Laravel online shop with a full admin panel, built for stores that sell on Facebook and ship cash on delivery.
 
----
+## Features
 
-## ✨ Feature Highlights
-
-| Area | Details |
+| Area | What it does |
 |---|---|
-| 💬 **Live Customer Support Chat** | Floating widget with home & thread views, voice notes 🎙️, photo attachments 📷, product cards 🛍️, coupon sharing 🎟️, order tracking 🧾, status dropdown, 1-click storage cleanup 🧹, and Asia/Dhaka local timezone |
-| 🏪 **Storefront** | Modern responsive homepage, shop catalog, single product, contact, cart, order confirmation |
-| 🎨 **3-Color Theme Engine** | Pick 3 theme colors in admin → site colors update live across storefront & chat widget |
-| 🏷️ **Brands** | 9 Official brand pages (Nike, Adidas, Apex, Casio, Seiko, Picard, Fossil, Ray-Ban, Woodland) with logos and product counts |
-| 📦 **Products** | SKUs, color/size variants, flash sales, specs, customer reviews, square product media |
-| 🗂️ **Categories** | 6 Categories (Sneakers & Running Shoes, Formal & Dress Footwear, Luxury & Sport Watches, Leather Belts & Wallets, Bags & Backpacks, Eyewear & Accessories) |
-| 🎡 **Hero Banners** | Widescreen hero slider banners with custom background fit and call-to-action buttons |
-| 🛒 **Cart & Checkout** | Session cart, coupon codes, mobile payment (bKash, Nagad, Rocket, COD), auto contact sync |
-| 📋 **Orders** | Order management, status tracking, invoice PDF printing, UTM source tracking |
-| 🛡️ **Fraud Detection** | Zero-API local risk scoring, TrxID validation, blacklist management |
-| 👥 **Staff & Role Control** | Role-based access control (RBAC), 4 staff roles, account suspension |
-| 📜 **Staff Audit Logs** | Automated activity log timeline for all staff actions + 1-click Clear Audit Logs feature |
-| 👤 **Admin Profile** | Super Admin profile management to update email address & password credentials (`/admin/profile`) |
-| 👥 **Visitor Analytics** | Live real-time visitor monitor, 14-day Chart.js line chart, device tracking |
-| 🚚 **Courier Sync** | 1-click dispatch to Steadfast, Pathao, RedX via API |
-| 🛒 **Abandoned Carts** | Track uncompleted checkouts, 1-click WhatsApp/SMS recovery |
-| ⚡ **Admin Cache Clear** | 1-click topbar cache optimization (`optimize:clear`) |
-| ⚙️ **Admin Dashboard** | Settings, Banner, Brand, Category, Product, Order, Coupon, User management |
-| 🔐 **Auth** | Login, Register, Google OAuth 1-click login, OTP email verification |
-| 📨 **Mail & OTP** | SMTP config, customer OTP toggle |
-| 📈 **SEO & Tracking** | Meta tags, Facebook Pixel, Google Analytics / GTM |
+| **Storefront** | Mobile-first home, shop, product, cart, one-page checkout, order tracking, customer account, Google login and email OTP |
+| **Payments** | Cash on delivery, bKash, Nagad and Rocket with TrxID check; safe COD orders can confirm themselves |
+| **Couriers** | One-click booking with Steadfast, Pathao and RedX, parcel labels, automatic delivery updates, courier scan for hand-over and returns |
+| **Fraud check** | Risk score per order, blacklist, customer delivery history across couriers (BD Courier) |
+| **Orders** | Status tabs, bulk actions, invoices, staff call notes, new-order alerts |
+| **POS** | Counter sales with barcode scanning, receipts and barcode printing; online and shop stock stay in sync |
+| **Catalog** | Products with colour/size variants, inventory, size guide, reviews, media library with image compression |
+| **Marketing** | Flash sale with countdown, coupons, free-delivery rules, header ticker, abandoned-cart recovery by WhatsApp/SMS |
+| **Profit** | Expenses, net profit, sales by channel, visitor analytics, CSV exports |
+| **Staff** | Store, order and inventory manager roles, suspension, audit log |
+| **Tracking** | Meta Pixel + Conversions API, GA4 (browser and server), TikTok Pixel, Google Ads, GTM |
+| **Theme** | Pick 3 colours in Store Settings and the whole shop and admin follow |
 
----
+## Requirements
 
-## 🚀 Quick Setup (Fresh Install)
-
-### Prerequisites
-- PHP >= 8.2
+- PHP 8.2+ with the usual Laravel extensions
+- MySQL/MariaDB (SQLite works for local testing)
 - Composer
-- MySQL or any supported DB
-- Node.js and npm
+- Node.js is **not** needed to run the shop. The compiled CSS is committed in `public/theme/css/`.
 
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/DeveloperShamim/Marty.git
-cd Marty
-```
-
-### 2. Install PHP dependencies
+## Install
 
 ```bash
-composer install
-```
-
-### 3. Install Node dependencies and build assets
-
-```bash
-npm install
-npm run build
-```
-
-### 4. Configure environment
-
-```bash
+git clone https://github.com/DeveloperShamim/Marty.git vantor
+cd vantor
+composer install --no-dev --optimize-autoloader
 cp .env.example .env
 php artisan key:generate
 ```
 
-Open `.env` and set your database credentials:
-
-```env
-APP_NAME=SoleBd
-DB_DATABASE=solebd
-DB_USERNAME=root
-DB_PASSWORD=your_password
-```
-
-### 5. Run migrations and seed the database
+Set the database in `.env`, then:
 
 ```bash
-php artisan migrate:fresh --seed
-```
-
-> This runs **all** migrations and seeds:
-> - Super Admin and staff accounts (see credentials below)
-> - Default site settings for **SoleBd**
-> - 9 Brands, 6 Categories, 72 Products, SKUs, variants, banners, coupons, reviews, orders, support chats, visitor traffic, and audit logs
-
-### 6. Link storage (for image uploads)
-
-#### Standard Local / VPS Setup:
-```bash
+php artisan migrate --seed
 php artisan storage:link
 ```
 
-#### Shared Hosting / cPanel Setup (`public_html`):
-If your web host uses `public_html` instead of `public`:
+- With `APP_ENV=local` the seeder fills a **demo shop**: settings, categories, a house brand, banners, coupons and staff accounts. Add demo products and orders with
+  `php artisan db:seed --class=ProductSeeder` and `php artisan db:seed --class=OrderSeeder`.
+- With `APP_ENV=production` it only creates an admin account (`ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env`, or a printed random password), the default settings and categories. No demo products, orders or `password` accounts.
 
-**Option A (SSH Command Line):**
+Run `php artisan app:launch-check` before going live.
+
+### Shared hosting (cPanel)
+
+Point the domain's document root at `public/`. If the host only allows `public_html`, symlink it: `ln -s public public_html`, then run `php artisan storage:link`.
+
+## Demo logins (local demo data only)
+
+| Role | Email | Password |
+|---|---|---|
+| Super Admin | `admin@example.com` | `password` |
+| Store Manager | `manager@example.com` | `password` |
+| Order Manager | `orders@example.com` | `password` |
+| Inventory Manager | `inventory@example.com` | `password` |
+| Customer | `customer@example.com` | `password` |
+
+Admin panel: `/admin`.
+
+## Styles
+
+Pages use Tailwind CSS compiled ahead of time, not the Tailwind play CDN:
+
+- `public/theme/css/tw-store.css` (storefront) and `public/theme/css/tw-admin.css` (admin), built from `tailwind.store.config.js` and `tailwind.admin.config.js`.
+- Theme colours are CSS variables set by the layouts from Store Settings, so colour changes in admin need no rebuild.
+- After adding or changing Tailwind classes in a view, rebuild and commit the CSS:
+
 ```bash
-# 1. Symlink public folder to public_html
-ln -s public public_html
-
-# 2. Run Artisan storage link (supports both public and public_html automatically)
-php artisan storage:link
+npm install
+npm run build        # or npm run watch:store / npm run watch:admin while editing
 ```
 
-**Option B (Without SSH / PHP Helper Script):**
-Create a `link.php` script inside your `public_html` folder with the following code:
-```php
-<?php
-// Symlink storage/app/public to public_html/storage
-symlink(__DIR__.'/../storage/app/public', __DIR__.'/storage');
-echo "Storage link created successfully!";
-```
-Visit `http://yourdomain.com/link.php` once in your browser, then delete `link.php`.
+Swiper, Chart.js, JsBarcode and SortableJS are served from `public/theme/vendor/` at pinned versions.
 
-### 7. Start the dev server
+## Updating a live site
 
-```bash
-php artisan serve
-```
+`bash deploy.sh` on the server pulls the current branch, installs packages, runs migrations and refreshes caches.
 
-Visit: **http://127.0.0.1:8000**
-
----
-
-## 🧹 Chat Storage Maintenance
-
-To clean up old voice notes and attachment media files from your server storage:
-```bash
-# Clean chat media files older than 90 days
-php artisan chat:prune --days=90
-
-# Clean ONLY attachment files (keeping text history)
-php artisan chat:prune --days=60 --attachments-only
-```
-
----
-
-## 🔑 Default Login Credentials
-
-### Admin & Staff Panel — `/admin`
-
-| Role | Email Login | Password | Access Level |
-| :--- | :--- | :--- | :--- |
-| 👑 **Super Admin** | `admin@solebd.com` | `password` | 100% Full Access |
-| 👔 **Store Manager** | `store.manager@solebd.com` | `password` | Both Orders & Catalog Access |
-| 📦 **Order Manager** | `order.manager@solebd.com` | `password` | Orders, Support & Customer Access |
-| 🏭 **Inventory Manager** | `inventory.manager@solebd.com` | `password` | Products, Stock & Catalog Access |
-
-### Customer Account
-
-| Field    | Value               |
-|----------|---------------------|
-| Email    | `customer@solebd.com` |
-| Password | `password`          |
-
----
-
-## 🌱 Seeding Details
-
-### What `php artisan migrate:fresh --seed` seeds
-
-| Seeder                  | Contents                                                                 |
-|-------------------------|--------------------------------------------------------------------------|
-| `seedUsers()`           | 4 Staff accounts (Super Admin, Store Manager, Order Manager, Inventory Manager) + 1 Customer |
-| `seedSettings()`        | All SoleBd site settings (name, theme colors, contact, payment, SEO)     |
-| `seedCategories()`      | 6 categories: Sneakers & Running Shoes, Formal Footwear, Luxury Watches, Leather Belts & Wallets, Bags & Backpacks, Eyewear |
-| `seedBrands()`          | 9 brands: Nike, Adidas, Apex, Casio, Seiko, Picard, Fossil, Ray-Ban, Woodland |
-| `seedFeatures()`        | Homepage trust/feature badges                                            |
-| `seedCoupons()`         | Sample discount coupons                                                  |
-| `BannerSeeder`          | Homepage hero banner slides                                              |
-| `seedProducts()`        | 72 product catalog items linked to categories and brands                |
-| `seedReviews()`         | Customer product reviews                                                 |
-| `seedOrders()`          | Sample orders with fraud risk scores and UTM source tracking             |
-| `seedConversations()`   | Sample customer live support chat threads & messages                     |
-| `seedVisitorLogs()`     | 14 days of realistic storefront traffic for Visitor Analytics            |
-| `seedStaffActivityLogs()`| Sample audit timeline entries for employee action logs                   |
-
----
-
-## 📄 License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
