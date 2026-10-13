@@ -34,13 +34,30 @@ class StorefrontOptimizationTest extends TestCase
         $response = $this->get('/');
         $response->assertStatus(200);
 
-        // Ensures Tailwind CSS engine is loaded for full styling
-        $response->assertSee('cdn.tailwindcss.com');
+        // Styles come from the compiled Tailwind build with the theme colours as CSS variables, not the play CDN
+        $response->assertSee('theme/css/tw-store.css', false);
+        $response->assertSee('--tw-brand-600:', false);
+        $response->assertDontSee('cdn.tailwindcss.com', false);
+        $this->assertFileExists(public_path('theme/css/tw-store.css'));
 
         // Does not render artificial preloader delay
         $response->assertDontSee('id="preloader"', false);
 
         // Renders WhatsApp floating widget
         $response->assertSee('aria-label="Chat on WhatsApp"', false);
+    }
+
+    public function test_admin_uses_the_compiled_tailwind_build(): void
+    {
+        $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
+        $response->assertStatus(200);
+        $response->assertSee('theme/css/tw-admin.css', false);
+        $response->assertSee('--tw-brand-600:', false);
+        $response->assertDontSee('cdn.tailwindcss.com', false);
+        $this->assertFileExists(public_path('theme/css/tw-admin.css'));
+
+        $this->get(route('admin.login'))->assertDontSee('cdn.tailwindcss.com', false);
     }
 }

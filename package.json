@@ -3,14 +3,13 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
-        "dev": "vite"
+        "build": "npm run build:store && npm run build:admin",
+        "build:store": "tailwindcss -c tailwind.store.config.js -i resources/css/tailwind/input.css -o public/theme/css/tw-store.css --minify",
+        "build:admin": "tailwindcss -c tailwind.admin.config.js -i resources/css/tailwind/input.css -o public/theme/css/tw-admin.css --minify",
+        "watch:store": "tailwindcss -c tailwind.store.config.js -i resources/css/tailwind/input.css -o public/theme/css/tw-store.css --watch",
+        "watch:admin": "tailwindcss -c tailwind.admin.config.js -i resources/css/tailwind/input.css -o public/theme/css/tw-admin.css --watch"
     },
     "devDependencies": {
-        "@tailwindcss/vite": "^4.0.0",
-        "concurrently": "^9.0.1",
-        "laravel-vite-plugin": "^3.1",
-        "tailwindcss": "^4.0.0",
-        "vite": "^8.0.0"
+        "tailwindcss": "3.4.17"
     }
 }

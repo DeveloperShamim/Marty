@@ -15,44 +15,7 @@
     $theme = generate_3_color_matching_theme();
   @endphp
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          // One corner scale for the whole shop: 6 tags · 10 buttons & inputs · 16 cards · 24 large panels · pill.
-          borderRadius: { sm: '6px', DEFAULT: '6px', md: '10px', lg: '10px', xl: '10px', '2xl': '16px', '3xl': '24px' },
-          colors: {
-            brand: {
-              50:  '{{ $theme["primary_soft_bg"] }}',
-              100: '{{ $theme["primary_border"] }}',
-              200: '{{ $theme["primary_border"] }}',
-              300: '{{ $theme["primary"] }}',
-              400: '{{ $theme["primary"] }}',
-              500: '{{ $theme["primary"] }}',
-              600: '{{ $theme["primary"] }}',
-              700: '{{ $theme["primary_hover"] }}',
-              800: '{{ $theme["dark"] }}',
-              900: '{{ $theme["dark"] }}',
-            },
-            accent: {
-              400: '{{ $theme["primary_border"] }}',
-              500: '{{ $theme["primary"] }}',
-              600: '{{ $theme["primary"] }}',
-              700: '{{ $theme["dark"] }}',
-            },
-            ink: '{{ $theme["dark"] }}',
-            surface: {
-              light: '#FFFFFF',
-              soft: '{{ $theme["surface"] }}',
-            },
-          },
-          fontFamily: { sans:['Plus Jakarta Sans','Hind Siliguri','sans-serif'], display:['Plus Jakarta Sans','Hind Siliguri','sans-serif'] },
-        }
-      }
-    };
-  </script>
+  <link rel="stylesheet" href="{{ asset('theme/vendor/swiper/swiper-bundle.min.css') }}" />
 
   <style>
     :root {
@@ -62,6 +25,14 @@
       --brand-border: {{ $theme['primary_border'] }};
       --brand-dark: {{ $theme['dark'] }};
       --brand-surface: {{ $theme['surface'] }};
+      {{-- Theme colours for the compiled Tailwind build (tailwind.store.config.js) --}}
+      {!! tw_css_vars([
+        'brand-50' => $theme['primary_soft_bg'], 'brand-100' => $theme['primary_border'], 'brand-200' => $theme['primary_border'],
+        'brand-300' => $theme['primary'], 'brand-400' => $theme['primary'], 'brand-500' => $theme['primary'], 'brand-600' => $theme['primary'],
+        'brand-700' => $theme['primary_hover'], 'brand-800' => $theme['dark'], 'brand-900' => $theme['dark'],
+        'accent-400' => $theme['primary_border'], 'accent-500' => $theme['primary'], 'accent-600' => $theme['primary'], 'accent-700' => $theme['dark'],
+        'ink' => $theme['dark'], 'surface-soft' => $theme['surface'],
+      ]) !!}
     }
 
     /* Ensure clean viewport scaling without breaking position: sticky */
@@ -326,6 +297,7 @@
   </script>
 
   @include('partials.tracking-head')
+  <link rel="stylesheet" href="{{ asset('theme/css/tw-store.css') }}?v={{ @filemtime(public_path('theme/css/tw-store.css')) ?: '1' }}" />
 </head>
 
 <body class="@yield('body_class', 'bg-white text-ink antialiased')">
@@ -381,7 +353,7 @@
 
   <script src="{{ asset('theme/js/auto-row.js') }}?v={{ filemtime(public_path('theme/js/auto-row.js')) }}"></script>
   <script src="{{ asset('theme/js/storefront.js') }}?v={{ filemtime(public_path('theme/js/storefront.js')) }}"></script>
-  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script src="{{ asset('theme/vendor/swiper/swiper-bundle.min.js') }}"></script>
   @stack('scripts')
 </body>
 </html>

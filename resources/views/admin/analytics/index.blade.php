@@ -303,7 +303,7 @@
 </div>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ asset('theme/vendor/chartjs/chart.umd.min.js') }}"></script>
 <script>
   function handleRangeChange(val) {
     const wrap = document.getElementById('customDateWrap');

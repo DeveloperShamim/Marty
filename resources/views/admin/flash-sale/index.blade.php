@@ -313,7 +313,7 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script src="{{ asset('theme/vendor/sortable/Sortable.min.js') }}"></script>
 <script>
 (function () {
   var desktopList = document.getElementById('flashSaleList');

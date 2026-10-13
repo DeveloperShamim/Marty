@@ -7,18 +7,12 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="{{ favicon_url() }}" />
   @php $theme = generate_3_color_matching_theme(); @endphp
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { theme: { extend: {
-      colors: {
-        primary: { DEFAULT: '{{ $theme['primary'] }}' },
-        brand: { 50: '{{ $theme['primary_soft_bg'] }}', 600: '{{ $theme['primary'] }}', 700: '{{ $theme['primary_hover'] }}' },
-        accent: { 500: '{{ $theme['primary'] }}' },
-        ink: '{{ $theme['dark'] }}',
-      },
-      fontFamily: { sans: ['Plus Jakarta Sans', 'Hind Siliguri', 'ui-sans-serif', 'system-ui'], display: ['Plus Jakarta Sans', 'Hind Siliguri', 'sans-serif'] },
-    } } };
-  </script>
+  <style>
+    :root { {!! tw_css_vars([
+      'brand-50' => $theme['primary_soft_bg'], 'brand-600' => $theme['primary'], 'brand-700' => $theme['primary_hover'],
+      'primary' => $theme['primary'], 'ink' => $theme['dark'],
+    ]) !!} }
+  </style>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -28,6 +22,7 @@
     /* Prevent mobile auto-zoom on input focus (iOS zooms in if font-size < 16px) */
     @media screen and (max-width: 768px) { input:not([type="checkbox"]), select, textarea { font-size: 16px !important; } }
   </style>
+  <link rel="stylesheet" href="{{ asset('theme/css/tw-admin.css') }}?v={{ @filemtime(public_path('theme/css/tw-admin.css')) ?: '1' }}" />
 </head>
 <body class="bg-[#F6F3EF] min-h-screen text-ink">
   <div class="min-h-screen grid lg:grid-cols-[1.05fr_1fr]">

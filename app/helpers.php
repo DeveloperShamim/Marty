@@ -70,6 +70,30 @@ if (! function_exists('generate_3_color_matching_theme')) {
     }
 }
 
+if (! function_exists('tw_css_vars')) {
+    /**
+     * CSS custom properties for the compiled Tailwind builds (public/theme/css/tw-*.css), as "R G B" channels
+     * so classes with an opacity modifier (bg-brand-50/70) keep working. ['brand-600' => '#8B5A2B'] →
+     * "--tw-brand-600: 139 90 43;".
+     */
+    function tw_css_vars(array $colors): string
+    {
+        $out = '';
+        foreach ($colors as $name => $hex) {
+            $hex = ltrim((string) $hex, '#');
+            if (strlen($hex) === 3) {
+                $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+            }
+            if (! preg_match('/^[0-9a-fA-F]{6}$/', $hex)) {
+                continue;
+            }
+            $out .= '--tw-' . $name . ': ' . implode(' ', array_map('hexdec', str_split($hex, 2))) . '; ';
+        }
+
+        return trim($out);
+    }
+}
+
 if (! function_exists('generate_brand_color_scale')) {
     /** Generate a harmonious 10-step Tailwind color scale (50-900) from any Hex color. */
     function generate_brand_color_scale(string $hex): array
