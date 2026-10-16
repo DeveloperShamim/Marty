@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<title>Vant — Admin panel tutorial</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: #12040a; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; }
+  /* The video frame: always 1920×1080, scaled to fit the window. */
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; flex: none; transform-origin: 50% 50%;
+    background: radial-gradient(circle at 50% 42%, #6b1f2e 0%, #1c0509 78%); font-family: 'Hind Siliguri', 'Inter', sans-serif; }
+  .abs { position: absolute; left: 0; top: 0; }
+
+  /* ---------- world (everything the camera moves) ---------- */
+  #world { position: absolute; left: 0; top: 0; width: 1px; height: 1px; transform-origin: 0 0; }
+
+  /* Laptop: the display is 1600×1000 world px at (0, 0). */
+  #lid { position: absolute; left: -22px; top: -22px; width: 1644px; height: 1044px; border-radius: 38px; background: #0d0d10;
+    box-shadow: 0 0 0 2px #3a3a40, 0 60px 120px rgba(0,0,0,.55); }
+  #notch { position: absolute; left: 740px; top: -22px; width: 120px; height: 22px; border-radius: 0 0 12px 12px; background: #0d0d10; }
+  #display { position: absolute; left: 0; top: 0; width: 1600px; height: 1000px; border-radius: 12px; overflow: hidden;
+    background: linear-gradient(160deg, #7a2a3a 0%, #2a0a12 100%); }
+  #base { position: absolute; left: -160px; top: 1022px; width: 1920px; height: 30px; border-radius: 4px 4px 28px 28px;
+    background: linear-gradient(180deg, #e6e6ea 0%, #a9aab0 100%); }
+  #baseLip { position: absolute; left: 720px; top: 1022px; width: 160px; height: 10px; border-radius: 0 0 10px 10px; background: #b9bac0; }
+  #menubar { position: absolute; left: 0; top: 0; width: 1600px; height: 28px; background: rgba(255,255,255,.14);
+    color: #fff; font: 600 14px/28px 'Inter', sans-serif; }
+  #menubar span { margin-left: 22px; }
+  #menubar .right { position: absolute; right: 22px; top: 0; }
+
+  /* Browser window inside the display. Content viewport = 1440×864 at (80, 128). */
+  #browser { position: absolute; left: 80px; top: 52px; width: 1440px; height: 940px; border-radius: 14px; overflow: hidden;
+    background: #fff; box-shadow: 0 30px 80px rgba(0,0,0,.45); transform-origin: 50% 100%; }
+  #tabbar { position: absolute; left: 0; top: 0; width: 1440px; height: 40px; background: #e9e6e4; }
+  .light { position: absolute; top: 14px; width: 12px; height: 12px; border-radius: 50%; }
+  #tab { position: absolute; left: 92px; top: 6px; width: 270px; height: 34px; border-radius: 10px 10px 0 0; background: #fff; }
+  #tab img { position: absolute; left: 12px; top: 9px; width: 16px; height: 16px; }
+  .tabtitle { position: absolute; left: 36px; top: 0; width: 220px; font: 500 13px/34px 'Inter', sans-serif; color: #333; white-space: nowrap; overflow: hidden; }
+  #toolbar { position: absolute; left: 0; top: 40px; width: 1440px; height: 36px; background: #fff; border-bottom: 1px solid #e5e5e5; }
+  .navbtn { position: absolute; top: 9px; width: 18px; height: 18px; color: #777; font: 600 15px/18px 'Inter', sans-serif; text-align: center; }
+  #urlpill { position: absolute; left: 96px; top: 5px; width: 1300px; height: 26px; border-radius: 13px; background: #f1f1f1; }
+  .url { position: absolute; left: 16px; top: 0; font: 400 13.5px/26px 'Inter', sans-serif; color: #444; white-space: nowrap; }
+  #viewport { position: absolute; left: 0; top: 76px; width: 1440px; height: 864px; overflow: hidden; background: #fff; }
+  #viewport img { position: absolute; left: 0; top: 0; width: 1440px; opacity: 0; }
+  #viewport #sidebarOverlay { left: 0; top: 76px; width: 290px; }
+  #newtab { position: absolute; left: 0; top: 0; width: 1440px; height: 864px; background: #f7f5f3; }
+
+  /* Dock */
+  #dock { position: absolute; left: 580px; top: 918px; width: 440px; height: 72px; border-radius: 22px; background: rgba(255,255,255,.22);
+    border: 1px solid rgba(255,255,255,.35); }
+  .app { position: absolute; top: 10px; width: 52px; height: 52px; border-radius: 13px; }
+  .app i { position: absolute; display: block; }
+
+  /* Phone: 400 wide at (1700, 160). Screen 360×779 at (1720, 180). */
+  #phone { position: absolute; left: 1700px; top: 160px; width: 400px; height: 819px; border-radius: 64px; background: #111;
+    box-shadow: 0 0 0 3px #4a4a50, 0 50px 100px rgba(0,0,0,.5); }
+  #phoneScreen { position: absolute; left: 20px; top: 20px; width: 360px; height: 779px; border-radius: 46px; overflow: hidden;
+    background: linear-gradient(160deg, #7a2a3a 0%, #2a0a12 100%); }
+  #island { position: absolute; left: 140px; top: 32px; width: 120px; height: 34px; border-radius: 17px; background: #000; }
+  #phoneImg { position: absolute; left: 0; top: 0; width: 360px; opacity: 0; }
+
+  /* Pointer, highlight ring, click ripple, typed text */
+  #cursor { position: absolute; left: 0; top: 0; width: 34px; height: 44px; opacity: 0; transform-origin: 4px 4px;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,.35)); }
+  #ripple { position: absolute; left: 0; top: 0; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%;
+    border: 4px solid #f5c76c; opacity: 0; }
+  .ring { position: absolute; left: 0; top: 0; border: 4px solid #f5c76c; border-radius: 14px; opacity: 0;
+    box-shadow: 0 0 0 6px rgba(245,199,108,.25), 0 0 30px rgba(245,199,108,.55); }
+  .cover { position: absolute; left: 0; top: 0; opacity: 0; border-radius: 8px; }
+  .typed { position: absolute; left: 0; top: 0; overflow: hidden; white-space: nowrap; max-width: 0; color: #1f1f22;
+    font: 500 15px 'Inter', 'Hind Siliguri', sans-serif; }
+
+  /* ---------- screen-fixed layers ---------- */
+  #wm { position: absolute; left: 46px; top: 38px; width: 58px; height: 58px; opacity: .92; }
+  .toast { position: absolute; left: 660px; top: 48px; width: 600px; height: 92px; border-radius: 26px; opacity: 0;
+    background: rgba(255,255,255,.93); box-shadow: 0 24px 60px rgba(0,0,0,.35); }
+  .toast .ic { position: absolute; left: 20px; top: 20px; width: 52px; height: 52px; border-radius: 15px; color: #fff;
+    font: 700 28px/52px 'Inter', sans-serif; text-align: center; }
+  .toast .t1 { position: absolute; left: 90px; top: 16px; width: 490px; font: 700 23px/30px 'Hind Siliguri', sans-serif; color: #1d1d1f; white-space: nowrap; }
+  .toast .t2 { position: absolute; left: 90px; top: 48px; width: 490px; font: 500 18px/26px 'Hind Siliguri', 'Inter', sans-serif; color: #6e6e73; white-space: nowrap; }
+
+  /* Subtitles: a dark pill, words light up as they are spoken. */
+  .sub { position: absolute; left: 160px; top: 930px; width: 1600px; text-align: center; opacity: 0; }
+  .sub .pill { display: inline-block; max-width: 1540px; padding: 12px 34px 14px; border-radius: 34px;
+    background: rgba(26,6,10,.82); border: 1.5px solid rgba(255,255,255,.14); box-shadow: 0 18px 40px rgba(0,0,0,.35);
+    font: 600 40px/1.45 'Hind Siliguri', sans-serif; color: rgba(255,255,255,.42); }
+  .sub .w { display: inline; }
+
+  /* End card */
+  #end { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; opacity: 0;
+    background: radial-gradient(circle at 50% 45%, #6b1f2e 0%, #1c0509 80%); }
+  #endLogo { position: absolute; left: 660px; top: 300px; width: 600px; height: 200px; }
+  #endTag { position: absolute; left: 0; top: 520px; width: 1920px; text-align: center; color: rgba(255,255,255,.85);
+    font: 500 30px 'Inter', sans-serif; letter-spacing: 6px; }
+  #endLine { position: absolute; left: 900px; top: 590px; width: 120px; height: 2px; background: rgba(255,255,255,.35); }
+  #endHelp { position: absolute; left: 0; top: 620px; width: 1920px; text-align: center; color: rgba(255,255,255,.75); font: 500 30px 'Hind Siliguri', sans-serif; }
+  #endThanks { position: absolute; left: 0; top: 700px; width: 1920px; text-align: center; color: #fff; font: 700 64px 'Hind Siliguri', sans-serif; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <!--AUDIO-->
+  <div id="world">
+    <div id="lid"></div><div id="notch"></div>
+    <div id="display">
+      <div id="menubar"><span style="margin-left:26px">&#63743;</span><span>Finder</span><span>File</span><span>Edit</span><span>View</span><span>Window</span><span class="right">Tue 14:30</span></div>
+      <div id="browser">
+        <div id="tabbar">
+          <div class="light" style="left:16px;background:#ff5f57"></div><div class="light" style="left:36px;background:#febc2e"></div><div class="light" style="left:56px;background:#28c840"></div>
+          <div id="tab"><img src="assets/vant-mark.png" alt=""><!--TABTITLES--></div>
+        </div>
+        <div id="toolbar">
+          <div class="navbtn" style="left:16px">&#8592;</div><div class="navbtn" style="left:42px">&#8594;</div><div class="navbtn" style="left:68px">&#8635;</div>
+          <div id="urlpill"><!--URLS--></div>
+        </div>
+        <div id="viewport"><div id="newtab"></div><!--SCREENS--><img id="sidebarOverlay" src="assets/screens/sidebar.jpg" alt=""></div>
+      </div>
+      <div id="dock">
+        <div class="app" style="left:14px;background:#2f8cff"><i style="left:14px;top:12px;width:24px;height:28px;border-radius:6px;background:#fff;opacity:.9"></i></div>
+        <div class="app" style="left:98px;background:#ffcc33"><i style="left:12px;top:14px;width:28px;height:4px;background:#fff"></i><i style="left:12px;top:24px;width:28px;height:4px;background:#fff"></i><i style="left:12px;top:34px;width:20px;height:4px;background:#fff"></i></div>
+        <div class="app" id="browserIcon" style="left:182px;background:#ffffff"><i style="left:8px;top:8px;width:36px;height:36px;border-radius:50%;background:#2f8cff"></i><i style="left:18px;top:18px;width:16px;height:16px;border-radius:50%;background:#fff"></i></div>
+        <div class="app" style="left:266px;background:#ff3b30"><i style="left:20px;top:15px;width:0;height:0;border-left:16px solid #fff;border-top:11px solid transparent;border-bottom:11px solid transparent"></i></div>
+        <div class="app" style="left:350px;background:#8e5cf7"><i style="left:13px;top:13px;width:22px;height:22px;border-radius:50%;border:4px solid #fff"></i></div>
+      </div>
+    </div>
+    <div id="base"></div><div id="baseLip"></div>
+
+    <div id="phone"><div id="phoneScreen"><!--PHONEHOME--><img id="phoneImg" src="assets/screens/dashboard-phone.jpg" alt=""></div><div id="island"></div></div>
+
+    <div id="fx"></div>
+    <div id="ripple"></div>
+    <svg id="cursor" viewBox="0 0 34 44"><path d="M3 3 L3 34 L11 26.5 L16.5 39.5 L22 37 L16.6 24.3 L27.5 24.3 Z" fill="#ffffff" stroke="#2b0b12" stroke-width="2.4" stroke-linejoin="round"/></svg>
+  </div>
+
+  <img id="wm" src="assets/vant-mark-white.png" alt="">
+  <div id="toasts"></div>
+  <!--SUBS-->
+  <div id="end">
+    <img id="endLogo" src="assets/vant-logo-white.png" alt="Vant">
+    <div id="endTag">GENUINE LEATHER. TIMELESS STYLE.</div>
+    <div id="endLine"></div>
+    <div id="endHelp">সাহায্যের জন্য: 01775-075543</div>
+    <div id="endThanks">ধন্যবাদ</div>
+  </div>
+</div>
+
+<script>
+const DURATION = /*DURATION*/;
+const CUES = /*CUES*/;
+const SCREENS = /*SCREENS*/;
+const SCENE = /*SCENE*/;
+
+// Fit the 1920×1080 stage into the window.
+const stage = document.getElementById('stage');
+function fit() { const s = Math.min(innerWidth / 1920, innerHeight / 1080); stage.style.transform = `scale(${s})`; }
+addEventListener('resize', fit); fit();
+
+const $ = (id) => document.getElementById(id);
+const tl = gsap.timeline({ paused: true });
+window.__timeline = tl;
+
+// ---------- geometry ----------
+const VX = 80, VY = 128, VW = 1440, VH = 864;        // browser content viewport in world px
+const scroll = {};                                   // current scroll of each screen
+let current = null;                                  // screen showing in the browser
+
+function box(ref) {
+  if (Array.isArray(ref)) return { x: ref[0], y: ref[1], w: ref[2], h: ref[3] };
+  const [sid, name] = ref.split('.');
+  const s = SCREENS[sid];
+  const b = s && s.boxes[name];
+  if (!b) throw new Error('No box ' + ref);
+  const sy = name.startsWith('nav') ? 0 : (scroll[sid] || 0);
+  return { x: VX + b[0], y: VY + b[1] - sy, w: b[2], h: b[3] };
+}
+const union = (...refs) => {
+  const bs = refs.map(box);
+  const x = Math.min(...bs.map(b => b.x)), y = Math.min(...bs.map(b => b.y));
+  return { x, y, w: Math.max(...bs.map(b => b.x + b.w)) - x, h: Math.max(...bs.map(b => b.y + b.h)) - y };
+};
+const pad = (b, p) => ({ x: b.x - p, y: b.y - p, w: b.w + 2 * p, h: b.h + 2 * p });
+
+// ---------- actions ----------
+const world = $('world');
+function cam(t, rect, fill = 0.8, dur = 1.3, full = false) {
+  const r = typeof rect === 'string' || Array.isArray(rect) ? box(rect) : rect;
+  // Keep the subject above the subtitles unless the shot is meant to fill the frame.
+  const vh = full ? 1080 : 860, cy = full ? 540 : 455;
+  const s = Math.max(0.45, Math.min(2.6, Math.min(1920 * fill / r.w, vh * fill / r.h)));
+  tl.to(world, { x: 960 - (r.x + r.w / 2) * s, y: cy - (r.y + r.h / 2) * s, scale: s, duration: dur, ease: 'power2.inOut' }, t);
+}
+// The whole browser window, as wide as the frame allows.
+const camBrowser = (t, dur) => cam(t, { x: VX - 8, y: VY - 76, w: VW + 16, h: VH + 76 }, 1, dur, true);
+
+function show(t, sid, y = 0, dur = 0.35) {
+  const img = $('scr-' + sid), url = $('url-' + sid), ttl = $('ttl-' + sid);
+  y = Math.max(0, Math.min(y, Math.max(0, SCREENS[sid].h - VH)));
+  tl.set(img, { y: -y }, t);
+  tl.to([img, url, ttl], { opacity: 1, duration: dur, ease: 'none' }, t);
+  if (current && current !== sid) tl.to(['scr-', 'url-', 'ttl-'].map(p => $(p + current)), { opacity: 0, duration: dur, ease: 'none' }, t);
+  if (current === null) tl.to(['newtab', 'url-newtab', 'ttl-newtab'].map($), { opacity: 0, duration: dur }, t);
+  scroll[sid] = y; current = sid;
+}
+function scrollTo(t, y, dur = 1.2) {
+  const s = SCREENS[current];
+  y = Math.max(0, Math.min(y, Math.max(0, s.h - VH)));
+  tl.to($('scr-' + current), { y: -y, duration: dur, ease: 'power2.inOut' }, t);
+  scroll[current] = y;
+}
+function scrollToBox(t, name, dur) {
+  const b = SCREENS[current].boxes[name];
+  if (!b) throw new Error('No box ' + current + '.' + name);
+  scrollTo(t, b[1] + b[3] / 2 - VH / 2, dur);
+}
+
+let cx = 800, cy = 600;
+const cursorEl = $('cursor');
+function cursor(t, ref, dur = 0.9) {
+  const b = typeof ref === 'object' && !Array.isArray(ref) ? ref : box(ref);
+  cx = b.x + Math.min(b.w * 0.5, 60); cy = b.y + b.h * 0.55;
+  tl.to(cursorEl, { opacity: 1, duration: 0.25 }, t);
+  tl.to(cursorEl, { x: cx, y: cy, duration: dur, ease: 'power2.inOut' }, t);
+}
+function click(t) {
+  tl.to(cursorEl, { scale: 0.82, duration: 0.09, yoyo: true, repeat: 1, ease: 'power1.inOut' }, t);
+  tl.fromTo($('ripple'), { x: cx, y: cy, scale: 0.3, opacity: 0.95 }, { scale: 1.6, opacity: 0, duration: 0.55, ease: 'power2.out' }, t);
+}
+const tap = (t, ref, dur = 0.9) => { cursor(t, ref, dur); click(t + dur + 0.1); };
+const hideCursor = (t) => tl.to(cursorEl, { opacity: 0, duration: 0.3 }, t);
+
+function make(parent, cls, html = '') {
+  const el = document.createElement('div');
+  el.className = cls; el.innerHTML = html;
+  $(parent).appendChild(el);
+  return el;
+}
+function ring(t, ref, hold = 2.2, p = 8) {
+  const el = make('fx', 'ring');
+  const b = pad(typeof ref === 'object' && !Array.isArray(ref) ? ref : box(ref), p);
+  tl.set(el, { x: b.x, y: b.y, width: b.w, height: b.h }, t);
+  tl.fromTo(el, { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.35, ease: 'power2.out', transformOrigin: '50% 50%' }, t);
+  tl.to(el, { opacity: 0, duration: 0.35 }, t + hold);
+}
+// Typed text appears letter by letter: the box widens from 0 to the text's width.
+const measure = document.createElement('canvas').getContext('2d');
+function type(t, ref, text, dur, opts = {}) {
+  const el = make('fx', 'typed');
+  el.textContent = text;
+  const size = opts.size || 15;
+  el.style.fontSize = size + 'px';
+  measure.font = `500 ${size}px Inter, 'Hind Siliguri', sans-serif`;
+  const w = Math.ceil(measure.measureText(text).width * 1.12) + 6;
+  const b = typeof ref === 'object' && !Array.isArray(ref) ? ref : box(ref);
+  // Cover the field's placeholder text with its own background colour.
+  if (opts.bg !== false) {
+    const cover = make('fx', 'cover');
+    cover.style.background = opts.bg || '#ffffff';
+    const inset = opts.inset ?? 3;
+    tl.set(cover, { x: b.x + inset + (opts.coverDx ?? 0), y: b.y + inset, width: b.w - 2 * inset - (opts.coverDx ?? 0), height: b.h - 2 * inset, opacity: 1 }, t);
+    if (opts.until) tl.to(cover, { opacity: 0, duration: 0.2 }, opts.until);
+  }
+  el.parentNode.appendChild(el);
+  tl.set(el, { x: b.x + (opts.dx ?? 14), y: b.y + b.h / 2 - size * 0.72 + (opts.dy ?? 0), opacity: 1 }, t);
+  tl.to(el, { maxWidth: w, duration: dur, ease: 'none' }, t);
+  if (opts.until) tl.to(el, { opacity: 0, duration: 0.2 }, opts.until);
+}
+function toast(t, icon, color, title, sub, hold = 3) {
+  const el = make('toasts', 'toast', `<div class="ic" style="background:${color}">${icon}</div><div class="t1"></div><div class="t2"></div>`);
+  el.querySelector('.t1').textContent = title;
+  el.querySelector('.t2').textContent = sub;
+  tl.fromTo(el, { opacity: 0, y: -40 }, { opacity: 1, y: 0, duration: 0.45, ease: 'back.out(1.6)' }, t);
+  tl.to(el, { opacity: 0, y: -30, duration: 0.35 }, t + hold);
+}
+
+// ---------- subtitles ----------
+CUES.forEach((c, i) => {
+  const el = $('sub' + i);
+  const next = CUES[i + 1];
+  const off = next && next.s - c.e < 0.7 ? next.s : c.e + 0.25;
+  tl.to(el, { opacity: 1, duration: 0.18, ease: 'none' }, c.s - 0.05);
+  tl.to(el, { opacity: 0, duration: 0.12, ease: 'none' }, off - 0.06);
+  [...el.querySelectorAll('.w')].forEach((w) => tl.to(w, { color: '#ffffff', duration: 0.14, ease: 'none' }, +w.dataset.t));
+});
+
+// ---------- scene ----------
+const C = (n) => CUES[n - 1].s, E = (n) => CUES[n - 1].e;
+SCENE({ tl, $, world, box, union, pad, cam, camBrowser, show, scrollTo, scrollToBox, cursor, click, tap, hideCursor, ring, type, toast, C, E, VX, VY, VW, VH });
+tl.set({}, {}, DURATION);
+
+// Play once everything (fonts, screenshots) is ready.
+Promise.all([document.fonts.ready, ...[...document.images].map(im => im.decode().catch(() => {}))]).then(() => tl.play(0));
+</script>
+</body>
+</html>
