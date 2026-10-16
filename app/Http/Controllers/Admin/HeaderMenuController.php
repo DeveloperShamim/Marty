@@ -17,6 +17,7 @@ class HeaderMenuController extends Controller
     {
         return view('admin.header-menu.index', [
             'items'      => HeaderMenu::saved(),
+            'style'      => setting('header_menu_style', 'light') === 'dark' ? 'dark' : 'light',
             'isCustom'   => HeaderMenu::isCustom(),
             'types'      => collect(HeaderMenu::TYPES)->map(fn ($t, $key) => ['key' => $key, 'label' => $t[0], 'ref' => $t[1], 'child' => $t[2]])->values(),
             'categories' => Category::with('parent:id,name')->get(['id', 'name', 'parent_id', 'is_active'])
@@ -37,13 +38,17 @@ class HeaderMenuController extends Controller
             return back()->with('status', 'Menu bar reset to the default: Home, All Products, all categories and Brands.');
         }
 
-        $request->validate(['menu' => ['required', 'json', 'max:20000']]);
+        $request->validate([
+            'menu'       => ['required', 'json', 'max:20000'],
+            'menu_style' => ['nullable', 'in:light,dark'],
+        ]);
         $items = HeaderMenu::sanitize((array) json_decode($request->input('menu'), true));
         if (! $items) {
             return back()->withErrors(['menu' => 'Add at least one menu item.']);
         }
 
         Setting::put('header_menu', json_encode($items));
+        Setting::put('header_menu_style', $request->input('menu_style', 'light'));
         Setting::forgetCache();
         ActivityLogger::log('Menu Bar Updated', 'Updated the store menu bar (' . count($items) . ' items).');
 

@@ -80,6 +80,21 @@ class HeaderMenuTest extends TestCase
         $this->assertStringNotContainsString('javascript:alert', $html);
     }
 
+    public function test_admin_can_pick_the_dark_bar_style(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->cat('Wallets');
+        $this->assertStringContainsString('data-nav-style="light"', $this->get('/')->getContent());
+
+        $this->actingAs($admin)->put(route('admin.header-menu.update'), ['menu' => json_encode([['type' => 'home'], ['type' => 'categories']]), 'menu_style' => 'dark'])
+            ->assertSessionHasNoErrors();
+        $this->assertSame('dark', Setting::get('header_menu_style'));
+        $this->assertStringContainsString('data-nav-style="dark"', $this->get('/')->getContent());
+
+        $this->actingAs($admin)->put(route('admin.header-menu.update'), ['menu' => json_encode([['type' => 'home']]), 'menu_style' => 'purple'])
+            ->assertSessionHasErrors('menu_style');
+    }
+
     public function test_reset_goes_back_to_the_default(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);

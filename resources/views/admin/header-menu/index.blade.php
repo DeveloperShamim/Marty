@@ -18,8 +18,8 @@
       <h2 class="text-[15px] font-semibold text-gray-900">Preview</h2>
       <span class="text-xs text-gray-500">Updates as you edit. Save to publish.</span>
     </div>
-    <div class="rounded-xl ring-1 ring-gray-200 bg-white px-2 py-2 overflow-x-auto">
-      <div id="hmPreview" class="flex items-center gap-1 text-[13px] font-semibold text-gray-700 whitespace-nowrap"></div>
+    <div id="hmPreviewBar" class="rounded-xl ring-1 px-2 py-2 overflow-x-auto {{ $style === 'dark' ? 'ring-transparent text-white/90' : 'ring-gray-200 bg-white text-gray-700' }}" @if($style === 'dark') style="background: var(--brand-dark);" @endif>
+      <div id="hmPreview" class="flex items-center gap-1 text-[13px] font-semibold whitespace-nowrap"></div>
     </div>
     <p class="text-[11px] text-gray-500">On phones the same links appear in the side menu. Home and All Products are already there as the logo and the "Shop all" tile.</p>
   </section>
@@ -27,6 +27,22 @@
   <form method="POST" action="{{ route('admin.header-menu.update') }}" class="panel p-4 sm:p-5 flex flex-col gap-4" id="hmForm">
     @csrf @method('PUT')
     <input type="hidden" name="menu" id="hmJson">
+
+    <fieldset>
+      <legend class="text-[15px] font-semibold text-gray-900">Bar style</legend>
+      <div class="mt-2 grid grid-cols-2 gap-2.5 max-w-md">
+        @foreach(['light' => 'Light', 'dark' => 'Dark'] as $key => $name)
+          <label class="cursor-pointer rounded-2xl ring-1 ring-gray-200 p-2.5 has-[:checked]:ring-2 has-[:checked]:ring-gray-900 transition">
+            <input type="radio" name="menu_style" value="{{ $key }}" class="sr-only" data-style-pick @checked($style === $key)>
+            <span class="flex items-center gap-2 rounded-lg px-2.5 py-2 text-[11px] font-semibold {{ $key === 'dark' ? 'text-white/90' : 'bg-white ring-1 ring-gray-200 text-gray-700' }}" @if($key === 'dark') style="background: var(--brand-dark);" @endif>
+              <span>Home</span><span>Shoes</span><span>Watches</span><span class="hidden sm:inline">Belts</span>
+            </span>
+            <span class="mt-2 block text-[13px] font-semibold text-gray-900">{{ $name }}</span>
+            <span class="block text-[11px] text-gray-500">{{ $key === 'dark' ? 'Your theme’s dark colour with white text' : 'White bar with dark text' }}</span>
+          </label>
+        @endforeach
+      </div>
+    </fieldset>
 
     <div class="flex flex-wrap items-start justify-between gap-2">
       <div>
@@ -179,7 +195,7 @@
     const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
     const caret = '<svg class="w-3 h-3 inline -mt-px" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="m19 9-7 7-7-7"/></svg>';
     $('hmPreview').innerHTML = items.map((it) => {
-      if (it.type === 'categories') return '<span class="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-500 italic">Categories… · More ' + caret + '</span>';
+      if (it.type === 'categories') return '<span class="px-2.5 py-1 rounded-lg opacity-60 italic">Categories… · More ' + caret + '</span>';
       if (it.type === 'brands') return '<span class="px-2.5 py-1">Brands ' + caret + '</span>';
       const drop = (it.children && it.children.length) || (it.type === 'category' && CATS.some((c) => c.name.startsWith(nameOf(it) + ' › ')));
       return '<span class="px-2.5 py-1">' + esc(nameOf(it)) + (drop ? ' ' + caret : '') + '</span>';
@@ -206,6 +222,12 @@
     }
     $('hmJson').value = JSON.stringify(items);
   });
+
+  document.querySelectorAll('[data-style-pick]').forEach((r) => r.addEventListener('change', () => {
+    const dark = r.value === 'dark' && r.checked, bar = $('hmPreviewBar');
+    bar.className = 'rounded-xl ring-1 px-2 py-2 overflow-x-auto ' + (dark ? 'ring-transparent text-white/90' : 'ring-gray-200 bg-white text-gray-700');
+    bar.style.background = dark ? 'var(--brand-dark)' : '';
+  }));
 
   render();
 })();

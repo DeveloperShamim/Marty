@@ -152,8 +152,23 @@
     </div>
   </div>
 
-  {{-- ROW 2: Secondary Navigation Bar --}}
-  <div class="hidden lg:block bg-white border-b border-stone-200/80 text-stone-700 shadow-sm">
+  {{-- ROW 2: Secondary Navigation Bar. Style (Admin → Homepage → Menu bar): light, or dark in the theme's dark colour --}}
+  @php
+    $navDark = setting('header_menu_style', 'light') === 'dark';
+  @endphp
+  @if($navDark)
+    <style>
+      .nav-dark { background: var(--brand-dark, #2B1D14); }
+      .nav-dark [data-nav-cat] > a, .nav-dark [data-menu-item] > a, .nav-dark [data-nav-more-btn],
+      .nav-dark #brandDropdownContainer > button, .nav-dark [data-nav-hotline] { color: rgba(255,255,255,.86) !important; background: transparent !important; font-weight: 500; }
+      .nav-dark [data-nav-cat] > a:hover, .nav-dark [data-menu-item] > a:hover, .nav-dark [data-nav-more-btn]:hover,
+      .nav-dark #brandDropdownContainer > button:hover, .nav-dark [data-nav-hotline]:hover { color: #fff !important; background: rgba(255,255,255,.1) !important; }
+      .nav-dark [data-nav-cat] > a.bg-brand-50, .nav-dark [data-menu-item] > a.bg-brand-50, .nav-dark [data-nav-more-btn].bg-brand-50,
+      .nav-dark #brandDropdownContainer > button.bg-brand-50 { color: #fff !important; background: rgba(255,255,255,.16) !important; font-weight: 700; }
+      .nav-dark [data-nav-hotline] svg, .nav-dark [data-nav-hotline] span { color: inherit !important; }
+    </style>
+  @endif
+  <div class="hidden lg:block {{ $navDark ? 'nav-dark' : 'bg-white border-b border-stone-200/80 text-stone-700 shadow-sm' }}" data-nav-style="{{ $navDark ? 'dark' : 'light' }}">
     <div class="relative max-w-7xl mx-auto px-4 sm:px-5 h-11 text-sm font-semibold">
       <nav class="flex items-center gap-1 xl:gap-2 h-full py-1">
         {{-- The menu bar: Admin → Homepage → Menu bar (Home, All Products, every category and Brands until admin changes it) --}}
