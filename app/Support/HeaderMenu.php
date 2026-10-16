@@ -83,6 +83,9 @@ class HeaderMenu
             return null;
         }
         $row = ['type' => $type];
+        if (! empty($item['hidden'])) {
+            $row['hidden'] = true;
+        }
         $label = trim(strip_tags((string) ($item['label'] ?? '')));
         if ($label !== '') {
             $row['label'] = mb_substr($label, 0, 40);
@@ -160,6 +163,9 @@ class HeaderMenu
 
         $out = [];
         foreach (self::saved() as $item) {
+            if (! empty($item['hidden'])) {
+                continue;
+            }
             $type = $item['type'] ?? '';
             if ($type === 'categories' || $type === 'brands') {
                 $out[] = ['kind' => $type];
@@ -181,7 +187,7 @@ class HeaderMenu
                 }
             }
             foreach ($item['children'] ?? [] as $child) {
-                if ($c = $link($child)) {
+                if (empty($child['hidden']) && $c = $link($child)) {
                     $children[] = ['label' => $c[0], 'url' => $c[1], 'active' => (bool) $c[2]];
                 }
             }

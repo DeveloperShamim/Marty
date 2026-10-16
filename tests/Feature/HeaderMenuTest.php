@@ -95,6 +95,29 @@ class HeaderMenuTest extends TestCase
             ->assertSessionHasErrors('menu_style');
     }
 
+    public function test_hidden_items_stay_saved_but_leave_the_store(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $belts = $this->cat('Belts');
+
+        $this->save($admin, [
+            ['type' => 'link', 'label' => 'Winter Sale', 'url' => '/shop?on_sale=1', 'hidden' => true],
+            ['type' => 'link', 'label' => 'Offers', 'url' => '/shop', 'children' => [
+                ['type' => 'category', 'ref' => $belts->id, 'label' => 'Secret Belts', 'hidden' => true],
+                ['type' => 'track'],
+            ]],
+        ])->assertSessionHasNoErrors();
+
+        $saved = json_decode(Setting::get('header_menu'), true);
+        $this->assertTrue($saved[0]['hidden']);
+        $this->assertTrue($saved[1]['children'][0]['hidden']);
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringNotContainsString('Winter Sale', $html);
+        $this->assertStringNotContainsString('Secret Belts', $html);
+        $this->assertStringContainsString('Offers', $html);
+    }
+
     public function test_reset_goes_back_to_the_default(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
