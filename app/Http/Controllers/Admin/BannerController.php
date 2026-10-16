@@ -102,8 +102,8 @@ class BannerController extends Controller
             'ends_at.after' => 'The end must be after the start.',
         ]);
 
-        // Only the promo row can be kept to phones or desktops; the slider and side cards always show on both
-        $data['show_on'] = $data['placement'] === 'promo_row' ? ($data['show_on'] ?? 'both') : 'both';
+        // Promo cards can be kept to phones or desktops; carousel slides always show on both
+        $data['show_on'] = $data['placement'] === 'hero_side' ? ($data['show_on'] ?? 'both') : 'both';
         $data['starts_at'] = $data['starts_at'] ?? null;
         $data['ends_at'] = $data['ends_at'] ?? null;
 

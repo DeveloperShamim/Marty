@@ -30,7 +30,7 @@
         <h2 class="text-[15px] font-semibold text-gray-900">Placement</h2>
         <p class="text-xs text-gray-500 mt-0.5">Choose where this banner appears on the homepage.</p>
 
-        <div class="mt-3 grid sm:grid-cols-3 gap-2.5">
+        <div class="mt-3 grid sm:grid-cols-2 gap-2.5">
           <label class="relative flex flex-col p-3.5 rounded-xl ring-1 cursor-pointer transition-colors placement-card {{ $currentPlacement === 'hero' ? 'ring-2 ring-gray-900 bg-gray-50' : 'ring-gray-200 hover:bg-gray-50' }}" id="label-placement-hero">
             <span class="flex items-center justify-between gap-2">
               <span class="font-semibold text-[13px] text-gray-900">Carousel slide</span>
@@ -45,14 +45,6 @@
               <input type="radio" name="placement" value="hero_side" class="accent-primary h-4 w-4" @checked($currentPlacement === 'hero_side') onchange="updatePlacementUI('hero_side')">
             </span>
             <span class="mt-1 text-xs text-gray-500">Cards beside the slider. Best size 868 &times; 476 px (1.82:1).</span>
-          </label>
-
-          <label class="relative flex flex-col p-3.5 rounded-xl ring-1 cursor-pointer transition-colors placement-card {{ $currentPlacement === 'promo_row' ? 'ring-2 ring-gray-900 bg-gray-50' : 'ring-gray-200 hover:bg-gray-50' }}" id="label-placement-promo_row">
-            <span class="flex items-center justify-between gap-2">
-              <span class="font-semibold text-[13px] text-gray-900">Promo banner</span>
-              <input type="radio" name="placement" value="promo_row" class="accent-primary h-4 w-4" @checked($currentPlacement === 'promo_row') onchange="updatePlacementUI('promo_row')">
-            </span>
-            <span class="mt-1 text-xs text-gray-500">Row under the trust strip, 2 side by side. Best size 1200 &times; 660 px.</span>
           </label>
         </div>
 
@@ -99,7 +91,7 @@
           <p class="text-xs text-gray-500 mt-0.5">Leave the dates empty to show it until you hide it.</p>
         </div>
 
-        <div id="showOnField" class="{{ $currentPlacement === 'promo_row' ? '' : 'hidden' }}">
+        <div id="showOnField" class="{{ $currentPlacement === 'hero_side' ? '' : 'hidden' }}">
           <span class="lbl">Show on</span>
           @php $showOn = old('show_on', $banner->show_on ?? 'both'); @endphp
           <div class="grid grid-cols-3 gap-2" role="radiogroup">
@@ -110,7 +102,7 @@
               </label>
             @endforeach
           </div>
-          <p class="text-[11px] text-gray-500 mt-1">Phone means screens narrower than a small tablet.</p>
+          <p class="text-[11px] text-gray-500 mt-1">Desktop is the wide layout with cards beside the slider. Phone covers phones and tablets.</p>
         </div>
 
         <div class="grid sm:grid-cols-2 gap-3">
@@ -203,9 +195,8 @@ function updatePlacementUI(placement) {
   const sizes = {
     hero: ['15/8', '15:8', '1500 × 800 px', 'Hero slides display in the main rotating carousel. Recommended size is <strong>1500 &times; 800 px</strong> (Aspect ratio 15:8).'],
     hero_side: ['1.82/1', '1.82:1', '868 × 476 px', 'Promo cards sit beside the hero carousel (stacked on desktop, 2-column grid on mobile). Recommended size is <strong>868 &times; 476 px</strong> (Aspect ratio 1.82:1).'],
-    promo_row: ['1.82/1', '1.82:1', '1200 × 660 px', 'Promo banners sit in a row under the trust strip: 2 side by side on desktop, one at a time with a swipe on phones. Recommended size is <strong>1200 &times; 660 px</strong> (Aspect ratio 1.82:1).'],
   };
-  ['hero', 'hero_side', 'promo_row'].forEach(p => {
+  ['hero', 'hero_side'].forEach(p => {
     document.getElementById('label-placement-' + p).className = BASE + (p === placement ? 'ring-2 ring-gray-900 bg-gray-50' : 'ring-1 ring-gray-200 hover:bg-gray-50');
   });
   const [ratio, badge, size, text] = sizes[placement] || sizes.hero;
@@ -213,7 +204,7 @@ function updatePlacementUI(placement) {
   document.getElementById('previewAspectBadge').textContent = badge;
   document.getElementById('sizeGuideline').textContent = 'Recommended: ' + size;
   document.getElementById('placementGuidelinesText').innerHTML = text;
-  document.getElementById('showOnField').classList.toggle('hidden', placement !== 'promo_row');
+  document.getElementById('showOnField').classList.toggle('hidden', placement !== 'hero_side');
 }
 
 function updateLinkPreview(val) {

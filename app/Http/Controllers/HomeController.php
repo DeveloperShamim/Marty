@@ -104,7 +104,6 @@ class HomeController extends Controller
         return view('storefront.home', [
             'heroBanners'            => $banners('hero')->get(),
             'heroSideBanners'        => $banners('hero_side')->get(),
-            'promoBanners'           => $banners('promo_row')->get(),
             'features'               => Feature::where('is_active', true)->orderBy('position')->get(),
             'categories'             => $categories,
             'featuredHomeCategories' => $featuredHomeCategories,

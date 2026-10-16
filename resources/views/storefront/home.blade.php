@@ -6,7 +6,11 @@
     $flashEndsAt = setting('flash_sale_ends_at');
     $flashEndsIso = $flashEndsAt ? \Illuminate\Support\Carbon::parse($flashEndsAt)->toIso8601String() : null;
     $mainHero = $heroBanners->first();
-    $hasHero = $heroBanners->isNotEmpty() || $heroSideBanners->isNotEmpty() || setting('hero_fallback_title') || setting('hero_fallback_badge');
+    // Promo cards: up to 2 on desktop and up to 2 on phones, each kept to the screens admin picked
+    $deskCards = $heroSideBanners->filter->showsOnDesktop()->take(2);
+    $phoneCards = $heroSideBanners->filter->showsOnPhone()->take(2);
+    $sideCards = $heroSideBanners->filter(fn ($c) => $deskCards->contains("id", $c->id) || $phoneCards->contains("id", $c->id));
+    $hasHero = $heroBanners->isNotEmpty() || $sideCards->isNotEmpty() || setting('hero_fallback_title') || setting('hero_fallback_badge');
     $hero = $mainHero;
     $heroTitle = $hero?->title ?: setting('hero_fallback_title');
     $heroSubtitle = $hero?->subtitle ?: setting('hero_fallback_subtitle');
@@ -21,7 +25,7 @@
 
         {{-- Main Hero Slider --}}
         @php
-          $sliderClasses = $heroSideBanners->isNotEmpty()
+          $sliderClasses = $deskCards->isNotEmpty()
             ? 'col-span-2 lg:col-span-7 lg:row-span-2'
             : 'col-span-2 lg:col-span-10';
         @endphp
@@ -96,8 +100,13 @@
         </div>
 
         {{-- Side Promo Tiles --}}
-        @foreach($heroSideBanners->take(2) as $sideCard)
-          <a href="{{ $sideCard->linkHref() }}" class="col-span-1 lg:col-span-3 relative flex rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-0.5 bg-transparent aspect-[868/476] lg:aspect-auto lg:h-full min-h-0" aria-label="{{ $sideCard->title ?: 'Promo Card' }}">
+        @foreach($sideCards as $sideCard)
+          @php
+            $onDesk = $deskCards->contains("id", $sideCard->id);
+            $onPhone = $phoneCards->contains("id", $sideCard->id);
+            $cardScreens = ($onDesk && $onPhone ? '' : ($onDesk ? 'hidden lg:flex' : 'lg:hidden')) . ($phoneCards->count() === 1 ? ' col-span-2 lg:col-span-3' : ' col-span-1 lg:col-span-3');
+          @endphp
+          <a href="{{ $sideCard->linkHref() }}" data-promo-card="{{ $sideCard->show_on ?? 'both' }}" class="{{ $cardScreens }} relative flex rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-0.5 bg-transparent aspect-[868/476] lg:aspect-auto lg:h-full min-h-0" aria-label="{{ $sideCard->title ?: 'Promo Card' }}">
             @if($sideCard->image)
               <img src="{{ $sideCard->imageUrl() }}" alt="{{ $sideCard->title }}" class="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-500" loading="lazy">
             @else
@@ -141,32 +150,6 @@
               @endif
             </div>
           </div>
-        @endforeach
-      </div>
-    </section>
-  @endif
-
-  {{-- 2b. PROMO BANNERS (Admin → Banners → Promo banners): 2 side by side on desktop, swipe one at a time on phones.
-       Each banner can be kept to phones or desktops and given start / end dates. --}}
-  @if(($promoBanners ?? collect())->isNotEmpty())
-    @php
-      $promoPhone = $promoBanners->where('show_on', '!=', 'desktop')->count();
-      $promoDesk = $promoBanners->where('show_on', '!=', 'mobile')->count();
-    @endphp
-    <section class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 mt-3 sm:mt-5" data-reveal data-promo-banners>
-      <div class="flex gap-2.5 overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid {{ $promoDesk > 1 ? 'sm:grid-cols-2' : 'sm:grid-cols-1' }} sm:gap-4 sm:overflow-visible">
-        @foreach($promoBanners as $promo)
-          <a href="{{ $promo->linkHref() }}" class="{{ $promoPhone > 1 ? 'w-[88%]' : 'w-full' }} sm:w-auto shrink-0 snap-start block overflow-hidden rounded-2xl bg-stone-100 shadow-sm ring-1 ring-stone-200/60 transition hover:shadow-md group {{ $promo->deviceClasses() }}" data-promo-banner="{{ $promo->show_on }}" aria-label="{{ $promo->title ?: 'Promotion' }}">
-            @if($promo->image)
-              <img src="{{ $promo->imageUrl() }}" alt="{{ $promo->title }}" class="w-full aspect-[1.82/1] object-cover transition-transform duration-500 group-hover:scale-[1.02]" loading="lazy">
-            @else
-              <div class="w-full aspect-[1.82/1] bg-gradient-to-br from-neutral-800 to-stone-900 p-5 sm:p-7 text-white flex flex-col justify-end">
-                @if($promo->badge)<span class="self-start text-[10px] font-bold px-2 py-0.5 rounded bg-brand-500 uppercase">{{ $promo->badge }}</span>@endif
-                <h3 class="mt-2 font-extrabold text-lg sm:text-2xl line-clamp-2">{{ $promo->title }}</h3>
-                @if($promo->subtitle)<p class="mt-1 text-xs sm:text-sm text-white/75 line-clamp-2">{{ $promo->subtitle }}</p>@endif
-              </div>
-            @endif
-          </a>
         @endforeach
       </div>
     </section>

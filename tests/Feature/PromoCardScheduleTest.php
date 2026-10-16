@@ -8,7 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class PromoBannerTest extends TestCase
+class PromoCardScheduleTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -21,12 +21,12 @@ class PromoBannerTest extends TestCase
     private function promo(array $attrs = []): Banner
     {
         return Banner::create($attrs + [
-            'title' => 'Zip Wallet', 'placement' => 'promo_row', 'image' => 'https://example.com/zip.jpg',
+            'title' => 'Zip Wallet', 'placement' => 'hero_side', 'image' => 'https://example.com/zip.jpg',
             'link_url' => '/shop', 'is_active' => true, 'position' => 0,
         ]);
     }
 
-    public function test_promo_banners_show_in_their_own_row(): void
+    public function test_promo_cards_keep_to_the_screens_admin_picked(): void
     {
         $this->promo();
         $this->promo(['title' => 'Long Wallet', 'show_on' => 'desktop']);
@@ -34,10 +34,21 @@ class PromoBannerTest extends TestCase
 
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('data-promo-banners', $html);
-        $this->assertMatchesRegularExpression('/hidden sm:block" data-promo-banner="desktop"/', $html);
-        $this->assertMatchesRegularExpression('/sm:hidden" data-promo-banner="mobile"/', $html);
-        $this->assertStringContainsString('data-promo-banner="both"', $html);
+        // Desktop gets the first two that show there, phones the first two that show there
+        $this->assertMatchesRegularExpression('/data-promo-card="both" class="\s*col-span-1 lg:col-span-3/', $html);
+        $this->assertMatchesRegularExpression('/data-promo-card="desktop" class="hidden lg:flex col-span-1/', $html);
+        $this->assertMatchesRegularExpression('/data-promo-card="mobile" class="lg:hidden col-span-1/', $html);
+        $this->assertStringContainsString('lg:col-span-7 lg:row-span-2', $html);
+    }
+
+    public function test_slider_takes_full_width_on_desktop_when_cards_are_phone_only(): void
+    {
+        $this->promo(['show_on' => 'mobile']);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        $this->assertStringContainsString('col-span-2 lg:col-span-10', $html);
+        $this->assertMatchesRegularExpression('/data-promo-card="mobile" class="lg:hidden col-span-2 lg:col-span-3/', $html);
     }
 
     public function test_dates_decide_when_a_banner_shows(): void
@@ -55,11 +66,11 @@ class PromoBannerTest extends TestCase
         $this->assertStringNotContainsString('Switched Off', $html);
     }
 
-    public function test_no_row_without_live_banners(): void
+    public function test_ended_cards_leave_the_page(): void
     {
         $this->promo(['ends_at' => now()->subDay()]);
 
-        $this->get('/')->assertOk()->assertDontSee('data-promo-banners', false);
+        $this->get('/')->assertOk()->assertDontSee('data-promo-card', false);
     }
 
     public function test_admin_saves_device_and_dates(): void
@@ -67,7 +78,7 @@ class PromoBannerTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)->post(route('admin.banners.store'), [
-            'title' => 'Key Features', 'placement' => 'promo_row', 'image_url' => 'https://example.com/k.jpg',
+            'title' => 'Key Features', 'placement' => 'hero_side', 'image_url' => 'https://example.com/k.jpg',
             'show_on' => 'mobile', 'starts_at' => '2026-11-01T10:00', 'ends_at' => '2026-11-30T23:00', 'is_active' => '1',
         ])->assertRedirect(route('admin.banners.index'));
 
@@ -77,17 +88,17 @@ class PromoBannerTest extends TestCase
         $this->assertSame('scheduled', $banner->status());
 
         $this->actingAs($admin)->get(route('admin.banners.index'))->assertOk()
-            ->assertSee('Promo banners')->assertSee('Phone only')->assertSee('data-banner-status="scheduled"', false);
+            ->assertSee('Promo cards')->assertSee('Phone only')->assertSee('data-banner-status="scheduled"', false);
         $this->actingAs($admin)->get(route('admin.banners.edit', $banner))->assertOk()
             ->assertSee('value="2026-11-01T10:00"', false);
     }
 
-    public function test_end_must_follow_start_and_other_placements_show_everywhere(): void
+    public function test_end_must_follow_start_and_slides_show_everywhere(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)->post(route('admin.banners.store'), [
-            'title' => 'Bad Dates', 'placement' => 'promo_row', 'starts_at' => '2026-11-10T10:00', 'ends_at' => '2026-11-01T10:00',
+            'title' => 'Bad Dates', 'placement' => 'hero_side', 'starts_at' => '2026-11-10T10:00', 'ends_at' => '2026-11-01T10:00',
         ])->assertSessionHasErrors('ends_at');
 
         $this->actingAs($admin)->post(route('admin.banners.store'), [

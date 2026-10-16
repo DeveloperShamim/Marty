@@ -10,10 +10,9 @@ class Banner extends Model
     public const PLACEMENTS = [
         'hero'      => 'Hero Slider — Main homepage carousel slides (70% width on desktop)',
         'hero_side' => 'Promo Cards — Featured side / bottom promo banners (30% width on desktop, 2 cards)',
-        'promo_row' => 'Promo Banners — Image banners under the trust strip (2 side by side on desktop, swipe on phones)',
     ];
 
-    /** Which screens a promo banner shows on. Phones are narrower than 640px. */
+    /** Which screens a promo card shows on. Desktop is the wide layout with the cards beside the slider. */
     public const DEVICES = [
         'both'    => 'Phone and desktop',
         'desktop' => 'Desktop only',
@@ -59,14 +58,14 @@ class Banner extends Model
         };
     }
 
-    /** Classes that keep a promo banner to the screens admin picked. */
-    public function deviceClasses(): string
+    public function showsOnDesktop(): bool
     {
-        return match ($this->show_on) {
-            'desktop' => 'hidden sm:block',
-            'mobile'  => 'sm:hidden',
-            default   => '',
-        };
+        return ($this->show_on ?? 'both') !== 'mobile';
+    }
+
+    public function showsOnPhone(): bool
+    {
+        return ($this->show_on ?? 'both') !== 'desktop';
     }
 
     public function scopePlacement(Builder $query, string $placement): Builder
