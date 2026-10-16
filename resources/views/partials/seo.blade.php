@@ -5,7 +5,12 @@
         : (trim($title ?? '') !== '' ? ($title . ' — ' . $siteName) : setting('default_meta_title', $siteName));
     $desc         = $metaDescription ?? setting('default_meta_description', $siteName);
     $keywords     = $metaKeywords ?? setting('default_meta_keywords');
-    $canonicalUrl = $canonical ?? url()->current();
+    // Always the store's main address (APP_URL, e.g. https://www.vantbd.com), never the address a visitor typed;
+    // a listing's page 2, 3… keeps its page number so Google doesn't see it as a copy of page 1.
+    $page = (int) request()->query('page', 1);
+    $canonicalUrl = $canonical ?? (rtrim((string) config('app.url'), '/') . '/' . ltrim(request()->path(), '/')
+        . ($page > 1 ? '?page=' . $page : ''));
+    $canonicalUrl = $canonicalUrl === rtrim((string) config('app.url'), '/') . '/' ? rtrim($canonicalUrl, '/') : $canonicalUrl;
     $image        = $ogImage ?? null;
 @endphp
 <title>{{ $pageTitle }}</title>
