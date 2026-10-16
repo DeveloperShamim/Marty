@@ -146,6 +146,32 @@
     </section>
   @endif
 
+  {{-- 2b. PROMO BANNERS (Admin → Banners → Promo banners): 2 side by side on desktop, swipe one at a time on phones.
+       Each banner can be kept to phones or desktops and given start / end dates. --}}
+  @if(($promoBanners ?? collect())->isNotEmpty())
+    @php
+      $promoPhone = $promoBanners->where('show_on', '!=', 'desktop')->count();
+      $promoDesk = $promoBanners->where('show_on', '!=', 'mobile')->count();
+    @endphp
+    <section class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 mt-3 sm:mt-5" data-reveal data-promo-banners>
+      <div class="flex gap-2.5 overflow-x-auto snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid {{ $promoDesk > 1 ? 'sm:grid-cols-2' : 'sm:grid-cols-1' }} sm:gap-4 sm:overflow-visible">
+        @foreach($promoBanners as $promo)
+          <a href="{{ $promo->linkHref() }}" class="{{ $promoPhone > 1 ? 'w-[88%]' : 'w-full' }} sm:w-auto shrink-0 snap-start block overflow-hidden rounded-2xl bg-stone-100 shadow-sm ring-1 ring-stone-200/60 transition hover:shadow-md group {{ $promo->deviceClasses() }}" data-promo-banner="{{ $promo->show_on }}" aria-label="{{ $promo->title ?: 'Promotion' }}">
+            @if($promo->image)
+              <img src="{{ $promo->imageUrl() }}" alt="{{ $promo->title }}" class="w-full aspect-[1.82/1] object-cover transition-transform duration-500 group-hover:scale-[1.02]" loading="lazy">
+            @else
+              <div class="w-full aspect-[1.82/1] bg-gradient-to-br from-neutral-800 to-stone-900 p-5 sm:p-7 text-white flex flex-col justify-end">
+                @if($promo->badge)<span class="self-start text-[10px] font-bold px-2 py-0.5 rounded bg-brand-500 uppercase">{{ $promo->badge }}</span>@endif
+                <h3 class="mt-2 font-extrabold text-lg sm:text-2xl line-clamp-2">{{ $promo->title }}</h3>
+                @if($promo->subtitle)<p class="mt-1 text-xs sm:text-sm text-white/75 line-clamp-2">{{ $promo->subtitle }}</p>@endif
+              </div>
+            @endif
+          </a>
+        @endforeach
+      </div>
+    </section>
+  @endif
+
   <main class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
 
     {{-- 3. SHOP BY CATEGORY --}}

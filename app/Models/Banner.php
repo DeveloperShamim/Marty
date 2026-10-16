@@ -10,6 +10,14 @@ class Banner extends Model
     public const PLACEMENTS = [
         'hero'      => 'Hero Slider — Main homepage carousel slides (70% width on desktop)',
         'hero_side' => 'Promo Cards — Featured side / bottom promo banners (30% width on desktop, 2 cards)',
+        'promo_row' => 'Promo Banners — Image banners under the trust strip (2 side by side on desktop, swipe on phones)',
+    ];
+
+    /** Which screens a promo banner shows on. Phones are narrower than 640px. */
+    public const DEVICES = [
+        'both'    => 'Phone and desktop',
+        'desktop' => 'Desktop only',
+        'mobile'  => 'Phone only',
     ];
 
     public const STYLES = [
@@ -23,11 +31,42 @@ class Banner extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'starts_at' => 'datetime',
+        'ends_at'   => 'datetime',
     ];
 
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    /** Switched on, and inside its start / end dates when it has them. */
+    public function scopeLive(Builder $query): Builder
+    {
+        return $query->active()
+            ->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
+            ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()));
+    }
+
+    /** live, scheduled (starts later), ended or hidden, for the admin badges. */
+    public function status(): string
+    {
+        return match (true) {
+            ! $this->is_active => 'hidden',
+            $this->starts_at && $this->starts_at->isFuture() => 'scheduled',
+            $this->ends_at && ! $this->ends_at->isFuture() => 'ended',
+            default => 'live',
+        };
+    }
+
+    /** Classes that keep a promo banner to the screens admin picked. */
+    public function deviceClasses(): string
+    {
+        return match ($this->show_on) {
+            'desktop' => 'hidden sm:block',
+            'mobile'  => 'sm:hidden',
+            default   => '',
+        };
     }
 
     public function scopePlacement(Builder $query, string $placement): Builder

@@ -1,13 +1,13 @@
 @extends('layouts.admin')
 @section('title', 'Banners')
-@section('subtitle', 'Homepage carousel slides and the promo cards beside them.')
+@section('subtitle', 'Homepage carousel slides, the promo cards beside them, and the promo banner row.')
 
 @section('page-actions')
   <a href="{{ url('/') }}" target="_blank" class="pill-btn">
     View store
     <span class="pill-ico"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></span>
   </a>
-  <a href="{{ route('admin.banners.create', ['placement' => 'hero_side']) }}" class="pill-btn">Add promo card</a>
+  <a href="{{ route('admin.banners.create', ['placement' => 'promo_row']) }}" class="pill-btn">Add promo banner</a>
   <a href="{{ route('admin.banners.create', ['placement' => 'hero']) }}" class="pill-btn pill-btn-dark">
     <span class="pill-ico"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
     Add slide
@@ -18,8 +18,10 @@
 @php
   $heroSlides = $banners->where('placement', 'hero');
   $promoCards = $banners->where('placement', 'hero_side');
-  $activeHeroCount = $heroSlides->where('is_active', true)->count();
-  $activePromoCount = $promoCards->where('is_active', true)->count();
+  $promoRow = $banners->where('placement', 'promo_row');
+  $liveCount = fn ($items) => $items->filter(fn ($b) => $b->status() === 'live')->count();
+  $activeHeroCount = $liveCount($heroSlides);
+  $activePromoCount = $liveCount($promoCards);
 
   $sections = [
     [
@@ -38,13 +40,27 @@
       'confirm' => 'Are you sure you want to delete this promo card?',
       'icon' => '<rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/>',
     ],
+    [
+      'items' => $promoRow, 'placement' => 'promo_row', 'active' => $liveCount($promoRow),
+      'title' => 'Promo banners', 'hint' => 'A row under the trust strip: 2 side by side on desktop, swipe on phones. Each can show on phone, desktop or both, with start and end dates. Best size 1200 × 660 px.',
+      'aspect' => 'aspect-[1.82/1]', 'add' => 'Add banner', 'untitled' => 'Untitled promo banner',
+      'empty' => 'No promo banners yet', 'emptyHint' => 'Add image banners such as a new collection or a delivery offer.',
+      'confirm' => 'Are you sure you want to delete this promo banner?',
+      'icon' => '<rect x="2" y="6" width="9" height="12" rx="2"/><rect x="13" y="6" width="9" height="12" rx="2"/>',
+    ],
+  ];
+  $badge = [
+    'live' => ['Live', 'bg-emerald-50 text-emerald-700'],
+    'scheduled' => ['Scheduled', 'bg-sky-50 text-sky-700'],
+    'ended' => ['Ended', 'bg-amber-50 text-amber-700'],
+    'hidden' => ['Hidden', 'bg-gray-100 text-gray-600'],
   ];
 @endphp
 
 <div class="space-y-4">
 
   {{-- Summary --}}
-  <div class="grid grid-cols-2 gap-3">
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
     @foreach($sections as $s)
       <div class="panel p-3.5 sm:p-4 flex items-center gap-3">
         <span class="hidden sm:grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gray-100 text-gray-700">
@@ -80,7 +96,8 @@
       @else
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
           @foreach($s['items'] as $banner)
-            <article class="rounded-2xl bg-gray-50 overflow-hidden flex flex-col {{ $banner->is_active ? '' : 'opacity-70' }}">
+            @php $state = $banner->status(); @endphp
+            <article class="rounded-2xl bg-gray-50 overflow-hidden flex flex-col {{ $state === 'live' ? '' : 'opacity-70' }}" data-banner-status="{{ $state }}">
               <div class="relative w-full {{ $s['aspect'] }} bg-gray-200 overflow-hidden">
                 @if($banner->image)
                   <img src="{{ $banner->imageUrl() }}" alt="{{ $banner->title }}" class="w-full h-full object-cover">
@@ -88,7 +105,7 @@
                   <div class="w-full h-full flex items-center justify-center text-gray-500 text-xs">No image uploaded</div>
                 @endif
                 <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-white/90 text-gray-800">#{{ $banner->position }}</span>
-                <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $banner->is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">{{ $banner->is_active ? 'Live' : 'Hidden' }}</span>
+                <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $badge[$state][1] }}">{{ $badge[$state][0] }}</span>
               </div>
 
               <div class="p-3 flex-1 min-w-0">
@@ -97,6 +114,13 @@
                   <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg>
                   <span class="truncate">{{ $banner->link_url ?: '/shop' }}</span>
                 </a>
+                @if($banner->show_on !== 'both' || $banner->starts_at || $banner->ends_at)
+                  <p class="mt-1.5 flex flex-wrap gap-1 text-[11px] text-gray-600">
+                    @if($banner->show_on !== 'both')<span class="px-1.5 py-0.5 rounded-md bg-white ring-1 ring-gray-200">{{ \App\Models\Banner::DEVICES[$banner->show_on] ?? $banner->show_on }}</span>@endif
+                    @if($banner->starts_at)<span class="px-1.5 py-0.5 rounded-md bg-white ring-1 ring-gray-200">From {{ $banner->starts_at->format('j M, g:i A') }}</span>@endif
+                    @if($banner->ends_at)<span class="px-1.5 py-0.5 rounded-md bg-white ring-1 ring-gray-200">Until {{ $banner->ends_at->format('j M, g:i A') }}</span>@endif
+                  </p>
+                @endif
               </div>
 
               <div class="px-3 pb-3 flex items-center gap-1.5">

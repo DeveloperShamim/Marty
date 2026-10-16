@@ -41,7 +41,7 @@ class HomeController extends Controller
             ->filter(fn (Brand $b) => $b->products_count > 0)
             ->values();
 
-        $banners = fn (string $placement) => Banner::active()
+        $banners = fn (string $placement) => Banner::live()
             ->placement($placement)
             ->orderBy('position')
             ->orderBy('id');
@@ -104,6 +104,7 @@ class HomeController extends Controller
         return view('storefront.home', [
             'heroBanners'            => $banners('hero')->get(),
             'heroSideBanners'        => $banners('hero_side')->get(),
+            'promoBanners'           => $banners('promo_row')->get(),
             'features'               => Feature::where('is_active', true)->orderBy('position')->get(),
             'categories'             => $categories,
             'featuredHomeCategories' => $featuredHomeCategories,
