@@ -184,7 +184,7 @@ export const OneTap: React.FC = () => {
               </div>
               <div>
                 <div style={{ fontSize: 36 * u, fontWeight: 800 }}>অর্ডার সম্পন্ন</div>
-                <div style={{ fontSize: 26 * u, fontWeight: 600, color: C.sub }}>#VB-409798 · ৳১,১৯০</div>
+                <div style={{ fontSize: 26 * u, fontWeight: 600, color: C.sub }}>#VB-888253 · ৳১,১৯০</div>
               </div>
             </Glass>
           </div>
@@ -421,7 +421,7 @@ export const Scan: React.FC = () => {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
                   <div style={{ fontSize: 26 * u, fontWeight: 600, color: C.sub }}>পার্সেল</div>
-                  <div style={{ fontSize: 48 * u, fontWeight: 800, fontFamily: "Inter", letterSpacing: -1 * u }}>#VB-409798</div>
+                  <div style={{ fontSize: 48 * u, fontWeight: 800, fontFamily: "Inter", letterSpacing: -1 * u }}>#VB-888252</div>
                 </div>
                 <div
                   style={{
@@ -444,7 +444,7 @@ export const Scan: React.FC = () => {
                   return el;
                 })}
               </div>
-              <div style={{ marginTop: 18 * u, fontSize: 26 * u, fontWeight: 600, color: C.sub }}>Steadfast · খুলনা · ৳৮,৩৩০ COD</div>
+              <div style={{ marginTop: 18 * u, fontSize: 26 * u, fontWeight: 600, color: C.sub }}>Steadfast · ৳১,২৩০ COD</div>
               {/* the scan beam */}
               <div
                 style={{
@@ -498,7 +498,7 @@ export const OneStock: React.FC = () => {
                 <div style={{ fontSize: 28 * u, fontWeight: 600, color: C.sub }}>Vant Classic Bifold Wallet</div>
                 <div style={{ fontSize: 28 * u, fontWeight: 600, color: C.sub, marginTop: 4 * u }}>ওয়েবসাইটে স্টক</div>
                 <div style={{ position: "relative", height: 150 * u, marginTop: 10 * u, overflow: "hidden" }}>
-                  {[61, 60].map((n, i) => (
+                  {[54, 53].map((n, i) => (
                     <div
                       key={n}
                       style={{
@@ -551,7 +551,7 @@ export const Profit: React.FC = () => {
           transform: `scale(${mix(prog(frame, 0, 20), 0.9, 1)})`,
         }}
       >
-        ৳{bnMoney(26188 * count)}
+        ৳{bnMoney(16136 * count)}
       </div>
       <div style={{ fontSize: 34 * u, fontWeight: 600, color: C.faint, opacity: prog(frame, 20, 14) }}>ক্রয়মূল্য, কুরিয়ার চার্জ ও বিজ্ঞাপন খরচ বাদে</div>
       <svg width={chartW} height={chartH + 20 * u} style={{ marginTop: 50 * u, overflow: "visible" }}>
