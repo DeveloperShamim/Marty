@@ -114,8 +114,8 @@ class DatabaseSeeder extends Seeder
         return [
             'site_name' => 'Vant Bangladesh',
             'tagline' => 'Genuine Leather. Timeless Style.',
-            'logo' => '',     // no logo yet: the site name is shown instead
-            'favicon' => '',
+            'logo' => 'uploads/brand/vant-logo.png',
+            'favicon' => 'uploads/brand/vant-mark.png',
             'footer_text' => 'Vant Bangladesh brings you genuine leather wallets, belts, watches, shoes and desk accessories, made to last and delivered anywhere in Bangladesh with cash on delivery.',
             'contact_phone' => '01775-075543',
             'whatsapp_number' => '01775-075543',
