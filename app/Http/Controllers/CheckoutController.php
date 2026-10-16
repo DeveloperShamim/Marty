@@ -33,7 +33,8 @@ class CheckoutController extends Controller
 
         $subtotal = $this->cart->subtotal();
         $coupon   = $this->coupons->summary($subtotal);
-        $zone     = old('shipping_zone', 'inside_dhaka');
+        // No delivery zone is picked until the shopper chooses one
+        $zone     = old('shipping_zone', '');
         $hasFreeProduct = $this->hasFreeDeliveryProduct($items);
         $totals   = $this->orderTotals($subtotal, $coupon['discount'], $zone, old('payment_method', 'cod'), $hasFreeProduct);
 
@@ -94,7 +95,7 @@ class CheckoutController extends Controller
         if ($items->isNotEmpty()) {
             $subtotal = $this->cart->subtotal();
             $coupon   = $this->coupons->summary($subtotal);
-            $zone     = $request->input('shipping_zone', 'inside_dhaka');
+            $zone     = (string) $request->input('shipping_zone', '');
             $totals   = $this->orderTotals($subtotal, $coupon['discount'], $zone, null, $this->hasFreeDeliveryProduct($items));
 
             $this->syncDraftAbandonedCart($items, $subtotal, $totals['total'], $validated);
@@ -352,7 +353,10 @@ class CheckoutController extends Controller
     private function orderTotals(float $subtotal, float $discount, string $shippingZone, ?string $paymentMethod = null, bool $hasFreeProduct = false): array
     {
         $taxable  = max(0, $subtotal - $discount);
-        $delivery = FreeDelivery::quote($taxable, $shippingZone, $paymentMethod, $hasFreeProduct);
+        // Delivery is added once a zone is chosen
+        $delivery = $shippingZone === ''
+            ? ['shipping' => 0.0, 'waived' => 0.0, 'reason' => null]
+            : FreeDelivery::quote($taxable, $shippingZone, $paymentMethod, $hasFreeProduct);
         $shipping = $delivery['shipping'];
         $waived   = $delivery['waived'];
         $reason   = $delivery['reason'];

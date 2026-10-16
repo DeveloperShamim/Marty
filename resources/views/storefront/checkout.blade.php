@@ -2,7 +2,7 @@
 
 @php
   $title = 'Checkout';
-  $shippingZone = old('shipping_zone', 'inside_dhaka');
+  $shippingZone = old('shipping_zone', '');
   $taxable = max(0, $subtotal - $discount);
 @endphp
 
@@ -213,12 +213,13 @@
                 <label class="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-1.5">Delivery zone <span class="text-red-500">*</span></label>
                 {{-- Hidden native select to preserve standard form submission & JS compatibility --}}
                 <select name="shipping_zone" id="shippingZone" class="hidden">
+                  <option value="" data-fee="0" @selected($shippingZone === '')>Select a delivery zone</option>
                   <option value="inside_dhaka" data-fee="{{ $shipInside }}" @selected($shippingZone === 'inside_dhaka')>{{ shipping_zone_label('inside_dhaka') }} (+{{ money($shipInside) }})</option>
                   <option value="outside_dhaka" data-fee="{{ $shipOutside }}" @selected($shippingZone === 'outside_dhaka')>{{ shipping_zone_label('outside_dhaka') }} (+{{ money($shipOutside) }})</option>
                 </select>
 
                 {{-- Interactive 1-Tap Segmented Control --}}
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-2 gap-2" id="zonePills">
                   <button type="button" class="zone-pill flex items-center justify-between p-2.5 rounded-xl border transition-all text-left cursor-pointer select-none {{ $shippingZone === 'inside_dhaka' ? 'border-brand-600 bg-brand-50/70 text-brand-900 ring-1 ring-brand-600 font-bold shadow-2xs' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300' }}" data-zone="inside_dhaka">
                     <div class="min-w-0">
                       <span class="block text-xs font-extrabold truncate">Inside Dhaka</span>
@@ -234,6 +235,7 @@
                     <span class="zone-check h-4 w-4 rounded-full bg-brand-600 text-white flex items-center justify-center text-[10px] shrink-0 font-bold {{ $shippingZone === 'outside_dhaka' ? '' : 'hidden' }}">✓</span>
                   </button>
                 </div>
+                <p id="zoneError" class="text-[11px] text-red-600 mt-1 {{ $errors->has('shipping_zone') ? '' : 'hidden' }}">Please choose your delivery zone.</p>
               </div>
 
               <div>
@@ -399,7 +401,7 @@
             @if($discount > 0)
               <div class="flex justify-between text-brand-600"><dt>Discount ({{ $couponCode }})</dt><dd class="font-semibold sumDiscount">−{{ money($discount) }}</dd></div>
             @endif
-            <div class="flex justify-between"><dt class="text-slate-500">Delivery</dt><dd class="font-semibold text-brand-600 sumShipping">{!! $totals['reason'] ? '<s class="text-slate-400 font-normal mr-1">' . e(money($totals['waived'])) . '</s><span class="text-emerald-600 font-extrabold">FREE</span>' : e(money($totals['shipping'])) !!}</dd></div>
+            <div class="flex justify-between"><dt class="text-slate-500">Delivery</dt><dd class="font-semibold text-brand-600 sumShipping">{!! $shippingZone === '' ? '<span class="text-slate-400 font-normal">Select zone</span>' : ($totals['reason'] ? '<s class="text-slate-400 font-normal mr-1">' . e(money($totals['waived'])) . '</s><span class="text-emerald-600 font-extrabold">FREE</span>' : e(money($totals['shipping']))) !!}</dd></div>
             @if($taxPercent > 0)<div class="flex justify-between"><dt class="text-slate-500">Tax ({{ rtrim(rtrim(number_format($taxPercent, 2), '0'), '.') }}%)</dt><dd class="font-semibold text-slate-800 sumTax">{{ money($totals['tax']) }}</dd></div>@endif
           </dl>
           <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
@@ -527,7 +529,7 @@
               @if($discount > 0)
                 <div class="flex justify-between text-brand-600"><dt>Discount ({{ $couponCode }})</dt><dd class="font-semibold sumDiscount" id="sumDiscount">−{{ money($discount) }}</dd></div>
               @endif
-              <div class="flex justify-between"><dt class="text-slate-500">Delivery</dt><dd class="font-semibold text-brand-600 sumShipping">{!! $totals['reason'] ? '<s class="text-slate-400 font-normal mr-1">' . e(money($totals['waived'])) . '</s><span class="text-emerald-600 font-extrabold">FREE</span>' : e(money($totals['shipping'])) !!}</dd></div>
+              <div class="flex justify-between"><dt class="text-slate-500">Delivery</dt><dd class="font-semibold text-brand-600 sumShipping">{!! $shippingZone === '' ? '<span class="text-slate-400 font-normal">Select zone</span>' : ($totals['reason'] ? '<s class="text-slate-400 font-normal mr-1">' . e(money($totals['waived'])) . '</s><span class="text-emerald-600 font-extrabold">FREE</span>' : e(money($totals['shipping']))) !!}</dd></div>
               @if($taxPercent > 0)<div class="flex justify-between"><dt class="text-slate-500">Tax ({{ rtrim(rtrim(number_format($taxPercent, 2), '0'), '.') }}%)</dt><dd class="font-semibold text-slate-800 sumTax" id="sumTax">{{ money($totals['tax']) }}</dd></div>@endif
             </dl>
             <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
@@ -646,7 +648,7 @@
     var reason = fee > 0 ? deliveryReason(taxable, zone.value, method) : null;
     var shipping = reason ? 0 : fee;
     var total = taxable + shipping + tax;
-    var shipHtml = reason
+    var shipHtml = !zone.value ? '<span class="text-slate-400 font-normal">Select zone</span>' : reason
       ? '<s class="text-slate-400 font-normal mr-1">' + money(fee) + '</s><span class="text-emerald-600 font-extrabold">FREE</span>'
       : money(fee);
 
@@ -692,6 +694,10 @@
 
       zone.value = targetZone;
       zone.dispatchEvent(new Event('change'));
+      var zoneErr = document.getElementById('zoneError');
+      if (zoneErr) zoneErr.classList.add('hidden');
+      var pills = document.getElementById('zonePills');
+      if (pills) pills.classList.remove('ring-2', 'ring-red-300', 'rounded-xl');
 
       document.querySelectorAll('.zone-pill').forEach(function (p) {
         var isTarget = p.dataset.zone === targetZone;
@@ -852,7 +858,7 @@
       const name = nameInput ? nameInput.value.trim() : '';
       const phone = phoneInput ? phoneInput.value.trim() : '';
       const email = emailInput ? emailInput.value.trim() : '';
-      const zone = zoneSelect ? zoneSelect.value : 'inside_dhaka';
+      const zone = zoneSelect ? zoneSelect.value : '';
 
       if (!phone && !name && !email) return;
 
@@ -944,6 +950,16 @@
 
     if (checkoutForm) {
       checkoutForm.addEventListener('submit', function (e) {
+        // Delivery zone has no default: the shopper must pick one
+        var zoneSel = document.getElementById('shippingZone');
+        if (zoneSel && !zoneSel.value) {
+          e.preventDefault();
+          var zoneErr = document.getElementById('zoneError'), pills = document.getElementById('zonePills');
+          if (zoneErr) zoneErr.classList.remove('hidden');
+          if (pills) { pills.classList.add('ring-2', 'ring-red-300', 'rounded-xl'); pills.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+          if (window.showToast) window.showToast('Please choose your delivery zone.', 'error');
+          return;
+        }
         if (!validatePhone()) {
           e.preventDefault();
           phoneInput.focus();

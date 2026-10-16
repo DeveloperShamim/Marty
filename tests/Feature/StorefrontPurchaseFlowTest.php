@@ -162,6 +162,21 @@ class StorefrontPurchaseFlowTest extends TestCase
         $this->assertSame('Deliver after 5pm', Order::first()->internal_note);
     }
 
+    public function test_delivery_zone_starts_unselected_and_is_required(): void
+    {
+        $product = $this->makeProduct(['regular_price' => 1000, 'stock_quantity' => 10]);
+        $this->postJson(route('cart.add'), ['product_id' => $product->id, 'qty' => 1])->assertOk();
+
+        $page = $this->get(route('checkout.show'))->assertOk();
+        $page->assertSee('<option value="" data-fee="0" selected>', false)
+            ->assertSee('Select zone');
+        $this->assertSame(1000.0, (float) $page->viewData('totals')['total'], 'No delivery fee until a zone is chosen');
+
+        $this->post(route('checkout.store'), $this->checkoutPayload(['shipping_zone' => '']))
+            ->assertSessionHasErrors('shipping_zone');
+        $this->assertDatabaseCount('orders', 0);
+    }
+
     public function test_checkout_rejects_invalid_phone_number(): void
     {
         $product = $this->makeProduct();
