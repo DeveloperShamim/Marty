@@ -34,6 +34,7 @@ class AdminNav
             'flash-sale' => ['Flash Sale', 'admin.flash-sale.index', '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>', 'deal offer countdown'],
             'free-delivery' => ['Free Delivery', 'admin.free-delivery.index', '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>', 'shipping offer courier charge waive'],
             'news-ticker' => ['News Ticker', 'admin.news-ticker.index', '<path d="M15 18h-5"/><path d="M18 14h-8"/><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0v-9a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="10" y="6" rx="1"/>', 'headline announcement promo bar top banner'],
+            'header-menu' => ['Menu Bar', 'admin.header-menu.index', '<path d="M4 6h16"/><path d="M4 12h10"/><path d="M4 18h7"/><path d="m16 15 3 3 3-3"/>', 'navigation nav menubar header links dropdown'],
             'abandoned-carts' => ['Abandoned Carts', 'admin.abandoned-carts.index', '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>', 'cart recovery'],
             'analytics' => ['Profit & Analytics', 'admin.analytics.index', '<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/>', 'report aov revenue sales profit'],
             'expenses' => ['Expenses', 'admin.expenses.index', '<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/>', 'costs facebook ads fb spend'],
@@ -57,7 +58,7 @@ class AdminNav
             'reviews',
         ],
         'Store content' => [
-            ['Homepage', 'banners', ['banners' => 'Hero banners', 'features' => 'Trust strip', 'news-ticker' => 'News ticker']],
+            ['Homepage', 'banners', ['banners' => 'Hero banners', 'features' => 'Trust strip', 'news-ticker' => 'News ticker', 'header-menu' => 'Menu bar']],
             'size-guide',
             'media',
         ],

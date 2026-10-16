@@ -44,6 +44,7 @@ class StaffAccess
         'flash-sale'      => [self::STORE],
         'free-delivery'   => [self::STORE],
         'news-ticker'     => [self::STORE],
+        'header-menu'     => [self::STORE],
         // Admin only
         'staff'           => [],
         'activity-logs'   => [],

@@ -156,132 +156,151 @@
   <div class="hidden lg:block bg-white border-b border-stone-200/80 text-stone-700 shadow-sm">
     <div class="relative max-w-7xl mx-auto px-4 sm:px-5 h-11 text-sm font-semibold">
       <nav class="flex items-center gap-1 xl:gap-2 h-full py-1">
-        {{-- 1. Home --}}
-        <a href="{{ route('home') }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ request()->routeIs('home') ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">Home</a>
-        
-        {{-- 2. All Products --}}
-        <a href="{{ route('shop') }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ request()->routeIs('shop') && ! request('flash') && ! request('brand') && ! isset($activeCategory) ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">All Products</a>
-
-        {{-- 3. Categories that have products, as many as fit on one line; the rest go under More.
-             The script below measures the bar and moves what doesn't fit (on load and on resize). --}}
+        {{-- The menu bar: Admin → Homepage → Menu bar (Home, All Products, every category and Brands until admin changes it) --}}
         @php
-          $menuCats = $navCats->filter(fn ($c) => ($c->products_count ?? 1) > 0)->values();
-          $subsOf = fn ($c) => $c->relationLoaded('children') ? $c->children->filter(fn ($s) => ($s->products_count ?? 1) > 0)->values() : collect();
-          $activeId = optional($activeCategory ?? null)->id;
-          $inFamily = fn ($c) => $activeId && ($c->id === $activeId || $subsOf($c)->contains('id', $activeId));
+          $headerMenu = \App\Support\HeaderMenu::resolve($navCats, $navBrs, $activeCategory ?? null, $hasFlashSale ?? false);
         @endphp
-        {{-- A main category with sub-categories opens them on hover. The panel is positioned against the whole
-             bar (not this clipped row), so it isn't cut off; it starts under its own link. --}}
-        <div class="flex items-center gap-1 xl:gap-2 min-w-0 h-full overflow-hidden" data-nav-cats>
-          @foreach($menuCats as $cat)
-            @php($subs = $subsOf($cat))
-            <div class="group/sub shrink-0 h-full flex items-center" data-nav-cat="{{ $cat->id }}">
-              <a href="{{ route('shop.category', $cat) }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors inline-flex items-center gap-1 {{ $inFamily($cat) ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">
-                {{ $cat->name }}
-                @if($subs->isNotEmpty())
+        @foreach($headerMenu as $entry)
+          @if($entry['kind'] === 'categories')
+            {{-- 3. Categories that have products, as many as fit on one line; the rest go under More.
+                 The script below measures the bar and moves what doesn't fit (on load and on resize). --}}
+            @php
+              $menuCats = $navCats->filter(fn ($c) => ($c->products_count ?? 1) > 0)->values();
+              $subsOf = fn ($c) => $c->relationLoaded('children') ? $c->children->filter(fn ($s) => ($s->products_count ?? 1) > 0)->values() : collect();
+              $activeId = optional($activeCategory ?? null)->id;
+              $inFamily = fn ($c) => $activeId && ($c->id === $activeId || $subsOf($c)->contains('id', $activeId));
+            @endphp
+            {{-- A main category with sub-categories opens them on hover. The panel is positioned against the whole
+                 bar (not this clipped row), so it isn't cut off; it starts under its own link. --}}
+            <div class="flex items-center gap-1 xl:gap-2 min-w-0 h-full overflow-hidden" data-nav-cats>
+              @foreach($menuCats as $cat)
+                @php($subs = $subsOf($cat))
+                <div class="group/sub shrink-0 h-full flex items-center" data-nav-cat="{{ $cat->id }}">
+                  <a href="{{ route('shop.category', $cat) }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors inline-flex items-center gap-1 {{ $inFamily($cat) ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">
+                    {{ $cat->name }}
+                    @if($subs->isNotEmpty())
+                      <svg class="w-3.5 h-3.5 transition-transform group-hover/sub:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
+                    @endif
+                  </a>
+                  @if($subs->isNotEmpty())
+                    <div class="absolute top-[calc(100%-0.5rem)] pt-2 hidden group-hover/sub:block group-focus-within/sub:block z-50" data-nav-sub-menu>
+                      <div class="min-w-52 max-w-72 bg-white rounded-2xl shadow-xl border border-stone-200/80 p-2">
+                        <a href="{{ route('shop.category', $cat) }}" class="block px-3 py-2 rounded-lg text-[13px] font-semibold truncate transition-colors {{ $activeId === $cat->id ? 'bg-brand-50 text-brand-600' : 'text-stone-900 hover:text-brand-600 hover:bg-stone-50' }}">All {{ $cat->name }}</a>
+                        @foreach($subs as $sub)
+                          <a href="{{ route('shop.category', $sub) }}" class="block px-3 py-2 rounded-lg text-[13px] font-medium truncate transition-colors {{ $activeId === $sub->id ? 'bg-brand-50 text-brand-600' : 'text-stone-600 hover:text-brand-600 hover:bg-stone-50' }}">{{ $sub->name }}</a>
+                        @endforeach
+                      </div>
+                    </div>
+                  @endif
+                </div>
+              @endforeach
+            </div>
+
+            {{-- 4. More: the categories that didn't fit, in two tidy columns --}}
+            <div class="relative group/catdropdown shrink-0" id="catDropdownContainer" data-nav-more>
+              <button type="button"
+                      data-nav-dropdown-toggle="catDropdownMenu" aria-expanded="false" aria-haspopup="true"
+                      class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors text-stone-700 hover:text-brand-600 hover:bg-stone-50 inline-flex items-center gap-1 cursor-pointer" data-nav-more-btn>
+                <span>More</span>
+                <svg class="w-3.5 h-3.5 transition-transform group-hover/catdropdown:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
+              </button>
+              <div id="catDropdownMenu" data-nav-dropdown class="absolute right-0 top-full pt-2 hidden group-hover/catdropdown:block z-50">
+                <div class="w-[min(30rem,80vw)] bg-white rounded-2xl shadow-xl border border-stone-200/80 overflow-hidden">
+                  <div class="grid grid-cols-2 gap-x-1 p-2">
+                    @foreach($menuCats as $cat)
+                      <div data-more-cat="{{ $cat->id }}" class="min-w-0 {{ $inFamily($cat) ? 'is-active' : '' }}">
+                        <a href="{{ route('shop.category', $cat) }}" class="block px-3 py-2.5 rounded-lg text-[13px] font-medium truncate transition-colors {{ $activeId === $cat->id ? 'bg-brand-50 text-brand-600' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">{{ $cat->name }}</a>
+                        @foreach($subsOf($cat) as $sub)
+                          <a href="{{ route('shop.category', $sub) }}" class="block ml-3 px-3 py-1.5 rounded-lg text-[12px] truncate transition-colors {{ $activeId === $sub->id ? 'bg-brand-50 text-brand-600 font-semibold' : 'text-stone-500 hover:text-brand-600 hover:bg-stone-50' }}">{{ $sub->name }}</a>
+                        @endforeach
+                      </div>
+                    @endforeach
+                  </div>
+                  <a href="{{ route('shop') }}" class="flex items-center justify-between px-5 py-3 border-t border-stone-100 bg-stone-50/70 text-[13px] font-semibold text-brand-600 hover:bg-brand-50 transition-colors">
+                    <span>Browse all products</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg>
+                  </a>
+                </div>
+              </div>
+            </div>
+            <script>
+              (function () {
+                var box = document.querySelector('[data-nav-cats]'), more = document.querySelector('[data-nav-more]');
+                if (!box || !more) return;
+                var links = [].slice.call(box.querySelectorAll('[data-nav-cat]'));
+                var entries = [].slice.call(more.querySelectorAll('[data-more-cat]'));
+                function fit() {
+                  more.style.display = '';
+                  links.forEach(function (l) { l.style.display = ''; });
+                  var right = box.getBoundingClientRect().right + 1, hidden = {}, any = false;
+                  links.forEach(function (l) { if (l.getBoundingClientRect().right > right) { l.style.display = 'none'; hidden[l.dataset.navCat] = any = true; } });
+                  entries.forEach(function (e) { e.style.display = hidden[e.dataset.moreCat] ? '' : 'none'; });
+                  more.style.display = any ? '' : 'none';
+                  var btn = more.querySelector('[data-nav-more-btn]');
+                  var activeInMore = entries.some(function (e) { return e.style.display !== 'none' && e.classList.contains('is-active'); });
+                  btn.classList.toggle('bg-brand-50', activeInMore); btn.classList.toggle('text-brand-600', activeInMore);
+                }
+                fit();
+                window.addEventListener('resize', fit);
+                window.addEventListener('load', fit);
+                if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+              })();
+            </script>
+          @elseif($entry['kind'] === 'brands')
+            {{-- 5. Brands Dropdown: only worth a menu with more than one brand (same rule as the homepage logo row) --}}
+            @if($navBrs->count() > 1)
+              <div class="relative group/branddropdown" id="brandDropdownContainer">
+                <button type="button" 
+                        data-nav-dropdown-toggle="brandDropdownMenu" aria-expanded="false" aria-haspopup="true"
+                        class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ request()->routeIs('shop.brand') || request('brand') ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }} inline-flex items-center gap-1 cursor-pointer">
+                  <span>Brands</span>
+                  <svg class="w-3.5 h-3.5 transition-transform group-hover/branddropdown:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
+                </button>
+                <div id="brandDropdownMenu" data-nav-dropdown class="absolute left-0 top-full pt-1.5 hidden group-hover/branddropdown:block z-50 w-[420px]">
+                  <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 p-4 space-y-3">
+                    <div class="flex items-center justify-between border-b border-stone-100 pb-2">
+                      <span class="text-xs font-extrabold uppercase tracking-wider text-stone-400">Official Brands</span>
+                      <a href="{{ route('shop') }}" class="text-xs font-semibold text-brand-600 hover:underline">View All &rarr;</a>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 max-h-80 overflow-y-auto pr-1">
+                      @foreach($navBrs as $b)
+                        <a href="{{ route('shop.brand', $b) }}" class="flex items-center gap-2.5 p-2 rounded-xl border border-stone-100 hover:border-brand-500/40 hover:bg-brand-50/50 transition-all group/item">
+                          <img src="{{ $b->logoUrl() }}" class="h-7 w-7 object-contain rounded-md border border-stone-100 bg-white p-0.5 shrink-0" alt="{{ $b->name }}">
+                          <div class="min-w-0 flex-1">
+                            <span class="block text-xs font-bold text-ink group-hover/item:text-brand-600 truncate">{{ $b->name }}</span>
+                            @if(isset($b->products_count) && $b->products_count > 0)
+                              <span class="block text-[10px] text-stone-400">{{ $b->products_count }} {{ Str::plural('item', $b->products_count) }}</span>
+                            @else
+                              <span class="block text-[10px] text-stone-400">Authentic Brand</span>
+                            @endif
+                          </div>
+                        </a>
+                      @endforeach
+                    </div>
+                  </div>
+                </div>
+              </div>
+            @endif
+          @else
+            <div class="group/sub shrink-0 h-full flex items-center" data-menu-item>
+              <a href="{{ $entry['url'] }}" @if($entry['external']) target="_blank" rel="noopener" @endif class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors inline-flex items-center gap-1 {{ $entry['active'] ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">
+                {{ $entry['label'] }}
+                @if($entry['children'])
                   <svg class="w-3.5 h-3.5 transition-transform group-hover/sub:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
                 @endif
               </a>
-              @if($subs->isNotEmpty())
+              @if($entry['children'])
                 <div class="absolute top-[calc(100%-0.5rem)] pt-2 hidden group-hover/sub:block group-focus-within/sub:block z-50" data-nav-sub-menu>
                   <div class="min-w-52 max-w-72 bg-white rounded-2xl shadow-xl border border-stone-200/80 p-2">
-                    <a href="{{ route('shop.category', $cat) }}" class="block px-3 py-2 rounded-lg text-[13px] font-semibold truncate transition-colors {{ $activeId === $cat->id ? 'bg-brand-50 text-brand-600' : 'text-stone-900 hover:text-brand-600 hover:bg-stone-50' }}">All {{ $cat->name }}</a>
-                    @foreach($subs as $sub)
-                      <a href="{{ route('shop.category', $sub) }}" class="block px-3 py-2 rounded-lg text-[13px] font-medium truncate transition-colors {{ $activeId === $sub->id ? 'bg-brand-50 text-brand-600' : 'text-stone-600 hover:text-brand-600 hover:bg-stone-50' }}">{{ $sub->name }}</a>
+                    @foreach($entry['children'] as $child)
+                      <a href="{{ $child['url'] }}" class="block px-3 py-2 rounded-lg text-[13px] truncate transition-colors {{ $child['active'] ? 'bg-brand-50 text-brand-600 font-semibold' : (($child['strong'] ?? false) ? 'text-stone-900 font-semibold hover:text-brand-600 hover:bg-stone-50' : 'text-stone-600 font-medium hover:text-brand-600 hover:bg-stone-50') }}">{{ $child['label'] }}</a>
                     @endforeach
                   </div>
                 </div>
               @endif
             </div>
-          @endforeach
-        </div>
-
-        {{-- 4. More: the categories that didn't fit, in two tidy columns --}}
-        <div class="relative group/catdropdown shrink-0" id="catDropdownContainer" data-nav-more>
-          <button type="button"
-                  data-nav-dropdown-toggle="catDropdownMenu" aria-expanded="false" aria-haspopup="true"
-                  class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors text-stone-700 hover:text-brand-600 hover:bg-stone-50 inline-flex items-center gap-1 cursor-pointer" data-nav-more-btn>
-            <span>More</span>
-            <svg class="w-3.5 h-3.5 transition-transform group-hover/catdropdown:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
-          </button>
-          <div id="catDropdownMenu" data-nav-dropdown class="absolute right-0 top-full pt-2 hidden group-hover/catdropdown:block z-50">
-            <div class="w-[min(30rem,80vw)] bg-white rounded-2xl shadow-xl border border-stone-200/80 overflow-hidden">
-              <div class="grid grid-cols-2 gap-x-1 p-2">
-                @foreach($menuCats as $cat)
-                  <div data-more-cat="{{ $cat->id }}" class="min-w-0 {{ $inFamily($cat) ? 'is-active' : '' }}">
-                    <a href="{{ route('shop.category', $cat) }}" class="block px-3 py-2.5 rounded-lg text-[13px] font-medium truncate transition-colors {{ $activeId === $cat->id ? 'bg-brand-50 text-brand-600' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">{{ $cat->name }}</a>
-                    @foreach($subsOf($cat) as $sub)
-                      <a href="{{ route('shop.category', $sub) }}" class="block ml-3 px-3 py-1.5 rounded-lg text-[12px] truncate transition-colors {{ $activeId === $sub->id ? 'bg-brand-50 text-brand-600 font-semibold' : 'text-stone-500 hover:text-brand-600 hover:bg-stone-50' }}">{{ $sub->name }}</a>
-                    @endforeach
-                  </div>
-                @endforeach
-              </div>
-              <a href="{{ route('shop') }}" class="flex items-center justify-between px-5 py-3 border-t border-stone-100 bg-stone-50/70 text-[13px] font-semibold text-brand-600 hover:bg-brand-50 transition-colors">
-                <span>Browse all products</span>
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></svg>
-              </a>
-            </div>
-          </div>
-        </div>
-        <script>
-          (function () {
-            var box = document.querySelector('[data-nav-cats]'), more = document.querySelector('[data-nav-more]');
-            if (!box || !more) return;
-            var links = [].slice.call(box.querySelectorAll('[data-nav-cat]'));
-            var entries = [].slice.call(more.querySelectorAll('[data-more-cat]'));
-            function fit() {
-              more.style.display = '';
-              links.forEach(function (l) { l.style.display = ''; });
-              var right = box.getBoundingClientRect().right + 1, hidden = {}, any = false;
-              links.forEach(function (l) { if (l.getBoundingClientRect().right > right) { l.style.display = 'none'; hidden[l.dataset.navCat] = any = true; } });
-              entries.forEach(function (e) { e.style.display = hidden[e.dataset.moreCat] ? '' : 'none'; });
-              more.style.display = any ? '' : 'none';
-              var btn = more.querySelector('[data-nav-more-btn]');
-              var activeInMore = entries.some(function (e) { return e.style.display !== 'none' && e.classList.contains('is-active'); });
-              btn.classList.toggle('bg-brand-50', activeInMore); btn.classList.toggle('text-brand-600', activeInMore);
-            }
-            fit();
-            window.addEventListener('resize', fit);
-            window.addEventListener('load', fit);
-            if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
-          })();
-        </script>
-
-        {{-- 5. Brands Dropdown: only worth a menu with more than one brand (same rule as the homepage logo row) --}}
-        @if($navBrs->count() > 1)
-          <div class="relative group/branddropdown" id="brandDropdownContainer">
-            <button type="button" 
-                    data-nav-dropdown-toggle="brandDropdownMenu" aria-expanded="false" aria-haspopup="true"
-                    class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ request()->routeIs('shop.brand') || request('brand') ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }} inline-flex items-center gap-1 cursor-pointer">
-              <span>Brands</span>
-              <svg class="w-3.5 h-3.5 transition-transform group-hover/branddropdown:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
-            </button>
-            <div id="brandDropdownMenu" data-nav-dropdown class="absolute left-0 top-full pt-1.5 hidden group-hover/branddropdown:block z-50 w-[420px]">
-              <div class="bg-white rounded-2xl shadow-2xl border border-stone-200 p-4 space-y-3">
-                <div class="flex items-center justify-between border-b border-stone-100 pb-2">
-                  <span class="text-xs font-extrabold uppercase tracking-wider text-stone-400">Official Brands</span>
-                  <a href="{{ route('shop') }}" class="text-xs font-semibold text-brand-600 hover:underline">View All &rarr;</a>
-                </div>
-                <div class="grid grid-cols-2 gap-2 max-h-80 overflow-y-auto pr-1">
-                  @foreach($navBrs as $b)
-                    <a href="{{ route('shop.brand', $b) }}" class="flex items-center gap-2.5 p-2 rounded-xl border border-stone-100 hover:border-brand-500/40 hover:bg-brand-50/50 transition-all group/item">
-                      <img src="{{ $b->logoUrl() }}" class="h-7 w-7 object-contain rounded-md border border-stone-100 bg-white p-0.5 shrink-0" alt="{{ $b->name }}">
-                      <div class="min-w-0 flex-1">
-                        <span class="block text-xs font-bold text-ink group-hover/item:text-brand-600 truncate">{{ $b->name }}</span>
-                        @if(isset($b->products_count) && $b->products_count > 0)
-                          <span class="block text-[10px] text-stone-400">{{ $b->products_count }} {{ Str::plural('item', $b->products_count) }}</span>
-                        @else
-                          <span class="block text-[10px] text-stone-400">Authentic Brand</span>
-                        @endif
-                      </div>
-                    </a>
-                  @endforeach
-                </div>
-              </div>
-            </div>
-          </div>
-        @endif
-
+          @endif
+        @endforeach
         {{-- Flash sale deals: the Flash Sale button in the top bar --}}
 
         {{-- Hotline at the right end (Admin → Settings → contact phone) --}}

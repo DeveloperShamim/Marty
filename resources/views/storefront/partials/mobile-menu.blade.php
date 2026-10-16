@@ -80,45 +80,89 @@
       @endforeach
     </div>
 
-    @if(isset($navCategories) && $navCategories->isNotEmpty())
-      <p class="mm-item mt-6 mb-2 px-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-stone-400" style="--d:{{ $d++ }}">Categories</p>
-      <div class="overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200/80 divide-y divide-stone-100">
-        @foreach($navCategories as $cat)
-          @php($subs = $cat->relationLoaded('children') ? $cat->children : collect())
-          @if($subs->isEmpty())
-            <a href="{{ route('shop.category', $cat) }}" class="mm-item group flex items-center gap-3 px-3.5 py-3 transition hover:bg-stone-50 active:bg-brand-50" style="--d:{{ $d++ }}">
-              <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-stone-100 text-base">{{ $cat->icon ?: strtoupper(mb_substr($cat->name, 0, 1)) }}</span>
-              <span class="min-w-0 flex-1 truncate text-sm font-semibold text-stone-800 group-hover:text-brand-600">{{ $cat->name }}</span>
-              @if(isset($cat->products_count) && $cat->products_count > 0)
-                <span class="text-[11px] font-semibold text-stone-400">{{ $cat->products_count }}</span>
+    {{-- Follows Admin → Homepage → Menu bar: the categories list sits where "All categories" is in the menu,
+         and other menu links (except Home and All Products, which the logo and tiles cover) form their own lists. --}}
+    @php
+      $mobileMenu = collect(\App\Support\HeaderMenu::resolve($navCategories ?? collect(), $navBrands ?? collect(), $activeCategory ?? null, $hasFlashSale ?? false))
+          ->reject(fn ($e) => $e['kind'] === 'brands' || in_array($e['type'] ?? '', ['home', 'shop'], true));
+      $mobileGroups = [];
+      foreach ($mobileMenu as $e) {
+          if ($e['kind'] === 'categories' || empty($mobileGroups) || end($mobileGroups)[0] === 'categories') {
+              $mobileGroups[] = [$e['kind'], [$e]];
+          } else {
+              $mobileGroups[array_key_last($mobileGroups)][1][] = $e;
+          }
+      }
+    @endphp
+    @foreach($mobileGroups as [$groupKind, $groupItems])
+      @if($groupKind === 'categories')
+        @if(isset($navCategories) && $navCategories->isNotEmpty())
+          <p class="mm-item mt-6 mb-2 px-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-stone-400" style="--d:{{ $d++ }}">Categories</p>
+          <div class="overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200/80 divide-y divide-stone-100">
+            @foreach($navCategories as $cat)
+              @php($subs = $cat->relationLoaded('children') ? $cat->children : collect())
+              @if($subs->isEmpty())
+                <a href="{{ route('shop.category', $cat) }}" class="mm-item group flex items-center gap-3 px-3.5 py-3 transition hover:bg-stone-50 active:bg-brand-50" style="--d:{{ $d++ }}">
+                  <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-stone-100 text-base">{{ $cat->icon ?: strtoupper(mb_substr($cat->name, 0, 1)) }}</span>
+                  <span class="min-w-0 flex-1 truncate text-sm font-semibold text-stone-800 group-hover:text-brand-600">{{ $cat->name }}</span>
+                  @if(isset($cat->products_count) && $cat->products_count > 0)
+                    <span class="text-[11px] font-semibold text-stone-400">{{ $cat->products_count }}</span>
+                  @endif
+                  <svg class="h-4 w-4 text-stone-300 transition group-hover:translate-x-0.5 group-hover:text-brand-600" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/></svg>
+                </a>
+              @else
+                {{-- A main category with sub-categories: tap to open them --}}
+                <details class="mm-item group" style="--d:{{ $d++ }}" data-mobile-subcats>
+                  <summary class="flex cursor-pointer list-none items-center gap-3 px-3.5 py-3 transition hover:bg-stone-50 [&::-webkit-details-marker]:hidden">
+                    <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-stone-100 text-base">{{ $cat->icon ?: strtoupper(mb_substr($cat->name, 0, 1)) }}</span>
+                    <span class="min-w-0 flex-1 truncate text-sm font-semibold text-stone-800">{{ $cat->name }}</span>
+                    @if(isset($cat->products_count) && $cat->products_count > 0)
+                      <span class="text-[11px] font-semibold text-stone-400">{{ $cat->products_count }}</span>
+                    @endif
+                    <svg class="h-4 w-4 text-stone-400 transition group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
+                  </summary>
+                  <div class="pb-2 pl-[3.75rem] pr-3.5">
+                    <a href="{{ route('shop.category', $cat) }}" class="block rounded-lg px-3 py-2 text-[13px] font-semibold text-brand-600 hover:bg-brand-50">All {{ $cat->name }}</a>
+                    @foreach($subs as $sub)
+                      <a href="{{ route('shop.category', $sub) }}" class="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-[13px] font-medium text-stone-700 hover:bg-stone-50 hover:text-brand-600">
+                        <span class="truncate">{{ $sub->name }}</span>
+                        @if(($sub->products_count ?? 0) > 0)<span class="text-[11px] font-semibold text-stone-400">{{ $sub->products_count }}</span>@endif
+                      </a>
+                    @endforeach
+                  </div>
+                </details>
               @endif
-              <svg class="h-4 w-4 text-stone-300 transition group-hover:translate-x-0.5 group-hover:text-brand-600" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/></svg>
-            </a>
-          @else
-            {{-- A main category with sub-categories: tap to open them --}}
-            <details class="mm-item group" style="--d:{{ $d++ }}" data-mobile-subcats>
-              <summary class="flex cursor-pointer list-none items-center gap-3 px-3.5 py-3 transition hover:bg-stone-50 [&::-webkit-details-marker]:hidden">
-                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-stone-100 text-base">{{ $cat->icon ?: strtoupper(mb_substr($cat->name, 0, 1)) }}</span>
-                <span class="min-w-0 flex-1 truncate text-sm font-semibold text-stone-800">{{ $cat->name }}</span>
-                @if(isset($cat->products_count) && $cat->products_count > 0)
-                  <span class="text-[11px] font-semibold text-stone-400">{{ $cat->products_count }}</span>
-                @endif
-                <svg class="h-4 w-4 text-stone-400 transition group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
-              </summary>
-              <div class="pb-2 pl-[3.75rem] pr-3.5">
-                <a href="{{ route('shop.category', $cat) }}" class="block rounded-lg px-3 py-2 text-[13px] font-semibold text-brand-600 hover:bg-brand-50">All {{ $cat->name }}</a>
-                @foreach($subs as $sub)
-                  <a href="{{ route('shop.category', $sub) }}" class="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-[13px] font-medium text-stone-700 hover:bg-stone-50 hover:text-brand-600">
-                    <span class="truncate">{{ $sub->name }}</span>
-                    @if(($sub->products_count ?? 0) > 0)<span class="text-[11px] font-semibold text-stone-400">{{ $sub->products_count }}</span>@endif
-                  </a>
-                @endforeach
-              </div>
-            </details>
-          @endif
-        @endforeach
-      </div>
-    @endif
+            @endforeach
+          </div>
+        @endif
+      @else
+        <div class="mt-6 overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200/80 divide-y divide-stone-100" data-mobile-menu-links>
+          @foreach($groupItems as $e)
+            @if(empty($e['children']))
+              <a href="{{ $e['url'] }}" @if($e['external']) target="_blank" rel="noopener" @endif class="mm-item group flex items-center gap-3 px-3.5 py-3 transition hover:bg-stone-50 active:bg-brand-50" style="--d:{{ $d++ }}">
+                <span class="min-w-0 flex-1 truncate text-sm font-semibold {{ $e['active'] ? 'text-brand-600' : 'text-stone-800' }} group-hover:text-brand-600">{{ $e['label'] }}</span>
+                <svg class="h-4 w-4 text-stone-300 transition group-hover:translate-x-0.5 group-hover:text-brand-600" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/></svg>
+              </a>
+            @else
+              <details class="mm-item group" style="--d:{{ $d++ }}">
+                <summary class="flex cursor-pointer list-none items-center gap-3 px-3.5 py-3 transition hover:bg-stone-50 [&::-webkit-details-marker]:hidden">
+                  <span class="min-w-0 flex-1 truncate text-sm font-semibold {{ $e['active'] ? 'text-brand-600' : 'text-stone-800' }}">{{ $e['label'] }}</span>
+                  <svg class="h-4 w-4 text-stone-400 transition group-open:rotate-180" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
+                </summary>
+                <div class="pb-2 px-3.5">
+                  @if(! collect($e['children'])->contains('url', $e['url']))
+                    <a href="{{ $e['url'] }}" class="block rounded-lg px-3 py-2 text-[13px] font-semibold text-brand-600 hover:bg-brand-50">Open {{ $e['label'] }}</a>
+                  @endif
+                  @foreach($e['children'] as $child)
+                    <a href="{{ $child['url'] }}" class="block truncate rounded-lg px-3 py-2 text-[13px] {{ ($child['strong'] ?? false) ? 'font-semibold text-brand-600 hover:bg-brand-50' : 'font-medium text-stone-700 hover:bg-stone-50 hover:text-brand-600' }}">{{ $child['label'] }}</a>
+                  @endforeach
+                </div>
+              </details>
+            @endif
+          @endforeach
+        </div>
+      @endif
+    @endforeach
 
     @if(setting('show_featured_brands', '1') === '1' && isset($navBrands) && $navBrands->isNotEmpty())
       <div class="mm-item mt-6 mb-2 flex items-center justify-between px-1" style="--d:{{ $d++ }}">

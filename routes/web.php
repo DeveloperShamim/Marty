@@ -281,6 +281,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('news-ticker', [\App\Http\Controllers\Admin\NewsTickerController::class, 'index'])->middleware('area:news-ticker')->name('news-ticker.index');
             Route::put('news-ticker', [\App\Http\Controllers\Admin\NewsTickerController::class, 'update'])->middleware('area:news-ticker')->name('news-ticker.update');
 
+            // Menu bar (the store's top menu)
+            Route::get('header-menu', [\App\Http\Controllers\Admin\HeaderMenuController::class, 'index'])->middleware('area:header-menu')->name('header-menu.index');
+            Route::put('header-menu', [\App\Http\Controllers\Admin\HeaderMenuController::class, 'update'])->middleware('area:header-menu')->name('header-menu.update');
+
             // Size Guide
             Route::get('size-guide', [\App\Http\Controllers\Admin\SizeGuideController::class, 'index'])->middleware('area:size-guide')->name('size-guide.index');
             Route::put('size-guide', [\App\Http\Controllers\Admin\SizeGuideController::class, 'update'])->middleware('area:size-guide')->name('size-guide.update');
