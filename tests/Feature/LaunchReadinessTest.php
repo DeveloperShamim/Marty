@@ -26,7 +26,7 @@ class LaunchReadinessTest extends TestCase
         $this->assertSame(0, Product::count());
         $this->assertSame(0, Order::count());
         $this->assertSame(0, ProductReview::count());
-        $this->assertSame(5, \App\Models\Category::count(), 'Real shop categories are set up');
+        $this->assertSame(12, \App\Models\Category::count(), 'Real shop categories are set up');
         $this->assertGreaterThan(0, \App\Models\Feature::count());
         $this->assertSame(1, User::count());
 

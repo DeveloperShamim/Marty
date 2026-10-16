@@ -268,6 +268,13 @@ class DatabaseSeeder extends Seeder
             ['Watches', 'watches', '⌚', 'Classic leather-strap and stainless steel watches for men and women.', 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=600&h=600&q=80'],
             ['Shoes', 'shoes', '👞', 'Leather oxfords, monk straps, derbies, boots and sandals.', 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=600&h=600&q=80'],
             ['Leather Mouse Pads', 'mouse-pads', '🖱️', 'Leather mouse pads and desk mats for a clean, premium workspace.', 'https://images.unsplash.com/photo-1629429407759-01cd3d7cfb38?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Bags & Backpacks', 'bags-backpacks', '🎒', 'Premium leather messenger bags, backpacks, duffels and travel gear.', 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Jackets & Apparel', 'jackets-apparel', '🧥', 'Authentic leather jackets, bomber jackets, and tailored outerwear.', 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Keychains & Organizers', 'keychains-organizers', '🔑', 'Handcrafted leather keychains, key holders, and organizer fobs.', 'https://images.unsplash.com/photo-1614350292305-64906f343ca1?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Travel & Luggage', 'travel-luggage', '🧳', 'Leather passport covers, luggage tags, dopp kits, and travel gear.', 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Eyewear & Cases', 'eyewear-cases', '🕶️', 'Luxury sunglasses, optical frames, and handcrafted leather cases.', 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Bracelets & Jewelry', 'bracelets-jewelry', '📿', 'Braided leather bracelets, cuff wraps, and artisan accessories.', 'https://images.unsplash.com/photo-1611591475870-07e0c4a4e156?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Office & Stationery', 'office-stationery', '📔', 'Leather-bound journals, notebook covers, pen sleeves, and organizers.', 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&h=600&q=80'],
         ];
 
         $categories = [];
