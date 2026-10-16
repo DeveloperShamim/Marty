@@ -65,6 +65,20 @@
                   <span class="flex-1 truncate">{{ $cat->name }}</span>
                   <span class="text-gray-400 text-xs">({{ $cat->products_count }})</span>
                 </a>
+                @if($cat->children->isNotEmpty())
+                  <ul class="mt-1.5 ml-6 space-y-1.5">
+                    @foreach($cat->children as $sub)
+                      <li>
+                        <a href="{{ route('shop.category', ['category' => $sub] + request()->except(['page'])) }}"
+                           class="flex items-center gap-2.5 text-[13px] text-gray-600 hover:text-brand-600 {{ $activeCategory?->id === $sub->id ? 'text-brand-600 font-semibold' : '' }}">
+                          <span class="shop-box {{ $activeCategory?->id === $sub->id ? 'is-checked' : '' }}" aria-hidden="true"></span>
+                          <span class="flex-1 truncate">{{ $sub->name }}</span>
+                          <span class="text-gray-400 text-xs">({{ $sub->products_count }})</span>
+                        </a>
+                      </li>
+                    @endforeach
+                  </ul>
+                @endif
               </li>
             @endforeach
           </ul>
@@ -216,6 +230,18 @@
         </form>
       </div>
 
+      @php
+        // Sub-category chips on a main category (or its sub-categories) page
+        $chipParent = $activeCategory ? ($activeCategory->parent_id ? $categories->firstWhere('id', $activeCategory->parent_id) : $categories->firstWhere('id', $activeCategory->id)) : null;
+      @endphp
+      @if($chipParent && $chipParent->children->isNotEmpty())
+        <nav class="mb-3 -mx-1 px-1 flex gap-2 overflow-x-auto no-scrollbar max-lg:order-first" aria-label="Sub-categories" data-subcategory-chips>
+          @foreach(collect([$chipParent])->concat($chipParent->children) as $chip)
+            @php $on = $activeCategory->id === $chip->id; @endphp
+            <a href="{{ route('shop.category', $chip) }}" class="shrink-0 h-8 px-3.5 inline-flex items-center rounded-full text-[13px] border transition {{ $on ? 'text-white border-transparent' : 'bg-white text-gray-700 border-gray-200 hover:border-brand-300' }}" @if($on) style="background: var(--brand-dark);" @endif>{{ $loop->first ? 'All ' . $chip->name : $chip->name }}</a>
+          @endforeach
+        </nav>
+      @endif
       <div class="lg:bg-white lg:rounded-md lg:border lg:border-gray-100 px-0.5 lg:px-4 py-0 lg:py-3 mb-3 lg:mb-4 flex items-center justify-between gap-3 max-lg:order-first">
         <div class="min-w-0">
           <h1 class="text-base sm:text-lg font-extrabold text-accent-500 truncate">

@@ -11,14 +11,23 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        return view('admin.categories.index', [
-            'categories' => Category::withCount('products')->orderBy('position')->get(),
-        ]);
+        // Main categories in order, each followed by its sub-categories
+        $all = Category::withCount('products')->with('parent:id,name')->orderBy('position')->orderBy('name')->get();
+        $children = $all->whereNotNull('parent_id')->groupBy('parent_id');
+        $ordered = $all->whereNull('parent_id')
+            ->flatMap(fn ($cat) => collect([$cat])->concat($children[$cat->id] ?? []))
+            ->concat($all->whereNotNull('parent_id')->reject(fn ($c) => $all->contains('id', $c->parent_id)))
+            ->values();
+
+        return view('admin.categories.index', ['categories' => $ordered]);
     }
 
     public function create()
     {
-        return view('admin.categories.form', ['category' => new Category(['is_active' => true])]);
+        return view('admin.categories.form', [
+            'category' => new Category(['is_active' => true, 'parent_id' => request()->integer('parent') ?: null]),
+            'parents'  => $this->parentOptions(),
+        ]);
     }
 
     public function store(Request $request)
@@ -36,7 +45,10 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
-        return view('admin.categories.form', compact('category'));
+        return view('admin.categories.form', [
+            'category' => $category,
+            'parents'  => $this->parentOptions($category),
+        ]);
     }
 
     public function update(Request $request, Category $category)
@@ -75,9 +87,19 @@ class CategoryController extends Controller
         return redirect()->route('admin.categories.index')->with('status', 'Category deleted.');
     }
 
+    /** Main categories a category can sit under (one level only, never itself). */
+    private function parentOptions(?Category $category = null)
+    {
+        return Category::topLevel()
+            ->when($category?->exists, fn ($q) => $q->where('id', '!=', $category->id))
+            ->orderBy('position')->orderBy('name')
+            ->get(['id', 'name']);
+    }
+
     private function validateData(Request $request, ?Category $category = null): array
     {
-        return $request->validate([
+        $data = $request->validate([
+            'parent_id'        => ['nullable', 'integer', 'exists:categories,id'],
             'name'             => ['required', 'string', 'max:120'],
             'slug'             => ['nullable', 'string', 'max:120'],
             'icon'             => ['nullable', 'string', 'max:16'],
@@ -88,6 +110,24 @@ class CategoryController extends Controller
             'meta_keywords'    => ['nullable', 'string', 'max:500'],
             'image_file'       => ['nullable', 'image', 'max:4096'],
         ]);
+
+        // One level only: the parent must be a main category, and a category with sub-categories stays a main one.
+        $parentId = $data['parent_id'] ?? null;
+        if ($parentId) {
+            $parent = Category::find($parentId);
+            $error = match (true) {
+                $category && (int) $parentId === $category->id => 'A category cannot be inside itself.',
+                $parent->parent_id !== null => "{$parent->name} is already a sub-category. Choose a main category.",
+                $category && $category->children()->exists() => 'This category has its own sub-categories, so it must stay a main category.',
+                default => null,
+            };
+            if ($error) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['parent_id' => $error]);
+            }
+        }
+        $data['parent_id'] = $parentId ?: null;
+
+        return $data;
     }
 
     private function handleImage(Request $request, array &$data): void

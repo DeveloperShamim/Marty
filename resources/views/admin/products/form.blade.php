@@ -159,7 +159,7 @@
                 <option value="">-- Select Category --</option>
                 @foreach($categories as $cat)
                   <option value="{{ $cat->id }}" @selected((int) old('category_id', $product->category_id) === (int) $cat->id)>
-                    {{ $cat->icon }} {{ $cat->name }}
+                    {{ $cat->icon }} {{ $cat->parent ? $cat->parent->name.' › ' : '' }}{{ $cat->name }}
                   </option>
                 @endforeach
               </select>

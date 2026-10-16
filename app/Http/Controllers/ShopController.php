@@ -13,8 +13,10 @@ class ShopController extends Controller
     {
         $query = Product::published()->with('images', 'category', 'brand', 'variants', 'skus');
 
+        // A main category also lists the products of its sub-categories
+        $categoryIds = $category?->familyIds();
         if ($category) {
-            $query->where('category_id', $category->id);
+            $query->whereIn('category_id', $categoryIds);
         }
 
         if ($term = trim((string) $request->input('q'))) {
@@ -99,7 +101,7 @@ class ShopController extends Controller
 
         // Legacy string brands list fallback
         $rawBrands = Product::published()
-            ->when($category, fn ($q) => $q->where('category_id', $category->id))
+            ->when($category, fn ($q) => $q->whereIn('category_id', $categoryIds))
             ->whereNotNull('brand')
             ->where('brand', '!=', '')
             ->orderBy('brand')
@@ -112,10 +114,10 @@ class ShopController extends Controller
             ->orderBy('name')
             ->get();
 
-        $categories = Category::where('is_active', true)
+        $categories = Category::nest(Category::where('is_active', true)
             ->withCount(['products' => fn ($q) => $q->published()])
             ->orderBy('position')
-            ->get();
+            ->get());
 
         return view('storefront.shop', [
             'products'         => $products,

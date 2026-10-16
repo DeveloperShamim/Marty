@@ -73,11 +73,11 @@ class AppServiceProvider extends ServiceProvider
             if ($chromeData === null) {
                 $chromeData = [
                     'siteName'      => site_name(),
-                    'navCategories' => Category::where('is_active', true)
+                    // Main categories, each with its sub-categories as `children` (counts include them)
+                    'navCategories' => Category::nest(Category::where('is_active', true)
                         ->withCount(['products' => fn ($q) => $q->published()])
-                        ->orderByDesc('products_count')
                         ->orderBy('position')
-                        ->get(),
+                        ->get()),
                     'navBrands'     => Brand::where('is_active', true)
                         ->withCount(['products' => fn ($q) => $q->published()])
                         ->orderByDesc('products_count')

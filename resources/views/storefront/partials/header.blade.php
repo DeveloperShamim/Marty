@@ -154,7 +154,7 @@
 
   {{-- ROW 2: Secondary Navigation Bar --}}
   <div class="hidden lg:block bg-white border-b border-stone-200/80 text-stone-700 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-5 h-11 text-sm font-semibold">
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-5 h-11 text-sm font-semibold">
       <nav class="flex items-center gap-1 xl:gap-2 h-full py-1">
         {{-- 1. Home --}}
         <a href="{{ route('home') }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ request()->routeIs('home') ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">Home</a>
@@ -164,10 +164,35 @@
 
         {{-- 3. Categories that have products, as many as fit on one line; the rest go under More.
              The script below measures the bar and moves what doesn't fit (on load and on resize). --}}
-        @php($menuCats = $navCats->filter(fn ($c) => ($c->products_count ?? 1) > 0)->values())
-        <div class="flex items-center gap-1 xl:gap-2 min-w-0 overflow-hidden" data-nav-cats>
+        @php
+          $menuCats = $navCats->filter(fn ($c) => ($c->products_count ?? 1) > 0)->values();
+          $subsOf = fn ($c) => $c->relationLoaded('children') ? $c->children->filter(fn ($s) => ($s->products_count ?? 1) > 0)->values() : collect();
+          $activeId = optional($activeCategory ?? null)->id;
+          $inFamily = fn ($c) => $activeId && ($c->id === $activeId || $subsOf($c)->contains('id', $activeId));
+        @endphp
+        {{-- A main category with sub-categories opens them on hover. The panel is positioned against the whole
+             bar (not this clipped row), so it isn't cut off; it starts under its own link. --}}
+        <div class="flex items-center gap-1 xl:gap-2 min-w-0 h-full overflow-hidden" data-nav-cats>
           @foreach($menuCats as $cat)
-            <a href="{{ route('shop.category', $cat) }}" data-nav-cat="{{ $cat->id }}" class="shrink-0 px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors {{ optional($activeCategory ?? null)->id === $cat->id ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">{{ $cat->name }}</a>
+            @php($subs = $subsOf($cat))
+            <div class="group/sub shrink-0 h-full flex items-center" data-nav-cat="{{ $cat->id }}">
+              <a href="{{ route('shop.category', $cat) }}" class="px-3 py-1.5 whitespace-nowrap rounded-lg transition-colors inline-flex items-center gap-1 {{ $inFamily($cat) ? 'bg-brand-50 text-brand-600 font-bold' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">
+                {{ $cat->name }}
+                @if($subs->isNotEmpty())
+                  <svg class="w-3.5 h-3.5 transition-transform group-hover/sub:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7"/></svg>
+                @endif
+              </a>
+              @if($subs->isNotEmpty())
+                <div class="absolute top-[calc(100%-0.5rem)] pt-2 hidden group-hover/sub:block group-focus-within/sub:block z-50" data-nav-sub-menu>
+                  <div class="min-w-52 max-w-72 bg-white rounded-2xl shadow-xl border border-stone-200/80 p-2">
+                    <a href="{{ route('shop.category', $cat) }}" class="block px-3 py-2 rounded-lg text-[13px] font-semibold truncate transition-colors {{ $activeId === $cat->id ? 'bg-brand-50 text-brand-600' : 'text-stone-900 hover:text-brand-600 hover:bg-stone-50' }}">All {{ $cat->name }}</a>
+                    @foreach($subs as $sub)
+                      <a href="{{ route('shop.category', $sub) }}" class="block px-3 py-2 rounded-lg text-[13px] font-medium truncate transition-colors {{ $activeId === $sub->id ? 'bg-brand-50 text-brand-600' : 'text-stone-600 hover:text-brand-600 hover:bg-stone-50' }}">{{ $sub->name }}</a>
+                    @endforeach
+                  </div>
+                </div>
+              @endif
+            </div>
           @endforeach
         </div>
 
@@ -183,7 +208,12 @@
             <div class="w-[min(30rem,80vw)] bg-white rounded-2xl shadow-xl border border-stone-200/80 overflow-hidden">
               <div class="grid grid-cols-2 gap-x-1 p-2">
                 @foreach($menuCats as $cat)
-                  <a href="{{ route('shop.category', $cat) }}" data-more-cat="{{ $cat->id }}" class="block px-3 py-2.5 rounded-lg text-[13px] font-medium truncate transition-colors {{ optional($activeCategory ?? null)->id === $cat->id ? 'bg-brand-50 text-brand-600' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">{{ $cat->name }}</a>
+                  <div data-more-cat="{{ $cat->id }}" class="min-w-0 {{ $inFamily($cat) ? 'is-active' : '' }}">
+                    <a href="{{ route('shop.category', $cat) }}" class="block px-3 py-2.5 rounded-lg text-[13px] font-medium truncate transition-colors {{ $activeId === $cat->id ? 'bg-brand-50 text-brand-600' : 'text-stone-700 hover:text-brand-600 hover:bg-stone-50' }}">{{ $cat->name }}</a>
+                    @foreach($subsOf($cat) as $sub)
+                      <a href="{{ route('shop.category', $sub) }}" class="block ml-3 px-3 py-1.5 rounded-lg text-[12px] truncate transition-colors {{ $activeId === $sub->id ? 'bg-brand-50 text-brand-600 font-semibold' : 'text-stone-500 hover:text-brand-600 hover:bg-stone-50' }}">{{ $sub->name }}</a>
+                    @endforeach
+                  </div>
                 @endforeach
               </div>
               <a href="{{ route('shop') }}" class="flex items-center justify-between px-5 py-3 border-t border-stone-100 bg-stone-50/70 text-[13px] font-semibold text-brand-600 hover:bg-brand-50 transition-colors">
@@ -207,7 +237,7 @@
               entries.forEach(function (e) { e.style.display = hidden[e.dataset.moreCat] ? '' : 'none'; });
               more.style.display = any ? '' : 'none';
               var btn = more.querySelector('[data-nav-more-btn]');
-              var activeInMore = entries.some(function (e) { return e.style.display !== 'none' && e.classList.contains('bg-brand-50'); });
+              var activeInMore = entries.some(function (e) { return e.style.display !== 'none' && e.classList.contains('is-active'); });
               btn.classList.toggle('bg-brand-50', activeInMore); btn.classList.toggle('text-brand-600', activeInMore);
             }
             fit();

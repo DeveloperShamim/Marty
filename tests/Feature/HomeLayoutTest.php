@@ -167,8 +167,8 @@ class HomeLayoutTest extends TestCase
 
         $html = $this->get('/')->assertOk()->getContent();
         $this->assertSame(5, substr_count($html, 'data-nav-cat="'), 'Every category with products is in the bar; the script moves what does not fit under More');
-        $this->assertStringContainsString('href="'.route('shop.category', 'travel-bags').'" data-nav-cat=', $html);
-        $this->assertStringNotContainsString('href="'.route('shop.category', 'empty-shelf').'" data-nav-cat=', $html, 'Categories without products stay out of the menu');
+        $this->assertMatchesRegularExpression('#data-nav-cat="\d+">\s*<a href="'.preg_quote(route('shop.category', 'travel-bags'), '#').'"#', $html);
+        $this->assertDoesNotMatchRegularExpression('#data-nav-cat="\d+">\s*<a href="'.preg_quote(route('shop.category', 'empty-shelf'), '#').'"#', $html, 'Categories without products stay out of the menu');
         $this->assertStringNotContainsString('id="brandDropdownContainer"', $html, 'No Brands menu with only one brand');
         $this->assertStringNotContainsString('animate-pulse"></span>', $html);
         $this->assertMatchesRegularExpression('/<a href="tel:01775-075543"[^>]*data-nav-hotline/', $html);

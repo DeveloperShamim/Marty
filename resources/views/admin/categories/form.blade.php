@@ -32,6 +32,19 @@
           </div>
         </div>
 
+        <div>
+          <label class="lbl" for="cat_parent">Parent category</label>
+          @php $hasChildren = $category->exists && $category->children()->exists(); @endphp
+          <select id="cat_parent" name="parent_id" class="inp" @disabled($hasChildren)>
+            <option value="">None (main category)</option>
+            @foreach($parents as $parent)
+              <option value="{{ $parent->id }}" @selected((int) old('parent_id', $category->parent_id) === $parent->id)>{{ $parent->name }}</option>
+            @endforeach
+          </select>
+          @error('parent_id')<p class="text-[11px] text-rose-600 mt-1">{{ $message }}</p>@enderror
+          <p class="text-[11px] text-gray-400 mt-1">{{ $hasChildren ? 'This category has sub-categories, so it stays a main category.' : 'Choose a main category to make this a sub-category. It then shows under that category in the menus.' }}</p>
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="lbl" for="cat_slug">URL slug</label>

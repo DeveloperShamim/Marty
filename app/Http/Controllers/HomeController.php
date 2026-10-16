@@ -25,11 +25,11 @@ class HomeController extends Controller
     {
         $withImages = fn ($q) => $q->published()->with('images', 'category', 'brand', 'variants', 'skus');
 
-        $categories = Category::where('is_active', true)
+        // Main categories only; a main category's count includes its sub-categories
+        $categories = Category::nest(Category::where('is_active', true)
             ->withCount(['products' => fn ($q) => $q->published()])
-            ->orderByDesc('products_count')
             ->orderBy('position')
-            ->get();
+            ->get());
 
         // Brands show as a logo row that links to each brand's page; featured brands lead it
         $featuredBrands = Brand::where('is_active', true)
@@ -87,7 +87,7 @@ class HomeController extends Controller
             ->take(self::HOME_CATEGORY_ROWS)
             ->get()
             ->each(function (Category $cat) use (&$shown) {
-                $products = $cat->products()->published()->with('images', 'category', 'brand', 'variants', 'skus')
+                $products = Product::whereIn('category_id', $cat->familyIds())->published()->with('images', 'category', 'brand', 'variants', 'skus')
                     ->latest()->take(16)->get();
                 $fresh = $products->reject(fn ($p) => $shown->contains($p->id));
                 $row = ($fresh->count() >= self::HOME_ROW_MIN

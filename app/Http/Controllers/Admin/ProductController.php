@@ -421,7 +421,9 @@ class ProductController extends Controller
     {
         return view('admin.products.form', [
             'product'        => new Product(['is_published' => true]),
-            'categories'     => Category::orderBy('name')->get(),
+            // Sub-categories read "Parent › Child" and sit right after their main category
+            'categories'     => Category::with('parent:id,name')->get()
+                ->sortBy(fn ($c) => mb_strtolower($c->parent ? $c->parent->name.' › '.$c->name : $c->name))->values(),
             'brands'         => Brand::where('is_active', true)->orderBy('name')->get(),
             'attributeTypes' => \App\Models\ProductAttributeType::with('values')->where('is_active', true)->orderBy('position')->orderBy('name')->get(),
         ]);
@@ -454,7 +456,9 @@ class ProductController extends Controller
 
         return view('admin.products.form', [
             'product'        => $product,
-            'categories'     => Category::orderBy('name')->get(),
+            // Sub-categories read "Parent › Child" and sit right after their main category
+            'categories'     => Category::with('parent:id,name')->get()
+                ->sortBy(fn ($c) => mb_strtolower($c->parent ? $c->parent->name.' › '.$c->name : $c->name))->values(),
             'brands'         => Brand::where('is_active', true)->orderBy('name')->get(),
             'attributeTypes' => \App\Models\ProductAttributeType::with('values')->where('is_active', true)->orderBy('position')->orderBy('name')->get(),
         ]);

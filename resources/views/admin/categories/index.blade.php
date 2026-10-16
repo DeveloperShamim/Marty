@@ -41,15 +41,19 @@
         </thead>
         <tbody class="divide-y divide-gray-100">
           @forelse($categories as $cat)
-            <tr class="hover:bg-gray-50/70 transition-colors">
+            <tr class="hover:bg-gray-50/70 transition-colors" @if($cat->parent_id) data-subcategory @endif>
               <td class="py-3 px-4 text-center text-gray-400 tabular-nums">{{ $cat->position ?? 0 }}</td>
               <td class="py-3 px-4">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 {{ $cat->parent_id ? 'pl-6 sm:pl-8' : '' }}">
+                  @if($cat->parent_id)<span class="text-gray-300 -ml-5 mr-[-4px]" aria-hidden="true">↳</span>@endif
                   <div class="h-10 w-10 rounded-xl bg-gray-100 overflow-hidden grid place-items-center shrink-0">
                     <img src="{{ $cat->imageUrl() }}" class="h-full w-full object-cover" alt="{{ $cat->name }}" onerror="{{ $imgFallback }}" />
                   </div>
                   <div class="min-w-0">
                     <a href="{{ route('admin.categories.edit', $cat) }}" class="font-semibold text-gray-900 hover:underline line-clamp-1">{{ $cat->name }}</a>
+                    @if($cat->parent)
+                      <span class="text-[11px] text-gray-500 block mt-0.5">Sub-category of {{ $cat->parent->name }}</span>
+                    @endif
                     @if($cat->description)
                       <span class="text-[11px] text-gray-500 line-clamp-1 mt-0.5 max-w-sm">{{ $cat->description }}</span>
                     @endif
@@ -100,14 +104,14 @@
     {{-- Phone: one card per category --}}
     <div class="md:hidden px-3 pb-3 space-y-2.5">
       @forelse($categories as $cat)
-        <article class="rounded-2xl bg-gray-50/80 p-3.5 space-y-3">
+        <article class="rounded-2xl bg-gray-50/80 p-3.5 space-y-3 {{ $cat->parent_id ? 'ml-5' : '' }}">
           <div class="flex items-center gap-3">
             <div class="h-11 w-11 rounded-xl bg-white overflow-hidden grid place-items-center shrink-0">
               <img src="{{ $cat->imageUrl() }}" class="h-full w-full object-cover" alt="{{ $cat->name }}" onerror="{{ $imgFallback }}" />
             </div>
             <div class="min-w-0 flex-1">
               <a href="{{ route('admin.categories.edit', $cat) }}" class="font-semibold text-sm text-gray-900 truncate max-[399px]:whitespace-normal max-[399px]:leading-snug block">{{ $cat->name }}</a>
-              <p class="text-[11px] text-gray-500 font-mono truncate mt-0.5">/{{ $cat->slug }}</p>
+              <p class="text-[11px] text-gray-500 truncate mt-0.5">@if($cat->parent)Sub-category of {{ $cat->parent->name }}@else<span class="font-mono">/{{ $cat->slug }}</span>@endif</p>
             </div>
             <div class="text-right shrink-0">
               <p class="text-[15px] font-semibold text-gray-900 tabular-nums">{{ $cat->products_count }}</p>
