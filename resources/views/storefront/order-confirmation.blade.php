@@ -104,7 +104,7 @@
       <h3 class="font-semibold text-xs text-slate-400 mb-2">Delivery to</h3>
       <p class="font-semibold">{{ $order->customer_name }}</p>
       <p class="text-slate-500">{{ $order->customer_phone }}</p>
-      <p class="text-slate-500 mt-1">{{ $order->shipping_address }}, {{ $order->city }} {{ $order->postal_code }}</p>
+      <p class="text-slate-500 mt-1">{{ $order->shipping_address }}@if($order->city), {{ $order->city }}@endif {{ $order->postal_code }}</p>
     </div>
     <div class="rounded-2xl border border-slate-100 bg-white p-5 shadow-soft">
       <h3 class="font-semibold text-xs text-slate-400 mb-2">Payment</h3>

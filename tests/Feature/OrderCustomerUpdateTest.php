@@ -75,6 +75,24 @@ class OrderCustomerUpdateTest extends TestCase
             'city'             => '',
         ]);
 
-        $response->assertSessionHasErrors(['customer_name', 'customer_phone', 'shipping_address', 'city']);
+        // City is optional, like at checkout
+        $response->assertSessionHasErrors(['customer_name', 'customer_phone', 'shipping_address']);
+        $response->assertSessionDoesntHaveErrors('city');
+    }
+
+    public function test_city_can_be_cleared(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $order = Order::create([
+            'order_number' => 'ORD-TEST-CITY', 'customer_name' => 'Rafi', 'customer_phone' => '01700000000',
+            'shipping_address' => 'Agrabad', 'city' => 'Dhaka', 'subtotal' => 500, 'shipping_charge' => 60,
+            'total' => 560, 'payment_method' => 'cod', 'status' => 'pending',
+        ]);
+
+        $this->actingAs($admin)->patch(route('admin.orders.update-customer', $order), [
+            'customer_name' => 'Rafi', 'customer_phone' => '01700000000', 'shipping_address' => 'Agrabad, Chattogram', 'city' => '',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('', $order->refresh()->city);
     }
 }

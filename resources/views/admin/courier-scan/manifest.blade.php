@@ -76,7 +76,7 @@
               <strong>{{ $ord->customer_name }}</strong><br>
               <span style="color: #64748b;">{{ $ord->customer_phone }}</span>
             </td>
-            <td>{{ $ord->shipping_address }}, {{ $ord->city }}</td>
+            <td>{{ $ord->shipping_address }}@if($ord->city), {{ $ord->city }}@endif</td>
             <td class="text-right" style="font-weight: bold;">৳{{ number_format($ord->total, 2) }}</td>
             <td class="text-center" style="font-size: 16px;">[ &nbsp; ]</td>
           </tr>

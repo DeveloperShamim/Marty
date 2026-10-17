@@ -191,6 +191,22 @@ class StorefrontPurchaseFlowTest extends TestCase
         $this->assertStringContainsString('id="zoneAuto"', $html);
     }
 
+    public function test_city_is_optional_at_checkout(): void
+    {
+        $product = $this->makeProduct(['regular_price' => 1000, 'stock_quantity' => 10]);
+        $this->postJson(route('cart.add'), ['product_id' => $product->id, 'qty' => 1])->assertOk();
+
+        $this->assertDoesNotMatchRegularExpression('/name="city"[^>]*required/', $this->get(route('checkout.show'))->getContent());
+
+        $payload = $this->checkoutPayload(['shipping_address' => 'House 1, Road 2, Dhanmondi']);
+        unset($payload['city']);
+        $this->post(route('checkout.store'), $payload)->assertSessionHasNoErrors();
+
+        $order = \App\Models\Order::firstOrFail();
+        $this->assertSame('', $order->city);
+        $this->get(route('order.confirmation', $order->order_number))->assertOk()->assertSee('House 1, Road 2, Dhanmondi')->assertDontSee('Dhanmondi, ', false);
+    }
+
     public function test_checkout_rejects_invalid_phone_number(): void
     {
         $product = $this->makeProduct();
