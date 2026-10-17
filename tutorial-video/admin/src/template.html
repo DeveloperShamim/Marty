@@ -151,6 +151,7 @@
 
 <script>
 const DURATION = /*DURATION*/;
+window.DURATION = DURATION;   // also on window, for tools that look for it there
 const CUES = /*CUES*/;
 const SCREENS = /*SCREENS*/;
 const SCENE = /*SCENE*/;
@@ -161,7 +162,8 @@ function fit() { const s = Math.min(innerWidth / 1920, innerHeight / 1080); stag
 addEventListener('resize', fit); fit();
 
 const $ = (id) => document.getElementById(id);
-const tl = gsap.timeline({ paused: true });
+// Plays from the moment the page opens; tools that step through time (CodeFlow) drive it frame by frame.
+const tl = gsap.timeline();
 window.__timeline = tl;
 
 // ---------- geometry ----------
@@ -293,8 +295,6 @@ const C = (n) => CUES[n - 1].s, E = (n) => CUES[n - 1].e, skipped = (n) => !!CUE
 SCENE({ skipped, tl, $, world, box, union, pad, cam, camBrowser, show, scrollTo, scrollToBox, cursor, click, tap, hideCursor, ring, type, toast, C, E, VX, VY, VW, VH });
 tl.set({}, {}, DURATION);
 
-// Play once everything (fonts, screenshots) is ready.
-Promise.all([document.fonts.ready, ...[...document.images].map(im => im.decode().catch(() => {}))]).then(() => tl.play(0));
 </script>
 </body>
 </html>
