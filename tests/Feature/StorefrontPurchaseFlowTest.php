@@ -177,6 +177,20 @@ class StorefrontPurchaseFlowTest extends TestCase
         $this->assertDatabaseCount('orders', 0);
     }
 
+    public function test_checkout_reads_the_zone_from_the_address_fields(): void
+    {
+        $product = $this->makeProduct(['regular_price' => 1000, 'stock_quantity' => 10]);
+        $this->postJson(route('cart.add'), ['product_id' => $product->id, 'qty' => 1])->assertOk();
+
+        $html = $this->get(route('checkout.show'))->assertOk()->getContent();
+
+        // Address and city feed the guess; the city is no longer prefilled with Dhaka, which would pick Inside Dhaka for everyone
+        $this->assertSame(2, substr_count($html, 'data-zone-source value='));
+        $this->assertMatchesRegularExpression('/name="city" data-zone-source value=""/', $html);
+        $this->assertStringContainsString('var ZONE_PLACES = {', $html);
+        $this->assertStringContainsString('id="zoneAuto"', $html);
+    }
+
     public function test_checkout_rejects_invalid_phone_number(): void
     {
         $product = $this->makeProduct();

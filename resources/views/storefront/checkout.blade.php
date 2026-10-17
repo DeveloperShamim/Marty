@@ -195,13 +195,13 @@
             <div class="space-y-2 sm:space-y-2.5">
               <div>
                 <label class="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-1">Address <span class="text-red-500">*</span></label>
-                <input name="shipping_address" value="{{ old('shipping_address', $user?->address) }}" required placeholder="House, road, area details" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
+                <input name="shipping_address" data-zone-source value="{{ old('shipping_address', $user?->address) }}" required placeholder="House, road, area details" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
               </div>
 
               <div class="grid grid-cols-2 gap-2 sm:gap-2.5">
                 <div>
                   <label class="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-1">City <span class="text-red-500">*</span></label>
-                  <input name="city" value="{{ old('city', $user?->city ?? 'Dhaka') }}" required placeholder="e.g. Dhaka" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
+                  <input name="city" data-zone-source value="{{ old('city', $user?->city) }}" required placeholder="e.g. Dhaka" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
                 </div>
                 <div>
                   <label class="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-1">Postal code <span class="text-slate-400 font-normal">(optional)</span></label>
@@ -235,6 +235,7 @@
                     <span class="zone-check h-4 w-4 rounded-full bg-brand-600 text-white flex items-center justify-center text-[10px] shrink-0 font-bold {{ $shippingZone === 'outside_dhaka' ? '' : 'hidden' }}">✓</span>
                   </button>
                 </div>
+                <p id="zoneAuto" class="hidden text-[11px] text-emerald-700 mt-1">Picked from your address. Tap the other zone if it's wrong.</p>
                 <p id="zoneError" class="text-[11px] text-red-600 mt-1 {{ $errors->has('shipping_zone') ? '' : 'hidden' }}">Please choose your delivery zone.</p>
               </div>
 
@@ -687,32 +688,72 @@
   if (zone) zone.addEventListener('change', recalc);
 
   // Delivery Zone Pill Switcher (1-tap selection)
-  document.querySelectorAll('.zone-pill').forEach(function (pill) {
-    pill.addEventListener('click', function () {
-      var targetZone = pill.dataset.zone;
-      if (!zone || !targetZone) return;
-
-      zone.value = targetZone;
-      zone.dispatchEvent(new Event('change'));
+  function selectZone(targetZone) {
+    if (!zone) return;
+    zone.value = targetZone;
+    zone.dispatchEvent(new Event('change'));
+    if (targetZone) {
       var zoneErr = document.getElementById('zoneError');
       if (zoneErr) zoneErr.classList.add('hidden');
       var pills = document.getElementById('zonePills');
       if (pills) pills.classList.remove('ring-2', 'ring-red-300', 'rounded-xl');
+    }
 
-      document.querySelectorAll('.zone-pill').forEach(function (p) {
-        var isTarget = p.dataset.zone === targetZone;
-        if (isTarget) {
-          p.classList.add('border-brand-600', 'bg-brand-50/70', 'text-brand-900', 'ring-1', 'ring-brand-600', 'font-bold', 'shadow-2xs');
-          p.classList.remove('border-slate-200', 'bg-white', 'text-slate-700');
-        } else {
-          p.classList.remove('border-brand-600', 'bg-brand-50/70', 'text-brand-900', 'ring-1', 'ring-brand-600', 'font-bold', 'shadow-2xs');
-          p.classList.add('border-slate-200', 'bg-white', 'text-slate-700');
-        }
-        var chk = p.querySelector('.zone-check');
-        if (chk) chk.classList.toggle('hidden', !isTarget);
-      });
+    document.querySelectorAll('.zone-pill').forEach(function (p) {
+      var isTarget = p.dataset.zone === targetZone;
+      if (isTarget) {
+        p.classList.add('border-brand-600', 'bg-brand-50/70', 'text-brand-900', 'ring-1', 'ring-brand-600', 'font-bold', 'shadow-2xs');
+        p.classList.remove('border-slate-200', 'bg-white', 'text-slate-700');
+      } else {
+        p.classList.remove('border-brand-600', 'bg-brand-50/70', 'text-brand-900', 'ring-1', 'ring-brand-600', 'font-bold', 'shadow-2xs');
+        p.classList.add('border-slate-200', 'bg-white', 'text-slate-700');
+      }
+      var chk = p.querySelector('.zone-check');
+      if (chk) chk.classList.toggle('hidden', !isTarget);
+    });
+  }
+
+  // Once the buyer taps a zone themselves, the address no longer changes it
+  var zoneChosenByHand = !!(zone && zone.value);
+  document.querySelectorAll('.zone-pill').forEach(function (pill) {
+    pill.addEventListener('click', function () {
+      if (!pill.dataset.zone) return;
+      zoneChosenByHand = true;
+      var auto = document.getElementById('zoneAuto');
+      if (auto) auto.classList.add('hidden');
+      selectZone(pill.dataset.zone);
     });
   });
+
+  // Delivery zone from the address: a district or town outside Dhaka city wins, then a Dhaka area.
+  // Same lists and rules as App\Support\DeliveryZoneGuess. No clue leaves the zone unselected.
+  var ZONE_PLACES = @json(\App\Support\DeliveryZoneGuess::toJs());
+  function normalizePlace(text) {
+    return String(text || '').toLowerCase().replace(/[’‘]/g, "'").replace(/[\s,.;:\/\\()\[\]#\-–—|]+/g, ' ').trim();
+  }
+  function mentionsPlace(text, names) {
+    var padded = ' ' + text + ' ';
+    return names.some(function (name) {
+      return /[\u0980-\u09FF]/.test(name) ? padded.indexOf(name) !== -1 : padded.indexOf(' ' + name + ' ') !== -1;
+    });
+  }
+  function guessZone() {
+    var text = normalizePlace(Array.prototype.map.call(document.querySelectorAll('[data-zone-source]'), function (el) { return el.value; }).join(' , '));
+    if (!text) return '';
+    if (mentionsPlace(text, ZONE_PLACES.outside)) return 'outside_dhaka';
+    return mentionsPlace(text, ZONE_PLACES.inside) ? 'inside_dhaka' : '';
+  }
+  function zoneFromAddress() {
+    if (zoneChosenByHand || !zone) return;
+    var guess = guessZone();
+    var auto = document.getElementById('zoneAuto');
+    if (auto) auto.classList.toggle('hidden', !guess);
+    if (guess !== zone.value) selectZone(guess);
+  }
+  document.querySelectorAll('[data-zone-source]').forEach(function (el) {
+    el.addEventListener('input', zoneFromAddress);
+  });
+  zoneFromAddress();
 
   // Payment option selection
   document.querySelectorAll('.pay-opt').forEach(function (opt) {
