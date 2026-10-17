@@ -59,7 +59,9 @@
         for (i = 0; i < fs.length; i++) { times.push(fs[i] / FPS); values.push(map(at(a, fs[i]), at(b, fs[i]))); }
         prop.setValuesAtTimes(times, values);
     }
-    function opacity(L, list, factor) { keyed(tr(L).property("ADBE Opacity"), list, function (v) { return v * 100 * (factor || 1); }); }
+    // Opacity is 0-100 in After Effects; eased values in the HTML can overshoot slightly, so clamp.
+    function pct(v) { return Math.max(0, Math.min(100, v)); }
+    function opacity(L, list, factor) { keyed(tr(L).property("ADBE Opacity"), list, function (v) { return pct(v * 100 * (factor || 1)); }); }
     // Position with X and Y as separate properties (no curved motion paths between dense keys).
     function position(L, xs, ys, fx, fy) {
         var p = tr(L).property("ADBE Position");
@@ -378,11 +380,11 @@
         oList.push([Math.round(sub.on * FPS), 1]);
         oList.push([Math.round(sub.off * FPS), 0]);
         ends.push(sub.on); endsV.push(0);
-        for (w = 0; w < sub.words.length; w++) { ends.push(Math.max(sub.on + 0.001, sub.words[w].t)); endsV.push((w + 1) / sub.words.length * 100); }
+        for (w = 0; w < sub.words.length; w++) { ends.push(Math.max(sub.on + 0.001, sub.words[w].t)); endsV.push(pct((w + 1) / sub.words.length * 100)); }
     }
     src.setValuesAtTimes(sTimes, sDocs);
     var op = tr(subT).property("ADBE Opacity");
-    keyed(op, oList, function (v) { return v * 100; });
+    keyed(op, oList, function (v) { return pct(v * 100); });
     holdAll(op);
     var anim = subT.property("ADBE Text Properties").property("ADBE Text Animators").addProperty("ADBE Text Animator");
     anim.name = "Spoken words";

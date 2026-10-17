@@ -27,6 +27,15 @@ const KNOWN = new Set(["(layer)",
 const stats = { layers: 0, keys: 0, props: 0, expressions: 0, comps: 0, imports: 0 };
 const problems = [];
 const bad = (v) => (Array.isArray(v) ? v.some(bad) : typeof v === "number" && !Number.isFinite(v));
+// Value ranges After Effects enforces (it rejects the whole call when one value is outside).
+const RANGE = { "ADBE Opacity": [0, 100], "ADBE Vector Fill Opacity": [0, 100], "ADBE Vector Stroke Opacity": [0, 100],
+  "ADBE Text Percent End": [0, 100], "ADBE Drop Shadow-0002": [0, 100], "ADBE Vector Rect Roundness": [0, 10000] };
+function outOfRange(name, v) {
+  const r = RANGE[name];
+  if (!r) return false;
+  const vals = Array.isArray(v) ? v : [v];
+  return vals.some((x) => typeof x === "number" && (x < r[0] || x > r[1]));
+}
 
 function makeProp(matchName) {
   if (!KNOWN.has(matchName) && typeof matchName === "string") problems.push("unknown property " + matchName);
@@ -42,13 +51,14 @@ function makeProp(matchName) {
       return children.get(n);
     },
     addProperty(n) { const c = makeProp(n); children.set(n + "#" + children.size, c); return c; },
-    setValue(v) { if (bad(v)) problems.push("NaN value on " + matchName); this._value = v; },
+    setValue(v) { if (bad(v)) problems.push("NaN value on " + matchName); if (outOfRange(matchName, v)) problems.push("value " + v + " out of range on " + matchName); this._value = v; },
     setValuesAtTimes(ts, vs) {
       if (ts.length !== vs.length) problems.push("times/values length mismatch on " + matchName);
       for (let i = 0; i < ts.length; i++) {
         if (!Number.isFinite(ts[i]) || ts[i] < 0) problems.push("bad time on " + matchName);
         if (i && ts[i] < ts[i - 1]) problems.push("unsorted times on " + matchName);
         if (bad(vs[i])) problems.push("NaN value on " + matchName + " at " + ts[i]);
+        if (outOfRange(matchName, vs[i])) problems.push("value " + vs[i] + " out of range on " + matchName + " at " + ts[i].toFixed(2) + "s");
       }
       this.numKeys += ts.length; stats.keys += ts.length;
     },
