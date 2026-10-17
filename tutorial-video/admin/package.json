@@ -1,0 +1,13 @@
+{
+  "name": "vant-admin-tutorial",
+  "private": true,
+  "description": "Builds the admin tutorial video (HTML) and its After Effects script",
+  "scripts": {
+    "build": "node build.mjs",
+    "ae": "node build.mjs && node ae/export.mjs"
+  },
+  "devDependencies": {
+    "gsap": "3.12.5",
+    "playwright-core": "^1.56.0"
+  }
+}

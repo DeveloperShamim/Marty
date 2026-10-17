@@ -114,8 +114,8 @@ class DatabaseSeeder extends Seeder
         return [
             'site_name' => 'Vant Bangladesh',
             'tagline' => 'Genuine Leather. Timeless Style.',
-            'logo' => '',     // no logo yet: the site name is shown instead
-            'favicon' => '',
+            'logo' => 'uploads/brand/vant-logo.png',
+            'favicon' => 'uploads/brand/vant-mark.png',
             'footer_text' => 'Vant Bangladesh brings you genuine leather wallets, belts, watches, shoes and desk accessories, made to last and delivered anywhere in Bangladesh with cash on delivery.',
             'contact_phone' => '01775-075543',
             'whatsapp_number' => '01775-075543',
@@ -265,9 +265,16 @@ class DatabaseSeeder extends Seeder
         $data = [
             ['Wallets & Card Holders', 'wallets', '👛', 'Genuine leather bifold, trifold and long wallets, plus slim card holders.', 'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=600&h=600&q=80'],
             ['Belts', 'belts', '🪢', 'Formal and casual leather belts with solid metal buckles.', 'https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=600&h=600&q=80'],
-            ['Watches', 'watches', '⌚', 'Classic leather-strap and stainless steel watches for men and women.', 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=600&h=600&q=80'],
-            ['Shoes', 'shoes', '👞', 'Leather oxfords, monk straps, derbies, boots and sandals.', 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Watches', 'watches', '⌚', 'Classic leather-strap and stainless steel watches for men and women.', 'uploads/demo/category-watches.jpg'],
+            ['Shoes', 'shoes', '👞', 'Leather oxfords, monk straps, derbies, boots and sandals.', 'uploads/demo/category-shoes.jpg'],
             ['Leather Mouse Pads', 'mouse-pads', '🖱️', 'Leather mouse pads and desk mats for a clean, premium workspace.', 'https://images.unsplash.com/photo-1629429407759-01cd3d7cfb38?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Bags & Backpacks', 'bags-backpacks', '🎒', 'Premium leather messenger bags, backpacks, duffels and travel gear.', 'uploads/demo/category-bags-backpacks.jpg'],
+            ['Jackets & Apparel', 'jackets-apparel', '🧥', 'Authentic leather jackets, bomber jackets, and tailored outerwear.', 'uploads/demo/category-jackets-apparel.jpg'],
+            ['Keychains & Organizers', 'keychains-organizers', '🔑', 'Handcrafted leather keychains, key holders, and organizer fobs.', 'https://images.unsplash.com/photo-1614350292305-64906f343ca1?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Travel & Luggage', 'travel-luggage', '🧳', 'Leather passport covers, luggage tags, dopp kits, and travel gear.', 'uploads/demo/category-travel-luggage.jpg'],
+            ['Eyewear & Cases', 'eyewear-cases', '🕶️', 'Luxury sunglasses, optical frames, and handcrafted leather cases.', 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Bracelets & Jewelry', 'bracelets-jewelry', '📿', 'Braided leather bracelets, cuff wraps, and artisan accessories.', 'https://images.unsplash.com/photo-1611591475870-07e0c4a4e156?auto=format&fit=crop&w=600&h=600&q=80'],
+            ['Office & Stationery', 'office-stationery', '📔', 'Leather-bound journals, notebook covers, pen sleeves, and organizers.', 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&h=600&q=80'],
         ];
 
         $categories = [];
@@ -386,7 +393,7 @@ class DatabaseSeeder extends Seeder
                 'is_new' => false,
                 'is_best_seller' => true,
                 'images' => [
-                    'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80',
+                    'uploads/demo/vant-classic-bifold-leather-wallet.jpg',
                     'https://images.unsplash.com/photo-1606503825008-909a67e63c3d?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
@@ -404,7 +411,7 @@ class DatabaseSeeder extends Seeder
                 'is_new' => true,
                 'is_best_seller' => false,
                 'images' => [
-                    'https://images.unsplash.com/photo-1606503825008-909a67e63c3d?auto=format&fit=crop&w=800&h=800&q=80',
+                    'uploads/demo/vant-slim-leather-card-holder.jpg',
                     'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
@@ -440,7 +447,7 @@ class DatabaseSeeder extends Seeder
                 'is_new' => false,
                 'is_best_seller' => false,
                 'images' => [
-                    'https://images.unsplash.com/photo-1606503825008-909a67e63c3d?auto=format&fit=crop&w=800&h=800&q=80',
+                    'uploads/demo/vant-trifold-leather-wallet.jpg',
                     'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
@@ -514,7 +521,7 @@ class DatabaseSeeder extends Seeder
                 'is_new' => false,
                 'is_best_seller' => true,
                 'images' => [
-                    'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&h=800&q=80',
+                    'uploads/demo/vant-classic-leather-strap-watch.jpg',
                     'https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
@@ -532,7 +539,7 @@ class DatabaseSeeder extends Seeder
                 'is_new' => true,
                 'is_best_seller' => false,
                 'images' => [
-                    'https://images.unsplash.com/photo-1522312346375-d1a52e2b99b3?auto=format&fit=crop&w=800&h=800&q=80',
+                    'uploads/demo/vant-rose-dial-ladies-watch.jpg',
                     'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],

@@ -1,0 +1,25 @@
+{
+  "name": "vant-promo-video",
+  "private": true,
+  "version": "1.0.0",
+  "description": "30-second Apple-style promo for the store platform, built with Remotion",
+  "scripts": {
+    "music": "node scripts/make-music.mjs",
+    "studio": "npm run music && remotion studio",
+    "render": "npm run music && remotion render Promo out/promo-9x16.mp4",
+    "render:wide": "npm run music && remotion render PromoWide out/promo-16x9.mp4",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.2.5",
+    "@fontsource/noto-sans-bengali": "^5.2.5",
+    "@remotion/cli": "4.0.536",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remotion": "4.0.536"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,1337 @@
+{
+ "login": {
+  "path": "/admin/login",
+  "w": 1440,
+  "h": 900,
+  "full": false,
+  "boxes": {
+   "email": [
+    916,
+    387,
+    346,
+    48
+   ],
+   "password": [
+    916,
+    481,
+    346,
+    48
+   ],
+   "signin": [
+    916,
+    589,
+    346,
+    48
+   ]
+  }
+ },
+ "dashboard": {
+  "path": "/admin",
+  "w": 1440,
+  "h": 1756,
+  "full": true,
+  "boxes": {
+   "needs": [
+    309,
+    170,
+    157,
+    24
+   ],
+   "payments": [
+    376,
+    265,
+    154,
+    16
+   ],
+   "risky": [
+    652,
+    265,
+    182,
+    16
+   ],
+   "carts": [
+    927,
+    265,
+    154,
+    16
+   ],
+   "lowstock": [
+    1203,
+    265,
+    182,
+    16
+   ],
+   "toship": [
+    309,
+    580,
+    233,
+    24
+   ],
+   "today": [
+    305,
+    807,
+    333,
+    16
+   ],
+   "month": [
+    688,
+    807,
+    333,
+    16
+   ],
+   "profit": [
+    1070,
+    807,
+    333,
+    16
+   ],
+   "sidebar": [
+    20,
+    84,
+    248,
+    800
+   ],
+   "search": [
+    913,
+    22,
+    288,
+    36
+   ],
+   "approvals": [
+    323,
+    322,
+    119,
+    20
+   ],
+   "verify": [
+    776,
+    360,
+    58,
+    32
+   ],
+   "navOrders": [
+    33,
+    213,
+    222,
+    40
+   ],
+   "navCourier": [
+    33,
+    257,
+    222,
+    40
+   ],
+   "navPos": [
+    33,
+    301,
+    222,
+    40
+   ],
+   "navProducts": [
+    33,
+    385,
+    222,
+    40
+   ],
+   "navInventory": [
+    33,
+    429,
+    222,
+    40
+   ],
+   "navCatalog": [
+    33,
+    473,
+    222,
+    40
+   ],
+   "navReviews": [
+    33,
+    517,
+    222,
+    40
+   ],
+   "navHomepage": [
+    33,
+    601,
+    222,
+    40
+   ],
+   "navCoupons": [
+    33,
+    773,
+    222,
+    40
+   ],
+   "navPromotions": [
+    33,
+    817,
+    222,
+    40
+   ],
+   "navCarts": [
+    33,
+    861,
+    222,
+    40
+   ],
+   "navAnalytics": [
+    33,
+    945,
+    222,
+    40
+   ],
+   "navExpenses": [
+    33,
+    989,
+    222,
+    40
+   ],
+   "navCustomers": [
+    33,
+    1073,
+    222,
+    40
+   ],
+   "navStaff": [
+    33,
+    1117,
+    222,
+    40
+   ],
+   "navSettings": [
+    33,
+    1231,
+    222,
+    40
+   ],
+   "navIntegrations": [
+    33,
+    1275,
+    222,
+    40
+   ]
+  }
+ },
+ "dashboard-search": {
+  "path": "/admin",
+  "w": 1440,
+  "h": 900,
+  "full": false,
+  "boxes": {
+   "search": [
+    913,
+    22,
+    288,
+    36
+   ]
+  }
+ },
+ "orders": {
+  "path": "/admin/orders",
+  "w": 1440,
+  "h": 1629,
+  "full": true,
+  "boxes": {
+   "pendingTab": [
+    382,
+    244,
+    102,
+    36
+   ],
+   "firstRow": [
+    289,
+    399,
+    1130,
+    105
+   ],
+   "navOrders": [
+    33,
+    213,
+    222,
+    40
+   ]
+  }
+ },
+ "orders-pending": {
+  "path": "/admin/orders?status=pending",
+  "w": 1440,
+  "h": 912,
+  "full": true,
+  "boxes": {
+   "pendingTab": [
+    382,
+    244,
+    102,
+    36
+   ],
+   "open": [
+    1330,
+    413,
+    69,
+    32
+   ],
+   "row": [
+    289,
+    399,
+    1130,
+    105
+   ]
+  }
+ },
+ "orders-selected": {
+  "path": "/admin/orders",
+  "w": 1440,
+  "h": 900,
+  "full": false,
+  "boxes": {
+   "check1": [
+    309,
+    415,
+    16,
+    16
+   ],
+   "check2": [
+    309,
+    520,
+    16,
+    16
+   ],
+   "check3": [
+    309,
+    591,
+    16,
+    16
+   ],
+   "sendCourier": [
+    1137,
+    830,
+    138,
+    36
+   ],
+   "printLabels": [
+    1126,
+    814,
+    224,
+    36
+   ],
+   "printInvoices": [
+    1126,
+    772,
+    224,
+    36
+   ],
+   "more": [
+    1364,
+    830,
+    36,
+    36
+   ]
+  }
+ },
+ "orders-print": {
+  "path": "/admin/orders",
+  "w": 1440,
+  "h": 900,
+  "full": false,
+  "boxes": {
+   "printInvoices": [
+    1126,
+    736,
+    224,
+    36
+   ],
+   "printLabels": [
+    1126,
+    778,
+    224,
+    36
+   ]
+  }
+ },
+ "orders-more": {
+  "path": "/admin/orders",
+  "w": 1440,
+  "h": 900,
+  "full": false,
+  "boxes": {
+   "cancelOrders": [
+    1214,
+    780,
+    180,
+    36
+   ]
+  }
+ },
+ "order": {
+  "path": "/admin/orders/VB-888252",
+  "w": 1440,
+  "h": 1358,
+  "full": true,
+  "boxes": {
+   "customer": [
+    309,
+    459,
+    89,
+    20
+   ],
+   "name": [
+    361,
+    518,
+    136,
+    24
+   ],
+   "phoneBtn": [
+    309,
+    578,
+    134,
+    36
+   ],
+   "whatsapp": [
+    451,
+    578,
+    110,
+    36
+   ],
+   "history": [
+    309,
+    649,
+    231,
+    16
+   ],
+   "items": [
+    309,
+    769,
+    82,
+    20
+   ],
+   "notes": [
+    1074,
+    979,
+    146,
+    20
+   ],
+   "noteBox": [
+    1074,
+    1042,
+    325,
+    62
+   ],
+   "saveNote": [
+    1299,
+    1224,
+    100,
+    28
+   ],
+   "confirm": [
+    1104,
+    293,
+    141,
+    36
+   ],
+   "reject": [
+    1253,
+    293,
+    130,
+    36
+   ],
+   "statusPay": [
+    1074,
+    453,
+    142,
+    20
+   ],
+   "courier": [
+    1074,
+    765,
+    325,
+    16
+   ],
+   "send": [
+    1074,
+    793,
+    325,
+    40
+   ],
+   "label": [
+    477,
+    375,
+    86,
+    36
+   ],
+   "invoice": [
+    309,
+    375,
+    85,
+    36
+   ],
+   "edit": [
+    912,
+    453,
+    67,
+    32
+   ]
+  }
+ },
+ "order-edit": {
+  "path": "/admin/orders/VB-888252",
+  "w": 1440,
+  "h": 900,
+  "full": false,
+  "boxes": {
+   "modal": [
+    484,
+    229,
+    209,
+    23
+   ],
+   "name": [
+    484,
+    301,
+    230,
+    18
+   ],
+   "save": [
+    849,
+    635,
+    107,
+    36
+   ]
+  }
+ },
+ "order-bkash": {
+  "path": "/admin/orders/VB-579944",
+  "w": 1440,
+  "h": 1358,
+  "full": true,
+  "boxes": {
+   "payment": [
+    309,
+    1084,
+    82,
+    20
+   ],
+   "sender": [
+    550,
+    1116,
+    225,
+    20
+   ],
+   "trx": [
+    791,
+    1116,
+    225,
+    20
+   ],
+   "verify": [
+    1078,
+    293,
+    147,
+    36
+   ]
+  }
+ },
+ "order-shipped": {
+  "path": "/admin/orders/VB-389031",
+  "w": 1440,
+  "h": 1363,
+  "full": true,
+  "boxes": {
+   "courier": [
+    1074,
+    739,
+    46,
+    20
+   ],
+   "tracking": [
+    1332,
+    767,
+    67,
+    20
+   ]
+  }
+ },
+ "courier-scan": {
+  "path": "/admin/courier-scan",
+  "w": 1440,
+  "h": 912,
+  "full": true,
+  "boxes": {
+   "navCourier": [
+    33,
+    257,
+    222,
+    40
+   ],
+   "pickup": [
+    309,
+    254,
+    355,
+    44
+   ],
+   "scan": [
+    676,
+    254,
+    671,
+    44
+   ],
+   "enter": [
+    1282,
+    260,
+    59,
+    32
+   ],
+   "camera": [
+    1355,
+    254,
+    44,
+    44
+   ],
+   "sync": [
+    1141,
+    90,
+    114,
+    38
+   ],
+   "manifest": [
+    1264,
+    90,
+    154,
+    38
+   ],
+   "inTab": [
+    436,
+    153,
+    185,
+    36
+   ],
+   "handed": [
+    309,
+    463,
+    158,
+    23
+   ]
+  }
+ },
+ "courier-in": {
+  "path": "/admin/courier-scan",
+  "w": 1440,
+  "h": 900,
+  "full": false,
+  "boxes": {
+   "modal": [
+    484,
+    186,
+    367,
+    23
+   ],
+   "what": [
+    484,
+    342,
+    472,
+    16
+   ],
+   "paid": [
+    524,
+    378,
+    312,
+    20
+   ],
+   "refused": [
+    524,
+    448,
+    381,
+    20
+   ],
+   "restock": [
+    522,
+    610,
+    133,
+    15
+   ],
+   "confirm": [
+    833,
+    679,
+    123,
+    36
+   ]
+  }
+ },
+ "manifest": {
+  "path": "/admin/courier-scan/manifest",
+  "w": 1440,
+  "h": 900,
+  "full": false,
+  "boxes": {}
+ },
+ "pos": {
+  "path": "/admin/pos",
+  "w": 1440,
+  "h": 900,
+  "full": false,
+  "boxes": {
+   "scan": [
+    300,
+    176,
+    314,
+    40
+   ],
+   "search": [
+    622,
+    176,
+    314,
+    40
+   ],
+   "firstProduct": [
+    308,
+    421,
+    135,
+    33
+   ],
+   "customer": [
+    960,
+    203,
+    220,
+    36
+   ],
+   "cart": [
+    948,
+    453,
+    472,
+    20
+   ]
+  }
+ },
+ "pos-cart": {
+  "path": "/admin/pos",
+  "w": 1440,
+  "h": 900,
+  "full": false,
+  "boxes": {
+   "cartLine": [
+    964,
+    561,
+    102,
+    20
+   ],
+   "customer": [
+    960,
+    203,
+    220,
+    36
+   ],
+   "cash": [
+    968,
+    708,
+    105,
+    32
+   ],
+   "bkash": [
+    1077,
+    708,
+    105,
+    32
+   ],
+   "nagad": [
+    1186,
+    708,
+    105,
+    32
+   ],
+   "card": [
+    1654,
+    226,
+    163,
+    32
+   ],
+   "received": [
+    978,
+    766,
+    50,
+    16
+   ],
+   "change": [
+    1202,
+    766,
+    42,
+    16
+   ],
+   "complete": [
+    1035,
+    804,
+    369,
+    40
+   ]
+  }
+ },
+ "products": {
+  "path": "/admin/products",
+  "w": 1440,
+  "h": 1391,
+  "full": true,
+  "boxes": {
+   "navProducts": [
+    33,
+    385,
+    222,
+    40
+   ],
+   "newProduct": [
+    1286,
+    90,
+    132,
+    38
+   ],
+   "import": [
+    1185,
+    90,
+    93,
+    38
+   ]
+  }
+ },
+ "product-new": {
+  "path": "/admin/products/create",
+  "w": 1440,
+  "h": 2268,
+  "full": true,
+  "boxes": {
+   "basic": [
+    345,
+    250,
+    206,
+    23
+   ],
+   "name": [
+    309,
+    351,
+    707,
+    46
+   ],
+   "category": [
+    671,
+    580,
+    346,
+    20
+   ],
+   "brand": [
+    309,
+    580,
+    98,
+    20
+   ],
+   "description": [
+    826,
+    775,
+    52,
+    24
+   ],
+   "photos": [
+    345,
+    1196,
+    382,
+    23
+   ],
+   "upload": [
+    554,
+    1333,
+    218,
+    20
+   ],
+   "pricing": [
+    345,
+    1477,
+    339,
+    23
+   ],
+   "variants": [
+    345,
+    1762,
+    344,
+    23
+   ],
+   "seo": [
+    345,
+    2150,
+    249,
+    23
+   ],
+   "status": [
+    1074,
+    250,
+    325,
+    27
+   ],
+   "save": [
+    1278,
+    171,
+    136,
+    36
+   ]
+  }
+ },
+ "product-import": {
+  "path": "/admin/products",
+  "w": 1440,
+  "h": 900,
+  "full": false,
+  "boxes": {
+   "modal": [
+    484,
+    256,
+    188,
+    23
+   ],
+   "file": [
+    484,
+    517,
+    472,
+    18
+   ],
+   "start": [
+    850,
+    607,
+    106,
+    36
+   ]
+  }
+ },
+ "inventory": {
+  "path": "/admin/inventory",
+  "w": 1440,
+  "h": 1772,
+  "full": true,
+  "boxes": {
+   "navInventory": [
+    33,
+    429,
+    222,
+    40
+   ],
+   "restock": [
+    1286,
+    529,
+    117,
+    32
+   ],
+   "barcodesTab": [
+    357,
+    88,
+    83,
+    32
+   ]
+  }
+ },
+ "inventory-restock": {
+  "path": "/admin/inventory",
+  "w": 1440,
+  "h": 900,
+  "full": false,
+  "boxes": {
+   "qty": [
+    516,
+    424,
+    198,
+    18
+   ],
+   "cost": [
+    726,
+    424,
+    198,
+    18
+   ],
+   "after": [
+    528,
+    519,
+    384,
+    16
+   ],
+   "save": [
+    829,
+    629,
+    95,
+    36
+   ]
+  }
+ },
+ "barcodes": {
+  "path": "/admin/barcodes",
+  "w": 1440,
+  "h": 2283,
+  "full": true,
+  "boxes": {
+   "tab": [
+    357,
+    88,
+    83,
+    32
+   ]
+  }
+ },
+ "categories": {
+  "path": "/admin/categories",
+  "w": 1440,
+  "h": 1099,
+  "full": true,
+  "boxes": {
+   "navCatalog": [
+    33,
+    473,
+    222,
+    40
+   ],
+   "categories": [
+    292,
+    88,
+    91,
+    32
+   ],
+   "brands": [
+    387,
+    88,
+    69,
+    32
+   ],
+   "variations": [
+    460,
+    88,
+    85,
+    32
+   ]
+  }
+ },
+ "brands": {
+  "path": "/admin/brands",
+  "w": 1440,
+  "h": 912,
+  "full": true,
+  "boxes": {}
+ },
+ "variations": {
+  "path": "/admin/variations",
+  "w": 1440,
+  "h": 912,
+  "full": true,
+  "boxes": {}
+ },
+ "reviews": {
+  "path": "/admin/reviews",
+  "w": 1440,
+  "h": 912,
+  "full": true,
+  "boxes": {
+   "navReviews": [
+    33,
+    517,
+    222,
+    40
+   ],
+   "approve": [
+    1228,
+    336,
+    73,
+    32
+   ]
+  }
+ },
+ "banners": {
+  "path": "/admin/banners",
+  "w": 1440,
+  "h": 1141,
+  "full": true,
+  "boxes": {
+   "navHomepage": [
+    33,
+    601,
+    222,
+    40
+   ],
+   "ticker": [
+    492,
+    88,
+    95,
+    32
+   ],
+   "menubar": [
+    591,
+    88,
+    83,
+    32
+   ]
+  }
+ },
+ "news-ticker": {
+  "path": "/admin/news-ticker",
+  "w": 1440,
+  "h": 927,
+  "full": true,
+  "boxes": {}
+ },
+ "header-menu": {
+  "path": "/admin/header-menu",
+  "w": 1440,
+  "h": 1220,
+  "full": true,
+  "boxes": {}
+ },
+ "coupons": {
+  "path": "/admin/coupons",
+  "w": 1440,
+  "h": 912,
+  "full": true,
+  "boxes": {
+   "navCoupons": [
+    33,
+    773,
+    222,
+    40
+   ],
+   "create": [
+    1287,
+    90,
+    131,
+    38
+   ]
+  }
+ },
+ "flash-sale": {
+  "path": "/admin/flash-sale",
+  "w": 1440,
+  "h": 1986,
+  "full": true,
+  "boxes": {
+   "navPromotions": [
+    33,
+    817,
+    222,
+    40
+   ],
+   "freeTab": [
+    383,
+    88,
+    103,
+    32
+   ]
+  }
+ },
+ "free-delivery": {
+  "path": "/admin/free-delivery",
+  "w": 1440,
+  "h": 1110,
+  "full": true,
+  "boxes": {}
+ },
+ "abandoned-carts": {
+  "path": "/admin/abandoned-carts",
+  "w": 1440,
+  "h": 912,
+  "full": true,
+  "boxes": {
+   "navCarts": [
+    33,
+    861,
+    222,
+    40
+   ],
+   "reminder": [
+    1008,
+    457,
+    411,
+    69
+   ]
+  }
+ },
+ "analytics": {
+  "path": "/admin/analytics",
+  "w": 1440,
+  "h": 1994,
+  "full": true,
+  "boxes": {
+   "navAnalytics": [
+    33,
+    945,
+    222,
+    40
+   ],
+   "export": [
+    1292,
+    90,
+    126,
+    38
+   ],
+   "net": [
+    309,
+    359,
+    330,
+    23
+   ]
+  }
+ },
+ "expenses": {
+  "path": "/admin/expenses",
+  "w": 1440,
+  "h": 912,
+  "full": true,
+  "boxes": {
+   "navExpenses": [
+    33,
+    989,
+    222,
+    40
+   ]
+  }
+ },
+ "customers": {
+  "path": "/admin/customers",
+  "w": 1440,
+  "h": 1086,
+  "full": true,
+  "boxes": {
+   "navCustomers": [
+    33,
+    1073,
+    222,
+    40
+   ],
+   "blacklistTab": [
+    387,
+    88,
+    76,
+    32
+   ]
+  }
+ },
+ "blacklist": {
+  "path": "/admin/blacklist",
+  "w": 1440,
+  "h": 912,
+  "full": true,
+  "boxes": {}
+ },
+ "staff": {
+  "path": "/admin/staff",
+  "w": 1440,
+  "h": 912,
+  "full": true,
+  "boxes": {
+   "navStaff": [
+    33,
+    1117,
+    222,
+    40
+   ],
+   "auditTab": [
+    400,
+    88,
+    79,
+    32
+   ]
+  }
+ },
+ "audit": {
+  "path": "/admin/activity-logs",
+  "w": 1440,
+  "h": 913,
+  "full": true,
+  "boxes": {}
+ },
+ "settings": {
+  "path": "/admin/settings",
+  "w": 1440,
+  "h": 1413,
+  "full": true,
+  "boxes": {
+   "navSettings": [
+    33,
+    1231,
+    222,
+    40
+   ],
+   "colors": [
+    321,
+    743,
+    44,
+    36
+   ]
+  }
+ },
+ "integrations": {
+  "path": "/admin/integrations",
+  "w": 1440,
+  "h": 1642,
+  "full": true,
+  "boxes": {
+   "navIntegrations": [
+    33,
+    1275,
+    222,
+    40
+   ],
+   "steadfast": [
+    309,
+    230,
+    311,
+    23
+   ],
+   "trackingTab": [
+    526,
+    153,
+    89,
+    36
+   ],
+   "guide": [
+    33,
+    645,
+    222,
+    40
+   ]
+  }
+ },
+ "integrations-tracking": {
+  "path": "/admin/integrations",
+  "w": 1440,
+  "h": 1819,
+  "full": true,
+  "boxes": {
+   "pixel": [
+    309,
+    647,
+    317,
+    24
+   ],
+   "tiktok": [
+    309,
+    1130,
+    1090,
+    24
+   ],
+   "google": [
+    309,
+    230,
+    385,
+    24
+   ]
+  }
+ },
+ "invoice": {
+  "path": "/admin/orders/VB-888252/invoice",
+  "w": 1440,
+  "h": 900,
+  "full": false,
+  "boxes": {}
+ },
+ "label": {
+  "path": "/admin/orders/labels?orders[]=VB-888252&size=a4",
+  "w": 1440,
+  "h": 900,
+  "full": false,
+  "boxes": {}
+ },
+ "dashboard-phone": {
+  "path": "/admin",
+  "w": 390,
+  "h": 844,
+  "full": false,
+  "boxes": {}
+ }
+}

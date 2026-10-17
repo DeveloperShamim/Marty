@@ -3,7 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
+use Database\Seeders\OrderSeeder;
+use Database\Seeders\ProductSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,9 +14,25 @@ class DatabaseSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_seeded_orders_follow_the_stock_and_return_rules(): void
+    /** Full demo set-up: the main seeder, then demo products and orders (kept in their own seeders). */
+    private function seedDemo(): void
     {
         $this->seed();
+        $this->seed(ProductSeeder::class);
+        $this->seed(OrderSeeder::class);
+    }
+
+    public function test_main_seeder_adds_no_demo_products_or_orders(): void
+    {
+        $this->seed();
+
+        $this->assertSame(0, Product::count());
+        $this->assertSame(0, Order::count());
+    }
+
+    public function test_seeded_orders_follow_the_stock_and_return_rules(): void
+    {
+        $this->seedDemo();
 
         $this->assertGreaterThan(0, Order::count());
 
@@ -29,7 +48,7 @@ class DatabaseSeederTest extends TestCase
 
     public function test_dashboard_and_analytics_agree_on_seeded_data(): void
     {
-        $this->seed();
+        $this->seedDemo();
         $admin = User::where('role', 'admin')->firstOrFail();
 
         $dashboard = $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()->original->getData();

@@ -22,7 +22,7 @@ class ProductSeeder extends Seeder
         );
 
         $productsData = [
-            // ================= 1. WALLETS & CARD HOLDERS (3 products) =================
+            // ================= 1. WALLETS & CARD HOLDERS (4 products) =================
             [
                 'name' => 'Vant Classic Bifold Leather Wallet',
                 'slug' => 'vant-classic-bifold-wallet',
@@ -77,8 +77,26 @@ class ProductSeeder extends Seeder
                     'https://images.unsplash.com/photo-1606503825008-909a67e63c3d?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
+            [
+                'name' => 'Vant Minimalist Money Clip Wallet',
+                'slug' => 'vant-minimalist-money-clip-wallet',
+                'brand' => 'Vant',
+                'category' => 'wallets',
+                'regular_price' => 950,
+                'sale_price' => 820,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Brown', 'Black', 'Cognac'],
+                'is_featured' => false,
+                'is_new' => true,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://images.unsplash.com/photo-1554412933-514a83d2f3c8?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
 
-            // ================= 2. BELTS (3 products) =================
+            // ================= 2. BELTS (4 products) =================
             [
                 'name' => 'Vant Formal Leather Belt (Pin Buckle)',
                 'slug' => 'vant-formal-leather-belt',
@@ -133,8 +151,26 @@ class ProductSeeder extends Seeder
                     'https://images.unsplash.com/photo-1666723043169-22e29545675c?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
+            [
+                'name' => 'Vant Automatic Lock Leather Belt',
+                'slug' => 'vant-automatic-lock-belt',
+                'brand' => 'Vant',
+                'category' => 'belts',
+                'regular_price' => 1750,
+                'sale_price' => 1490,
+                'unit' => 'Piece',
+                'variant_type' => 'Waist Size',
+                'options' => ['32', '34', '36', '38', '40'],
+                'is_featured' => true,
+                'is_new' => true,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1666723043169-22e29545675c?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1624222247344-550fb60583dc?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
 
-            // ================= 3. WATCHES (2 products) =================
+            // ================= 3. WATCHES (4 products) =================
             [
                 'name' => 'Vant Classic Leather Strap Watch',
                 'slug' => 'vant-classic-leather-watch',
@@ -171,8 +207,44 @@ class ProductSeeder extends Seeder
                     'https://images.unsplash.com/photo-1547996160-81dfa63595aa?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
+            [
+                'name' => 'Vant Minimalist Quartz Watch',
+                'slug' => 'vant-minimalist-quartz-watch',
+                'brand' => 'Vant',
+                'category' => 'watches',
+                'regular_price' => 2950,
+                'sale_price' => 2490,
+                'unit' => 'Piece',
+                'variant_type' => 'Dial Color',
+                'options' => ['Silver', 'Rose Gold', 'Midnight'],
+                'is_featured' => false,
+                'is_new' => true,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1524592094714-0f0654e20314?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Automatic Skeleton Watch',
+                'slug' => 'vant-automatic-skeleton-watch',
+                'brand' => 'Vant',
+                'category' => 'watches',
+                'regular_price' => 6800,
+                'sale_price' => 5900,
+                'unit' => 'Piece',
+                'variant_type' => 'Strap Color',
+                'options' => ['Brown Leather', 'Black Steel'],
+                'is_featured' => true,
+                'is_new' => true,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1539874754764-5a96559165b0?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
 
-            // ================= 4. SHOES (2 products) =================
+            // ================= 4. SHOES (4 products) =================
             [
                 'name' => 'Vant Leather Oxford Shoes',
                 'slug' => 'vant-leather-oxford-shoes',
@@ -209,8 +281,44 @@ class ProductSeeder extends Seeder
                     'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
+            [
+                'name' => 'Vant Leather Penny Loafers',
+                'slug' => 'vant-leather-penny-loafers',
+                'brand' => 'Vant',
+                'category' => 'shoes',
+                'regular_price' => 4100,
+                'sale_price' => 3490,
+                'unit' => 'Piece',
+                'variant_type' => 'Size',
+                'options' => ['39', '40', '41', '42', '43', '44'],
+                'is_featured' => true,
+                'is_new' => false,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://images.unsplash.com/photo-1582890538059-e152ff135549?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Chelsea Leather Boots',
+                'slug' => 'vant-chelsea-leather-boots',
+                'brand' => 'Vant',
+                'category' => 'shoes',
+                'regular_price' => 5200,
+                'sale_price' => 4490,
+                'unit' => 'Piece',
+                'variant_type' => 'Size',
+                'options' => ['39', '40', '41', '42', '43', '44'],
+                'is_featured' => false,
+                'is_new' => true,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1638247025967-b4e38f787b76?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1533867617858-e7b97e060509?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
 
-            // ================= 5. LEATHER MOUSE PADS (2 products) =================
+            // ================= 5. LEATHER MOUSE PADS & DESK MATS (4 products) =================
             [
                 'name' => 'Vant Leather Desk Mat (80 x 40 cm)',
                 'slug' => 'vant-leather-desk-mat',
@@ -245,6 +353,42 @@ class ProductSeeder extends Seeder
                 'images' => [
                     'https://images.unsplash.com/photo-1616400619175-5beda3a17896?auto=format&fit=crop&w=800&h=800&q=80',
                     'https://images.unsplash.com/photo-1629429407759-01cd3d7cfb38?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Executive Leather Desk Blotter (90 x 45 cm)',
+                'slug' => 'vant-executive-leather-desk-blotter',
+                'brand' => 'Vant',
+                'category' => 'mouse-pads',
+                'regular_price' => 1950,
+                'sale_price' => 1690,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Dark Brown', 'Obsidian Black'],
+                'is_featured' => true,
+                'is_new' => true,
+                'is_best_seller' => false,
+                'images' => [
+                    'https://images.unsplash.com/photo-1593062096033-9a26b09da705?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1629429407759-01cd3d7cfb38?auto=format&fit=crop&w=800&h=800&q=80',
+                ],
+            ],
+            [
+                'name' => 'Vant Round Leather Mouse Pad (22 cm)',
+                'slug' => 'vant-round-leather-mouse-pad',
+                'brand' => 'Vant',
+                'category' => 'mouse-pads',
+                'regular_price' => 550,
+                'sale_price' => 450,
+                'unit' => 'Piece',
+                'variant_type' => 'Color',
+                'options' => ['Tan', 'Midnight Black', 'Vintage Brown'],
+                'is_featured' => false,
+                'is_new' => false,
+                'is_best_seller' => true,
+                'images' => [
+                    'https://images.unsplash.com/photo-1616400619175-5beda3a17896?auto=format&fit=crop&w=800&h=800&q=80',
+                    'https://images.unsplash.com/photo-1593062096033-9a26b09da705?auto=format&fit=crop&w=800&h=800&q=80',
                 ],
             ],
         ];

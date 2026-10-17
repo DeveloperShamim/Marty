@@ -1,0 +1,946 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<title>Vant — Admin panel tutorial</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: #12040a; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; }
+  /* The video frame: always 1920×1080, scaled to fit the window. */
+  #stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; flex: none; transform-origin: 50% 50%;
+    background: radial-gradient(circle at 50% 42%, #6b1f2e 0%, #1c0509 78%); font-family: 'Hind Siliguri', 'Inter', sans-serif; }
+  .abs { position: absolute; left: 0; top: 0; }
+
+  /* ---------- world (everything the camera moves) ---------- */
+  #world { position: absolute; left: 0; top: 0; width: 1px; height: 1px; transform-origin: 0 0; }
+
+  /* Laptop: the display is 1600×1000 world px at (0, 0). */
+  #lid { position: absolute; left: -22px; top: -22px; width: 1644px; height: 1044px; border-radius: 38px; background: #0d0d10;
+    box-shadow: 0 0 0 2px #3a3a40, 0 60px 120px rgba(0,0,0,.55); }
+  #notch { position: absolute; left: 740px; top: -22px; width: 120px; height: 22px; border-radius: 0 0 12px 12px; background: #0d0d10; }
+  #display { position: absolute; left: 0; top: 0; width: 1600px; height: 1000px; border-radius: 12px; overflow: hidden;
+    background: linear-gradient(160deg, #7a2a3a 0%, #2a0a12 100%); }
+  #base { position: absolute; left: -160px; top: 1022px; width: 1920px; height: 30px; border-radius: 4px 4px 28px 28px;
+    background: linear-gradient(180deg, #e6e6ea 0%, #a9aab0 100%); }
+  #baseLip { position: absolute; left: 720px; top: 1022px; width: 160px; height: 10px; border-radius: 0 0 10px 10px; background: #b9bac0; }
+  #menubar { position: absolute; left: 0; top: 0; width: 1600px; height: 28px; background: rgba(255,255,255,.14);
+    color: #fff; font: 600 14px/28px 'Inter', sans-serif; }
+  #menubar span { margin-left: 22px; }
+  #menubar .right { position: absolute; right: 22px; top: 0; }
+
+  /* Browser window inside the display. Content viewport = 1440×864 at (80, 128). */
+  #browser { position: absolute; left: 80px; top: 52px; width: 1440px; height: 940px; border-radius: 14px; overflow: hidden;
+    background: #fff; box-shadow: 0 30px 80px rgba(0,0,0,.45); transform-origin: 50% 100%; }
+  #tabbar { position: absolute; left: 0; top: 0; width: 1440px; height: 40px; background: #e9e6e4; }
+  .light { position: absolute; top: 14px; width: 12px; height: 12px; border-radius: 50%; }
+  #tab { position: absolute; left: 92px; top: 6px; width: 270px; height: 34px; border-radius: 10px 10px 0 0; background: #fff; }
+  #tab img { position: absolute; left: 12px; top: 9px; width: 16px; height: 16px; }
+  .tabtitle { position: absolute; left: 36px; top: 0; width: 220px; font: 500 13px/34px 'Inter', sans-serif; color: #333; white-space: nowrap; overflow: hidden; }
+  #toolbar { position: absolute; left: 0; top: 40px; width: 1440px; height: 36px; background: #fff; border-bottom: 1px solid #e5e5e5; }
+  .navbtn { position: absolute; top: 9px; width: 18px; height: 18px; color: #777; font: 600 15px/18px 'Inter', sans-serif; text-align: center; }
+  #urlpill { position: absolute; left: 96px; top: 5px; width: 1300px; height: 26px; border-radius: 13px; background: #f1f1f1; }
+  .url { position: absolute; left: 16px; top: 0; font: 400 13.5px/26px 'Inter', sans-serif; color: #444; white-space: nowrap; }
+  #viewport { position: absolute; left: 0; top: 76px; width: 1440px; height: 864px; overflow: hidden; background: #fff; }
+  #viewport img { position: absolute; left: 0; top: 0; width: 1440px; opacity: 0; }
+  #viewport #sidebarOverlay { left: 0; top: 76px; width: 290px; }
+  #newtab { position: absolute; left: 0; top: 0; width: 1440px; height: 864px; background: #f7f5f3; }
+
+  /* Dock */
+  #dock { position: absolute; left: 580px; top: 918px; width: 440px; height: 72px; border-radius: 22px; background: rgba(255,255,255,.22);
+    border: 1px solid rgba(255,255,255,.35); }
+  .app { position: absolute; top: 10px; width: 52px; height: 52px; border-radius: 13px; }
+  .app i { position: absolute; display: block; }
+
+  /* Phone: 400 wide at (1700, 160). Screen 360×779 at (1720, 180). */
+  #phone { position: absolute; left: 1700px; top: 160px; width: 400px; height: 819px; border-radius: 64px; background: #111;
+    box-shadow: 0 0 0 3px #4a4a50, 0 50px 100px rgba(0,0,0,.5); }
+  #phoneScreen { position: absolute; left: 20px; top: 20px; width: 360px; height: 779px; border-radius: 46px; overflow: hidden;
+    background: linear-gradient(160deg, #7a2a3a 0%, #2a0a12 100%); }
+  #island { position: absolute; left: 140px; top: 32px; width: 120px; height: 34px; border-radius: 17px; background: #000; }
+  #phoneImg { position: absolute; left: 0; top: 0; width: 360px; opacity: 0; }
+
+  /* Pointer, highlight ring, click ripple, typed text */
+  /* The pointer image is 700×700 with the arrow tip at (72, 45); shown at 8% so the tip sits on (x, y). */
+  #cursor { position: absolute; left: -5.8px; top: -3.6px; width: 56px; height: 56px; opacity: 0; transform-origin: 5.8px 3.6px;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,.35)); }
+  #ripple { position: absolute; left: 0; top: 0; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%;
+    border: 4px solid #f5c76c; opacity: 0; }
+  .ring { position: absolute; left: 0; top: 0; border: 4px solid #f5c76c; border-radius: 14px; opacity: 0;
+    box-shadow: 0 0 0 6px rgba(245,199,108,.25), 0 0 30px rgba(245,199,108,.55); }
+  .cover { position: absolute; left: 0; top: 0; opacity: 0; border-radius: 8px; }
+  .typed { position: absolute; left: 0; top: 0; overflow: hidden; white-space: nowrap; max-width: 0; color: #1f1f22;
+    font: 500 15px 'Inter', 'Hind Siliguri', sans-serif; }
+
+  /* ---------- screen-fixed layers ---------- */
+  #wm { position: absolute; left: 46px; top: 38px; width: 58px; height: 58px; opacity: .92; }
+  .toast { position: absolute; left: 660px; top: 48px; width: 600px; height: 92px; border-radius: 26px; opacity: 0;
+    background: rgba(255,255,255,.93); box-shadow: 0 24px 60px rgba(0,0,0,.35); }
+  .toast .ic { position: absolute; left: 20px; top: 20px; width: 52px; height: 52px; border-radius: 15px; color: #fff;
+    font: 700 28px/52px 'Inter', sans-serif; text-align: center; }
+  .toast .t1 { position: absolute; left: 90px; top: 16px; width: 490px; font: 700 23px/30px 'Hind Siliguri', sans-serif; color: #1d1d1f; white-space: nowrap; }
+  .toast .t2 { position: absolute; left: 90px; top: 48px; width: 490px; font: 500 18px/26px 'Hind Siliguri', 'Inter', sans-serif; color: #6e6e73; white-space: nowrap; }
+
+  /* Subtitles: a dark pill, words light up as they are spoken. */
+  .sub { position: absolute; left: 160px; top: 930px; width: 1600px; text-align: center; opacity: 0; }
+  .sub .pill { display: inline-block; max-width: 1540px; padding: 12px 34px 14px; border-radius: 34px;
+    background: rgba(26,6,10,.82); border: 1.5px solid rgba(255,255,255,.14); box-shadow: 0 18px 40px rgba(0,0,0,.35);
+    font: 600 40px/1.45 'Hind Siliguri', sans-serif; color: rgba(255,255,255,.42); }
+  .sub .w { display: inline; }
+
+  /* End card */
+  #end { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; opacity: 0;
+    background: radial-gradient(circle at 50% 45%, #6b1f2e 0%, #1c0509 80%); }
+  #endLogo { position: absolute; left: 660px; top: 300px; width: 600px; height: 200px; }
+  #endTag { position: absolute; left: 0; top: 520px; width: 1920px; text-align: center; color: rgba(255,255,255,.85);
+    font: 500 30px 'Inter', sans-serif; letter-spacing: 6px; }
+  #endLine { position: absolute; left: 900px; top: 590px; width: 120px; height: 2px; background: rgba(255,255,255,.35); }
+  #endHelp { position: absolute; left: 0; top: 620px; width: 1920px; text-align: center; color: rgba(255,255,255,.75); font: 500 30px 'Hind Siliguri', sans-serif; }
+  #endThanks { position: absolute; left: 0; top: 700px; width: 1920px; text-align: center; color: #fff; font: 700 64px 'Hind Siliguri', sans-serif; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <audio src="assets/voiceover.mp3" data-start="0"></audio>
+  <div id="world">
+    <div id="lid"></div><div id="notch"></div>
+    <div id="display">
+      <div id="menubar"><span style="margin-left:26px">&#63743;</span><span>Finder</span><span>File</span><span>Edit</span><span>View</span><span>Window</span><span class="right">Tue 14:30</span></div>
+      <div id="browser">
+        <div id="tabbar">
+          <div class="light" style="left:16px;background:#ff5f57"></div><div class="light" style="left:36px;background:#febc2e"></div><div class="light" style="left:56px;background:#28c840"></div>
+          <div id="tab"><img src="assets/vant-mark.png" alt=""><div class="tabtitle" id="ttl-newtab">New Tab</div><div class="tabtitle" id="ttl-login" style="opacity:0">Sign in — Vant</div><div class="tabtitle" id="ttl-dashboard" style="opacity:0">Dashboard — Vant</div><div class="tabtitle" id="ttl-dashboard-search" style="opacity:0">Dashboard — Vant</div><div class="tabtitle" id="ttl-orders" style="opacity:0">Orders — Vant</div><div class="tabtitle" id="ttl-orders-pending" style="opacity:0">Orders — Vant</div><div class="tabtitle" id="ttl-orders-selected" style="opacity:0">Orders — Vant</div><div class="tabtitle" id="ttl-orders-print" style="opacity:0">Orders — Vant</div><div class="tabtitle" id="ttl-orders-more" style="opacity:0">Orders — Vant</div><div class="tabtitle" id="ttl-order" style="opacity:0">Order #VB-888252 — Vant</div><div class="tabtitle" id="ttl-order-edit" style="opacity:0">Order #VB-888252 — Vant</div><div class="tabtitle" id="ttl-order-bkash" style="opacity:0">Order #VB-579944 — Vant</div><div class="tabtitle" id="ttl-order-shipped" style="opacity:0">Order #VB-389031 — Vant</div><div class="tabtitle" id="ttl-courier-scan" style="opacity:0">Courier scan — Vant</div><div class="tabtitle" id="ttl-courier-in" style="opacity:0">Courier scan — Vant</div><div class="tabtitle" id="ttl-manifest" style="opacity:0">Courier manifest — Vant</div><div class="tabtitle" id="ttl-pos" style="opacity:0">Point of sale — Vant</div><div class="tabtitle" id="ttl-pos-cart" style="opacity:0">Point of sale — Vant</div><div class="tabtitle" id="ttl-products" style="opacity:0">Products — Vant</div><div class="tabtitle" id="ttl-product-new" style="opacity:0">New product — Vant</div><div class="tabtitle" id="ttl-product-import" style="opacity:0">Products — Vant</div><div class="tabtitle" id="ttl-inventory" style="opacity:0">Inventory — Vant</div><div class="tabtitle" id="ttl-inventory-restock" style="opacity:0">Inventory — Vant</div><div class="tabtitle" id="ttl-barcodes" style="opacity:0">Barcodes — Vant</div><div class="tabtitle" id="ttl-categories" style="opacity:0">Categories — Vant</div><div class="tabtitle" id="ttl-brands" style="opacity:0">Brands — Vant</div><div class="tabtitle" id="ttl-variations" style="opacity:0">Variations — Vant</div><div class="tabtitle" id="ttl-reviews" style="opacity:0">Reviews — Vant</div><div class="tabtitle" id="ttl-banners" style="opacity:0">Hero banners — Vant</div><div class="tabtitle" id="ttl-news-ticker" style="opacity:0">News ticker — Vant</div><div class="tabtitle" id="ttl-header-menu" style="opacity:0">Menu bar — Vant</div><div class="tabtitle" id="ttl-coupons" style="opacity:0">Coupons — Vant</div><div class="tabtitle" id="ttl-flash-sale" style="opacity:0">Flash sale — Vant</div><div class="tabtitle" id="ttl-free-delivery" style="opacity:0">Free delivery — Vant</div><div class="tabtitle" id="ttl-abandoned-carts" style="opacity:0">Abandoned carts — Vant</div><div class="tabtitle" id="ttl-analytics" style="opacity:0">Analytics — Vant</div><div class="tabtitle" id="ttl-expenses" style="opacity:0">Expenses — Vant</div><div class="tabtitle" id="ttl-customers" style="opacity:0">Customers — Vant</div><div class="tabtitle" id="ttl-blacklist" style="opacity:0">Blacklist — Vant</div><div class="tabtitle" id="ttl-staff" style="opacity:0">Staff — Vant</div><div class="tabtitle" id="ttl-audit" style="opacity:0">Activity logs — Vant</div><div class="tabtitle" id="ttl-settings" style="opacity:0">Settings — Vant</div><div class="tabtitle" id="ttl-integrations" style="opacity:0">Integrations — Vant</div><div class="tabtitle" id="ttl-integrations-tracking" style="opacity:0">Integrations — Vant</div><div class="tabtitle" id="ttl-invoice" style="opacity:0">Invoice #VB-888252 — Vant</div><div class="tabtitle" id="ttl-label" style="opacity:0">Parcel labels — Vant</div></div>
+        </div>
+        <div id="toolbar">
+          <div class="navbtn" style="left:16px">&#8592;</div><div class="navbtn" style="left:42px">&#8594;</div><div class="navbtn" style="left:68px">&#8635;</div>
+          <div id="urlpill"><div class="url" id="url-newtab" style="color:#999">Search or type a web address</div><div class="url" id="url-login" style="opacity:0">vantbd.com/admin/login</div><div class="url" id="url-dashboard" style="opacity:0">vantbd.com/admin</div><div class="url" id="url-dashboard-search" style="opacity:0">vantbd.com/admin</div><div class="url" id="url-orders" style="opacity:0">vantbd.com/admin/orders</div><div class="url" id="url-orders-pending" style="opacity:0">vantbd.com/admin/orders</div><div class="url" id="url-orders-selected" style="opacity:0">vantbd.com/admin/orders</div><div class="url" id="url-orders-print" style="opacity:0">vantbd.com/admin/orders</div><div class="url" id="url-orders-more" style="opacity:0">vantbd.com/admin/orders</div><div class="url" id="url-order" style="opacity:0">vantbd.com/admin/orders/VB-888252</div><div class="url" id="url-order-edit" style="opacity:0">vantbd.com/admin/orders/VB-888252</div><div class="url" id="url-order-bkash" style="opacity:0">vantbd.com/admin/orders/VB-579944</div><div class="url" id="url-order-shipped" style="opacity:0">vantbd.com/admin/orders/VB-389031</div><div class="url" id="url-courier-scan" style="opacity:0">vantbd.com/admin/courier-scan</div><div class="url" id="url-courier-in" style="opacity:0">vantbd.com/admin/courier-scan</div><div class="url" id="url-manifest" style="opacity:0">vantbd.com/admin/courier-scan/manifest</div><div class="url" id="url-pos" style="opacity:0">vantbd.com/admin/pos</div><div class="url" id="url-pos-cart" style="opacity:0">vantbd.com/admin/pos</div><div class="url" id="url-products" style="opacity:0">vantbd.com/admin/products</div><div class="url" id="url-product-new" style="opacity:0">vantbd.com/admin/products/create</div><div class="url" id="url-product-import" style="opacity:0">vantbd.com/admin/products</div><div class="url" id="url-inventory" style="opacity:0">vantbd.com/admin/inventory</div><div class="url" id="url-inventory-restock" style="opacity:0">vantbd.com/admin/inventory</div><div class="url" id="url-barcodes" style="opacity:0">vantbd.com/admin/barcodes</div><div class="url" id="url-categories" style="opacity:0">vantbd.com/admin/categories</div><div class="url" id="url-brands" style="opacity:0">vantbd.com/admin/brands</div><div class="url" id="url-variations" style="opacity:0">vantbd.com/admin/variations</div><div class="url" id="url-reviews" style="opacity:0">vantbd.com/admin/reviews</div><div class="url" id="url-banners" style="opacity:0">vantbd.com/admin/banners</div><div class="url" id="url-news-ticker" style="opacity:0">vantbd.com/admin/news-ticker</div><div class="url" id="url-header-menu" style="opacity:0">vantbd.com/admin/header-menu</div><div class="url" id="url-coupons" style="opacity:0">vantbd.com/admin/coupons</div><div class="url" id="url-flash-sale" style="opacity:0">vantbd.com/admin/flash-sale</div><div class="url" id="url-free-delivery" style="opacity:0">vantbd.com/admin/free-delivery</div><div class="url" id="url-abandoned-carts" style="opacity:0">vantbd.com/admin/abandoned-carts</div><div class="url" id="url-analytics" style="opacity:0">vantbd.com/admin/analytics</div><div class="url" id="url-expenses" style="opacity:0">vantbd.com/admin/expenses</div><div class="url" id="url-customers" style="opacity:0">vantbd.com/admin/customers</div><div class="url" id="url-blacklist" style="opacity:0">vantbd.com/admin/blacklist</div><div class="url" id="url-staff" style="opacity:0">vantbd.com/admin/staff</div><div class="url" id="url-audit" style="opacity:0">vantbd.com/admin/activity-logs</div><div class="url" id="url-settings" style="opacity:0">vantbd.com/admin/settings</div><div class="url" id="url-integrations" style="opacity:0">vantbd.com/admin/integrations</div><div class="url" id="url-integrations-tracking" style="opacity:0">vantbd.com/admin/integrations</div><div class="url" id="url-invoice" style="opacity:0">vantbd.com/admin/orders/VB-888252/invoice</div><div class="url" id="url-label" style="opacity:0">vantbd.com/admin/orders/labels</div></div>
+        </div>
+        <div id="viewport"><div id="newtab"></div><img id="scr-login" src="assets/screens/login.jpg" alt=""><img id="scr-dashboard" src="assets/screens/dashboard.jpg" alt=""><img id="scr-dashboard-search" src="assets/screens/dashboard-search.jpg" alt=""><img id="scr-orders" src="assets/screens/orders.jpg" alt=""><img id="scr-orders-pending" src="assets/screens/orders-pending.jpg" alt=""><img id="scr-orders-selected" src="assets/screens/orders-selected.jpg" alt=""><img id="scr-orders-print" src="assets/screens/orders-print.jpg" alt=""><img id="scr-orders-more" src="assets/screens/orders-more.jpg" alt=""><img id="scr-order" src="assets/screens/order.jpg" alt=""><img id="scr-order-edit" src="assets/screens/order-edit.jpg" alt=""><img id="scr-order-bkash" src="assets/screens/order-bkash.jpg" alt=""><img id="scr-order-shipped" src="assets/screens/order-shipped.jpg" alt=""><img id="scr-courier-scan" src="assets/screens/courier-scan.jpg" alt=""><img id="scr-courier-in" src="assets/screens/courier-in.jpg" alt=""><img id="scr-manifest" src="assets/screens/manifest.jpg" alt=""><img id="scr-pos" src="assets/screens/pos.jpg" alt=""><img id="scr-pos-cart" src="assets/screens/pos-cart.jpg" alt=""><img id="scr-products" src="assets/screens/products.jpg" alt=""><img id="scr-product-new" src="assets/screens/product-new.jpg" alt=""><img id="scr-product-import" src="assets/screens/product-import.jpg" alt=""><img id="scr-inventory" src="assets/screens/inventory.jpg" alt=""><img id="scr-inventory-restock" src="assets/screens/inventory-restock.jpg" alt=""><img id="scr-barcodes" src="assets/screens/barcodes.jpg" alt=""><img id="scr-categories" src="assets/screens/categories.jpg" alt=""><img id="scr-brands" src="assets/screens/brands.jpg" alt=""><img id="scr-variations" src="assets/screens/variations.jpg" alt=""><img id="scr-reviews" src="assets/screens/reviews.jpg" alt=""><img id="scr-banners" src="assets/screens/banners.jpg" alt=""><img id="scr-news-ticker" src="assets/screens/news-ticker.jpg" alt=""><img id="scr-header-menu" src="assets/screens/header-menu.jpg" alt=""><img id="scr-coupons" src="assets/screens/coupons.jpg" alt=""><img id="scr-flash-sale" src="assets/screens/flash-sale.jpg" alt=""><img id="scr-free-delivery" src="assets/screens/free-delivery.jpg" alt=""><img id="scr-abandoned-carts" src="assets/screens/abandoned-carts.jpg" alt=""><img id="scr-analytics" src="assets/screens/analytics.jpg" alt=""><img id="scr-expenses" src="assets/screens/expenses.jpg" alt=""><img id="scr-customers" src="assets/screens/customers.jpg" alt=""><img id="scr-blacklist" src="assets/screens/blacklist.jpg" alt=""><img id="scr-staff" src="assets/screens/staff.jpg" alt=""><img id="scr-audit" src="assets/screens/audit.jpg" alt=""><img id="scr-settings" src="assets/screens/settings.jpg" alt=""><img id="scr-integrations" src="assets/screens/integrations.jpg" alt=""><img id="scr-integrations-tracking" src="assets/screens/integrations-tracking.jpg" alt=""><img id="scr-invoice" src="assets/screens/invoice.jpg" alt=""><img id="scr-label" src="assets/screens/label.jpg" alt=""><img id="sidebarOverlay" src="assets/screens/sidebar.jpg" alt=""></div>
+      </div>
+      <div id="dock">
+        <div class="app" style="left:14px;background:#2f8cff"><i style="left:14px;top:12px;width:24px;height:28px;border-radius:6px;background:#fff;opacity:.9"></i></div>
+        <div class="app" style="left:98px;background:#ffcc33"><i style="left:12px;top:14px;width:28px;height:4px;background:#fff"></i><i style="left:12px;top:24px;width:28px;height:4px;background:#fff"></i><i style="left:12px;top:34px;width:20px;height:4px;background:#fff"></i></div>
+        <div class="app" id="browserIcon" style="left:182px;background:#ffffff"><i style="left:8px;top:8px;width:36px;height:36px;border-radius:50%;background:#2f8cff"></i><i style="left:18px;top:18px;width:16px;height:16px;border-radius:50%;background:#fff"></i></div>
+        <div class="app" style="left:266px;background:#ff3b30"><i style="left:20px;top:15px;width:0;height:0;border-left:16px solid #fff;border-top:11px solid transparent;border-bottom:11px solid transparent"></i></div>
+        <div class="app" style="left:350px;background:#8e5cf7"><i style="left:13px;top:13px;width:22px;height:22px;border-radius:50%;border:4px solid #fff"></i></div>
+      </div>
+    </div>
+    <div id="base"></div><div id="baseLip"></div>
+
+    <div id="phone"><div id="phoneScreen"><div style="position:absolute;left:30px;top:110px;width:60px;height:60px;border-radius:15px;background:#2f8cff"></div><div style="position:absolute;left:110px;top:110px;width:60px;height:60px;border-radius:15px;background:#ffcc33"></div><div style="position:absolute;left:190px;top:110px;width:60px;height:60px;border-radius:15px;background:#34c759"></div><div style="position:absolute;left:270px;top:110px;width:60px;height:60px;border-radius:15px;background:#ff3b30"></div><div style="position:absolute;left:30px;top:202px;width:60px;height:60px;border-radius:15px;background:#8e5cf7"></div><div style="position:absolute;left:110px;top:202px;width:60px;height:60px;border-radius:15px;background:#ff9500"></div><div style="position:absolute;left:190px;top:202px;width:60px;height:60px;border-radius:15px;background:#5ac8fa"></div><div style="position:absolute;left:270px;top:202px;width:60px;height:60px;border-radius:15px;background:#ff2d55"></div><div style="position:absolute;left:30px;top:294px;width:60px;height:60px;border-radius:15px;background:#30b0c7"></div><div style="position:absolute;left:110px;top:294px;width:60px;height:60px;border-radius:15px;background:#a2845e"></div><div style="position:absolute;left:190px;top:294px;width:60px;height:60px;border-radius:15px;background:#64d2ff"></div><div style="position:absolute;left:270px;top:294px;width:60px;height:60px;border-radius:15px;background:#bf5af2"></div><div style="position:absolute;left:24px;top:668px;width:312px;height:84px;border-radius:30px;background:rgba(255,255,255,.22)"></div><div style="position:absolute;left:42px;top:680px;width:60px;height:60px;border-radius:15px;background:#2f8cff"></div><div style="position:absolute;left:116px;top:680px;width:60px;height:60px;border-radius:15px;background:#ff3b30"></div><div style="position:absolute;left:190px;top:680px;width:60px;height:60px;border-radius:15px;background:#5ac8fa"></div><div style="position:absolute;left:264px;top:680px;width:60px;height:60px;border-radius:15px;background:#a2845e"></div><img id="phoneImg" src="assets/screens/dashboard-phone.jpg" alt=""></div><div id="island"></div></div>
+
+    <div id="fx"></div>
+    <div id="ripple"></div>
+    <img id="cursor" src="assets/cursor.png" alt="">
+  </div>
+
+  <img id="wm" src="assets/vant-mark-white.png" alt="">
+  <div id="toasts"></div>
+  <div class="sub" id="sub0"><div class="pill"><span class="w" data-t="0.000">আপনার</span> <span class="w" data-t="0.366">স্মার্টফোন</span> <span class="w" data-t="0.994">অথবা</span> <span class="w" data-t="1.308">কম্পিউটার</span></div></div>
+  <div class="sub" id="sub1"><div class="pill"><span class="w" data-t="2.466">যেকোনো</span> <span class="w" data-t="2.856">ডিভাইস</span> <span class="w" data-t="3.246">থেকেই</span> <span class="w" data-t="3.587">আপনি</span> <span class="w" data-t="3.879">আপনার</span> <span class="w" data-t="4.221">দোকানের</span> <span class="w" data-t="4.659">এডমিন</span> <span class="w" data-t="5.000">প্যানেল</span> <span class="w" data-t="5.439">চালাতে</span> <span class="w" data-t="5.829">পারবেন।</span></div></div>
+  <div class="sub" id="sub2"><div class="pill"><span class="w" data-t="6.626">এই</span> <span class="w" data-t="6.859">ভিডিওতে</span> <span class="w" data-t="7.384">আমরা</span> <span class="w" data-t="7.734">কম্পিউটার</span> <span class="w" data-t="8.375">ভার্সনে</span> <span class="w" data-t="8.899">দেখাব,</span></div></div>
+  <div class="sub" id="sub3"><div class="pill"><span class="w" data-t="9.978">তবে</span> <span class="w" data-t="10.231">মোবাইলেও</span> <span class="w" data-t="10.738">প্রক্রিয়াটি</span> <span class="w" data-t="11.448">একই।</span></div></div>
+  <div class="sub" id="sub4"><div class="pill"><span class="w" data-t="12.530">প্রথমে</span> <span class="w" data-t="12.954">ব্রাউজার</span> <span class="w" data-t="13.485">ওপেন</span> <span class="w" data-t="13.803">করে</span> <span class="w" data-t="14.069">অ্যাড্রেস</span> <span class="w" data-t="14.652">বারে</span></div></div>
+  <div class="sub" id="sub5"><div class="pill"><span class="w" data-t="15.183">আপনার</span> <span class="w" data-t="15.691">ওয়েবসাইটের</span> <span class="w" data-t="16.635">ঠিকানার</span> <span class="w" data-t="17.288">শেষে</span> <span class="w" data-t="17.724">/admin</span> <span class="w" data-t="18.305">লিখে</span> <span class="w" data-t="18.740">এন্টার</span> <span class="w" data-t="19.321">চাপুন।</span></div></div>
+  <div class="sub" id="sub6"><div class="pill"><span class="w" data-t="20.313">লগইন</span> <span class="w" data-t="20.653">পাতায়</span> <span class="w" data-t="21.106">আপনার</span> <span class="w" data-t="21.502">ইমেইল</span> <span class="w" data-t="21.898">ও</span> <span class="w" data-t="22.068">পাসওয়ার্ড</span> <span class="w" data-t="22.748">দিয়ে</span></div></div>
+  <div class="sub" id="sub7"><div class="pill"><span class="w" data-t="23.420">সাইন</span> <span class="w" data-t="23.744">ইন</span> <span class="w" data-t="23.961">বাটনে</span> <span class="w" data-t="24.339">ক্লিক</span> <span class="w" data-t="24.718">করুন।</span></div></div>
+  <div class="sub" id="sub8"><div class="pill"><span class="w" data-t="25.736">লগইন</span> <span class="w" data-t="26.046">করার</span> <span class="w" data-t="26.356">পর</span> <span class="w" data-t="26.562">প্রথমেই</span> <span class="w" data-t="27.027">আপনি</span> <span class="w" data-t="27.337">ড্যাশবোর্ড</span> <span class="w" data-t="27.957">দেখতে</span> <span class="w" data-t="28.318">পাবেন।</span></div></div>
+  <div class="sub" id="sub9"><div class="pill"><span class="w" data-t="29.050">উপরের</span> <span class="w" data-t="29.586">Needs</span> <span class="w" data-t="30.122">Action</span> <span class="w" data-t="30.734">অংশে</span> <span class="w" data-t="31.194">দেখবেন</span></div></div>
+  <div class="sub" id="sub10"><div class="pill"><span class="w" data-t="32.346">এই</span> <span class="w" data-t="32.549">মুহূর্তে</span> <span class="w" data-t="33.056">কোন</span> <span class="w" data-t="33.310">কাজগুলো</span> <span class="w" data-t="33.767">আপনার</span> <span class="w" data-t="34.122">জন্য</span> <span class="w" data-t="34.427">অপেক্ষা</span> <span class="w" data-t="34.883">করছে:</span></div></div>
+  <div class="sub" id="sub11"><div class="pill"><span class="w" data-t="35.510">কোন</span> <span class="w" data-t="35.801">পেমেন্ট</span> <span class="w" data-t="36.326">যাচাই</span> <span class="w" data-t="36.734">করা</span> <span class="w" data-t="37.025">বাকি,</span></div></div>
+  <div class="sub" id="sub12"><div class="pill"><span class="w" data-t="37.600">কোন</span> <span class="w" data-t="37.902">সন্দেহজনক</span> <span class="w" data-t="38.568">অর্ডারে</span> <span class="w" data-t="39.112">ফোন</span> <span class="w" data-t="39.415">করা</span> <span class="w" data-t="39.717">দরকার,</span></div></div>
+  <div class="sub" id="sub13"><div class="pill"><span class="w" data-t="40.836">কোন</span> <span class="w" data-t="41.070">কাস্টমার</span> <span class="w" data-t="41.539">কার্টে</span> <span class="w" data-t="41.914">পণ্য</span> <span class="w" data-t="42.196">রেখে</span> <span class="w" data-t="42.477">চলে</span> <span class="w" data-t="42.711">গেছেন,</span></div></div>
+  <div class="sub" id="sub14"><div class="pill"><span class="w" data-t="43.282">এবং</span> <span class="w" data-t="43.600">কোন</span> <span class="w" data-t="43.918">পণ্যের</span> <span class="w" data-t="44.427">স্টক</span> <span class="w" data-t="44.809">কমে</span> <span class="w" data-t="45.127">গেছে।</span></div></div>
+  <div class="sub" id="sub15"><div class="pill"><span class="w" data-t="46.308">যেকোনো</span> <span class="w" data-t="46.720">কার্ডে</span> <span class="w" data-t="47.131">ক্লিক</span> <span class="w" data-t="47.492">করলে</span> <span class="w" data-t="47.801">সরাসরি</span> <span class="w" data-t="48.212">সেই</span> <span class="w" data-t="48.470">কাজের</span> <span class="w" data-t="48.830">পাতায়</span> <span class="w" data-t="49.242">চলে</span> <span class="w" data-t="49.499">যাবেন।</span></div></div>
+  <div class="sub" id="sub16"><div class="pill"><span class="w" data-t="50.771">এর</span> <span class="w" data-t="51.007">নিচে</span> <span class="w" data-t="51.360">Orders</span> <span class="w" data-t="51.832">to</span> <span class="w" data-t="52.068">Ship</span> <span class="w" data-t="52.421">অংশে</span> <span class="w" data-t="52.775">দেখবেন</span></div></div>
+  <div class="sub" id="sub17"><div class="pill"><span class="w" data-t="53.761">কতগুলো</span> <span class="w" data-t="54.154">অর্ডার</span> <span class="w" data-t="54.546">এখনো</span> <span class="w" data-t="54.841">কুরিয়ারে</span> <span class="w" data-t="55.381">পাঠানো</span> <span class="w" data-t="55.773">হয়নি।</span></div></div>
+  <div class="sub" id="sub18"><div class="pill"><span class="w" data-t="56.848">আর</span> <span class="w" data-t="56.999">তার</span> <span class="w" data-t="57.188">নিচে</span> <span class="w" data-t="57.415">আজকের</span> <span class="w" data-t="57.680">বিক্রি,</span> <span class="w" data-t="58.020">এই</span> <span class="w" data-t="58.171">মাসের</span> <span class="w" data-t="58.436">বিক্রি</span></div></div>
+  <div class="sub" id="sub19"><div class="pill"><span class="w" data-t="59.233">এবং</span> <span class="w" data-t="59.628">খরচ</span> <span class="w" data-t="60.023">বাদে</span> <span class="w" data-t="60.497">এই</span> <span class="w" data-t="60.813">মাসের</span> <span class="w" data-t="61.366">আসল</span> <span class="w" data-t="61.761">লাভ</span> <span class="w" data-t="62.156">দেখতে</span> <span class="w" data-t="62.709">পাবেন।</span></div></div>
+  <div class="sub" id="sub20"><div class="pill"><span class="w" data-t="64.302">বাম</span> <span class="w" data-t="64.590">পাশের</span> <span class="w" data-t="64.994">মেনু</span> <span class="w" data-t="65.340">থেকে</span> <span class="w" data-t="65.686">আপনি</span> <span class="w" data-t="66.032">এডমিন</span> <span class="w" data-t="66.435">প্যানেলের</span> <span class="w" data-t="67.070">যেকোনো</span> <span class="w" data-t="67.531">অংশে</span> <span class="w" data-t="67.877">যেতে</span> <span class="w" data-t="68.223">পারবেন।</span></div></div>
+  <div class="sub" id="sub21"><div class="pill"><span class="w" data-t="69.128">কোনো</span> <span class="w" data-t="69.447">পাতা</span> <span class="w" data-t="69.765">খুঁজে</span> <span class="w" data-t="70.137">না</span> <span class="w" data-t="70.349">পেলে</span> <span class="w" data-t="70.668">উপরের</span> <span class="w" data-t="71.039">সার্চ</span> <span class="w" data-t="71.411">বক্সে</span> <span class="w" data-t="71.783">পাতার</span> <span class="w" data-t="72.155">নাম</span> <span class="w" data-t="72.420">লিখুন।</span></div></div>
+  <div class="sub" id="sub22"><div class="pill"><span class="w" data-t="73.784">এবার</span> <span class="w" data-t="74.108">দেখি</span> <span class="w" data-t="74.432">কিভাবে</span> <span class="w" data-t="74.864">একটি</span> <span class="w" data-t="75.188">নতুন</span> <span class="w" data-t="75.512">অর্ডার</span> <span class="w" data-t="75.944">সামলাবেন।</span></div></div>
+  <div class="sub" id="sub23"><div class="pill"><span class="w" data-t="77.352">বাম</span> <span class="w" data-t="77.633">পাশের</span> <span class="w" data-t="78.028">মেনু</span> <span class="w" data-t="78.365">থেকে</span> <span class="w" data-t="78.703">Orders</span> <span class="w" data-t="79.153">অপশনে</span> <span class="w" data-t="79.547">ক্লিক</span> <span class="w" data-t="79.942">করুন।</span></div></div>
+  <div class="sub" id="sub24"><div class="pill"><span class="w" data-t="81.143">নতুন</span> <span class="w" data-t="81.413">অর্ডার</span> <span class="w" data-t="81.773">এলে</span> <span class="w" data-t="81.998">প্যানেল</span> <span class="w" data-t="82.403">সাউন্ড</span> <span class="w" data-t="82.762">দিয়ে</span> <span class="w" data-t="83.077">আপনাকে</span> <span class="w" data-t="83.437">জানিয়ে</span> <span class="w" data-t="83.842">দেবে।</span></div></div>
+  <div class="sub" id="sub25"><div class="pill"><span class="w" data-t="84.419">উপরের</span> <span class="w" data-t="84.599">Pending</span> <span class="w" data-t="84.830">ট্যাবে</span> <span class="w" data-t="85.036">ক্লিক</span> <span class="w" data-t="85.216">করলে</span></div></div>
+  <div class="sub" id="sub26"><div class="pill"><span class="w" data-t="85.735">শুধু</span> <span class="w" data-t="86.203">যেসব</span> <span class="w" data-t="86.672">অর্ডার</span> <span class="w" data-t="87.296">এখনো</span> <span class="w" data-t="87.765">কনফার্ম</span> <span class="w" data-t="88.468">হয়নি</span> <span class="w" data-t="89.014">সেগুলো</span> <span class="w" data-t="89.639">দেখতে</span> <span class="w" data-t="90.185">পাবেন।</span></div></div>
+  <div class="sub" id="sub27"><div class="pill"><span class="w" data-t="91.784">যে</span> <span class="w" data-t="92.002">অর্ডারটি</span> <span class="w" data-t="92.546">দেখতে</span> <span class="w" data-t="92.927">চান,</span> <span class="w" data-t="93.253">তার</span> <span class="w" data-t="93.525">পাশে</span> <span class="w" data-t="93.852">থাকা</span> <span class="w" data-t="94.178">Open</span> <span class="w" data-t="94.504">Order</span> <span class="w" data-t="94.885">বাটনে</span> <span class="w" data-t="95.266">ক্লিক</span> <span class="w" data-t="95.647">করুন।</span></div></div>
+  <div class="sub" id="sub28"><div class="pill"><span class="w" data-t="96.966">এখানে</span> <span class="w" data-t="97.366">কাস্টমারের</span> <span class="w" data-t="98.052">নাম,</span> <span class="w" data-t="98.395">মোবাইল</span> <span class="w" data-t="98.852">নম্বর,</span></div></div>
+  <div class="sub" id="sub29"><div class="pill"><span class="w" data-t="99.781">ঠিকানা</span> <span class="w" data-t="100.206">এবং</span> <span class="w" data-t="100.472">অর্ডার</span> <span class="w" data-t="100.897">করা</span> <span class="w" data-t="101.163">পণ্যগুলো</span> <span class="w" data-t="101.695">দেখতে</span> <span class="w" data-t="102.067">পাবেন।</span></div></div>
+  <div class="sub" id="sub30"><div class="pill"><span class="w" data-t="102.728">অর্ডার</span> <span class="w" data-t="103.248">কনফার্ম</span> <span class="w" data-t="103.833">করার</span> <span class="w" data-t="104.223">আগে</span> <span class="w" data-t="104.548">Customer</span> <span class="w" data-t="105.198">Delivery</span> <span class="w" data-t="105.848">History</span> <span class="w" data-t="106.433">অংশটি</span> <span class="w" data-t="106.888">দেখে</span> <span class="w" data-t="107.278">নিন।</span></div></div>
+  <div class="sub" id="sub31"><div class="pill"><span class="w" data-t="108.249">এখানে</span> <span class="w" data-t="108.623">দেখা</span> <span class="w" data-t="108.944">যায়</span> <span class="w" data-t="109.264">এই</span> <span class="w" data-t="109.478">কাস্টমার</span> <span class="w" data-t="110.012">আগে</span> <span class="w" data-t="110.280">কতগুলো</span> <span class="w" data-t="110.707">পার্সেল</span> <span class="w" data-t="111.188">গ্রহণ</span> <span class="w" data-t="111.562">করেছেন</span></div></div>
+  <div class="sub" id="sub32"><div class="pill"><span class="w" data-t="112.597">এবং</span> <span class="w" data-t="112.860">কতগুলো</span> <span class="w" data-t="113.280">ফেরত</span> <span class="w" data-t="113.595">দিয়েছেন।</span></div></div>
+  <div class="sub" id="sub33"><div class="pill"><span class="w" data-t="114.881">রেকর্ড</span> <span class="w" data-t="115.375">সন্দেহজনক</span> <span class="w" data-t="116.055">মনে</span> <span class="w" data-t="116.364">হলে</span> <span class="w" data-t="116.672">কাস্টমারের</span> <span class="w" data-t="117.414">নম্বরে</span></div></div>
+  <div class="sub" id="sub34"><div class="pill"><span class="w" data-t="118.200">কল</span> <span class="w" data-t="118.429">বা</span> <span class="w" data-t="118.658">WhatsApp</span> <span class="w" data-t="119.232">বাটনে</span> <span class="w" data-t="119.633">ক্লিক</span> <span class="w" data-t="120.034">করে</span> <span class="w" data-t="120.321">সরাসরি</span> <span class="w" data-t="120.779">কথা</span> <span class="w" data-t="121.066">বলে</span> <span class="w" data-t="121.352">নিন।</span></div></div>
+  <div class="sub" id="sub35"><div class="pill"><span class="w" data-t="122.072">কথা</span> <span class="w" data-t="122.435">বলার</span> <span class="w" data-t="122.870">পর</span> <span class="w" data-t="123.160">Calls</span> <span class="w" data-t="123.668">এবং</span> <span class="w" data-t="124.031">Staff</span> <span class="w" data-t="124.539">Notes</span> <span class="w" data-t="125.047">অংশে</span></div></div>
+  <div class="sub" id="sub36"><div class="pill"><span class="w" data-t="126.055">কাস্টমার</span> <span class="w" data-t="126.631">কী</span> <span class="w" data-t="126.862">বললেন</span> <span class="w" data-t="127.265">তা</span> <span class="w" data-t="127.496">লিখে</span> <span class="w" data-t="127.842">Save</span> <span class="w" data-t="128.187">Note</span> <span class="w" data-t="128.533">বাটনে</span> <span class="w" data-t="128.936">ক্লিক</span> <span class="w" data-t="129.340">করুন,</span></div></div>
+  <div class="sub" id="sub37"><div class="pill"><span class="w" data-t="130.431">যাতে</span> <span class="w" data-t="130.739">আপনার</span> <span class="w" data-t="131.097">টিমের</span> <span class="w" data-t="131.456">সবাই</span> <span class="w" data-t="131.764">বিষয়টি</span> <span class="w" data-t="132.225">জানতে</span> <span class="w" data-t="132.584">পারে।</span></div></div>
+  <div class="sub" id="sub38"><div class="pill"><span class="w" data-t="133.161">সবকিছু</span> <span class="w" data-t="133.696">ঠিক</span> <span class="w" data-t="134.031">থাকলে</span> <span class="w" data-t="134.500">Confirm</span> <span class="w" data-t="135.102">Order</span> <span class="w" data-t="135.571">বাটনে</span> <span class="w" data-t="136.039">ক্লিক</span> <span class="w" data-t="136.508">করুন।</span></div></div>
+  <div class="sub" id="sub39"><div class="pill"><span class="w" data-t="137.822">আর</span> <span class="w" data-t="138.036">অর্ডারটি</span> <span class="w" data-t="138.569">ভুয়া</span> <span class="w" data-t="138.943">বা</span> <span class="w" data-t="139.156">বাতিলযোগ্য</span> <span class="w" data-t="139.797">মনে</span> <span class="w" data-t="140.064">হলে</span></div></div>
+  <div class="sub" id="sub40"><div class="pill"><span class="w" data-t="140.857">Reject</span> <span class="w" data-t="141.276">Order</span> <span class="w" data-t="141.642">বাটনে</span> <span class="w" data-t="142.008">ক্লিক</span> <span class="w" data-t="142.375">করুন।</span></div></div>
+  <div class="sub" id="sub41"><div class="pill"><span class="w" data-t="143.495">নিরাপদ</span> <span class="w" data-t="143.902">ক্যাশ</span> <span class="w" data-t="144.258">অন</span> <span class="w" data-t="144.462">ডেলিভারি</span> <span class="w" data-t="144.971">অর্ডারগুলো</span> <span class="w" data-t="145.582">সিস্টেম</span> <span class="w" data-t="146.040">নিজে</span> <span class="w" data-t="146.345">থেকেই</span> <span class="w" data-t="146.701">কনফার্ম</span> <span class="w" data-t="147.159">করে</span> <span class="w" data-t="147.414">দেয়,</span></div></div>
+  <div class="sub" id="sub42"><div class="pill"><span class="w" data-t="148.536">তাই</span> <span class="w" data-t="148.812">প্রতিটি</span> <span class="w" data-t="149.310">অর্ডার</span> <span class="w" data-t="149.752">আলাদা</span> <span class="w" data-t="150.139">করে</span> <span class="w" data-t="150.415">দেখার</span> <span class="w" data-t="150.802">প্রয়োজন</span> <span class="w" data-t="151.354">হয়</span> <span class="w" data-t="151.631">না।</span></div></div>
+  <div class="sub" id="sub43"><div class="pill"><span class="w" data-t="152.200">কাস্টমার</span> <span class="w" data-t="152.778">যদি</span> <span class="w" data-t="153.066">বিকাশ,</span> <span class="w" data-t="153.529">নগদ</span> <span class="w" data-t="153.817">বা</span> <span class="w" data-t="154.048">রকেটে</span> <span class="w" data-t="154.453">পেমেন্ট</span> <span class="w" data-t="154.973">করে</span> <span class="w" data-t="155.261">থাকেন,</span></div></div>
+  <div class="sub" id="sub44"><div class="pill"><span class="w" data-t="156.359">তাহলে</span> <span class="w" data-t="156.733">অর্ডারের</span> <span class="w" data-t="157.267">ভেতরে</span> <span class="w" data-t="157.641">পেমেন্ট</span> <span class="w" data-t="158.121">অংশে</span></div></div>
+  <div class="sub" id="sub45"><div class="pill"><span class="w" data-t="158.623">তার</span> <span class="w" data-t="158.899">দেওয়া</span> <span class="w" data-t="159.342">প্রেরকের</span> <span class="w" data-t="159.895">নম্বর</span> <span class="w" data-t="160.282">ও</span> <span class="w" data-t="160.447">ট্রানজেকশন</span> <span class="w" data-t="161.111">আইডি</span> <span class="w" data-t="161.442">দেখতে</span> <span class="w" data-t="161.829">পাবেন।</span></div></div>
+  <div class="sub" id="sub46"><div class="pill"><span class="w" data-t="163.161">আপনার</span> <span class="w" data-t="163.712">বিকাশ</span> <span class="w" data-t="164.264">বা</span> <span class="w" data-t="164.579">নগদ</span> <span class="w" data-t="164.972">একাউন্টে</span> <span class="w" data-t="165.760">টাকা</span> <span class="w" data-t="166.232">এসেছে</span> <span class="w" data-t="166.784">কিনা</span> <span class="w" data-t="167.256">মিলিয়ে</span> <span class="w" data-t="167.965">নিয়ে</span></div></div>
+  <div class="sub" id="sub47"><div class="pill"><span class="w" data-t="169.515">Verify</span> <span class="w" data-t="169.881">বাটনে</span> <span class="w" data-t="170.201">ক্লিক</span> <span class="w" data-t="170.521">করুন।</span></div></div>
+  <div class="sub" id="sub48"><div class="pill"><span class="w" data-t="170.957">ড্যাশবোর্ডের</span> <span class="w" data-t="172.002">Payment</span> <span class="w" data-t="172.674">Approvals</span> <span class="w" data-t="173.495">অংশ</span> <span class="w" data-t="173.869">থেকেও</span> <span class="w" data-t="174.391">একই</span> <span class="w" data-t="174.764">কাজ</span> <span class="w" data-t="175.138">করা</span> <span class="w" data-t="175.511">যায়।</span></div></div>
+  <div class="sub" id="sub49"><div class="pill"><span class="w" data-t="176.774">কাস্টমারের</span> <span class="w" data-t="177.284">ঠিকানা</span> <span class="w" data-t="177.624">বা</span> <span class="w" data-t="177.794">নম্বর</span> <span class="w" data-t="178.091">বদলাতে</span> <span class="w" data-t="178.431">হলে</span></div></div>
+  <div class="sub" id="sub50"><div class="pill"><span class="w" data-t="178.806">কাস্টমার</span> <span class="w" data-t="179.631">অংশের</span> <span class="w" data-t="180.208">Edit</span> <span class="w" data-t="180.703">বাটনে</span> <span class="w" data-t="181.281">ক্লিক</span> <span class="w" data-t="181.858">করুন।</span></div></div>
+  <div class="sub" id="sub51"><div class="pill"><span class="w" data-t="183.310">তথ্য</span> <span class="w" data-t="183.641">ঠিক</span> <span class="w" data-t="183.916">করে</span> <span class="w" data-t="184.192">Save</span> <span class="w" data-t="184.522">Details</span> <span class="w" data-t="185.018">বাটনে</span> <span class="w" data-t="185.404">ক্লিক</span> <span class="w" data-t="185.790">করুন।</span></div></div>
+  <div class="sub" id="sub52"><div class="pill"><span class="w" data-t="187.013">অর্ডার</span> <span class="w" data-t="187.348">কনফার্ম</span> <span class="w" data-t="187.724">হয়ে</span> <span class="w" data-t="187.975">গেলে</span> <span class="w" data-t="188.226">এবার</span> <span class="w" data-t="188.477">কুরিয়ারে</span> <span class="w" data-t="188.937">পাঠানোর</span> <span class="w" data-t="189.314">পালা।</span></div></div>
+  <div class="sub" id="sub53"><div class="pill"><span class="w" data-t="189.832">অর্ডারের</span> <span class="w" data-t="190.540">পাতায়</span> <span class="w" data-t="191.106">কুরিয়ার</span> <span class="w" data-t="191.815">অংশে</span> <span class="w" data-t="192.239">আপনার</span> <span class="w" data-t="192.735">কুরিয়ার</span></div></div>
+  <div class="sub" id="sub54"><div class="pill"><span class="w" data-t="193.757">অর্থাৎ</span> <span class="w" data-t="194.145">Steadfast,</span> <span class="w" data-t="194.727">Pathao</span> <span class="w" data-t="195.115">বা</span> <span class="w" data-t="195.309">RedX</span> <span class="w" data-t="195.600">বেছে</span> <span class="w" data-t="195.891">নিয়ে</span> <span class="w" data-t="196.230">Send</span> <span class="w" data-t="196.521">বাটনে</span> <span class="w" data-t="196.860">ক্লিক</span> <span class="w" data-t="197.200">করুন।</span></div></div>
+  <div class="sub" id="sub55"><div class="pill"><span class="w" data-t="197.868">পার্সেলটি</span> <span class="w" data-t="198.498">সরাসরি</span> <span class="w" data-t="198.955">কুরিয়ারের</span> <span class="w" data-t="199.642">সিস্টেমে</span> <span class="w" data-t="200.214">বুক</span> <span class="w" data-t="200.501">হয়ে</span> <span class="w" data-t="200.844">যাবে</span></div></div>
+  <div class="sub" id="sub56"><div class="pill"><span class="w" data-t="201.973">এবং</span> <span class="w" data-t="202.268">ট্র্যাকিং</span> <span class="w" data-t="202.917">কোড</span> <span class="w" data-t="203.212">এখানেই</span> <span class="w" data-t="203.683">দেখাবে।</span></div></div>
+  <div class="sub" id="sub57"><div class="pill"><span class="w" data-t="204.409">এরপর</span> <span class="w" data-t="204.664">পার্সেলে</span> <span class="w" data-t="205.090">লাগানোর</span> <span class="w" data-t="205.473">জন্য</span> <span class="w" data-t="205.728">Label</span> <span class="w" data-t="206.026">বাটনে</span> <span class="w" data-t="206.324">ক্লিক</span> <span class="w" data-t="206.622">করে</span></div></div>
+  <div class="sub" id="sub58"><div class="pill"><span class="w" data-t="207.487">লেবেল</span> <span class="w" data-t="208.171">প্রিন্ট</span> <span class="w" data-t="209.051">করুন।</span></div></div>
+  <div class="sub" id="sub59"><div class="pill"><span class="w" data-t="210.207">আর</span> <span class="w" data-t="210.561">কাস্টমারের</span> <span class="w" data-t="211.625">জন্য</span> <span class="w" data-t="212.157">ইনভয়েস</span> <span class="w" data-t="212.954">প্রিন্ট</span> <span class="w" data-t="213.752">করতে</span></div></div>
+  <div class="sub" id="sub60"><div class="pill"><span class="w" data-t="214.936">Invoice</span> <span class="w" data-t="215.336">বাটনে</span> <span class="w" data-t="215.647">ক্লিক</span> <span class="w" data-t="215.959">করুন।</span></div></div>
+  <div class="sub" id="sub61"><div class="pill"><span class="w" data-t="216.769">একসাথে</span> <span class="w" data-t="217.188">অনেকগুলো</span> <span class="w" data-t="217.711">অর্ডার</span> <span class="w" data-t="218.130">পাঠাতে</span> <span class="w" data-t="218.549">চাইলে</span> <span class="w" data-t="218.915">Orders</span> <span class="w" data-t="219.334">পাতায়</span> <span class="w" data-t="219.753">ফিরে</span> <span class="w" data-t="220.067">যান।</span></div></div>
+  <div class="sub" id="sub62"><div class="pill"><span class="w" data-t="221.093">যে</span> <span class="w" data-t="221.337">অর্ডারগুলো</span> <span class="w" data-t="222.068">পাঠাতে</span> <span class="w" data-t="222.555">চান</span> <span class="w" data-t="222.859">সেগুলোর</span> <span class="w" data-t="223.408">বাম</span> <span class="w" data-t="223.712">পাশের</span> <span class="w" data-t="224.138">বক্সে</span> <span class="w" data-t="224.565">টিক</span> <span class="w" data-t="224.869">দিন।</span></div></div>
+  <div class="sub" id="sub63"><div class="pill"><span class="w" data-t="226.023">এরপর</span> <span class="w" data-t="226.372">নিচে</span> <span class="w" data-t="226.721">আসা</span> <span class="w" data-t="227.012">অপশন</span> <span class="w" data-t="227.361">থেকে</span> <span class="w" data-t="227.710">Send</span> <span class="w" data-t="228.059">to</span> <span class="w" data-t="228.291">Courier</span> <span class="w" data-t="228.815">বাটনে</span> <span class="w" data-t="229.222">ক্লিক</span> <span class="w" data-t="229.629">করুন।</span></div></div>
+  <div class="sub" id="sub64"><div class="pill"><span class="w" data-t="230.385">একইভাবে</span> <span class="w" data-t="230.870">Print</span> <span class="w" data-t="231.248">Labels</span> <span class="w" data-t="231.680">ও</span> <span class="w" data-t="231.841">Print</span> <span class="w" data-t="232.219">Invoices</span> <span class="w" data-t="232.758">বাটন</span> <span class="w" data-t="233.082">দিয়ে</span></div></div>
+  <div class="sub" id="sub65"><div class="pill"><span class="w" data-t="234.205">সবগুলোর</span> <span class="w" data-t="234.757">লেবেল</span> <span class="w" data-t="235.186">ও</span> <span class="w" data-t="235.370">ইনভয়েস</span> <span class="w" data-t="235.921">একসাথে</span> <span class="w" data-t="236.412">প্রিন্ট</span> <span class="w" data-t="236.964">করতে</span> <span class="w" data-t="237.331">পারবেন।</span></div></div>
+  <div class="sub" id="sub66"><div class="pill"><span class="w" data-t="238.754">কোনো</span> <span class="w" data-t="239.180">অর্ডার</span> <span class="w" data-t="239.748">বাতিল</span> <span class="w" data-t="240.244">করতে</span> <span class="w" data-t="240.670">হলে</span> <span class="w" data-t="241.025">Cancel</span> <span class="w" data-t="241.593">Orders</span> <span class="w" data-t="242.161">বাটন</span> <span class="w" data-t="242.586">ব্যবহার</span> <span class="w" data-t="243.225">করুন।</span></div></div>
+  <div class="sub" id="sub67"><div class="pill"><span class="w" data-t="244.641">কুরিয়ারের</span> <span class="w" data-t="245.203">প্রতিনিধি</span> <span class="w" data-t="245.719">পার্সেল</span> <span class="w" data-t="246.140">নিতে</span> <span class="w" data-t="246.422">এলে</span></div></div>
+  <div class="sub" id="sub68"><div class="pill"><span class="w" data-t="246.831">বাম</span> <span class="w" data-t="246.993">পাশের</span> <span class="w" data-t="247.219">মেনু</span> <span class="w" data-t="247.414">থেকে</span> <span class="w" data-t="247.608">Courier</span> <span class="w" data-t="247.899">Scan</span> <span class="w" data-t="248.094">পাতায়</span> <span class="w" data-t="248.353">যান।</span></div></div>
+  <div class="sub" id="sub69"><div class="pill"><span class="w" data-t="249.168">Pickup</span> <span class="w" data-t="249.732">Courier</span> <span class="w" data-t="250.365">থেকে</span> <span class="w" data-t="250.788">কোন</span> <span class="w" data-t="251.140">কুরিয়ার</span> <span class="w" data-t="251.845">পার্সেল</span> <span class="w" data-t="252.479">নিচ্ছে</span></div></div>
+  <div class="sub" id="sub70"><div class="pill"><span class="w" data-t="253.672">তা</span> <span class="w" data-t="253.849">নির্বাচন</span> <span class="w" data-t="254.290">করুন।</span></div></div>
+  <div class="sub" id="sub71"><div class="pill"><span class="w" data-t="254.680">এরপর</span> <span class="w" data-t="255.080">প্রতিটি</span> <span class="w" data-t="255.680">পার্সেলের</span> <span class="w" data-t="256.413">লেবেলের</span> <span class="w" data-t="257.013">বারকোড</span> <span class="w" data-t="257.546">স্ক্যান</span> <span class="w" data-t="258.146">করুন,</span></div></div>
+  <div class="sub" id="sub72"><div class="pill"><span class="w" data-t="259.400">অথবা</span> <span class="w" data-t="259.687">Scan</span> <span class="w" data-t="259.974">parcel</span> <span class="w" data-t="260.356">barcode</span> <span class="w" data-t="260.787">or</span> <span class="w" data-t="260.978">order</span> <span class="w" data-t="261.313">number</span> <span class="w" data-t="261.695">ঘরে</span></div></div>
+  <div class="sub" id="sub73"><div class="pill"><span class="w" data-t="262.155">অর্ডার</span> <span class="w" data-t="262.420">নম্বর</span> <span class="w" data-t="262.651">লিখে</span> <span class="w" data-t="262.850">এন্টার</span> <span class="w" data-t="263.115">চাপুন।</span></div></div>
+  <div class="sub" id="sub74"><div class="pill"><span class="w" data-t="263.917">পাশের</span> <span class="w" data-t="264.377">ক্যামেরা</span> <span class="w" data-t="265.033">বাটনে</span> <span class="w" data-t="265.493">ক্লিক</span> <span class="w" data-t="265.953">করে</span> <span class="w" data-t="266.281">মোবাইলের</span> <span class="w" data-t="266.938">ক্যামেরা</span> <span class="w" data-t="267.594">দিয়েও</span> <span class="w" data-t="268.120">স্ক্যান</span> <span class="w" data-t="268.711">করা</span> <span class="w" data-t="269.039">যায়।</span></div></div>
+  <div class="sub" id="sub75"><div class="pill"><span class="w" data-t="270.263">স্ক্যান</span> <span class="w" data-t="270.756">করা</span> <span class="w" data-t="271.030">প্রতিটি</span> <span class="w" data-t="271.522">অর্ডার</span> <span class="w" data-t="271.961">স্বয়ংক্রিয়ভাবে</span> <span class="w" data-t="272.946">Shipped</span> <span class="w" data-t="273.439">হয়ে</span> <span class="w" data-t="273.768">যাবে।</span></div></div>
+  <div class="sub" id="sub76"><div class="pill"><span class="w" data-t="274.489">সব</span> <span class="w" data-t="274.693">পার্সেল</span> <span class="w" data-t="275.151">স্ক্যান</span> <span class="w" data-t="275.609">হয়ে</span> <span class="w" data-t="275.915">গেলে</span></div></div>
+  <div class="sub" id="sub77"><div class="pill"><span class="w" data-t="276.835">Today's</span> <span class="w" data-t="277.395">Manifest</span> <span class="w" data-t="278.018">বাটনে</span> <span class="w" data-t="278.454">ক্লিক</span> <span class="w" data-t="278.890">করে</span> <span class="w" data-t="279.201">আজকের</span> <span class="w" data-t="279.637">হস্তান্তরের</span> <span class="w" data-t="280.446">তালিকা</span> <span class="w" data-t="280.944">প্রিন্ট</span> <span class="w" data-t="281.505">করে</span></div></div>
+  <div class="sub" id="sub78"><div class="pill"><span class="w" data-t="282.689">কুরিয়ার</span> <span class="w" data-t="283.052">প্রতিনিধিকে</span> <span class="w" data-t="283.524">দিন।</span></div></div>
+  <div class="sub" id="sub79"><div class="pill"><span class="w" data-t="283.833">কুরিয়ার</span> <span class="w" data-t="284.847">থেকে</span> <span class="w" data-t="285.456">সর্বশেষ</span> <span class="w" data-t="286.368">ডেলিভারির</span> <span class="w" data-t="287.484">খবর</span> <span class="w" data-t="287.991">আনতে</span></div></div>
+  <div class="sub" id="sub80"><div class="pill"><span class="w" data-t="289.478">উপরের</span> <span class="w" data-t="289.662">Sync</span> <span class="w" data-t="289.820">Now</span> <span class="w" data-t="289.951">বাটনে</span> <span class="w" data-t="290.135">ক্লিক</span> <span class="w" data-t="290.319">করুন।</span></div></div>
+  <div class="sub" id="sub81"><div class="pill"><span class="w" data-t="291.169">কোনো</span> <span class="w" data-t="291.349">পার্সেল</span> <span class="w" data-t="291.620">ফেরত</span> <span class="w" data-t="291.801">এলে</span> <span class="w" data-t="291.951">উপরের</span> <span class="w" data-t="292.162">Courier</span> <span class="w" data-t="292.432">in</span> <span class="w" data-t="292.552">returns</span> <span class="w" data-t="292.823">ট্যাবে</span> <span class="w" data-t="293.064">যান</span></div></div>
+  <div class="sub" id="sub82"><div class="pill"><span class="w" data-t="293.814">এবং</span> <span class="w" data-t="294.334">পার্সেলটি</span> <span class="w" data-t="295.478">স্ক্যান</span> <span class="w" data-t="296.414">করুন।</span></div></div>
+  <div class="sub" id="sub83"><div class="pill"><span class="w" data-t="298.008">একটি</span> <span class="w" data-t="298.114">উইন্ডো</span> <span class="w" data-t="298.255">আসবে।</span></div></div>
+  <div class="sub" id="sub84"><div class="pill"><span class="w" data-t="298.410">What</span> <span class="w" data-t="298.678">happened?</span> <span class="w" data-t="299.168">অংশে</span> <span class="w" data-t="299.436">নির্বাচন</span> <span class="w" data-t="299.882">করুন</span></div></div>
+  <div class="sub" id="sub85"><div class="pill"><span class="w" data-t="300.614">কাস্টমার</span> <span class="w" data-t="301.462">ডেলিভারি</span> <span class="w" data-t="302.311">চার্জ</span> <span class="w" data-t="302.904">দিয়েছেন</span> <span class="w" data-t="303.753">নাকি</span> <span class="w" data-t="304.262">পার্সেল</span> <span class="w" data-t="305.025">গ্রহণ</span> <span class="w" data-t="305.619">করেননি।</span></div></div>
+  <div class="sub" id="sub86"><div class="pill"><span class="w" data-t="307.425">পণ্যগুলো</span> <span class="w" data-t="307.910">আবার</span> <span class="w" data-t="308.201">বিক্রির</span> <span class="w" data-t="308.637">উপযোগী</span> <span class="w" data-t="309.024">হলে</span></div></div>
+  <div class="sub" id="sub87"><div class="pill"><span class="w" data-t="309.695">Put</span> <span class="w" data-t="309.930">items</span> <span class="w" data-t="310.259">back</span> <span class="w" data-t="310.541">in</span> <span class="w" data-t="310.729">stock</span> <span class="w" data-t="311.058">টিক</span> <span class="w" data-t="311.293">দিয়ে</span> <span class="w" data-t="311.622">রাখুন।</span></div></div>
+  <div class="sub" id="sub88"><div class="pill"><span class="w" data-t="312.840">এরপর</span> <span class="w" data-t="313.069">Confirm</span> <span class="w" data-t="313.413">return</span> <span class="w" data-t="313.719">বাটনে</span> <span class="w" data-t="313.987">ক্লিক</span> <span class="w" data-t="314.254">করুন।</span></div></div>
+  <div class="sub" id="sub89"><div class="pill"><span class="w" data-t="314.937">অর্ডারটি</span> <span class="w" data-t="315.181">রিটার্ন</span> <span class="w" data-t="315.401">হিসেবে</span> <span class="w" data-t="315.596">মার্ক</span> <span class="w" data-t="315.767">হবে</span></div></div>
+  <div class="sub" id="sub90"><div class="pill"><span class="w" data-t="316.247">এবং</span> <span class="w" data-t="316.495">পণ্যগুলো</span> <span class="w" data-t="316.991">আবার</span> <span class="w" data-t="317.289">স্টকে</span> <span class="w" data-t="317.636">যোগ</span> <span class="w" data-t="317.884">হয়ে</span> <span class="w" data-t="318.182">যাবে।</span></div></div>
+  <div class="sub" id="sub91"><div class="pill"><span class="w" data-t="319.327">আপনার</span> <span class="w" data-t="319.931">যদি</span> <span class="w" data-t="320.363">ফিজিক্যাল</span> <span class="w" data-t="321.312">দোকান</span> <span class="w" data-t="321.916">থাকে</span></div></div>
+  <div class="sub" id="sub92"><div class="pill"><span class="w" data-t="322.704">তাহলে</span> <span class="w" data-t="323.204">মেনু</span> <span class="w" data-t="323.633">থেকে</span> <span class="w" data-t="324.062">POS</span> <span class="w" data-t="324.419">Register</span> <span class="w" data-t="325.134">অপশনে</span> <span class="w" data-t="325.634">ক্লিক</span> <span class="w" data-t="326.134">করুন।</span></div></div>
+  <div class="sub" id="sub93"><div class="pill"><span class="w" data-t="327.591">পণ্যের</span> <span class="w" data-t="328.070">বারকোড</span> <span class="w" data-t="328.549">স্ক্যান</span> <span class="w" data-t="329.088">করুন</span></div></div>
+  <div class="sub" id="sub94"><div class="pill"><span class="w" data-t="329.863">অথবা</span> <span class="w" data-t="330.022">নাম</span> <span class="w" data-t="330.154">লিখে</span> <span class="w" data-t="330.313">সার্চ</span> <span class="w" data-t="330.499">করে</span> <span class="w" data-t="330.631">পণ্যে</span> <span class="w" data-t="330.817">ক্লিক</span> <span class="w" data-t="331.002">করুন।</span></div></div>
+  <div class="sub" id="sub95"><div class="pill"><span class="w" data-t="331.889">পণ্যটি</span> <span class="w" data-t="332.294">ডান</span> <span class="w" data-t="332.547">পাশের</span> <span class="w" data-t="332.901">কার্টে</span> <span class="w" data-t="333.306">যোগ</span> <span class="w" data-t="333.559">হবে।</span></div></div>
+  <div class="sub" id="sub96"><div class="pill"><span class="w" data-t="334.300">কাস্টমারের</span> <span class="w" data-t="335.207">মোবাইল</span> <span class="w" data-t="335.812">নম্বর</span> <span class="w" data-t="336.341">দিতে</span> <span class="w" data-t="336.794">চাইলে</span></div></div>
+  <div class="sub" id="sub97"><div class="pill"><span class="w" data-t="338.168">Customer</span> <span class="w" data-t="338.974">অংশে</span> <span class="w" data-t="339.457">লিখুন।</span></div></div>
+  <div class="sub" id="sub98"><div class="pill"><span class="w" data-t="340.672">পেমেন্টের</span> <span class="w" data-t="340.907">ধরন</span> <span class="w" data-t="341.014">হিসেবে</span> <span class="w" data-t="341.186">Cash,</span> <span class="w" data-t="341.335">bKash,</span></div></div>
+  <div class="sub" id="sub99"><div class="pill"><span class="w" data-t="341.579">Nagad</span> <span class="w" data-t="341.994">বা</span> <span class="w" data-t="342.231">Card</span> <span class="w" data-t="342.587">নির্বাচন</span> <span class="w" data-t="343.180">করুন।</span></div></div>
+  <div class="sub" id="sub100"><div class="pill"><span class="w" data-t="344.346">কাস্টমারের</span> <span class="w" data-t="345.027">দেওয়া</span> <span class="w" data-t="345.481">টাকার</span> <span class="w" data-t="345.879">পরিমাণ</span> <span class="w" data-t="346.333">লিখুন।</span></div></div>
+  <div class="sub" id="sub101"><div class="pill"><span class="w" data-t="346.999">ফেরত</span> <span class="w" data-t="347.379">কত</span> <span class="w" data-t="347.632">দিতে</span> <span class="w" data-t="348.012">হবে</span> <span class="w" data-t="348.329">তা</span> <span class="w" data-t="348.582">সিস্টেম</span> <span class="w" data-t="349.152">নিজেই</span> <span class="w" data-t="349.596">দেখিয়ে</span> <span class="w" data-t="350.166">দেবে।</span></div></div>
+  <div class="sub" id="sub102"><div class="pill"><span class="w" data-t="350.923">এরপর</span> <span class="w" data-t="351.365">Complete</span> <span class="w" data-t="352.101">Sale</span> <span class="w" data-t="352.542">বাটনে</span> <span class="w" data-t="353.057">ক্লিক</span> <span class="w" data-t="353.573">করে</span> <span class="w" data-t="353.941">রিসিট</span> <span class="w" data-t="354.456">প্রিন্ট</span> <span class="w" data-t="355.118">করুন।</span></div></div>
+  <div class="sub" id="sub103"><div class="pill"><span class="w" data-t="356.617">এই</span> <span class="w" data-t="356.770">বিক্রি</span> <span class="w" data-t="357.077">অনলাইনের</span> <span class="w" data-t="357.460">স্টক</span> <span class="w" data-t="357.690">থেকেও</span> <span class="w" data-t="357.958">স্বয়ংক্রিয়ভাবে</span> <span class="w" data-t="358.648">কমে</span> <span class="w" data-t="358.839">যাবে।</span></div></div>
+  <div class="sub" id="sub104"><div class="pill"><span class="w" data-t="359.800">এবার</span> <span class="w" data-t="360.196">দেখি</span> <span class="w" data-t="360.592">কিভাবে</span> <span class="w" data-t="361.119">নতুন</span> <span class="w" data-t="361.515">পণ্য</span> <span class="w" data-t="361.911">যোগ</span> <span class="w" data-t="362.241">করবেন।</span></div></div>
+  <div class="sub" id="sub105"><div class="pill"><span class="w" data-t="363.592">মেনু</span> <span class="w" data-t="363.980">থেকে</span> <span class="w" data-t="364.367">Products</span> <span class="w" data-t="365.014">অপশনে</span> <span class="w" data-t="365.466">ক্লিক</span> <span class="w" data-t="365.918">করুন।</span></div></div>
+  <div class="sub" id="sub106"><div class="pill"><span class="w" data-t="367.180">এরপর</span> <span class="w" data-t="367.405">উপরের</span> <span class="w" data-t="367.668">New</span> <span class="w" data-t="367.855">Product</span> <span class="w" data-t="368.193">বাটনে</span> <span class="w" data-t="368.455">ক্লিক</span> <span class="w" data-t="368.718">করুন।</span></div></div>
+  <div class="sub" id="sub107"><div class="pill"><span class="w" data-t="369.463">Basic</span> <span class="w" data-t="369.960">Information</span> <span class="w" data-t="370.884">অংশে</span> <span class="w" data-t="371.310">পণ্যের</span> <span class="w" data-t="371.878">নাম</span> <span class="w" data-t="372.233">লিখুন।</span></div></div>
+  <div class="sub" id="sub108"><div class="pill"><span class="w" data-t="373.663">Product</span> <span class="w" data-t="374.021">Category</span> <span class="w" data-t="374.418">থেকে</span> <span class="w" data-t="374.656">ক্যাটাগরি</span></div></div>
+  <div class="sub" id="sub109"><div class="pill"><span class="w" data-t="375.218">এবং</span> <span class="w" data-t="375.372">Brand/Producer</span> <span class="w" data-t="375.865">থেকে</span> <span class="w" data-t="376.050">ব্র্যান্ড</span> <span class="w" data-t="376.389">নির্বাচন</span> <span class="w" data-t="376.697">করুন।</span></div></div>
+  <div class="sub" id="sub110"><div class="pill"><span class="w" data-t="377.649">নিচের</span> <span class="w" data-t="378.171">বিবরণের</span> <span class="w" data-t="378.843">ঘরে</span> <span class="w" data-t="379.216">পণ্য</span> <span class="w" data-t="379.664">সম্পর্কে</span> <span class="w" data-t="380.410">বিস্তারিত</span> <span class="w" data-t="381.231">লিখুন।</span></div></div>
+  <div class="sub" id="sub111"><div class="pill"><span class="w" data-t="382.767">চাইলে</span> <span class="w" data-t="383.273">বিবরণের</span> <span class="w" data-t="383.924">ভেতরে</span> <span class="w" data-t="384.430">ছবি,</span> <span class="w" data-t="384.864">ভিডিও</span> <span class="w" data-t="385.370">বা</span> <span class="w" data-t="385.660">টেবিলও</span> <span class="w" data-t="386.238">যোগ</span> <span class="w" data-t="386.600">করতে</span> <span class="w" data-t="387.034">পারবেন।</span></div></div>
+  <div class="sub" id="sub112"><div class="pill"><span class="w" data-t="388.112">Photos</span> <span class="w" data-t="388.274">অংশে</span> <span class="w" data-t="388.395">Click</span> <span class="w" data-t="388.537">to</span> <span class="w" data-t="388.618">upload</span> <span class="w" data-t="388.780">or</span> <span class="w" data-t="388.861">drag</span> <span class="w" data-t="388.982">photos</span> <span class="w" data-t="389.144">here</span></div></div>
+  <div class="sub" id="sub113"><div class="pill"><span class="w" data-t="389.949">এ</span> <span class="w" data-t="390.131">ক্লিক</span> <span class="w" data-t="390.556">করে</span> <span class="w" data-t="390.860">পণ্যের</span> <span class="w" data-t="391.346">ছবি</span> <span class="w" data-t="391.649">আপলোড</span> <span class="w" data-t="392.074">করুন।</span></div></div>
+  <div class="sub" id="sub114"><div class="pill"><span class="w" data-t="393.322">সাদা</span> <span class="w" data-t="393.699">ব্যাকগ্রাউন্ডের</span> <span class="w" data-t="394.767">ছবি</span> <span class="w" data-t="395.081">সবচেয়ে</span> <span class="w" data-t="395.647">সুন্দর</span> <span class="w" data-t="396.149">দেখায়।</span></div></div>
+  <div class="sub" id="sub115"><div class="pill"><span class="w" data-t="397.614">ছবিগুলো</span> <span class="w" data-t="398.200">টেনে</span> <span class="w" data-t="398.591">এনে</span> <span class="w" data-t="398.917">বা</span> <span class="w" data-t="399.177">তীর</span> <span class="w" data-t="399.503">চিহ্ন</span> <span class="w" data-t="399.959">দিয়ে</span> <span class="w" data-t="400.415">ক্রম</span> <span class="w" data-t="400.806">বদলাতে</span> <span class="w" data-t="401.327">পারবেন।</span></div></div>
+  <div class="sub" id="sub116"><div class="pill"><span class="w" data-t="402.885">Pricing</span> <span class="w" data-t="403.451">এবং</span> <span class="w" data-t="403.766">Stock</span> <span class="w" data-t="404.207">অংশে</span> <span class="w" data-t="404.584">পণ্যের</span> <span class="w" data-t="405.088">দাম</span> <span class="w" data-t="405.402">ও</span> <span class="w" data-t="405.591">স্টকের</span> <span class="w" data-t="406.094">পরিমাণ</span> <span class="w" data-t="406.598">লিখুন।</span></div></div>
+  <div class="sub" id="sub117"><div class="pill"><span class="w" data-t="407.718">পণ্যের</span> <span class="w" data-t="408.096">যদি</span> <span class="w" data-t="408.332">একাধিক</span> <span class="w" data-t="408.710">কালার</span> <span class="w" data-t="409.041">বা</span> <span class="w" data-t="409.229">সাইজ</span> <span class="w" data-t="409.513">থাকে</span></div></div>
+  <div class="sub" id="sub118"><div class="pill"><span class="w" data-t="409.977">তাহলে</span> <span class="w" data-t="410.312">Variants</span> <span class="w" data-t="410.790">অংশে</span> <span class="w" data-t="411.076">প্রতিটি</span> <span class="w" data-t="411.507">কালার</span> <span class="w" data-t="411.841">ও</span> <span class="w" data-t="411.985">সাইজের</span> <span class="w" data-t="412.367">জন্য</span> <span class="w" data-t="412.654">আলাদা</span> <span class="w" data-t="412.988">দাম</span> <span class="w" data-t="413.227">ও</span> <span class="w" data-t="413.371">স্টক</span> <span class="w" data-t="413.657">সেট</span> <span class="w" data-t="413.896">করুন।</span></div></div>
+  <div class="sub" id="sub119"><div class="pill"><span class="w" data-t="414.896">গুগল</span> <span class="w" data-t="415.328">সার্চে</span> <span class="w" data-t="415.903">পণ্যটি</span> <span class="w" data-t="416.479">কিভাবে</span> <span class="w" data-t="417.055">দেখাবে</span></div></div>
+  <div class="sub" id="sub120"><div class="pill"><span class="w" data-t="418.449">তা</span> <span class="w" data-t="418.614">Search</span> <span class="w" data-t="418.943">Engine</span> <span class="w" data-t="419.272">Listing</span> <span class="w" data-t="419.642">অংশে</span> <span class="w" data-t="419.889">ঠিক</span> <span class="w" data-t="420.094">করে</span> <span class="w" data-t="420.300">দিতে</span> <span class="w" data-t="420.547">পারেন।</span></div></div>
+  <div class="sub" id="sub121"><div class="pill"><span class="w" data-t="421.387">সবশেষে</span> <span class="w" data-t="421.817">স্ট্যাটাস</span> <span class="w" data-t="422.407">Published</span> <span class="w" data-t="422.998">রেখে</span></div></div>
+  <div class="sub" id="sub122"><div class="pill"><span class="w" data-t="424.093">Save</span> <span class="w" data-t="424.529">Product</span> <span class="w" data-t="425.182">বাটনে</span> <span class="w" data-t="425.690">ক্লিক</span> <span class="w" data-t="426.198">করুন।</span></div></div>
+  <div class="sub" id="sub123"><div class="pill"><span class="w" data-t="427.494">পণ্যটি</span> <span class="w" data-t="427.825">সাথে</span> <span class="w" data-t="428.073">সাথে</span> <span class="w" data-t="428.321">আপনার</span> <span class="w" data-t="428.611">ওয়েবসাইটে</span> <span class="w" data-t="429.107">দেখা</span> <span class="w" data-t="429.355">যাবে।</span></div></div>
+  <div class="sub" id="sub124"><div class="pill"><span class="w" data-t="430.173">একসাথে</span> <span class="w" data-t="431.080">অনেক</span> <span class="w" data-t="431.760">পণ্য</span> <span class="w" data-t="432.441">যোগ</span> <span class="w" data-t="433.007">করতে</span> <span class="w" data-t="433.688">চাইলে</span></div></div>
+  <div class="sub" id="sub125"><div class="pill"><span class="w" data-t="435.471">Products</span> <span class="w" data-t="435.926">পাতার</span> <span class="w" data-t="436.244">Import</span> <span class="w" data-t="436.608">products</span> <span class="w" data-t="437.063">from</span> <span class="w" data-t="437.336">CSV</span> <span class="w" data-t="437.564">অপশন</span> <span class="w" data-t="437.837">ব্যবহার</span> <span class="w" data-t="438.246">করুন।</span></div></div>
+  <div class="sub" id="sub126"><div class="pill"><span class="w" data-t="439.115">নির্ধারিত</span> <span class="w" data-t="439.550">ফরম্যাটে</span> <span class="w" data-t="439.945">তৈরি</span> <span class="w" data-t="440.182">CSV</span> <span class="w" data-t="440.380">ফাইলটি</span> <span class="w" data-t="440.696">আপলোড</span> <span class="w" data-t="440.973">করে</span></div></div>
+  <div class="sub" id="sub127"><div class="pill"><span class="w" data-t="441.981">Start</span> <span class="w" data-t="442.307">Import</span> <span class="w" data-t="442.679">বাটনে</span> <span class="w" data-t="443.005">ক্লিক</span> <span class="w" data-t="443.331">করুন।</span></div></div>
+  <div class="sub" id="sub128"><div class="pill"><span class="w" data-t="443.803">নতুন</span> <span class="w" data-t="444.220">মাল</span> <span class="w" data-t="444.567">এলে</span> <span class="w" data-t="444.914">মেনু</span> <span class="w" data-t="445.330">থেকে</span> <span class="w" data-t="445.747">Inventory</span> <span class="w" data-t="446.511">অপশনে</span> <span class="w" data-t="446.997">যান।</span></div></div>
+  <div class="sub" id="sub129"><div class="pill"><span class="w" data-t="447.727">পণ্যের</span> <span class="w" data-t="448.277">পাশে</span> <span class="w" data-t="448.689">থাকা</span> <span class="w" data-t="449.101">Restock</span> <span class="w" data-t="449.719">বাটনে</span> <span class="w" data-t="450.200">ক্লিক</span> <span class="w" data-t="450.681">করুন।</span></div></div>
+  <div class="sub" id="sub130"><div class="pill"><span class="w" data-t="451.757">Quantity</span> <span class="w" data-t="452.024">received</span> <span class="w" data-t="452.290">ঘরে</span> <span class="w" data-t="452.423">কতগুলো</span> <span class="w" data-t="452.637">পণ্য</span> <span class="w" data-t="452.797">এসেছে</span></div></div>
+  <div class="sub" id="sub131"><div class="pill"><span class="w" data-t="453.441">এবং</span> <span class="w" data-t="453.785">Cost</span> <span class="w" data-t="454.198">per</span> <span class="w" data-t="454.543">unit</span> <span class="w" data-t="454.956">ঘরে</span> <span class="w" data-t="455.300">প্রতিটির</span> <span class="w" data-t="455.989">কেনা</span> <span class="w" data-t="456.402">দাম</span> <span class="w" data-t="456.746">লিখুন।</span></div></div>
+  <div class="sub" id="sub132"><div class="pill"><span class="w" data-t="457.632">নতুন</span> <span class="w" data-t="457.957">স্টক</span> <span class="w" data-t="458.281">ও</span> <span class="w" data-t="458.444">গড়</span> <span class="w" data-t="458.714">কেনা</span> <span class="w" data-t="459.039">দাম</span> <span class="w" data-t="459.310">সিস্টেম</span> <span class="w" data-t="459.797">নিজেই</span> <span class="w" data-t="460.176">হিসাব</span> <span class="w" data-t="460.554">করে</span> <span class="w" data-t="460.825">দেখাবে।</span></div></div>
+  <div class="sub" id="sub133"><div class="pill"><span class="w" data-t="462.223">এরপর</span> <span class="w" data-t="462.614">সেভ</span> <span class="w" data-t="462.939">করুন।</span></div></div>
+  <div class="sub" id="sub134"><div class="pill"><span class="w" data-t="463.720">কেনা</span> <span class="w" data-t="464.075">দাম</span> <span class="w" data-t="464.371">সঠিকভাবে</span> <span class="w" data-t="464.963">দিলে</span> <span class="w" data-t="465.318">আপনার</span> <span class="w" data-t="465.733">লাভের</span> <span class="w" data-t="466.147">হিসাবও</span> <span class="w" data-t="466.621">নির্ভুল</span> <span class="w" data-t="467.154">থাকবে।</span></div></div>
+  <div class="sub" id="sub135"><div class="pill"><span class="w" data-t="467.967">পাশের</span> <span class="w" data-t="468.384">Barcodes</span> <span class="w" data-t="468.980">ট্যাব</span> <span class="w" data-t="469.397">থেকে</span> <span class="w" data-t="469.755">পণ্য</span> <span class="w" data-t="470.112">বেছে</span> <span class="w" data-t="470.470">নিয়ে</span></div></div>
+  <div class="sub" id="sub136"><div class="pill"><span class="w" data-t="471.141">বারকোড</span> <span class="w" data-t="471.711">স্টিকার</span> <span class="w" data-t="472.352">প্রিন্ট</span> <span class="w" data-t="472.993">করতে</span> <span class="w" data-t="473.420">পারবেন,</span></div></div>
+  <div class="sub" id="sub137"><div class="pill"><span class="w" data-t="474.315">যেটা</span> <span class="w" data-t="474.598">পণ্যের</span> <span class="w" data-t="474.976">গায়ে</span> <span class="w" data-t="475.306">লাগিয়ে</span> <span class="w" data-t="475.731">POS</span> <span class="w" data-t="475.966">এ</span> <span class="w" data-t="476.108">স্ক্যান</span> <span class="w" data-t="476.533">করা</span> <span class="w" data-t="476.769">যায়।</span></div></div>
+  <div class="sub" id="sub138"><div class="pill"><span class="w" data-t="477.807">মেনুর</span> <span class="w" data-t="478.214">Catalog</span> <span class="w" data-t="478.737">Setup</span> <span class="w" data-t="479.144">অপশনে</span> <span class="w" data-t="479.551">তিনটি</span> <span class="w" data-t="479.957">ট্যাব</span> <span class="w" data-t="480.364">পাবেন।</span></div></div>
+  <div class="sub" id="sub139"><div class="pill"><span class="w" data-t="481.560">Categories</span> <span class="w" data-t="482.519">ট্যাবে</span> <span class="w" data-t="483.158">নতুন</span> <span class="w" data-t="483.637">ক্যাটাগরি</span> <span class="w" data-t="484.516">ও</span> <span class="w" data-t="484.755">তার</span> <span class="w" data-t="485.155">ভেতরে</span> <span class="w" data-t="485.714">সাব</span> <span class="w" data-t="486.113">ক্যাটাগরি</span> <span class="w" data-t="486.992">তৈরি</span> <span class="w" data-t="487.471">করুন।</span></div></div>
+  <div class="sub" id="sub140"><div class="pill"><span class="w" data-t="489.049">Brands</span> <span class="w" data-t="489.188">ট্যাবে</span> <span class="w" data-t="489.328">ব্র্যান্ড</span> <span class="w" data-t="489.519">যোগ</span> <span class="w" data-t="489.606">করুন।</span></div></div>
+  <div class="sub" id="sub141"><div class="pill"><span class="w" data-t="489.787">আর</span> <span class="w" data-t="489.957">Variations</span> <span class="w" data-t="490.469">ট্যাবে</span> <span class="w" data-t="490.810">কালার</span> <span class="w" data-t="491.108">ও</span> <span class="w" data-t="491.236">সাইজের</span> <span class="w" data-t="491.577">তালিকা</span></div></div>
+  <div class="sub" id="sub142"><div class="pill"><span class="w" data-t="492.103">একবার</span> <span class="w" data-t="492.550">তৈরি</span> <span class="w" data-t="492.932">করে</span> <span class="w" data-t="493.251">রাখুন,</span></div></div>
+  <div class="sub" id="sub143"><div class="pill"><span class="w" data-t="493.910">পরে</span> <span class="w" data-t="494.142">যেকোনো</span> <span class="w" data-t="494.513">পণ্যে</span> <span class="w" data-t="494.838">সেগুলো</span> <span class="w" data-t="495.209">ব্যবহার</span> <span class="w" data-t="495.627">করতে</span> <span class="w" data-t="495.905">পারবেন।</span></div></div>
+  <div class="sub" id="sub144"><div class="pill"><span class="w" data-t="497.015">কাস্টমারের</span> <span class="w" data-t="497.667">দেওয়া</span> <span class="w" data-t="498.102">রিভিউ</span> <span class="w" data-t="498.483">Reviews</span> <span class="w" data-t="498.972">পাতায়</span> <span class="w" data-t="499.407">জমা</span> <span class="w" data-t="499.679">হয়।</span></div></div>
+  <div class="sub" id="sub145"><div class="pill"><span class="w" data-t="500.767">রিভিউটি</span> <span class="w" data-t="501.280">পড়ে</span> <span class="w" data-t="501.622">প্রকাশযোগ্য</span> <span class="w" data-t="502.364">মনে</span> <span class="w" data-t="502.649">হলে</span> <span class="w" data-t="502.934">Approve</span> <span class="w" data-t="503.447">করুন,</span></div></div>
+  <div class="sub" id="sub146"><div class="pill"><span class="w" data-t="504.136">তবেই</span> <span class="w" data-t="504.424">সেটি</span> <span class="w" data-t="504.711">ওয়েবসাইটে</span> <span class="w" data-t="505.286">দেখাবে।</span></div></div>
+  <div class="sub" id="sub147"><div class="pill"><span class="w" data-t="506.362">ওয়েবসাইটের</span> <span class="w" data-t="507.112">হোমপেজ</span> <span class="w" data-t="507.573">সাজাতে</span> <span class="w" data-t="508.035">মেনু</span> <span class="w" data-t="508.381">থেকে</span> <span class="w" data-t="508.727">Home</span> <span class="w" data-t="509.073">Page</span> <span class="w" data-t="509.419">অপশনে</span> <span class="w" data-t="509.823">যান।</span></div></div>
+  <div class="sub" id="sub148"><div class="pill"><span class="w" data-t="511.548">Hero</span> <span class="w" data-t="511.834">Banners</span> <span class="w" data-t="512.264">ট্যাবে</span> <span class="w" data-t="512.645">হোমপেজের</span> <span class="w" data-t="513.123">বড়</span> <span class="w" data-t="513.361">ব্যানারগুলো</span></div></div>
+  <div class="sub" id="sub149"><div class="pill"><span class="w" data-t="514.193">যোগ</span> <span class="w" data-t="514.506">বা</span> <span class="w" data-t="514.757">পরিবর্তন</span> <span class="w" data-t="515.383">করুন।</span></div></div>
+  <div class="sub" id="sub150"><div class="pill"><span class="w" data-t="516.066">News</span> <span class="w" data-t="516.419">Ticker</span> <span class="w" data-t="516.889">ট্যাবে</span> <span class="w" data-t="517.359">ওয়েবসাইটের</span> <span class="w" data-t="518.123">উপরে</span> <span class="w" data-t="518.476">চলমান</span> <span class="w" data-t="518.887">ঘোষণার</span> <span class="w" data-t="519.357">লেখা</span> <span class="w" data-t="519.710">বদলান।</span></div></div>
+  <div class="sub" id="sub151"><div class="pill"><span class="w" data-t="520.616">আর</span> <span class="w" data-t="520.839">Menu</span> <span class="w" data-t="521.175">Bar</span> <span class="w" data-t="521.454">ট্যাব</span> <span class="w" data-t="521.845">থেকে</span> <span class="w" data-t="522.180">ওয়েবসাইটের</span> <span class="w" data-t="522.906">উপরের</span> <span class="w" data-t="523.297">মেনুতে</span></div></div>
+  <div class="sub" id="sub152"><div class="pill"><span class="w" data-t="524.016">কোনো</span> <span class="w" data-t="524.328">কোনো</span> <span class="w" data-t="524.639">লিংক</span> <span class="w" data-t="524.951">থাকবে</span> <span class="w" data-t="525.315">তা</span> <span class="w" data-t="525.522">ঠিক</span> <span class="w" data-t="525.782">করুন।</span></div></div>
+  <div class="sub" id="sub153"><div class="pill"><span class="w" data-t="526.434">ডিসকাউন্ট</span> <span class="w" data-t="526.980">দিতে</span> <span class="w" data-t="527.279">চাইলে</span> <span class="w" data-t="527.626">Coupons</span> <span class="w" data-t="528.073">পাতায়</span> <span class="w" data-t="528.471">গিয়ে</span></div></div>
+  <div class="sub" id="sub154"><div class="pill"><span class="w" data-t="529.026">Create</span> <span class="w" data-t="529.625">a</span> <span class="w" data-t="529.850">coupon</span> <span class="w" data-t="530.449">বাটনে</span> <span class="w" data-t="530.973">ক্লিক</span> <span class="w" data-t="531.497">করুন।</span></div></div>
+  <div class="sub" id="sub155"><div class="pill"><span class="w" data-t="532.282">কুপন</span> <span class="w" data-t="532.684">কোড,</span> <span class="w" data-t="533.085">কত</span> <span class="w" data-t="533.353">টাকা</span> <span class="w" data-t="533.754">বা</span> <span class="w" data-t="534.022">কত</span> <span class="w" data-t="534.290">শতাংশ</span> <span class="w" data-t="534.758">ছাড়</span> <span class="w" data-t="535.160">দেবেন,</span></div></div>
+  <div class="sub" id="sub156"><div class="pill"><span class="w" data-t="536.335">সর্বনিম্ন</span> <span class="w" data-t="536.973">কত</span> <span class="w" data-t="537.205">টাকার</span> <span class="w" data-t="537.611">অর্ডারে</span> <span class="w" data-t="538.134">প্রযোজ্য</span> <span class="w" data-t="538.714">এবং</span> <span class="w" data-t="539.004">মেয়াদ</span> <span class="w" data-t="539.468">কত</span> <span class="w" data-t="539.700">দিন—</span></div></div>
+  <div class="sub" id="sub157"><div class="pill"><span class="w" data-t="540.371">এসব</span> <span class="w" data-t="541.008">তথ্য</span> <span class="w" data-t="541.772">দিয়ে</span> <span class="w" data-t="542.663">সেভ</span> <span class="w" data-t="543.300">করুন।</span></div></div>
+  <div class="sub" id="sub158"><div class="pill"><span class="w" data-t="544.523">Promotions</span> <span class="w" data-t="545.796">অপশনের</span> <span class="w" data-t="546.645">Flash</span> <span class="w" data-t="547.388">Sale</span> <span class="w" data-t="548.025">ট্যাবে</span> <span class="w" data-t="548.874">পণ্য</span> <span class="w" data-t="549.511">যোগ</span> <span class="w" data-t="550.041">করে</span></div></div>
+  <div class="sub" id="sub159"><div class="pill"><span class="w" data-t="551.098">সেলের</span> <span class="w" data-t="551.984">শেষ</span> <span class="w" data-t="552.617">সময়</span> <span class="w" data-t="553.377">ঠিক</span> <span class="w" data-t="554.010">করে</span> <span class="w" data-t="554.643">দিন।</span></div></div>
+  <div class="sub" id="sub160"><div class="pill"><span class="w" data-t="556.235">আর</span> <span class="w" data-t="556.503">Free</span> <span class="w" data-t="556.906">Delivery</span> <span class="w" data-t="557.577">ট্যাব</span> <span class="w" data-t="558.046">থেকে</span> <span class="w" data-t="558.449">নির্দিষ্ট</span> <span class="w" data-t="559.187">পণ্যে</span></div></div>
+  <div class="sub" id="sub161"><div class="pill"><span class="w" data-t="560.282">বা</span> <span class="w" data-t="560.783">নির্দিষ্ট</span> <span class="w" data-t="562.160">পরিমাণের</span> <span class="w" data-t="563.412">বেশি</span> <span class="w" data-t="564.164">অর্ডারে</span> <span class="w" data-t="565.291">ফ্রি</span> <span class="w" data-t="566.042">ডেলিভারি</span> <span class="w" data-t="567.294">চালু</span> <span class="w" data-t="568.045">করুন।</span></div></div>
+  <div class="sub" id="sub162"><div class="pill"><span class="w" data-t="569.935">যেসব</span> <span class="w" data-t="570.714">কাস্টমার</span> <span class="w" data-t="572.013">কার্টে</span> <span class="w" data-t="573.052">পণ্য</span> <span class="w" data-t="573.832">রেখে</span> <span class="w" data-t="574.611">অর্ডার</span> <span class="w" data-t="575.650">না</span> <span class="w" data-t="576.170">করে</span> <span class="w" data-t="576.819">চলে</span> <span class="w" data-t="577.469">গেছেন</span></div></div>
+  <div class="sub" id="sub163"><div class="pill"><span class="w" data-t="579.575">তাদের</span> <span class="w" data-t="580.153">তালিকা</span> <span class="w" data-t="580.813">Abandoned</span> <span class="w" data-t="581.720">Carts</span> <span class="w" data-t="582.298">পাতায়</span> <span class="w" data-t="582.958">পাবেন।</span></div></div>
+  <div class="sub" id="sub164"><div class="pill"><span class="w" data-t="583.970">সেখান</span> <span class="w" data-t="584.726">থেকে</span> <span class="w" data-t="585.374">তাদের</span> <span class="w" data-t="586.130">রিমাইন্ডার</span> <span class="w" data-t="587.427">পাঠিয়ে</span></div></div>
+  <div class="sub" id="sub165"><div class="pill"><span class="w" data-t="588.802">আবার</span> <span class="w" data-t="589.113">অর্ডারে</span> <span class="w" data-t="589.580">ফিরিয়ে</span> <span class="w" data-t="590.046">আনতে</span> <span class="w" data-t="590.358">পারবেন।</span></div></div>
+  <div class="sub" id="sub166"></div>
+  <div class="sub" id="sub167"></div>
+  <div class="sub" id="sub168"></div>
+  <div class="sub" id="sub169"></div>
+  <div class="sub" id="sub170"></div>
+  <div class="sub" id="sub171"></div>
+  <div class="sub" id="sub172"></div>
+  <div class="sub" id="sub173"><div class="pill"><span class="w" data-t="591.414">এই</span> <span class="w" data-t="591.628">খরচগুলো</span> <span class="w" data-t="592.111">স্বয়ংক্রিয়ভাবে</span> <span class="w" data-t="593.075">লাভের</span> <span class="w" data-t="593.450">হিসাব</span> <span class="w" data-t="593.825">থেকে</span> <span class="w" data-t="594.147">বাদ</span> <span class="w" data-t="594.414">যাবে।</span></div></div>
+  <div class="sub" id="sub174"><div class="pill"><span class="w" data-t="595.573">Customers</span> <span class="w" data-t="596.126">পাতায়</span> <span class="w" data-t="596.528">প্রতিটি</span> <span class="w" data-t="596.981">কাস্টমারের</span> <span class="w" data-t="597.584">অর্ডারের</span> <span class="w" data-t="598.087">ইতিহাস</span> <span class="w" data-t="598.489">দেখতে</span> <span class="w" data-t="598.841">পাবেন।</span></div></div>
+  <div class="sub" id="sub175"><div class="pill"><span class="w" data-t="599.629">বারবার</span> <span class="w" data-t="600.170">ভুয়া</span> <span class="w" data-t="600.643">অর্ডার</span> <span class="w" data-t="601.184">দেন</span> <span class="w" data-t="601.522">এমন</span> <span class="w" data-t="601.860">কাউকে</span></div></div>
+  <div class="sub" id="sub176"><div class="pill"><span class="w" data-t="603.298">Blacklist</span> <span class="w" data-t="603.654">ট্যাবে</span> <span class="w" data-t="603.914">যোগ</span> <span class="w" data-t="604.076">করুন,</span></div></div>
+  <div class="sub" id="sub177"><div class="pill"><span class="w" data-t="604.768">তাহলে</span> <span class="w" data-t="605.126">সেই</span> <span class="w" data-t="605.381">নম্বর</span> <span class="w" data-t="605.739">থেকে</span> <span class="w" data-t="606.045">আর</span> <span class="w" data-t="606.250">অর্ডার</span> <span class="w" data-t="606.659">আসবে</span> <span class="w" data-t="606.965">না।</span></div></div>
+  <div class="sub" id="sub178"><div class="pill"><span class="w" data-t="607.471">আপনার</span> <span class="w" data-t="607.936">টিমের</span> <span class="w" data-t="608.401">সদস্যদের</span> <span class="w" data-t="609.066">জন্য</span> <span class="w" data-t="609.465">Staff</span> <span class="w" data-t="609.930">এবং</span> <span class="w" data-t="610.262">Roles</span> <span class="w" data-t="610.727">পাতা</span> <span class="w" data-t="611.126">থেকে</span></div></div>
+  <div class="sub" id="sub179"><div class="pill"><span class="w" data-t="611.877">আলাদা</span> <span class="w" data-t="612.230">একাউন্ট</span> <span class="w" data-t="612.684">তৈরি</span> <span class="w" data-t="612.987">করুন।</span></div></div>
+  <div class="sub" id="sub180"><div class="pill"><span class="w" data-t="613.560">প্রত্যেককে</span> <span class="w" data-t="614.244">তার</span> <span class="w" data-t="614.529">কাজ</span> <span class="w" data-t="614.814">অনুযায়ী</span> <span class="w" data-t="615.385">রোল</span> <span class="w" data-t="615.670">দিন,</span></div></div>
+  <div class="sub" id="sub181"><div class="pill"><span class="w" data-t="616.589">যেমন</span> <span class="w" data-t="616.880">অর্ডার</span> <span class="w" data-t="617.267">ম্যানেজার</span> <span class="w" data-t="617.799">শুধু</span> <span class="w" data-t="618.090">অর্ডার</span> <span class="w" data-t="618.477">দেখতে</span> <span class="w" data-t="618.816">পারবেন</span></div></div>
+  <div class="sub" id="sub182"><div class="pill"><span class="w" data-t="619.794">আর</span> <span class="w" data-t="619.995">ইনভেন্টরি</span> <span class="w" data-t="620.547">ম্যানেজার</span> <span class="w" data-t="621.100">শুধু</span> <span class="w" data-t="621.401">স্টক।</span></div></div>
+  <div class="sub" id="sub183"><div class="pill"><span class="w" data-t="622.359">কে</span> <span class="w" data-t="622.588">কখন</span> <span class="w" data-t="622.873">কি</span> <span class="w" data-t="623.102">পরিবর্তন</span> <span class="w" data-t="623.673">করেছেন</span> <span class="w" data-t="624.130">তা</span> <span class="w" data-t="624.359">Audit</span> <span class="w" data-t="624.759">Log</span> <span class="w" data-t="625.044">ট্যাবে</span> <span class="w" data-t="625.501">দেখতে</span> <span class="w" data-t="625.901">পাবেন।</span></div></div>
+  <div class="sub" id="sub184"><div class="pill"><span class="w" data-t="627.172">সবশেষে</span> <span class="w" data-t="627.548">মেনুর</span> <span class="w" data-t="627.878">নিচের</span> <span class="w" data-t="628.207">দিকে</span> <span class="w" data-t="628.489">Store</span> <span class="w" data-t="628.818">Settings</span> <span class="w" data-t="629.289">পাতায়</span></div></div>
+  <div class="sub" id="sub185"><div class="pill"><span class="w" data-t="629.882">আপনার</span> <span class="w" data-t="630.319">দোকানের</span> <span class="w" data-t="630.880">নাম,</span> <span class="w" data-t="631.254">লোগো,</span> <span class="w" data-t="631.691">যোগাযোগের</span> <span class="w" data-t="632.377">তথ্য,</span></div></div>
+  <div class="sub" id="sub186"><div class="pill"><span class="w" data-t="633.337">ডেলিভারি</span> <span class="w" data-t="634.130">চার্জ</span> <span class="w" data-t="634.685">এবং</span> <span class="w" data-t="635.081">বিকাশ</span> <span class="w" data-t="635.636">নগদের</span> <span class="w" data-t="636.191">পেমেন্ট</span> <span class="w" data-t="636.905">নম্বর</span> <span class="w" data-t="637.459">সেট</span> <span class="w" data-t="637.856">করুন।</span></div></div>
+  <div class="sub" id="sub187"><div class="pill"><span class="w" data-t="639.320">এখান</span> <span class="w" data-t="639.650">থেকে</span> <span class="w" data-t="639.979">তিনটি</span> <span class="w" data-t="640.363">রঙ</span> <span class="w" data-t="640.583">বেছে</span> <span class="w" data-t="640.913">নিয়ে</span></div></div>
+  <div class="sub" id="sub188"><div class="pill"><span class="w" data-t="641.469">পুরো</span> <span class="w" data-t="641.779">ওয়েবসাইটের</span> <span class="w" data-t="642.452">রঙও</span> <span class="w" data-t="642.711">বদলাতে</span> <span class="w" data-t="643.125">পারবেন।</span></div></div>
+  <div class="sub" id="sub189"><div class="pill"><span class="w" data-t="644.216">Integrations</span> <span class="w" data-t="645.180">পাতায়</span> <span class="w" data-t="645.731">Steadfast,</span> <span class="w" data-t="646.558">Pathao</span> <span class="w" data-t="647.108">ও</span> <span class="w" data-t="647.315">RedX</span> <span class="w" data-t="647.728">কুরিয়ারের</span></div></div>
+  <div class="sub" id="sub190"><div class="pill"><span class="w" data-t="648.932">এপিআই</span> <span class="w" data-t="649.289">কি</span> <span class="w" data-t="649.492">বসিয়ে</span> <span class="w" data-t="649.900">দিলে</span> <span class="w" data-t="650.205">এক</span> <span class="w" data-t="650.409">ক্লিকে</span> <span class="w" data-t="650.816">পার্সেল</span> <span class="w" data-t="651.275">পাঠানোর</span> <span class="w" data-t="651.733">সুবিধা</span> <span class="w" data-t="652.141">চালু</span> <span class="w" data-t="652.446">হবে।</span></div></div>
+  <div class="sub" id="sub191"><div class="pill"><span class="w" data-t="653.513">Tracking</span> <span class="w" data-t="654.078">ট্যাবে</span> <span class="w" data-t="654.530">Facebook</span> <span class="w" data-t="655.096">Pixel,</span> <span class="w" data-t="655.548">TikTok</span> <span class="w" data-t="656.000">Pixel</span> <span class="w" data-t="656.396">ও</span> <span class="w" data-t="656.565">Google</span> <span class="w" data-t="657.018">Analytics</span> <span class="w" data-t="657.639">যুক্ত</span> <span class="w" data-t="658.035">করতে</span> <span class="w" data-t="658.374">পারবেন।</span></div></div>
+  <div class="sub" id="sub192"><div class="pill"><span class="w" data-t="659.350">প্রতিটি</span> <span class="w" data-t="659.830">অংশের</span> <span class="w" data-t="660.204">পাশে</span> <span class="w" data-t="660.524">বাংলায়</span> <span class="w" data-t="661.004">ধাপে</span> <span class="w" data-t="661.324">ধাপে</span> <span class="w" data-t="661.644">সেটআপ</span> <span class="w" data-t="662.018">গাইড</span> <span class="w" data-t="662.338">দেওয়া</span> <span class="w" data-t="662.765">আছে,</span></div></div>
+  <div class="sub" id="sub193"><div class="pill"><span class="w" data-t="663.748">তাই</span> <span class="w" data-t="664.029">নিজেই</span> <span class="w" data-t="664.423">সহজে</span> <span class="w" data-t="664.761">সব</span> <span class="w" data-t="664.986">সেট</span> <span class="w" data-t="665.267">করে</span> <span class="w" data-t="665.549">নিতে</span> <span class="w" data-t="665.887">পারবেন।</span></div></div>
+  <div class="sub" id="sub194"><div class="pill"><span class="w" data-t="666.999">এভাবেই</span> <span class="w" data-t="667.438">এডমিন</span> <span class="w" data-t="667.823">প্যানেল</span> <span class="w" data-t="668.317">থেকে</span> <span class="w" data-t="668.646">আপনার</span> <span class="w" data-t="669.031">পুরো</span> <span class="w" data-t="669.360">অনলাইন</span> <span class="w" data-t="669.800">ব্যবসা</span> <span class="w" data-t="670.239">পরিচালনা</span> <span class="w" data-t="670.788">করতে</span> <span class="w" data-t="671.118">পারবেন।</span></div></div>
+  <div class="sub" id="sub195"><div class="pill"><span class="w" data-t="672.370">কোনো</span> <span class="w" data-t="672.659">বিষয়ে</span> <span class="w" data-t="673.045">সাহায্য</span> <span class="w" data-t="673.480">প্রয়োজন</span> <span class="w" data-t="673.962">হলে</span> <span class="w" data-t="674.203">আমাদের</span> <span class="w" data-t="674.589">সাথে</span> <span class="w" data-t="674.879">যোগাযোগ</span> <span class="w" data-t="675.313">করুন।</span></div></div>
+  <div class="sub" id="sub196"><div class="pill"><span class="w" data-t="675.936">ধন্যবাদ।</span></div></div>
+  <div id="end">
+    <img id="endLogo" src="assets/vant-logo-white.png" alt="Vant">
+    <div id="endTag">GENUINE LEATHER. TIMELESS STYLE.</div>
+    <div id="endLine"></div>
+    <div id="endHelp">সাহায্যের জন্য: 01775-075543</div>
+    <div id="endThanks">ধন্যবাদ</div>
+  </div>
+</div>
+
+<script>
+const DURATION = 681;
+window.DURATION = DURATION;   // also on window, for tools that look for it there
+const CUES = [{"s":0,"e":2.047},{"s":2.466,"e":6.598},{"s":6.626,"e":9.604},{"s":9.978,"e":11.906},{"s":12.53,"e":15.183},{"s":15.183,"e":20.312},{"s":20.313,"e":23.39},{"s":23.42,"e":25.242},{"s":25.736,"e":28.992},{"s":29.05,"e":32.046},{"s":32.346,"e":35.49},{"s":35.51,"e":37.6},{"s":37.6,"e":40.427},{"s":40.836,"e":43.282},{"s":43.282,"e":45.772},{"s":46.308,"e":50.224},{"s":50.771,"e":53.462},{"s":53.761,"e":56.375},{"s":56.848,"e":58.903},{"s":59.233,"e":63.698},{"s":64.302,"e":69.128},{"s":69.128,"e":73.168},{"s":73.784,"e":76.778},{"s":77.352,"e":80.595},{"s":81.143,"e":84.419},{"s":84.419,"e":85.453},{"s":85.735,"e":91.251},{"s":91.784,"e":96.397},{"s":96.966,"e":99.513},{"s":99.781,"e":102.728},{"s":102.728,"e":108.098},{"s":108.249,"e":112.315},{"s":112.597,"e":114.31},{"s":114.881,"e":118.171},{"s":118.2,"e":122},{"s":122.072,"e":125.779},{"s":126.055,"e":130.064},{"s":130.431,"e":133.161},{"s":133.161,"e":137.308},{"s":137.822,"e":140.549},{"s":140.857,"e":142.905},{"s":143.495,"e":148.142},{"s":148.536,"e":152.2},{"s":152.2,"e":156.03},{"s":156.359,"e":158.623},{"s":158.623,"e":162.589},{"s":163.161,"e":168.982},{"s":169.515,"e":170.957},{"s":170.957,"e":176.475},{"s":176.774,"e":178.806},{"s":178.806,"e":182.751},{"s":183.31,"e":186.425},{"s":187.013,"e":189.832},{"s":189.832,"e":193.757},{"s":193.757,"e":197.868},{"s":197.868,"e":201.476},{"s":201.973,"e":204.409},{"s":204.409,"e":207.046},{"s":207.487,"e":209.931},{"s":210.207,"e":214.638},{"s":214.936,"e":216.386},{"s":216.769,"e":220.695},{"s":221.093,"e":225.595},{"s":226.023,"e":230.385},{"s":230.385,"e":233.727},{"s":234.205,"e":238.203},{"s":238.754,"e":244.154},{"s":244.641,"e":246.831},{"s":246.831,"e":248.696},{"s":249.168,"e":253.379},{"s":253.672,"e":254.68},{"s":254.68,"e":258.954},{"s":259.4,"e":262.155},{"s":262.155,"e":263.486},{"s":263.917,"e":269.984},{"s":270.263,"e":274.489},{"s":274.489,"e":276.371},{"s":276.835,"e":282.249},{"s":282.689,"e":283.833},{"s":283.833,"e":289.014},{"s":289.478,"e":290.592},{"s":291.169,"e":293.392},{"s":293.814,"e":297.432},{"s":298.008,"e":298.41},{"s":298.41,"e":300.301},{"s":300.614,"e":306.884},{"s":307.425,"e":309.427},{"s":309.695,"e":312.198},{"s":312.84,"e":314.668},{"s":314.937,"e":315.972},{"s":316.247,"e":318.728},{"s":319.327,"e":322.704},{"s":322.704,"e":326.976},{"s":327.591,"e":329.609},{"s":329.863,"e":331.303},{"s":331.889,"e":334.034},{"s":334.3,"e":337.586},{"s":338.168,"e":340.27},{"s":340.672,"e":341.579},{"s":341.579,"e":343.77},{"s":344.346,"e":346.999},{"s":346.999,"e":350.923},{"s":350.923,"e":356.043},{"s":356.617,"e":359.324},{"s":359.8,"e":363.027},{"s":363.592,"e":366.612},{"s":367.18,"e":369.137},{"s":369.463,"e":373.092},{"s":373.663,"e":375.218},{"s":375.218,"e":377.06},{"s":377.649,"e":382.191},{"s":382.767,"e":388.112},{"s":388.112,"e":389.366},{"s":389.949,"e":392.721},{"s":393.322,"e":397.01},{"s":397.614,"e":402.287},{"s":402.885,"e":407.468},{"s":407.718,"e":409.977},{"s":409.977,"e":414.601},{"s":414.896,"e":417.868},{"s":418.449,"e":421.087},{"s":421.387,"e":423.488},{"s":424.093,"e":426.934},{"s":427.494,"e":429.832},{"s":430.173,"e":434.856},{"s":435.471,"e":438.834},{"s":439.115,"e":441.349},{"s":441.981,"e":443.803},{"s":443.803,"e":447.727},{"s":447.727,"e":451.461},{"s":451.757,"e":453.09},{"s":453.441,"e":457.632},{"s":457.632,"e":461.632},{"s":462.223,"e":463.497},{"s":463.72,"e":467.967},{"s":467.967,"e":471.141},{"s":471.141,"e":474.315},{"s":474.315,"e":477.341},{"s":477.807,"e":481.092},{"s":481.56,"e":488.593},{"s":489.049,"e":489.787},{"s":489.787,"e":492.103},{"s":492.103,"e":493.906},{"s":493.91,"e":496.533},{"s":497.015,"e":500.265},{"s":500.767,"e":504.114},{"s":504.136,"e":505.855},{"s":506.362,"e":510.5},{"s":511.548,"e":514.193},{"s":514.193,"e":515.963},{"s":516.066,"e":520.538},{"s":520.616,"e":524.016},{"s":524.016,"e":526.331},{"s":526.434,"e":529.026},{"s":529.026,"e":532.282},{"s":532.282,"e":535.992},{"s":536.335,"e":540.371},{"s":540.371,"e":544.523},{"s":544.523,"e":551.098},{"s":551.098,"e":555.777},{"s":556.235,"e":559.954},{"s":560.282,"e":569.673},{"s":569.935,"e":579.112},{"s":579.575,"e":583.97},{"s":583.97,"e":588.784},{"s":588.802,"e":591},{"s":591,"e":591,"skip":true},{"s":591,"e":591,"skip":true},{"s":591,"e":591,"skip":true},{"s":591,"e":591,"skip":true},{"s":591,"e":591,"skip":true},{"s":591,"e":591,"skip":true},{"s":591,"e":591,"skip":true},{"s":591.414,"e":595.083},{"s":595.573,"e":599.562},{"s":599.629,"e":602.568},{"s":603.298,"e":604.39},{"s":604.768,"e":607.434},{"s":607.471,"e":611.877},{"s":611.877,"e":613.467},{"s":613.56,"e":616.225},{"s":616.589,"e":619.431},{"s":619.794,"e":621.923},{"s":622.359,"e":626.706},{"s":627.172,"e":629.882},{"s":629.882,"e":633.069},{"s":633.337,"e":638.852},{"s":639.32,"e":641.469},{"s":641.469,"e":643.775},{"s":644.216,"e":648.932},{"s":648.932,"e":653.084},{"s":653.513,"e":659.35},{"s":659.35,"e":663.41},{"s":663.748,"e":666.623},{"s":666.999,"e":672.013},{"s":672.37,"e":675.936},{"s":675.936,"e":677.005}];
+const SCREENS = {"login":{"h":900,"boxes":{"email":[916,387,346,48],"password":[916,481,346,48],"signin":[916,589,346,48]}},"dashboard":{"h":1756,"boxes":{"needs":[309,170,157,24],"payments":[376,265,154,16],"risky":[652,265,182,16],"carts":[927,265,154,16],"lowstock":[1203,265,182,16],"toship":[309,580,233,24],"today":[305,807,333,16],"month":[688,807,333,16],"profit":[1070,807,333,16],"sidebar":[20,84,248,800],"search":[913,22,288,36],"approvals":[323,322,119,20],"verify":[776,360,58,32],"navOrders":[33,213,222,40],"navCourier":[33,257,222,40],"navPos":[33,301,222,40],"navProducts":[33,385,222,40],"navInventory":[33,429,222,40],"navCatalog":[33,473,222,40],"navReviews":[33,517,222,40],"navHomepage":[33,601,222,40],"navCoupons":[33,773,222,40],"navPromotions":[33,817,222,40],"navCarts":[33,861,222,40],"navAnalytics":[33,945,222,40],"navExpenses":[33,989,222,40],"navCustomers":[33,1073,222,40],"navStaff":[33,1117,222,40],"navSettings":[33,1231,222,40],"navIntegrations":[33,1275,222,40]}},"dashboard-search":{"h":900,"boxes":{"search":[913,22,288,36]}},"orders":{"h":1629,"boxes":{"pendingTab":[382,244,102,36],"firstRow":[289,399,1130,105],"navOrders":[33,213,222,40]}},"orders-pending":{"h":912,"boxes":{"pendingTab":[382,244,102,36],"open":[1330,413,69,32],"row":[289,399,1130,105]}},"orders-selected":{"h":900,"boxes":{"check1":[309,415,16,16],"check2":[309,520,16,16],"check3":[309,591,16,16],"sendCourier":[1137,830,138,36],"printLabels":[1126,814,224,36],"printInvoices":[1126,772,224,36],"more":[1364,830,36,36]}},"orders-print":{"h":900,"boxes":{"printInvoices":[1126,736,224,36],"printLabels":[1126,778,224,36]}},"orders-more":{"h":900,"boxes":{"cancelOrders":[1214,780,180,36]}},"order":{"h":1358,"boxes":{"customer":[309,459,89,20],"name":[361,518,136,24],"phoneBtn":[309,578,134,36],"whatsapp":[451,578,110,36],"history":[309,649,231,16],"items":[309,769,82,20],"notes":[1074,979,146,20],"noteBox":[1074,1042,325,62],"saveNote":[1299,1224,100,28],"confirm":[1104,293,141,36],"reject":[1253,293,130,36],"statusPay":[1074,453,142,20],"courier":[1074,765,325,16],"send":[1074,793,325,40],"label":[477,375,86,36],"invoice":[309,375,85,36],"edit":[912,453,67,32]}},"order-edit":{"h":900,"boxes":{"modal":[484,229,209,23],"name":[484,301,230,18],"save":[849,635,107,36]}},"order-bkash":{"h":1358,"boxes":{"payment":[309,1084,82,20],"sender":[550,1116,225,20],"trx":[791,1116,225,20],"verify":[1078,293,147,36]}},"order-shipped":{"h":1363,"boxes":{"courier":[1074,739,46,20],"tracking":[1332,767,67,20]}},"courier-scan":{"h":912,"boxes":{"navCourier":[33,257,222,40],"pickup":[309,254,355,44],"scan":[676,254,671,44],"enter":[1282,260,59,32],"camera":[1355,254,44,44],"sync":[1141,90,114,38],"manifest":[1264,90,154,38],"inTab":[436,153,185,36],"handed":[309,463,158,23]}},"courier-in":{"h":900,"boxes":{"modal":[484,186,367,23],"what":[484,342,472,16],"paid":[524,378,312,20],"refused":[524,448,381,20],"restock":[522,610,133,15],"confirm":[833,679,123,36]}},"manifest":{"h":900,"boxes":{}},"pos":{"h":900,"boxes":{"scan":[300,176,314,40],"search":[622,176,314,40],"firstProduct":[308,421,135,33],"customer":[960,203,220,36],"cart":[948,453,472,20]}},"pos-cart":{"h":900,"boxes":{"cartLine":[964,561,102,20],"customer":[960,203,220,36],"cash":[968,708,105,32],"bkash":[1077,708,105,32],"nagad":[1186,708,105,32],"card":[1654,226,163,32],"received":[978,766,50,16],"change":[1202,766,42,16],"complete":[1035,804,369,40]}},"products":{"h":1391,"boxes":{"navProducts":[33,385,222,40],"newProduct":[1286,90,132,38],"import":[1185,90,93,38]}},"product-new":{"h":2268,"boxes":{"basic":[345,250,206,23],"name":[309,351,707,46],"category":[671,580,346,20],"brand":[309,580,98,20],"description":[826,775,52,24],"photos":[345,1196,382,23],"upload":[554,1333,218,20],"pricing":[345,1477,339,23],"variants":[345,1762,344,23],"seo":[345,2150,249,23],"status":[1074,250,325,27],"save":[1278,171,136,36]}},"product-import":{"h":900,"boxes":{"modal":[484,256,188,23],"file":[484,517,472,18],"start":[850,607,106,36]}},"inventory":{"h":1772,"boxes":{"navInventory":[33,429,222,40],"restock":[1286,529,117,32],"barcodesTab":[357,88,83,32]}},"inventory-restock":{"h":900,"boxes":{"qty":[516,424,198,18],"cost":[726,424,198,18],"after":[528,519,384,16],"save":[829,629,95,36]}},"barcodes":{"h":2283,"boxes":{"tab":[357,88,83,32]}},"categories":{"h":1099,"boxes":{"navCatalog":[33,473,222,40],"categories":[292,88,91,32],"brands":[387,88,69,32],"variations":[460,88,85,32]}},"brands":{"h":912,"boxes":{}},"variations":{"h":912,"boxes":{}},"reviews":{"h":912,"boxes":{"navReviews":[33,517,222,40],"approve":[1228,336,73,32]}},"banners":{"h":1141,"boxes":{"navHomepage":[33,601,222,40],"ticker":[492,88,95,32],"menubar":[591,88,83,32]}},"news-ticker":{"h":927,"boxes":{}},"header-menu":{"h":1220,"boxes":{}},"coupons":{"h":912,"boxes":{"navCoupons":[33,773,222,40],"create":[1287,90,131,38]}},"flash-sale":{"h":1986,"boxes":{"navPromotions":[33,817,222,40],"freeTab":[383,88,103,32]}},"free-delivery":{"h":1110,"boxes":{}},"abandoned-carts":{"h":912,"boxes":{"navCarts":[33,861,222,40],"reminder":[1008,457,411,69]}},"analytics":{"h":1994,"boxes":{"navAnalytics":[33,945,222,40],"export":[1292,90,126,38],"net":[309,359,330,23]}},"expenses":{"h":912,"boxes":{"navExpenses":[33,989,222,40]}},"customers":{"h":1086,"boxes":{"navCustomers":[33,1073,222,40],"blacklistTab":[387,88,76,32]}},"blacklist":{"h":912,"boxes":{}},"staff":{"h":912,"boxes":{"navStaff":[33,1117,222,40],"auditTab":[400,88,79,32]}},"audit":{"h":913,"boxes":{}},"settings":{"h":1413,"boxes":{"navSettings":[33,1231,222,40],"colors":[321,743,44,36]}},"integrations":{"h":1642,"boxes":{"navIntegrations":[33,1275,222,40],"steadfast":[309,230,311,23],"trackingTab":[526,153,89,36],"guide":[33,645,222,40]}},"integrations-tracking":{"h":1819,"boxes":{"pixel":[309,647,317,24],"tiktok":[309,1130,1090,24],"google":[309,230,385,24]}},"invoice":{"h":900,"boxes":{}},"label":{"h":900,"boxes":{}},"dashboard-phone":{"h":844,"boxes":{}}};
+const SCENE = ({ skipped, tl, $, world, box, union, pad, cam, camBrowser, show, scrollTo, scrollToBox, cursor, click, tap, hideCursor, ring, type, toast, C, E, VX, VY, VW, VH }) => {
+  const GREEN = '#28a745', BRAND = '#8b1e33', GOLD = '#c9902f', BLUE = '#2f6fec';
+
+  // ---- the long admin menu: its own scrolling layer for items below the fold ----
+  const NAV = { navOrders: 213, navCourier: 257, navPos: 301, navProducts: 385, navInventory: 429, navCatalog: 473, navReviews: 517,
+    navHomepage: 601, navCoupons: 773, navPromotions: 817, navCarts: 861, navAnalytics: 945, navExpenses: 989, navCustomers: 1073,
+    navStaff: 1117, navSettings: 1231, navIntegrations: 1275 };
+  const overlay = $('sidebarOverlay');
+  // Opens a page from the menu: scrolls the menu if needed, moves the pointer there and clicks.
+  function nav(t, name, screen, opts = {}) {
+    camBrowser(t - 0.3, 0.9);
+    const y = NAV[name];
+    const s = y > 760 ? y - 560 : 0;
+    if (s) {
+      tl.set(overlay, { y: 0 }, t);
+      tl.to(overlay, { opacity: 1, duration: 0.25 }, t);
+      tl.to(overlay, { y: -s, duration: 0.9, ease: 'power2.inOut' }, t + 0.2);
+    }
+    const b = { x: VX + 33, y: VY + y - s, w: 222, h: 40 };
+    tap(t + (s ? 0.6 : 0), b, 0.8);
+    show(t + (s ? 1.6 : 1.0), screen, opts.y || 0);
+    if (s) { tl.to(overlay, { opacity: 0, duration: 0.25 }, t + 1.6); hideCursor(t + 2.2); }
+  }
+
+  // ================= 1. Intro: laptop and phone (0 – 14.2 s) =================
+  const OVER = { x: -190, y: -40, w: 2330, h: 1110 };
+  tl.set(world, { x: 960 - (OVER.x + OVER.w / 2) * 0.8, y: 470 - (OVER.y + OVER.h / 2) * 0.8, scale: 0.8 }, 0);
+  tl.set('#browser', { opacity: 0, scale: 0.2, y: 160 }, 0);
+  cam(0.2, OVER, 0.86, 3.2);                                  // slow push-in
+  cam(C(2), { x: -60, y: 0, w: 2200, h: 1060 }, 0.9, 4);
+  cam(C(3), { x: -40, y: -30, w: 1680, h: 1090 }, 0.95, 1.6); // the computer
+  cam(C(4), { x: 1680, y: 140, w: 440, h: 860 }, 0.95, 1.4);  // the phone: same panel
+  tl.to('#phoneImg', { opacity: 1, duration: 0.5 }, C(4) + 0.482);
+  cam(E(4) + 0.3, { x: -40, y: -30, w: 1680, h: 1090 }, 0.95, 1.4);
+
+  // ================= 2. Open the browser, type /admin (14.8 – 23.5 s) =================
+  cursor(C(5), { x: 762, y: 928, w: 52, h: 52 }, 1.1);        // to the browser icon in the dock
+  click(C(5) + 0.784);
+  tl.to('#browser', { opacity: 1, scale: 1, y: 0, duration: 0.7, ease: 'power3.out' }, C(5) + 0.904);
+  tl.to(['#dock', '#menubar'], { opacity: 0, duration: 0.5 }, C(5) + 1.206);   // the browser goes full screen
+  cam(C(5) + 1.387, { x: 80, y: 40, w: 900, h: 300 }, 0.95, 1.3); // the address bar
+  cursor(C(5) + 1.568, { x: 190, y: 98, w: 400, h: 26 }, 0.8);
+  click(C(5) + 2.110);
+  tl.to('#url-newtab', { opacity: 0, duration: 0.15 }, C(6) + 0.200);
+  type(C(6) + 0.300, { x: 176, y: 97, w: 600, h: 26 }, 'vantbd.com/admin', 2.2, { size: 14, dx: 16, bg: '#f1f1f1', inset: 2, until: C(7) });
+  ring(C(6) + 2.600, { x: 176, y: 97, w: 260, h: 26 }, 1.4, 6);
+  hideCursor(E(6) - 0.4);
+  show(C(7), 'login');
+  camBrowser(C(7) - 0.2, 1.2);
+
+  // ================= 3. Log in (24.2 – 31.5 s) =================
+  cam(C(7) + 0.602, pad(union('login.email', 'login.signin'), 120), 0.9, 1.2);
+  tap(C(7) + 0.669, 'login.email', 0.7);
+  type(C(7) + 1.271, 'login.email', 'admin@vantbd.com', 1.3, { size: 16, until: C(9) });
+  tap(C(7) + 2.141, 'login.password', 0.5);
+  type(C(7) + 2.542, 'login.password', '••••••••••', 0.7, { size: 16, until: C(9) });
+  tap(C(8) + 0.140, 'login.signin', 0.8);
+  ring(C(8) + 0.701, 'login.signin', 1.4, 6);
+
+  // ================= 4. Dashboard (32.2 – 76.2 s) =================
+  show(C(9), 'dashboard');
+  hideCursor(C(9));
+  camBrowser(C(9), 1.2);
+  cam(C(10), pad(union('dashboard.needs', 'dashboard.lowstock'), 40), 0.92, 1.3);
+  ring(C(10) + 0.387, pad(union('dashboard.needs', 'dashboard.verify'), 14), E(11) - C(10) - 0.4, 0);
+  ring(C(12), [VX + 323, VY + 228, 262, 96], 2.4, 2);          // payments to verify
+  ring(C(13), [VX + 596, VY + 228, 262, 96], 2.8, 2);          // risky orders
+  ring(C(14), [VX + 871, VY + 228, 262, 96], 3.0, 2);          // carts to call back
+  ring(C(15), [VX + 1147, VY + 228, 262, 96], 2.6, 2);         // low stock
+  tap(C(16) + 0.196, [VX + 330, VY + 248, 240, 56], 1.0);
+  hideCursor(E(16));
+  scrollToBox(C(17) - 0.3, 'toship', 1.2);
+  cam(C(17) + 0.326, { x: VX + 289, y: box('dashboard.toship').y - 20, w: 1140, h: 330 }, 0.95, 1.2);
+  ring(C(18), { x: VX + 289, y: box('dashboard.toship').y + 50, w: 1130, h: 230 }, 3.2, 4);
+  scrollToBox(C(19) - 0.3, 'today', 1.1);
+  cam(C(19), { x: VX + 289, y: box('dashboard.today').y - 30, w: 1130, h: 180 }, 0.95, 1.1);
+  ring(C(19) + 0.205, { x: VX + 289, y: box('dashboard.today').y - 22, w: 360, h: 140 }, 1.5, 4);
+  ring(C(19) + 1.096, { x: VX + 671, y: box('dashboard.today').y - 22, w: 360, h: 140 }, 1.5, 4);
+  ring(C(20) + 0.300, { x: VX + 1053, y: box('dashboard.today').y - 22, w: 360, h: 140 }, 3.5, 4);
+  scrollTo(C(21) - 0.4, 0, 1.0);
+  cam(C(21) + 0.200, { x: VX, y: VY + 60, w: 520, h: 800 }, 0.92, 1.3);   // the menu
+  ring(C(21) + 0.800, 'dashboard.sidebar', 3.2, 4);
+  cam(C(22), { x: VX + 700, y: VY - 10, w: 720, h: 260 }, 0.95, 1.2);  // the page search
+  tap(C(22) + 0.385, 'dashboard.search', 0.8);
+  type(C(22) + 1.347, 'dashboard.search', 'Orders', 1.0, { size: 15, dx: 40, bg: '#f4f4f5', coverDx: 30, inset: 4, until: C(22) + 2.501 });
+  show(C(22) + 2.501, 'dashboard-search');
+  cam(C(22) + 2.597, { x: VX, y: VY - 10, w: 1300, h: 600 }, 0.95, 1.3);
+
+  // ================= 5. Handling a new order (86.5 – 152 s) =================
+  show(C(23), 'dashboard');
+  camBrowser(C(23), 1.2);
+  hideCursor(C(23));
+  nav(C(24) + 0.286, 'navOrders', 'orders');
+  toast(C(25) + 0.172, '!', BRAND, 'নতুন অর্ডার এসেছে', '#VB-888252 · Kazi Mahmud · ৳1,230', 3.4);
+  ring(C(25) + 0.345, [VX + 33, VY + 213, 222, 40], 3, 4);
+  cam(C(26) - 0.2, { x: VX + 280, y: VY + 220, w: 1150, h: 320 }, 0.95, 1.2);
+  tap(C(26) + 0.070, 'orders.pendingTab', 0.8);
+  show(C(26) + 0.420, 'orders-pending');
+  ring(C(27) + 0.200, 'orders-pending.row', 3.8, 4);
+  cam(C(28) - 0.2, { x: VX + 289, y: VY + 380, w: 1140, h: 160 }, 0.95, 1.2);
+  tap(C(28) + 1.200, 'orders-pending.open', 1.0);
+  show(C(28) + 2.600, 'order');
+  camBrowser(C(28) + 2.600, 1.0);
+  hideCursor(C(28) + 2.600);
+  // customer, phone, address, items
+  cam(C(29), { x: VX + 289, y: VY + 430, w: 760, h: 420 }, 0.95, 1.2);
+  ring(C(29) + 0.340, 'order.name', 1.6, 8);
+  ring(C(29) + 1.528, 'order.phoneBtn', 1.6, 6);
+  ring(C(30) + 0.140, [VX + 600, VY + 505, 430, 60], 1.8, 6);       // address
+  scrollTo(C(30) + 1.263, 330, 1.0);
+  ring(C(30) + 1.824, [VX + 289, VY + 760 - 330, 760, 180], 1.6, 4); // items
+  // delivery history
+  scrollTo(C(31), 160, 1.0);
+  cam(C(31) + 0.300, { x: VX + 289, y: VY + 620 - 160, w: 760, h: 160 }, 0.95, 1.2);
+  ring(C(31) + 1.000, [VX + 299, VY + 640 - 160, 740, 100], E(33) - C(31) - 1, 6);
+  // call / WhatsApp
+  scrollTo(C(34), 0, 0.8);
+  cam(C(34) + 0.200, { x: VX + 289, y: VY + 500, w: 760, h: 200 }, 0.95, 1.0);
+  tap(C(35) + 0.162, 'order.phoneBtn', 0.8);
+  tap(C(35) + 1.779, 'order.whatsapp', 0.7);
+  hideCursor(E(35));
+  // calls & staff notes
+  scrollTo(C(36), 494, 1.1);
+  cam(C(36) + 0.400, { x: VX + 1060, y: VY + 960 - 494, w: 360, h: 300 }, 0.85, 1.2);
+  ring(C(36) + 1.000, [VX + 1064, VY + 970 - 494, 345, 290], 2.4, 4);
+  tap(C(37), 'order.noteBox', 0.7);
+  type(C(37) + 0.839, 'order.noteBox', 'কাস্টমার নিশ্চিত করেছেন, কাল পার্সেল নেবেন', 2.0, { size: 14, dx: 12, dy: -14, inset: 4, until: C(39) - 0.5 });
+  tap(C(37) + 2.983, 'order.saveNote', 0.6);
+  toast(C(38), '✓', GREEN, 'নোট সেভ হয়েছে', 'টিমের সবাই দেখতে পাবেন', 2.4);
+  // confirm / reject
+  scrollTo(C(39) - 0.4, 0, 1.0);
+  cam(C(39), { x: VX + 289, y: VY + 255, w: 1130, h: 120 }, 0.95, 1.1);
+  tap(C(39) + 0.800, 'order.confirm', 0.8);
+  ring(C(39) + 1.700, 'order.confirm', 1.6, 6);
+  cursor(C(40) + 0.273, 'order.reject', 0.8);
+  ring(C(41), 'order.reject', 2.4, 6);
+  hideCursor(E(41));
+  toast(C(42) + 0.200, '✓', GREEN, 'নিরাপদ COD অর্ডার: অটো-কনফার্মড', 'সিস্টেম নিজেই যাচাই করে কনফার্ম করেছে', 7.4);
+  camBrowser(C(42), 1.2);
+
+  // ================= 6. bKash / Nagad payment (171.5 – 197.2 s) =================
+  show(C(44), 'order-bkash', 860);
+  cam(C(45), { x: VX + 289, y: VY + 1060 - 860, w: 760, h: 120 }, 0.92, 1.2);
+  ring(C(46), 'order-bkash.sender', 2.0, 8);
+  ring(C(46) + 1.983, 'order-bkash.trx', 2.0, 8);
+  scrollTo(C(47), 0, 1.0);
+  cam(C(47) + 0.400, { x: VX + 289, y: VY + 255, w: 1130, h: 120 }, 0.95, 1.1);
+  tap(C(48), 'order-bkash.verify', 0.8);
+  toast(C(48) + 0.497, '✓', GREEN, 'পেমেন্ট যাচাই হয়েছে', '#VB-579944 · bKash · ৳3,530', 2.6);
+  show(C(49), 'dashboard');
+  cam(C(49) + 0.200, { x: VX + 300, y: VY + 300, w: 1120, h: 120 }, 0.92, 1.2);
+  ring(C(49) + 0.800, pad(union('dashboard.approvals', 'dashboard.verify'), 10), 3.2, 4);
+  hideCursor(C(49));
+
+  // ================= 7. Edit customer details (197.8 – 208.5 s) =================
+  show(C(50), 'order');
+  cam(C(50) + 0.135, { x: VX + 289, y: VY + 430, w: 760, h: 300 }, 0.95, 1.1);
+  tap(C(51), 'order.edit', 0.8);
+  show(C(51) + 1.200, 'order-edit');
+  camBrowser(C(51) + 1.200, 1.0);
+  cam(C(52), { x: VX + 460, y: VY + 210, w: 520, h: 490 }, 0.95, 1.1);
+  ring(C(52) + 0.253, [VX + 484, VY + 290, 472, 300], 1.8, 6);
+  tap(C(52) + 1.684, 'order-edit.save', 0.7);
+  show(E(52), 'order');
+
+  // ================= 8. Send to the courier, label and invoice (209.2 – 241.8 s) =================
+  camBrowser(C(53), 1.0);
+  scrollTo(C(53) + 0.297, 420, 1.0);
+  cam(C(54), { x: VX + 1060, y: VY + 740 - 420, w: 360, h: 140 }, 0.85, 1.2);
+  ring(C(55) + 0.310, 'order.send', 2.6, 6);
+  tap(C(55) + 2.327, [VX + 1074, VY + 793 - 420, 120, 40], 0.7);
+  show(C(56), 'order-shipped', 420);
+  ring(C(57), 'order-shipped.tracking', 2.4, 8);
+  toast(C(56) + 0.293, '→', BLUE, 'Steadfast-এ বুক হয়েছে', 'ট্র্যাকিং কোড: ST-882100', 3.6);
+  show(C(58) - 0.3, 'order');
+  scrollTo(C(58) - 0.3, 0, 0.8);
+  cam(C(58) + 0.233, { x: VX + 289, y: VY + 350, w: 500, h: 90 }, 0.85, 1.0);
+  tap(C(58) + 0.776, 'order.label', 0.7);
+  show(C(59), 'label');
+  camBrowser(C(59), 1.0);
+  show(C(60) + 0.300, 'order');
+  cam(C(60) + 0.300, { x: VX + 289, y: VY + 350, w: 500, h: 90 }, 0.85, 1.0);
+  tap(C(60) + 1.400, 'order.invoice', 0.7);
+  show(C(61) + 0.215, 'invoice');
+  camBrowser(C(61) + 0.215, 1.0);
+  hideCursor(C(61) + 0.215);
+
+  // ================= 9. Many orders at once (242.4 – 270.2 s) =================
+  show(C(62), 'orders');
+  camBrowser(C(62), 1.0);
+  cam(C(63), { x: VX + 289, y: VY + 380, w: 600, h: 260 }, 0.9, 1.1);
+  tap(C(63) + 0.600, 'orders-selected.check1', 0.6);
+  tap(C(63) + 1.400, 'orders-selected.check2', 0.5);
+  tap(C(63) + 2.100, 'orders-selected.check3', 0.5);
+  show(C(63) + 2.700, 'orders-selected');
+  cam(C(64), { x: VX + 760, y: VY + 800, w: 680, h: 90 }, 0.85, 1.2);
+  tap(C(64) + 1.392, 'orders-selected.sendCourier', 0.8);
+  ring(C(64) + 2.227, 'orders-selected.sendCourier', 2.0, 6);
+  tap(C(65), [VX + 1282, VY + 830, 76, 36], 0.7);
+  show(C(65) + 0.900, 'orders-print');
+  cam(C(65) + 0.900, { x: VX + 1000, y: VY + 700, w: 440, h: 190 }, 0.85, 1.0);
+  ring(C(65) + 1.300, 'orders-print.printLabels', 2.2, 4);
+  ring(C(66) + 0.326, 'orders-print.printInvoices', 2.6, 4);
+  tap(C(67), 'orders-selected.more', 0.7);
+  show(C(67) + 0.900, 'orders-more');
+  ring(C(67) + 1.300, 'orders-more.cancelOrders', 2.6, 4);
+
+  // ================= 10. Courier Scan (270.8 – 359.4 s) =================
+  camBrowser(C(68), 1.1);
+  hideCursor(C(68));
+  nav(C(69), 'navCourier', 'courier-scan');
+  cam(C(70), { x: VX + 289, y: VY + 220, w: 1130, h: 120 }, 0.95, 1.1);
+  tap(C(70) + 0.600, 'courier-scan.pickup', 0.7);
+  ring(C(71), 'courier-scan.pickup', 2.2, 6);
+  ring(C(72) + 0.300, 'courier-scan.scan', 3.0, 6);
+  tap(C(73), 'courier-scan.scan', 0.7);
+  type(C(74), 'courier-scan.scan', 'VB-579944', 1.2, { size: 15, dx: 40, coverDx: 32, inset: 4, until: C(76) + 0.384 });
+  tap(C(74) + 0.601, 'courier-scan.enter', 0.6);
+  tap(C(75) + 0.500, 'courier-scan.camera', 0.7);
+  ring(C(75) + 1.300, 'courier-scan.camera', 2.6, 6);
+  toast(C(76) + 0.192, '✓', GREEN, '#VB-579944 → Shipped', 'Steadfast-কে হস্তান্তর করা হয়েছে', 3.6);
+  cam(C(77), { x: VX + 1100, y: VY + 60, w: 340, h: 100 }, 0.8, 1.2);
+  tap(C(78), 'courier-scan.manifest', 0.7);
+  show(C(78) + 1.000, 'manifest');
+  camBrowser(C(78) + 1.000, 1.0);
+  show(C(80), 'courier-scan');
+  cam(C(80) + 0.200, { x: VX + 1100, y: VY + 60, w: 340, h: 100 }, 0.8, 1.1);
+  tap(C(81), 'courier-scan.sync', 0.7);
+  ring(C(81) + 0.315, 'courier-scan.sync', 2.0, 6);
+  cam(C(82), { x: VX + 289, y: VY + 120, w: 700, h: 110 }, 0.85, 1.1);
+  tap(C(82) + 0.481, 'courier-scan.inTab', 0.7);
+  ring(C(82) + 0.961, 'courier-scan.inTab', 1.6, 6);
+  show(C(84), 'courier-in');
+  camBrowser(C(84), 0.9);
+  cam(C(85), { x: VX + 470, y: VY + 320, w: 500, h: 180 }, 0.9, 1.1);
+  ring(C(86) + 0.200, 'courier-in.paid', 2.2, 10);
+  ring(C(86) + 2.500, 'courier-in.refused', 2.2, 10);
+  cam(C(87), { x: VX + 470, y: VY + 580, w: 500, h: 150 }, 0.9, 1.1);
+  tap(C(88), 'courier-in.restock', 0.6);
+  ring(C(88) + 0.556, 'courier-in.restock', 2.2, 8);
+  tap(C(89) + 0.161, 'courier-in.confirm', 0.7);
+  toast(C(90), '↩', GOLD, 'রিটার্ন সম্পন্ন: VB-905811', 'পণ্যগুলো আবার স্টকে যোগ হয়েছে', 6.2);
+  camBrowser(C(90) + 0.140, 1.0);
+  show(C(90) + 0.210, 'courier-scan');
+  hideCursor(C(90) + 0.210);
+
+  // ================= 11. POS (360 – 408.2 s) =================
+  nav(C(93) + 0.200, 'navPos', 'pos');
+  cam(C(94), { x: VX + 289, y: VY + 150, w: 680, h: 100 }, 0.9, 1.1);
+  ring(C(94) + 0.299, 'pos.scan', 2.2, 6);
+  ring(C(95) + 0.080, 'pos.search', 1.6, 6);
+  cam(C(95) + 0.640, { x: VX + 289, y: VY + 150, w: 1140, h: 520 }, 0.95, 1.0);
+  tap(C(95) + 0.800, 'pos.firstProduct', 0.8);
+  show(C(96) - 0.4, 'pos-cart');
+  ring(C(96) + 0.159, [VX + 948, VY + 520, 472, 90], 2.4, 4);
+  cam(C(97), { x: VX + 940, y: VY + 170, w: 490, h: 120 }, 0.9, 1.1);
+  tap(C(98), 'pos-cart.customer', 0.6);
+  ring(C(98) + 0.623, 'pos-cart.customer', 1.8, 6);
+  cam(C(99), { x: VX + 940, y: VY + 680, w: 490, h: 170 }, 0.9, 1.1);
+  ring(C(99) + 0.175, 'pos-cart.cash', 1.0, 4);
+  ring(C(99) + 0.560, 'pos-cart.bkash', 1.0, 4);
+  ring(C(100) + 0.137, 'pos-cart.nagad', 1.0, 4);
+  ring(C(100) + 0.959, [VX + 1295, VY + 708, 105, 32], 1.2, 4);
+  ring(C(101) + 0.284, [VX + 968, VY + 755, 215, 38], 2.4, 4);
+  ring(C(102) + 0.300, [VX + 1192, VY + 755, 215, 38], 3.2, 4);
+  tap(C(103) + 0.600, 'pos-cart.complete', 0.8);
+  toast(C(103) + 1.600, '৳', BRAND, 'বিক্রি সম্পন্ন · রিসিট প্রিন্ট হচ্ছে', 'POS · ৳1,190', 2.8);
+  toast(C(104) + 0.177, '✓', GREEN, 'অনলাইন স্টকও আপডেট হয়েছে', 'Vant Classic Bifold Leather Wallet', 3.8);
+  camBrowser(C(104), 1.1);
+  hideCursor(E(104));
+
+  // ================= 12. New product (408.8 – 514.2 s) =================
+  nav(C(106), 'navProducts', 'products');
+  cam(C(107), { x: VX + 1100, y: VY + 60, w: 340, h: 100 }, 0.8, 1.1);
+  tap(C(107) + 0.435, 'products.newProduct', 0.7);
+  show(C(107) + 0.978, 'product-new');
+  camBrowser(C(107) + 0.978, 1.0);
+  cam(C(108), { x: VX + 300, y: VY + 230, w: 740, h: 190 }, 0.92, 1.1);
+  tap(C(108) + 0.500, 'product-new.name', 0.6);
+  type(C(108) + 1.200, 'product-new.name', 'Vant Premium Leather Wallet', 2.0, { size: 15, inset: 4, until: C(109) - 0.4 });
+  scrollTo(C(109) - 0.3, 200, 1.0);
+  cam(C(109), { x: VX + 300, y: VY + 560 - 200, w: 740, h: 120 }, 0.92, 1.1);
+  ring(C(109) + 0.183, [VX + 663, VY + 572 - 200, 362, 82], 2.6, 4);
+  ring(C(110) + 0.171, [VX + 301, VY + 572 - 200, 362, 82], 3.2, 4);
+  scrollTo(C(111) - 0.3, 520, 1.1);
+  cam(C(111), { x: VX + 300, y: VY + 760 - 520, w: 740, h: 380 }, 0.92, 1.1);
+  ring(C(111) + 0.500, [VX + 305, VY + 765 - 520, 730, 360], 3.6, 4);
+  ring(C(112) + 0.300, [VX + 640, VY + 765 - 520, 400, 40], 4.2, 4);   // toolbar: image, video, table
+  scrollToBox(C(113) - 0.3, 'upload', 1.1);
+  cam(C(113), { x: VX + 300, y: box('product-new.upload').y - 160, w: 740, h: 330 }, 0.92, 1.1);
+  tap(C(114), 'product-new.upload', 0.8);
+  ring(C(114) + 0.640, pad(box('product-new.upload'), 50), 2.4, 0);
+  ring(C(116) + 0.300, { x: VX + 300, y: box('product-new.upload').y - 130, w: 740, h: 110 }, 4, 4);
+  scrollToBox(C(117) - 0.3, 'pricing', 1.1);
+  cam(C(117), { x: VX + 300, y: box('product-new.pricing').y - 20, w: 740, h: 260 }, 0.92, 1.1);
+  ring(C(117) + 0.424, { x: VX + 305, y: box('product-new.pricing').y - 10, w: 730, h: 240 }, 4.6, 4);
+  scrollToBox(C(118) - 0.3, 'variants', 1.1);
+  cam(C(118) + 0.141, { x: VX + 300, y: box('product-new.variants').y - 20, w: 740, h: 380 }, 0.92, 1.2);
+  ring(C(119) + 0.235, { x: VX + 305, y: box('product-new.variants').y - 10, w: 730, h: 360 }, 5.4, 4);
+  scrollToBox(C(120) - 0.3, 'seo', 1.1);
+  cam(C(120), { x: VX + 300, y: box('product-new.seo').y - 20, w: 740, h: 120 }, 0.92, 1.1);
+  ring(C(121) + 0.184, { x: VX + 305, y: box('product-new.seo').y - 10, w: 730, h: 100 }, 3.8, 4);
+  scrollTo(C(122) - 0.3, 0, 1.2);
+  cam(C(122) + 0.120, { x: VX + 1060, y: VY + 160, w: 370, h: 300 }, 0.85, 1.1);
+  ring(C(122) + 0.480, [VX + 1066, VY + 280, 345, 40], 2.4, 4);
+  tap(C(123), 'product-new.save', 0.8);
+  toast(C(124) - 0.2, '✓', GREEN, 'পণ্য প্রকাশিত হয়েছে', 'Vant Premium Leather Wallet এখন ওয়েবসাইটে', 3.6);
+  show(C(125), 'products');
+  camBrowser(C(125), 1.0);
+  cam(C(126), { x: VX + 1100, y: VY + 60, w: 340, h: 100 }, 0.8, 1.1);
+  tap(C(126) + 0.791, 'products.import', 0.7);
+  show(C(127), 'product-import');
+  camBrowser(C(127), 0.9);
+  cam(C(127) + 0.543, { x: VX + 470, y: VY + 240, w: 500, h: 420 }, 0.9, 1.1);
+  ring(C(127) + 0.966, 'product-import.file', 2.6, 14);
+  tap(C(128) + 0.202, 'product-import.start', 0.7);
+  hideCursor(E(128));
+
+  // ================= 13. Inventory & barcodes (514.8 – 558.2 s) =================
+  nav(C(129) + 0.196, 'navInventory', 'inventory');
+  cam(C(130), { x: VX + 289, y: VY + 500, w: 1140, h: 100 }, 0.95, 1.1);
+  tap(C(130) + 0.800, 'inventory.restock', 0.7);
+  show(C(130) + 1.800, 'inventory-restock');
+  cam(C(130) + 1.800, { x: VX + 470, y: VY + 300, w: 500, h: 400 }, 0.9, 1.1);
+  ring(C(131) + 0.111, [VX + 508, VY + 418, 210, 76], 3.0, 4);
+  ring(C(132) + 0.257, [VX + 718, VY + 418, 210, 76], 3.8, 4);
+  ring(C(133) + 0.240, [VX + 516, VY + 508, 410, 80], 4.4, 4);
+  tap(C(134), 'inventory-restock.save', 0.7);
+  toast(C(135), '✓', GREEN, 'স্টক যোগ হয়েছে', 'নতুন গড় কেনা দাম হিসাব হয়েছে', 4.2);
+  show(C(135) + 0.354, 'inventory');
+  camBrowser(C(135) + 0.354, 1.0);
+  cam(C(136), { x: VX + 289, y: VY + 70, w: 500, h: 80 }, 0.8, 1.0);
+  tap(C(136) + 0.501, 'inventory.barcodesTab', 0.6);
+  show(C(136) + 1.169, 'barcodes');
+  camBrowser(C(136) + 1.336, 1.1);
+  ring(C(137) + 0.298, [VX + 289, VY + 360, 1130, 480], 4.4, 4);
+  hideCursor(E(138));
+
+  // ================= 14. Catalog setup & reviews (558.8 – 596.2 s) =================
+  nav(C(139), 'navCatalog', 'categories');
+  cam(C(139) + 1.095, { x: VX + 280, y: VY + 70, w: 420, h: 70 }, 0.75, 1.1);
+  ring(C(139) + 1.721, union('categories.categories', 'categories.variations'), 2.0, 6);
+  ring(C(140), 'categories.categories', 1.6, 4);
+  camBrowser(C(140) + 1.000, 1.1);
+  tap(C(141), 'categories.brands', 0.7);
+  show(C(141) + 0.315, 'brands');
+  tap(C(142), 'categories.variations', 0.7);
+  show(C(142) + 0.549, 'variations');
+  hideCursor(E(144));
+  nav(C(145), 'navReviews', 'reviews');
+  cam(C(146), { x: VX + 289, y: VY + 290, w: 1140, h: 160 }, 0.95, 1.1);
+  tap(C(146) + 1.116, 'reviews.approve', 0.7);
+  ring(C(146) + 1.859, 'reviews.approve', 2.4, 6);
+  toast(C(147), '✓', GREEN, 'রিভিউ অ্যাপ্রুভ হয়েছে', 'এখন ওয়েবসাইটে দেখা যাবে', 2.6);
+  camBrowser(C(147) + 0.333, 1.0);
+  hideCursor(E(147));
+
+  // ================= 15. Homepage, coupons, promotions, abandoned carts (596.8 – 673.2 s) =================
+  nav(C(148), 'navHomepage', 'banners');
+  ring(C(149), [VX + 289, VY + 210, 1130, 380], 6.0, 4);
+  tap(C(151), 'banners.ticker', 0.7);
+  show(C(151) + 0.839, 'news-ticker');
+  ring(C(151) + 1.491, [VX + 289, VY + 240, 1130, 90], 3.0, 4);
+  tap(C(152), 'banners.menubar', 0.7);
+  show(C(152) + 0.746, 'header-menu');
+  ring(C(153), [VX + 289, VY + 230, 1130, 110], 3.4, 4);
+  hideCursor(E(153));
+  nav(C(154), 'navCoupons', 'coupons');
+  cam(C(155) - 0.3, { x: VX + 1100, y: VY + 60, w: 340, h: 100 }, 0.8, 1.0);
+  tap(C(155) + 0.575, 'coupons.create', 0.7);
+  camBrowser(C(156), 1.1);
+  ring(C(156) + 0.400, [VX + 289, VY + 262, 1130, 130], 9, 4);
+  hideCursor(C(156));
+  nav(C(159), 'navPromotions', 'flash-sale');
+  ring(C(160) + 0.200, [VX + 289, VY + 370, 1130, 140], 3.0, 4);
+  tap(C(161) + 0.200, 'flash-sale.freeTab', 0.7);
+  show(C(161) + 1.100, 'free-delivery');
+  ring(C(162) + 0.300, [VX + 289, VY + 720, 1130, 140], 4.6, 4);
+  hideCursor(E(162));
+  nav(C(163) + 0.300, 'navCarts', 'abandoned-carts');
+  cam(C(164) + 0.400, { x: VX + 289, y: VY + 420, w: 1140, h: 220 }, 0.95, 1.1);
+  ring(C(164) + 0.800, [VX + 289, VY + 430, 1130, 200], 3.0, 4);
+  tap(C(165) + 0.400, [VX + 1040, VY + 470, 100, 34], 0.8);
+  toast(C(165) + 1.400, '✉', GREEN, 'রিমাইন্ডার পাঠানো হয়েছে', 'Rahim Uddin · WhatsApp', 3.2);
+  camBrowser(C(166) + 1.005, 1.0);
+  hideCursor(E(166));
+
+  // ================= 16. Profit, expenses, customers, staff (673.8 – 746.5 s) =================
+  if (!skipped(167)) {
+    nav(C(167), 'navAnalytics', 'analytics');
+    cam(C(168), { x: VX + 289, y: VY + 230, w: 1140, h: 200 }, 0.95, 1.1);
+    ring(C(168) + 0.000, [VX + 289, VY + 240, 1130, 110], 3.2, 4);
+    ring(C(169) + 0.000, [VX + 289, VY + 350, 1130, 160], 4.0, 4);
+    cam(C(170), { x: VX + 1100, y: VY + 60, w: 340, h: 100 }, 0.8, 1.1);
+    tap(C(170) + 0.000, 'analytics.export', 0.7);
+    ring(C(171), 'analytics.export', 2.6, 6);
+    hideCursor(E(171));
+    nav(C(172) + 0.000, 'navExpenses', 'expenses');
+    ring(C(173), [VX + 289, VY + 410, 1130, 300], 3.0, 4);
+  } else {
+    // The recording goes straight from abandoned carts to "these costs come off the profit".
+    nav(C(174) - 0.6, 'navExpenses', 'expenses');
+  }
+  ring(C(174) + 0.216, [VX + 289, VY + 150, 1130, 115], 4.6, 4);
+  nav(C(175), 'navCustomers', 'customers');
+  ring(C(175) + 1.330, [VX + 289, VY + 470, 1130, 380], 3.0, 4);
+  tap(C(177), 'customers.blacklistTab', 0.7);
+  show(C(177) + 0.339, 'blacklist');
+  ring(C(178), [VX + 289, VY + 325, 1130, 125], 3.6, 4);
+  hideCursor(E(178));
+  nav(C(179), 'navStaff', 'staff');
+  ring(C(180), [VX + 289, VY + 420, 1130, 420], 3.0, 4);
+  ring(C(181) + 0.157, [VX + 700, VY + 480, 170, 360], 9.6, 4);    // role column
+  tap(C(184), 'staff.auditTab', 0.7);
+  show(C(184) + 0.869, 'audit');
+  ring(C(184) + 1.546, [VX + 289, VY + 270, 1130, 420], 2.8, 4);
+  hideCursor(E(184));
+
+  // ================= 17. Settings & integrations (747.2 – 793.8 s) =================
+  nav(C(185), 'navSettings', 'settings');
+  ring(C(186), [VX + 289, VY + 200, 1130, 380], 3.6, 4);
+  ring(C(187) + 0.200, [VX + 556, VY + 150, 140, 36], 5.0, 6);   // Payments & delivery
+  scrollTo(C(188) - 0.3, 400, 1.1);
+  cam(C(188) + 0.230, { x: VX + 289, y: VY + 700 - 400, w: 1140, h: 160 }, 0.92, 1.1);
+  ring(C(188) + 0.614, [VX + 305, VY + 720 - 400, 1100, 120], 6.0, 4);
+  scrollTo(E(189) - 0.2, 0, 0.6);
+  nav(C(190), 'navIntegrations', 'integrations');
+  ring(C(190) + 1.400, [VX + 289, VY + 210, 1130, 600], 4.2, 4);
+  tap(C(192) + 0.188, 'integrations.trackingTab', 0.7);
+  show(C(192) + 1.036, 'integrations-tracking');
+  ring(C(192) + 1.506, [VX + 289, VY + 210, 1130, 220], 2.0, 4);
+  scrollTo(C(192) + 3.201, 420, 1.0);
+  ring(C(192) + 4.142, [VX + 289, VY + 640 - 420, 1130, 220], 1.8, 4);
+  scrollTo(C(193) - 0.2, 0, 0.8);
+  cam(C(193) + 0.500, { x: VX + 289, y: VY + 200, w: 560, h: 80 }, 0.8, 1.2);
+  ring(C(193) + 1.200, [VX + 364, VY + 226, 58, 22], 5.0, 8);        // the Bangla setup guide button
+  hideCursor(C(193));
+
+  // ================= 18. Close (794.4 – 806.8 s) =================
+  show(C(195), 'dashboard');
+  cam(C(195), { x: -190, y: -40, w: 2330, h: 1110 }, 0.86, 2.6);
+  tl.to('#end', { opacity: 1, duration: 1.2, ease: 'power1.inOut' }, C(196) - 0.4);
+  tl.fromTo('#endLogo', { scale: 0.92, opacity: 0 }, { scale: 1, opacity: 1, duration: 1.2, ease: 'power2.out' }, C(196) - 0.1);
+  tl.fromTo(['#endTag', '#endLine', '#endHelp'], { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.8, stagger: 0.25 }, C(196) + 0.563);
+  tl.fromTo('#endThanks', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8 }, C(197));
+}
+;
+window.__CUES = CUES; window.__SCREENS = SCREENS;   // read by ae/export.mjs
+
+// Fit the 1920×1080 stage into the window.
+const stage = document.getElementById('stage');
+function fit() { const s = Math.min(innerWidth / 1920, innerHeight / 1080); stage.style.transform = `scale(${s})`; }
+addEventListener('resize', fit); fit();
+
+const $ = (id) => document.getElementById(id);
+// Plays from the moment the page opens; tools that step through time (CodeFlow) drive it frame by frame.
+const tl = gsap.timeline();
+window.__timeline = tl;
+
+// ---------- geometry ----------
+const VX = 80, VY = 128, VW = 1440, VH = 864;        // browser content viewport in world px
+const scroll = {};                                   // current scroll of each screen
+let current = null;                                  // screen showing in the browser
+
+function box(ref) {
+  if (Array.isArray(ref)) return { x: ref[0], y: ref[1], w: ref[2], h: ref[3] };
+  const [sid, name] = ref.split('.');
+  const s = SCREENS[sid];
+  const b = s && s.boxes[name];
+  if (!b) throw new Error('No box ' + ref);
+  const sy = name.startsWith('nav') ? 0 : (scroll[sid] || 0);
+  return { x: VX + b[0], y: VY + b[1] - sy, w: b[2], h: b[3] };
+}
+const union = (...refs) => {
+  const bs = refs.map(box);
+  const x = Math.min(...bs.map(b => b.x)), y = Math.min(...bs.map(b => b.y));
+  return { x, y, w: Math.max(...bs.map(b => b.x + b.w)) - x, h: Math.max(...bs.map(b => b.y + b.h)) - y };
+};
+const pad = (b, p) => ({ x: b.x - p, y: b.y - p, w: b.w + 2 * p, h: b.h + 2 * p });
+
+// ---------- actions ----------
+const world = $('world');
+const MAX_ZOOM = 1.3;
+function cam(t, rect, fill = 0.8, dur = 1.3, full = false) {
+  const r = typeof rect === 'string' || Array.isArray(rect) ? box(rect) : rect;
+  // Keep the subject above the subtitles unless the shot is meant to fill the frame.
+  const vh = full ? 1080 : 860, cy = full ? 540 : 455;
+  // Gentle camera: never closer than MAX_ZOOM (the whole browser fills the frame at about 1.1).
+  const s = Math.max(0.45, Math.min(MAX_ZOOM, Math.min(1920 * fill / r.w, vh * fill / r.h)));
+  tl.to(world, { x: 960 - (r.x + r.w / 2) * s, y: cy - (r.y + r.h / 2) * s, scale: s, duration: dur, ease: 'power2.inOut' }, t);
+}
+// The whole browser window, as wide as the frame allows.
+const camBrowser = (t, dur) => cam(t, { x: VX - 8, y: VY - 76, w: VW + 16, h: VH + 76 }, 1, dur, true);
+
+function show(t, sid, y = 0, dur = 0.35) {
+  const img = $('scr-' + sid), url = $('url-' + sid), ttl = $('ttl-' + sid);
+  y = Math.max(0, Math.min(y, Math.max(0, SCREENS[sid].h - VH)));
+  tl.set(img, { y: -y }, t);
+  tl.to([img, url, ttl], { opacity: 1, duration: dur, ease: 'none' }, t);
+  if (current && current !== sid) tl.to(['scr-', 'url-', 'ttl-'].map(p => $(p + current)), { opacity: 0, duration: dur, ease: 'none' }, t);
+  if (current === null) tl.to(['newtab', 'url-newtab', 'ttl-newtab'].map($), { opacity: 0, duration: dur }, t);
+  scroll[sid] = y; current = sid;
+}
+function scrollTo(t, y, dur = 1.2) {
+  const s = SCREENS[current];
+  y = Math.max(0, Math.min(y, Math.max(0, s.h - VH)));
+  tl.to($('scr-' + current), { y: -y, duration: dur, ease: 'power2.inOut' }, t);
+  scroll[current] = y;
+}
+function scrollToBox(t, name, dur) {
+  const b = SCREENS[current].boxes[name];
+  if (!b) throw new Error('No box ' + current + '.' + name);
+  scrollTo(t, b[1] + b[3] / 2 - VH / 2, dur);
+}
+
+let cx = 800, cy = 600;
+const cursorEl = $('cursor');
+function cursor(t, ref, dur = 0.9) {
+  const b = typeof ref === 'object' && !Array.isArray(ref) ? ref : box(ref);
+  cx = b.x + Math.min(b.w * 0.5, 60); cy = b.y + b.h * 0.55;
+  tl.to(cursorEl, { opacity: 1, duration: 0.25 }, t);
+  tl.to(cursorEl, { x: cx, y: cy, duration: dur, ease: 'power2.inOut' }, t);
+}
+function click(t) {
+  tl.to(cursorEl, { scale: 0.82, duration: 0.09, yoyo: true, repeat: 1, ease: 'power1.inOut' }, t);
+  tl.fromTo($('ripple'), { x: cx, y: cy, scale: 0.3, opacity: 0.95 }, { scale: 1.6, opacity: 0, duration: 0.55, ease: 'power2.out' }, t);
+}
+const tap = (t, ref, dur = 0.9) => { cursor(t, ref, dur); click(t + dur + 0.1); };
+const hideCursor = (t) => tl.to(cursorEl, { opacity: 0, duration: 0.3 }, t);
+
+function make(parent, cls, html = '') {
+  const el = document.createElement('div');
+  el.className = cls; el.innerHTML = html;
+  $(parent).appendChild(el);
+  return el;
+}
+function ring(t, ref, hold = 2.2, p = 8) {
+  const el = make('fx', 'ring');
+  const b = pad(typeof ref === 'object' && !Array.isArray(ref) ? ref : box(ref), p);
+  tl.set(el, { x: b.x, y: b.y, width: b.w, height: b.h }, t);
+  tl.fromTo(el, { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.35, ease: 'power2.out', transformOrigin: '50% 50%' }, t);
+  tl.to(el, { opacity: 0, duration: 0.35 }, t + hold);
+}
+// Typed text appears letter by letter: the box widens from 0 to the text's width.
+const measure = document.createElement('canvas').getContext('2d');
+function type(t, ref, text, dur, opts = {}) {
+  const el = make('fx', 'typed');
+  el.textContent = text;
+  const size = opts.size || 15;
+  el.style.fontSize = size + 'px';
+  measure.font = `500 ${size}px Inter, 'Hind Siliguri', sans-serif`;
+  const w = Math.ceil(measure.measureText(text).width * 1.12) + 6;
+  const b = typeof ref === 'object' && !Array.isArray(ref) ? ref : box(ref);
+  // Cover the field's placeholder text with its own background colour.
+  if (opts.bg !== false) {
+    const cover = make('fx', 'cover');
+    cover.style.background = opts.bg || '#ffffff';
+    const inset = opts.inset ?? 3;
+    tl.set(cover, { x: b.x + inset + (opts.coverDx ?? 0), y: b.y + inset, width: b.w - 2 * inset - (opts.coverDx ?? 0), height: b.h - 2 * inset, opacity: 1 }, t);
+    if (opts.until) tl.to(cover, { opacity: 0, duration: 0.2 }, opts.until);
+  }
+  el.parentNode.appendChild(el);
+  tl.set(el, { x: b.x + (opts.dx ?? 14), y: b.y + b.h / 2 - size * 0.72 + (opts.dy ?? 0), opacity: 1 }, t);
+  tl.to(el, { maxWidth: w, duration: dur, ease: 'none' }, t);
+  if (opts.until) tl.to(el, { opacity: 0, duration: 0.2 }, opts.until);
+}
+function toast(t, icon, color, title, sub, hold = 3) {
+  const el = make('toasts', 'toast', `<div class="ic" style="background:${color}">${icon}</div><div class="t1"></div><div class="t2"></div>`);
+  el.querySelector('.t1').textContent = title;
+  el.querySelector('.t2').textContent = sub;
+  tl.fromTo(el, { opacity: 0, y: -40 }, { opacity: 1, y: 0, duration: 0.45, ease: 'back.out(1.6)' }, t);
+  tl.to(el, { opacity: 0, y: -30, duration: 0.35 }, t + hold);
+}
+
+// ---------- subtitles ----------
+CUES.forEach((c, i) => {
+  if (c.skip) return;                      // not in the recording
+  const el = $('sub' + i);
+  const next = CUES.slice(i + 1).find((x) => !x.skip);
+  const off = next && next.s - c.e < 0.7 ? next.s : c.e + 0.25;
+  tl.to(el, { opacity: 1, duration: 0.18, ease: 'none' }, c.s - 0.05);
+  tl.to(el, { opacity: 0, duration: 0.12, ease: 'none' }, off - 0.06);
+  [...el.querySelectorAll('.w')].forEach((w) => tl.to(w, { color: '#ffffff', duration: 0.14, ease: 'none' }, +w.dataset.t));
+});
+
+// ---------- scene ----------
+const C = (n) => CUES[n - 1].s, E = (n) => CUES[n - 1].e, skipped = (n) => !!CUES[n - 1].skip;
+SCENE({ skipped, tl, $, world, box, union, pad, cam, camBrowser, show, scrollTo, scrollToBox, cursor, click, tap, hideCursor, ring, type, toast, C, E, VX, VY, VW, VH });
+tl.set({}, {}, DURATION);
+
+</script>
+</body>
+</html>
