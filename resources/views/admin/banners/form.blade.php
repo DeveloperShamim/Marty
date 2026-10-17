@@ -84,6 +84,42 @@
         </div>
       </section>
 
+      {{-- When it shows --}}
+      <section class="panel p-4 sm:p-5 space-y-3.5" data-when-shows>
+        <div>
+          <h2 class="text-[15px] font-semibold text-gray-900">When it shows</h2>
+          <p class="text-xs text-gray-500 mt-0.5">Leave the dates empty to show it until you hide it.</p>
+        </div>
+
+        <div id="showOnField" class="{{ $currentPlacement === 'hero_side' ? '' : 'hidden' }}">
+          <span class="lbl">Show on</span>
+          @php $showOn = old('show_on', $banner->show_on ?? 'both'); @endphp
+          <div class="grid grid-cols-3 gap-2" role="radiogroup">
+            @foreach($devices as $value => $label)
+              <label class="flex items-center justify-center gap-1.5 h-10 px-2 rounded-xl ring-1 cursor-pointer text-xs font-medium text-center has-[:checked]:ring-2 has-[:checked]:ring-gray-900 has-[:checked]:bg-gray-50 ring-gray-200 hover:bg-gray-50">
+                <input type="radio" name="show_on" value="{{ $value }}" class="sr-only" @checked($showOn === $value)>
+                {{ $label }}
+              </label>
+            @endforeach
+          </div>
+          <p class="text-[11px] text-gray-500 mt-1">Desktop is the wide layout with cards beside the slider. Phone covers phones and tablets.</p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-3">
+          <div>
+            <label class="lbl" for="startsAtInput">Starts</label>
+            <input type="datetime-local" name="starts_at" id="startsAtInput" class="inp" value="{{ old('starts_at', $banner->starts_at?->format('Y-m-d\TH:i')) }}">
+            @error('starts_at')<p class="text-[11px] text-rose-600 mt-1">{{ $message }}</p>@enderror
+          </div>
+          <div>
+            <label class="lbl" for="endsAtInput">Ends</label>
+            <input type="datetime-local" name="ends_at" id="endsAtInput" class="inp" value="{{ old('ends_at', $banner->ends_at?->format('Y-m-d\TH:i')) }}">
+            @error('ends_at')<p class="text-[11px] text-rose-600 mt-1">{{ $message }}</p>@enderror
+          </div>
+        </div>
+        <p class="text-[11px] text-gray-500 -mt-1">Bangladesh time. It also needs "Visible on store" ticked below.</p>
+      </section>
+
       {{-- Link & title --}}
       <section class="panel p-4 sm:p-5 space-y-3.5">
         <h2 class="text-[15px] font-semibold text-gray-900">Link and title</h2>
@@ -155,31 +191,20 @@
 
 <script>
 function updatePlacementUI(placement) {
-  const cardHero = document.getElementById('label-placement-hero');
-  const cardPromo = document.getElementById('label-placement-hero_side');
-  const previewContainer = document.getElementById('previewContainer');
-  const previewAspectBadge = document.getElementById('previewAspectBadge');
-  const sizeGuideline = document.getElementById('sizeGuideline');
-  const guidelinesText = document.getElementById('placementGuidelinesText');
   const BASE = 'relative flex flex-col p-3.5 rounded-xl cursor-pointer transition-colors placement-card ';
-  const ON = BASE + 'ring-2 ring-gray-900 bg-gray-50';
-  const OFF = BASE + 'ring-1 ring-gray-200 hover:bg-gray-50';
-
-  if (placement === 'hero') {
-    cardHero.className = ON;
-    cardPromo.className = OFF;
-    previewContainer.style.aspectRatio = '15/8';
-    previewAspectBadge.textContent = '15:8';
-    sizeGuideline.textContent = 'Recommended: 1500 × 800 px';
-    guidelinesText.innerHTML = 'Hero slides display in the main rotating carousel. Recommended size is <strong>1500 &times; 800 px</strong> (Aspect ratio 15:8).';
-  } else {
-    cardPromo.className = ON;
-    cardHero.className = OFF;
-    previewContainer.style.aspectRatio = '1.82/1';
-    previewAspectBadge.textContent = '1.82:1';
-    sizeGuideline.textContent = 'Recommended: 868 × 476 px';
-    guidelinesText.innerHTML = 'Promo cards sit beside the hero carousel (stacked on desktop, 2-column grid on mobile). Recommended size is <strong>868 &times; 476 px</strong> (Aspect ratio 1.82:1).';
-  }
+  const sizes = {
+    hero: ['15/8', '15:8', '1500 × 800 px', 'Hero slides display in the main rotating carousel. Recommended size is <strong>1500 &times; 800 px</strong> (Aspect ratio 15:8). When no promo card shows on desktop, the slide fills a wider frame there and its top and bottom are trimmed a little, so keep text and products near the middle.'],
+    hero_side: ['1.82/1', '1.82:1', '868 × 476 px', 'Promo cards sit beside the hero carousel (stacked on desktop, 2-column grid on mobile). Recommended size is <strong>868 &times; 476 px</strong> (Aspect ratio 1.82:1).'],
+  };
+  ['hero', 'hero_side'].forEach(p => {
+    document.getElementById('label-placement-' + p).className = BASE + (p === placement ? 'ring-2 ring-gray-900 bg-gray-50' : 'ring-1 ring-gray-200 hover:bg-gray-50');
+  });
+  const [ratio, badge, size, text] = sizes[placement] || sizes.hero;
+  document.getElementById('previewContainer').style.aspectRatio = ratio;
+  document.getElementById('previewAspectBadge').textContent = badge;
+  document.getElementById('sizeGuideline').textContent = 'Recommended: ' + size;
+  document.getElementById('placementGuidelinesText').innerHTML = text;
+  document.getElementById('showOnField').classList.toggle('hidden', placement !== 'hero_side');
 }
 
 function updateLinkPreview(val) {

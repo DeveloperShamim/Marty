@@ -47,13 +47,14 @@
     <div class="flex flex-wrap items-start justify-between gap-2">
       <div>
         <h2 class="text-[15px] font-semibold text-gray-900">Menu items</h2>
-        <p class="text-xs text-gray-500 mt-0.5">Use the arrows to change the order. Give any item a dropdown with “Add dropdown link”.</p>
+        <p class="text-xs text-gray-500 mt-0.5">Drag <span class="hidden sm:inline">the dots</span><span class="sm:hidden">or use the arrows</span> to change the order. The eye hides an item without deleting it.</p>
       </div>
       @unless($isCustom)
         <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-[11px] font-semibold">Showing the default menu</span>
       @endunless
     </div>
     @error('menu')<p class="text-xs text-rose-600">{{ $message }}</p>@enderror
+    <p id="hmNoAuto" class="hidden rounded-xl bg-amber-50 px-3.5 py-2.5 text-xs text-amber-800">“All categories” isn’t in your menu, so a new category won’t show in the bar until you add it here.</p>
 
     <ol id="hmList" class="space-y-2.5"></ol>
 
@@ -81,10 +82,13 @@
 
 <template id="hmRowTpl">
   <li class="rounded-2xl bg-gray-50/80 ring-1 ring-gray-200/70 p-3 sm:p-3.5 space-y-2.5" data-row>
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
+      <span class="hidden sm:grid h-8 w-5 -mx-1 place-items-center text-gray-400 cursor-grab active:cursor-grabbing" data-grip title="Drag to reorder" aria-hidden="true"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></span>
       <span class="h-6 min-w-6 px-1.5 rounded-full bg-white ring-1 ring-gray-200 grid place-items-center text-[11px] font-bold text-gray-500 tabular-nums" data-num></span>
-      <select class="inp !py-2 flex-1 min-w-0" data-type aria-label="What this item opens"></select>
-      <div class="flex items-center gap-1 shrink-0">
+      <select class="inp !py-2 flex-1 min-w-[11rem]" data-type aria-label="What this item opens"></select>
+      <span class="hidden px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 text-[10px] font-bold uppercase tracking-wide shrink-0" data-hidden-badge>Hidden</span>
+      <div class="flex items-center gap-1 shrink-0 ml-auto">
+        <button type="button" data-toggle class="h-8 w-8 rounded-full bg-white ring-1 ring-gray-200 hover:bg-gray-100 grid place-items-center cursor-pointer" aria-label="Hide from the store"></button>
         <button type="button" data-up class="h-8 w-8 rounded-full bg-white ring-1 ring-gray-200 hover:bg-gray-100 grid place-items-center cursor-pointer disabled:opacity-30 disabled:cursor-default" aria-label="Move up"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg></button>
         <button type="button" data-down class="h-8 w-8 rounded-full bg-white ring-1 ring-gray-200 hover:bg-gray-100 grid place-items-center cursor-pointer disabled:opacity-30 disabled:cursor-default" aria-label="Move down"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
         <button type="button" data-remove class="h-8 w-8 rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100 grid place-items-center cursor-pointer" aria-label="Remove"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
@@ -96,10 +100,11 @@
       <input class="inp !py-2" data-url maxlength="255" placeholder="Link, e.g. /page/about or https://…" aria-label="Link">
       <input class="inp !py-2" data-label maxlength="40" aria-label="Name in the menu">
     </div>
+    <p class="hidden text-[11px] font-medium text-rose-600" data-error></p>
     <p class="text-[11px] text-gray-500" data-hint></p>
-    <div class="pl-3 sm:pl-5 border-l-2 border-gray-200 space-y-2" data-children-box>
-      <ol class="space-y-2" data-children></ol>
-      <button type="button" data-add-child class="h-8 px-3 rounded-full bg-white ring-1 ring-gray-200 hover:bg-gray-100 text-xs font-semibold text-gray-700 inline-flex items-center gap-1 cursor-pointer">
+    <div class="space-y-2" data-children-box>
+      <ol class="space-y-2 pl-3 sm:pl-5 border-l-2 border-gray-200 empty:hidden" data-children></ol>
+      <button type="button" data-add-child class="text-xs font-semibold text-gray-500 hover:text-gray-900 inline-flex items-center gap-1 cursor-pointer">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         Add dropdown link
       </button>
@@ -113,6 +118,7 @@
   const CATS = @json($categories);
   const BRANDS = @json($brands);
   let items = @json($items);
+  let dragging = null;
 
   const $ = (id) => document.getElementById(id);
   const typeOf = (key) => TYPES.find((t) => t.key === key) || TYPES[0];
@@ -162,6 +168,16 @@
     hint.textContent = hints[it.type] || '';
     show(hint, !!hint.textContent);
 
+    const eyeOpen = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const eyeShut = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M10.7 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-2.2 3.2M6.6 6.6A17 17 0 0 0 2 12s3.6 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="m2 2 20 20"/></svg>';
+    const toggle = li.querySelector(':scope > div > div > [data-toggle]');
+    toggle.innerHTML = it.hidden ? eyeShut : eyeOpen;
+    toggle.setAttribute('aria-label', it.hidden ? 'Show on the store' : 'Hide from the store');
+    toggle.title = toggle.getAttribute('aria-label');
+    toggle.onclick = () => { it.hidden = !it.hidden; if (!it.hidden) delete it.hidden; render(); };
+    show(li.querySelector('[data-hidden-badge]'), !!it.hidden);
+    li.classList.toggle('opacity-60', !!it.hidden);
+
     li.querySelector('[data-up]').disabled = index === 0;
     li.querySelector('[data-down]').disabled = index === list.length - 1;
     li.querySelector('[data-up]').onclick = () => { [list[index - 1], list[index]] = [list[index], list[index - 1]]; render(); };
@@ -171,8 +187,26 @@
     type.onchange = () => { it.type = type.value; delete it.ref; delete it.url; if (['categories', 'brands'].includes(it.type)) { delete it.label; delete it.children; } render(); };
     cat.onchange = () => { it.ref = +cat.value || null; render(); };
     brand.onchange = () => { it.ref = +brand.value || null; render(); };
-    url.oninput = () => { it.url = url.value.trim(); };
-    label.oninput = () => { it.label = label.value.trim(); preview(); };
+    const clearError = () => { [cat, brand, url, label].forEach((el) => el.classList.remove('!ring-2', '!ring-rose-400')); show(li.querySelector('[data-error]'), false); };
+    url.oninput = () => { it.url = url.value.trim(); clearError(); };
+    label.oninput = () => { it.label = label.value.trim(); clearError(); preview(); };
+    it._mark = (msg, el) => { el.classList.add('!ring-2', '!ring-rose-400'); const p = li.querySelector('[data-error]'); p.textContent = msg; show(p, true); };
+    it._fields = { cat, brand, url, label };
+
+    // Drag to reorder (desktop): grab the dots, drop on another item of the same list
+    const grip = li.querySelector(':scope > div > [data-grip]');
+    grip.onmousedown = () => { li.draggable = true; };
+    li.ondragstart = (e) => { e.stopPropagation(); dragging = { list, index }; e.dataTransfer.effectAllowed = 'move'; li.classList.add('opacity-40'); };
+    li.ondragend = () => { li.draggable = false; li.classList.remove('opacity-40'); dragging = null; };
+    li.ondragover = (e) => { if (dragging && dragging.list === list) { e.preventDefault(); e.stopPropagation(); li.classList.add('ring-2', 'ring-gray-900'); } };
+    li.ondragleave = () => li.classList.remove('ring-2', 'ring-gray-900');
+    li.ondrop = (e) => {
+      if (!dragging || dragging.list !== list) return;
+      e.preventDefault(); e.stopPropagation();
+      const [moved] = list.splice(dragging.index, 1);
+      list.splice(index, 0, moved);
+      dragging = null; render();
+    };
 
     const box = li.querySelector('[data-children-box]');
     show(box, !isChild && !fixed);
@@ -180,6 +214,8 @@
       it.children = it.children || [];
       const ol = li.querySelector('[data-children]');
       it.children.forEach((child, ci) => ol.appendChild(makeRow(child, it.children, ci, true)));
+      // Home, All Products and the like rarely need a dropdown: keep the button quiet until there is one
+      box.querySelector(':scope > [data-add-child]').classList.toggle('opacity-70', !it.children.length);
       box.querySelector(':scope > [data-add-child]').onclick = () => { it.children.push({ type: 'link' }); render(); };
     }
   }
@@ -194,10 +230,11 @@
   function preview() {
     const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
     const caret = '<svg class="w-3 h-3 inline -mt-px" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="m19 9-7 7-7-7"/></svg>';
-    $('hmPreview').innerHTML = items.map((it) => {
+    $('hmNoAuto').classList.toggle('hidden', items.some((it) => it.type === 'categories' && !it.hidden));
+    $('hmPreview').innerHTML = items.filter((it) => !it.hidden).map((it) => {
       if (it.type === 'categories') return '<span class="px-2.5 py-1 rounded-lg opacity-60 italic">Categories… · More ' + caret + '</span>';
       if (it.type === 'brands') return '<span class="px-2.5 py-1">Brands ' + caret + '</span>';
-      const drop = (it.children && it.children.length) || (it.type === 'category' && CATS.some((c) => c.name.startsWith(nameOf(it) + ' › ')));
+      const drop = (it.children && it.children.some((c) => !c.hidden)) || (it.type === 'category' && CATS.some((c) => c.name.startsWith(nameOf(it) + ' › ')));
       return '<span class="px-2.5 py-1">' + esc(nameOf(it)) + (drop ? ' ' + caret : '') + '</span>';
     }).join('') || '<span class="px-2 text-gray-400">Empty. Add a menu item below.</span>';
   }
@@ -213,14 +250,24 @@
   const list_scroll = () => $('hmList').lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
   $('hmForm').addEventListener('submit', (e) => {
-    const problem = items.concat(...items.map((it) => it.children || [])).find((it) =>
-      (it.type === 'category' || it.type === 'brand') && !it.ref || it.type === 'link' && (!it.url || !it.label));
-    if (problem) {
+    let first = null;
+    items.concat(...items.map((it) => it.children || [])).forEach((it) => {
+      const f = it._fields;
+      if (!f) return;
+      let msg = null, el = null;
+      if (it.type === 'category' && !it.ref) { msg = 'Choose a category.'; el = f.cat; }
+      else if (it.type === 'brand' && !it.ref) { msg = 'Choose a brand.'; el = f.brand; }
+      else if (it.type === 'link' && !it.label) { msg = 'Give this link a name.'; el = f.label; }
+      else if (it.type === 'link' && !/^(\/(?!\/)|https?:\/\/|tel:|mailto:)/i.test(it.url || '')) { msg = 'Enter a link that starts with / or https://'; el = f.url; }
+      if (msg) { it._mark(msg, el); first = first || el; }
+    });
+    if (first) {
       e.preventDefault();
-      alert(problem.type === 'link' ? 'Each custom link needs a name and a link.' : 'Choose the ' + problem.type + ' for each ' + problem.type + ' item.');
+      first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      first.focus({ preventScroll: true });
       return;
     }
-    $('hmJson').value = JSON.stringify(items);
+    $('hmJson').value = JSON.stringify(items, (k, val) => (k.startsWith('_') ? undefined : val));
   });
 
   document.querySelectorAll('[data-style-pick]').forEach((r) => r.addEventListener('change', () => {

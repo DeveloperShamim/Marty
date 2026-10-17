@@ -491,9 +491,10 @@ class OrderController extends Controller
             'customer_phone'   => ['required', 'string', 'max:30'],
             'customer_email'   => ['nullable', 'email', 'max:150'],
             'shipping_address' => ['required', 'string', 'max:500'],
-            'city'             => ['required', 'string', 'max:100'],
+            'city'             => ['nullable', 'string', 'max:100'],
             'postal_code'      => ['nullable', 'string', 'max:20'],
         ]);
+        $data['city'] = (string) ($data['city'] ?? ''); // optional, but the column holds text
 
         $order->update($data);
 

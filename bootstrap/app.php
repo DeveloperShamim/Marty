@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'testing.readonly' => \App\Http\Middleware\BlockMutationsInTestingMode::class,
         ]);
 
+        $middleware->web(prepend: [
+            \App\Http\Middleware\CanonicalHost::class,
+        ]);
         $middleware->web(append: [
             \App\Http\Middleware\TrackUtmSource::class,
         ]);

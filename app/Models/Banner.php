@@ -12,6 +12,13 @@ class Banner extends Model
         'hero_side' => 'Promo Cards — Featured side / bottom promo banners (30% width on desktop, 2 cards)',
     ];
 
+    /** Which screens a promo card shows on. Desktop is the wide layout with the cards beside the slider. */
+    public const DEVICES = [
+        'both'    => 'Phone and desktop',
+        'desktop' => 'Desktop only',
+        'mobile'  => 'Phone only',
+    ];
+
     public const STYLES = [
         'brand'  => 'Blue (brand)',
         'amber'  => 'Amber / gold',
@@ -23,11 +30,42 @@ class Banner extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'starts_at' => 'datetime',
+        'ends_at'   => 'datetime',
     ];
 
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    /** Switched on, and inside its start / end dates when it has them. */
+    public function scopeLive(Builder $query): Builder
+    {
+        return $query->active()
+            ->where(fn ($q) => $q->whereNull('starts_at')->orWhere('starts_at', '<=', now()))
+            ->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()));
+    }
+
+    /** live, scheduled (starts later), ended or hidden, for the admin badges. */
+    public function status(): string
+    {
+        return match (true) {
+            ! $this->is_active => 'hidden',
+            $this->starts_at && $this->starts_at->isFuture() => 'scheduled',
+            $this->ends_at && ! $this->ends_at->isFuture() => 'ended',
+            default => 'live',
+        };
+    }
+
+    public function showsOnDesktop(): bool
+    {
+        return ($this->show_on ?? 'both') !== 'mobile';
+    }
+
+    public function showsOnPhone(): bool
+    {
+        return ($this->show_on ?? 'both') !== 'desktop';
     }
 
     public function scopePlacement(Builder $query, string $placement): Builder

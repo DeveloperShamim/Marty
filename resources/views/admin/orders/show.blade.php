@@ -211,7 +211,7 @@
           <div class="flex items-start gap-3 min-w-0 rounded-xl bg-slate-50 p-3">
             <x-oi name="pin" class="w-4 h-4 text-slate-400 mt-0.5" />
             <div class="min-w-0">
-              <p class="text-sm text-slate-800 leading-snug break-words">{{ $order->shipping_address }}, {{ $order->city }} {{ $order->postal_code }}</p>
+              <p class="text-sm text-slate-800 leading-snug break-words">{{ $order->shipping_address }}@if($order->city), {{ $order->city }}@endif {{ $order->postal_code }}</p>
               <p class="text-xs text-slate-500 mt-1">{{ shipping_zone_label($order->shipping_zone) }}</p>
             </div>
           </div>
@@ -553,8 +553,8 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label class="lbl">City or district <span class="text-rose-500">*</span></label>
-          <input type="text" name="city" required value="{{ old('city', $order->city) }}" class="w-full h-10 rounded-xl border border-gray-200 px-3.5 text-sm" placeholder="e.g. Dhaka, Chittagong" />
+          <label class="lbl">City or district <span class="text-gray-400 font-normal">(optional)</span></label>
+          <input type="text" name="city" value="{{ old('city', $order->city) }}" class="w-full h-10 rounded-xl border border-gray-200 px-3.5 text-sm" placeholder="e.g. Dhaka, Chittagong" />
           @error('city')
             <p class="text-rose-600 text-[11px] mt-1">{{ $message }}</p>
           @enderror

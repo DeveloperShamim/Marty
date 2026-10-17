@@ -29,6 +29,7 @@ class BannerController extends Controller
             'banner'     => new Banner(['is_active' => true, 'placement' => $defaultPlacement, 'style' => 'brand', 'position' => 0]),
             'placements' => Banner::PLACEMENTS,
             'styles'     => Banner::STYLES,
+            'devices'    => Banner::DEVICES,
         ]);
     }
 
@@ -49,6 +50,7 @@ class BannerController extends Controller
             'banner'     => $banner,
             'placements' => Banner::PLACEMENTS,
             'styles'     => Banner::STYLES,
+            'devices'    => Banner::DEVICES,
         ]);
     }
 
@@ -67,7 +69,7 @@ class BannerController extends Controller
     {
         $banner->update(['is_active' => ! $banner->is_active]);
 
-        return back()->with('status', $banner->is_active ? 'Banner is now visible on the storefront.' : 'Banner hidden from the storefront.');
+        return back()->with('status', $banner->is_active ? 'Banner is switched on. It shows on the store inside its dates.' : 'Banner hidden from the storefront.');
     }
 
     public function destroy(Banner $banner)
@@ -93,7 +95,17 @@ class BannerController extends Controller
             'position'    => ['nullable', 'integer', 'min:0'],
             'image_file'  => ['nullable', 'image', 'max:4096'],
             'image_url'   => ['nullable', 'string', 'max:255'],
+            'show_on'     => ['nullable', 'in:' . implode(',', array_keys(Banner::DEVICES))],
+            'starts_at'   => ['nullable', 'date'],
+            'ends_at'     => ['nullable', 'date', 'after:starts_at'],
+        ], [
+            'ends_at.after' => 'The end must be after the start.',
         ]);
+
+        // Promo cards can be kept to phones or desktops; carousel slides always show on both
+        $data['show_on'] = $data['placement'] === 'hero_side' ? ($data['show_on'] ?? 'both') : 'both';
+        $data['starts_at'] = $data['starts_at'] ?? null;
+        $data['ends_at'] = $data['ends_at'] ?? null;
 
         if (empty($data['style']) || ! array_key_exists($data['style'], Banner::STYLES)) {
             $data['style'] = 'brand';

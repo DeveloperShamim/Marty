@@ -6,7 +6,11 @@
     $flashEndsAt = setting('flash_sale_ends_at');
     $flashEndsIso = $flashEndsAt ? \Illuminate\Support\Carbon::parse($flashEndsAt)->toIso8601String() : null;
     $mainHero = $heroBanners->first();
-    $hasHero = $heroBanners->isNotEmpty() || $heroSideBanners->isNotEmpty() || setting('hero_fallback_title') || setting('hero_fallback_badge');
+    // Promo cards: up to 2 on desktop and up to 2 on phones, each kept to the screens admin picked
+    $deskCards = $heroSideBanners->filter->showsOnDesktop()->take(2);
+    $phoneCards = $heroSideBanners->filter->showsOnPhone()->take(2);
+    $sideCards = $heroSideBanners->filter(fn ($c) => $deskCards->contains("id", $c->id) || $phoneCards->contains("id", $c->id));
+    $hasHero = $heroBanners->isNotEmpty() || $sideCards->isNotEmpty() || setting('hero_fallback_title') || setting('hero_fallback_badge');
     $hero = $mainHero;
     $heroTitle = $hero?->title ?: setting('hero_fallback_title');
     $heroSubtitle = $hero?->subtitle ?: setting('hero_fallback_subtitle');
@@ -21,15 +25,19 @@
 
         {{-- Main Hero Slider --}}
         @php
-          $sliderClasses = $heroSideBanners->isNotEmpty()
-            ? 'col-span-2 lg:col-span-7 lg:row-span-2'
-            : 'col-span-2 lg:col-span-10';
+          // With no promo card on desktop the slider spans the full width but keeps the height it has beside the cards
+          // (75:28 ≈ 70% of the width at 15:8). Slide images fill it, so their top and bottom edges are trimmed there.
+          $heroWide = $deskCards->isEmpty();
+          $sliderClasses = $heroWide
+            ? 'col-span-2 lg:col-span-10 lg:aspect-[75/28]'
+            : 'col-span-2 lg:col-span-7 lg:row-span-2';
+          $slideBox = $heroWide ? 'lg:aspect-auto' : '';
         @endphp
 
         <div class="{{ $sliderClasses }} relative rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-center aspect-[15/8] w-full bg-transparent">
           @if($heroBanners->count() > 1)
             {{-- Carousel Slider --}}
-            <div id="homeHeroSlider" class="relative w-full h-full aspect-[15/8] overflow-hidden select-none">
+            <div id="homeHeroSlider" class="relative w-full h-full aspect-[15/8] {{ $slideBox }} overflow-hidden select-none">
               @foreach($heroBanners as $i => $slide)
                 <div data-hero-slide class="absolute inset-0 transition-opacity duration-500 ease-in-out {{ $i === 0 ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none' }}">
                   <a href="{{ $slide->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $slide->title ?: 'Banner Slide' }}">
@@ -67,7 +75,7 @@
               </div>
             </div>
           @elseif($mainHero)
-            <div class="relative w-full h-full aspect-[15/8] overflow-hidden">
+            <div class="relative w-full h-full aspect-[15/8] {{ $slideBox }} overflow-hidden">
               <a href="{{ $mainHero->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $mainHero->title ?: 'Banner' }}">
                 @if($mainHero->image)
                   <img src="{{ $mainHero->imageUrl() }}" alt="{{ $mainHero->title }}" class="w-full h-full object-cover object-center">
@@ -84,7 +92,7 @@
               </a>
             </div>
           @else
-            <div class="relative w-full h-full aspect-[15/8] overflow-hidden bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
+            <div class="relative w-full h-full aspect-[15/8] {{ $slideBox }} overflow-hidden bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
               <div class="max-w-md">
                 @if($heroBadge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $heroBadge }}</span>@endif
                 <h2 class="text-xl sm:text-4xl font-extrabold leading-tight">{{ $heroTitle ?: site_name() }}</h2>
@@ -96,8 +104,13 @@
         </div>
 
         {{-- Side Promo Tiles --}}
-        @foreach($heroSideBanners->take(2) as $sideCard)
-          <a href="{{ $sideCard->linkHref() }}" class="col-span-1 lg:col-span-3 relative flex rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-0.5 bg-transparent aspect-[868/476] lg:aspect-auto lg:h-full min-h-0" aria-label="{{ $sideCard->title ?: 'Promo Card' }}">
+        @foreach($sideCards as $sideCard)
+          @php
+            $onDesk = $deskCards->contains("id", $sideCard->id);
+            $onPhone = $phoneCards->contains("id", $sideCard->id);
+            $cardScreens = ($onDesk && $onPhone ? '' : ($onDesk ? 'hidden lg:flex' : 'lg:hidden')) . ($phoneCards->count() === 1 ? ' col-span-2 lg:col-span-3' : ' col-span-1 lg:col-span-3');
+          @endphp
+          <a href="{{ $sideCard->linkHref() }}" data-promo-card="{{ $sideCard->show_on ?? 'both' }}" class="{{ $cardScreens }} relative flex rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-0.5 bg-transparent aspect-[868/476] lg:aspect-auto lg:h-full min-h-0" aria-label="{{ $sideCard->title ?: 'Promo Card' }}">
             @if($sideCard->image)
               <img src="{{ $sideCard->imageUrl() }}" alt="{{ $sideCard->title }}" class="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-500" loading="lazy">
             @else
@@ -116,28 +129,28 @@
     </section>
   @endif
 
-  {{-- 2. TRUST STRIP (Admin → Storefront → Trust Strip): 4 across on desktop, 2 x 2 on tablets and phones --}}
+  {{-- 2. TRUST STRIP (Admin → Storefront → Trust Strip): soft coloured icon tiles, 4 across on desktop, 2 x 2 on phones --}}
   @if(isset($features) && $features->isNotEmpty())
-    @php $featureCount = $features->count(); @endphp
     <section class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 mt-3 sm:mt-4" data-reveal>
-      <div class="grid grid-cols-2 lg:grid-cols-{{ min(4, $featureCount) }} overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200/70 shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_-12px_rgba(0,0,0,0.08)]">
+      <div class="grid grid-cols-2 lg:grid-cols-{{ min(4, $features->count()) }} gap-2 sm:gap-4 bg-white border border-stone-200/80 rounded-2xl p-2.5 sm:p-4 shadow-2xs" data-trust-strip>
         @foreach($features as $index => $feature)
           @php
-            // Thin dividers: between the 2 columns and rows on phones/tablets, between columns on desktop.
-            $lines = [];
-            if ($index % 2 === 0 && $index < $featureCount - 1) $lines[] = 'border-r';
-            if ($index < $featureCount - ($featureCount % 2 === 0 ? 2 : 1)) $lines[] = 'border-b';
-            $lines[] = 'lg:border-r-0 lg:border-b-0';
-            if ($index % 4 !== 0) $lines[] = 'lg:border-l';
+            $palettes = [
+              ['bg' => 'bg-amber-50/90', 'border' => 'border-amber-200/90', 'text' => 'text-amber-600'],
+              ['bg' => 'bg-emerald-50/90', 'border' => 'border-emerald-200/90', 'text' => 'text-emerald-600'],
+              ['bg' => 'bg-amber-50/90', 'border' => 'border-amber-200/90', 'text' => 'text-amber-600'],
+              ['bg' => 'bg-sky-50/90', 'border' => 'border-sky-200/90', 'text' => 'text-sky-600'],
+            ];
+            $palette = $palettes[$index % count($palettes)];
           @endphp
-          <div class="group flex items-center sm:items-start gap-2.5 sm:gap-3.5 px-3 py-3 sm:px-5 sm:py-5 border-stone-100 {{ implode(' ', $lines) }} min-w-0">
-            <div class="grid h-8 w-8 sm:h-11 sm:w-11 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600 ring-1 ring-brand-100 transition-transform duration-300 group-hover:scale-110 group-hover:bg-brand-600 group-hover:text-white">
-              {!! $feature->renderIconHtml('w-4 h-4 sm:w-5 sm:h-5', '') !!}
+          <div class="flex items-center gap-2 sm:gap-3 p-1 sm:p-2 min-w-0">
+            <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl {{ $palette['bg'] }} {{ $palette['text'] }} flex items-center justify-center shrink-0 border {{ $palette['border'] }} shadow-2xs">
+              {!! $feature->renderIconHtml('w-4 h-4 sm:w-5 sm:h-5', $palette['text']) !!}
             </div>
-            <div class="min-w-0">
-              <h4 class="text-xs sm:text-[15px] font-bold text-ink leading-tight">{{ $feature->title }}</h4>
+            <div class="min-w-0 flex-1">
+              <h4 class="text-[11px] sm:text-sm font-extrabold text-stone-900 truncate leading-snug">{{ $feature->title }}</h4>
               @if($feature->subtitle)
-                <p class="hidden sm:block mt-1 text-xs text-stone-500 leading-snug line-clamp-2">{{ preg_replace('/(\d)-(\d)/u', "\$1\u{2011}\$2", $feature->subtitle) }}</p>
+                <p class="text-[10px] sm:text-[11px] text-stone-500 truncate mt-0.5">{{ $feature->subtitle }}</p>
               @endif
             </div>
           </div>

@@ -41,7 +41,7 @@ class HomeController extends Controller
             ->filter(fn (Brand $b) => $b->products_count > 0)
             ->values();
 
-        $banners = fn (string $placement) => Banner::active()
+        $banners = fn (string $placement) => Banner::live()
             ->placement($placement)
             ->orderBy('position')
             ->orderBy('id');

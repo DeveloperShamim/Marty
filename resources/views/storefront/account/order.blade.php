@@ -125,7 +125,7 @@
           <span>📍</span> <span>Delivery Address</span>
         </h3>
         <p class="font-extrabold text-sm text-slate-900">{{ $order->customer_name }}</p>
-        <p class="text-slate-600 leading-relaxed">{{ $order->shipping_address }}, {{ $order->city }}</p>
+        <p class="text-slate-600 leading-relaxed">{{ $order->shipping_address }}@if($order->city), {{ $order->city }}@endif</p>
         <p class="text-slate-500 font-mono mt-1">{{ $order->customer_phone }}</p>
       </div>
 
