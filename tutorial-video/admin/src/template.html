@@ -19,22 +19,22 @@
   /* ---------- world (everything the camera moves) ---------- */
   #world { position: absolute; left: 0; top: 0; width: 1px; height: 1px; transform-origin: 0 0; }
 
-  /* Laptop: the display is 1600×1000 world px at (0, 0). */
-  #lid { position: absolute; left: -22px; top: -22px; width: 1644px; height: 1044px; border-radius: 38px; background: #0d0d10;
+  /* Laptop: the display is 1440×940 world px at (80, 52), exactly the browser window, so the site fills the screen. */
+  #lid { position: absolute; left: 58px; top: 30px; width: 1484px; height: 984px; border-radius: 38px; background: #0d0d10;
     box-shadow: 0 0 0 2px #3a3a40, 0 60px 120px rgba(0,0,0,.55); }
-  #notch { position: absolute; left: 740px; top: -22px; width: 120px; height: 22px; border-radius: 0 0 12px 12px; background: #0d0d10; }
-  #display { position: absolute; left: 0; top: 0; width: 1600px; height: 1000px; border-radius: 12px; overflow: hidden;
+  #notch { position: absolute; left: 740px; top: 30px; width: 120px; height: 22px; border-radius: 0 0 12px 12px; background: #0d0d10; }
+  #display { position: absolute; left: 80px; top: 52px; width: 1440px; height: 940px; border-radius: 12px; overflow: hidden;
     background: linear-gradient(160deg, #7a2a3a 0%, #2a0a12 100%); }
-  #base { position: absolute; left: -160px; top: 1022px; width: 1920px; height: 30px; border-radius: 4px 4px 28px 28px;
+  #base { position: absolute; left: -70px; top: 1014px; width: 1740px; height: 30px; border-radius: 4px 4px 28px 28px;
     background: linear-gradient(180deg, #e6e6ea 0%, #a9aab0 100%); }
-  #baseLip { position: absolute; left: 720px; top: 1022px; width: 160px; height: 10px; border-radius: 0 0 10px 10px; background: #b9bac0; }
-  #menubar { position: absolute; left: 0; top: 0; width: 1600px; height: 28px; background: rgba(255,255,255,.14);
+  #baseLip { position: absolute; left: 720px; top: 1014px; width: 160px; height: 10px; border-radius: 0 0 10px 10px; background: #b9bac0; }
+  #menubar { position: absolute; left: 0; top: 0; width: 1440px; height: 28px; background: rgba(255,255,255,.14);
     color: #fff; font: 600 14px/28px 'Inter', sans-serif; }
   #menubar span { margin-left: 22px; }
   #menubar .right { position: absolute; right: 22px; top: 0; }
 
-  /* Browser window inside the display. Content viewport = 1440×864 at (80, 128). */
-  #browser { position: absolute; left: 80px; top: 52px; width: 1440px; height: 940px; border-radius: 14px; overflow: hidden;
+  /* Browser window fills the display. Content viewport = 1440×864 at world (80, 128). */
+  #browser { position: absolute; left: 0; top: 0; width: 1440px; height: 940px; border-radius: 12px; overflow: hidden;
     background: #fff; box-shadow: 0 30px 80px rgba(0,0,0,.45); transform-origin: 50% 100%; }
   #tabbar { position: absolute; left: 0; top: 0; width: 1440px; height: 40px; background: #e9e6e4; }
   .light { position: absolute; top: 14px; width: 12px; height: 12px; border-radius: 50%; }
@@ -51,7 +51,7 @@
   #newtab { position: absolute; left: 0; top: 0; width: 1440px; height: 864px; background: #f7f5f3; }
 
   /* Dock */
-  #dock { position: absolute; left: 580px; top: 918px; width: 440px; height: 72px; border-radius: 22px; background: rgba(255,255,255,.22);
+  #dock { position: absolute; left: 500px; top: 866px; width: 440px; height: 72px; border-radius: 22px; background: rgba(255,255,255,.22);
     border: 1px solid rgba(255,255,255,.35); }
   .app { position: absolute; top: 10px; width: 52px; height: 52px; border-radius: 13px; }
   .app i { position: absolute; display: block; }

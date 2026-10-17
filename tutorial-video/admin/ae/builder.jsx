@@ -225,23 +225,24 @@
         opacity(L, T[nm].o);
     }
 
-    // ---------------- laptop display: wallpaper, menu bar, browser, dock, 1600 x 1000 ----------------
-    var dp = precomp("Laptop display", 1600, 1000);
-    var wall = solid(dp, "Wallpaper", "#7a2a3a", 1600, 1000);
-    ramp(wall, [300, 0], "#7a2a3a", [1300, 1000], "#2a0a12", false);
-    var mb = shape(dp, "Menu bar", "rect", 1600, 28, 0, { fill: "#ffffff", fillOpacity: 14, at: [800, 14] });
+    // ---------------- laptop display: wallpaper, menu bar, browser, dock, 1440 x 940 ----------------
+    // The display is exactly the browser window, so the site fills the laptop screen edge to edge.
+    var dp = precomp("Laptop display", 1440, 940);
+    var wall = solid(dp, "Wallpaper", "#7a2a3a", 1440, 940);
+    ramp(wall, [270, 0], "#7a2a3a", [1170, 940], "#2a0a12", false);
+    var mb = shape(dp, "Menu bar", "rect", 1440, 28, 0, { fill: "#ffffff", fillOpacity: 14, at: [720, 14] });
     var mbt = text(dp, "Menu bar items", "    Finder    File    Edit    View    Window", FONT.enSemi, 14, "#ffffff", [26, 19]);
-    var mbc = text(dp, "Menu bar clock", "Tue 14:30", FONT.enSemi, 14, "#ffffff", [1578, 19], { right: true });
+    var mbc = text(dp, "Menu bar clock", "Tue 14:30", FONT.enSemi, 14, "#ffffff", [1418, 19], { right: true });
     opacity(mb, T["menubar"].o); opacity(mbt, T["menubar"].o); opacity(mbc, T["menubar"].o);
-    var bl = place(dp, bw, "Browser", [720, 940], [800, 992]);
-    position(bl, still(800), T["browser"].y, null, function (v) { return 992 + v; });
+    var bl = place(dp, bw, "Browser", [720, 940], [720, 940]);
+    position(bl, still(720), T["browser"].y, null, function (v) { return 940 + v; });
     keyed(tr(bl).property("ADBE Scale"), T["browser"].s, function (v) { return [v * 100, v * 100]; });
     opacity(bl, T["browser"].o);
     shadow(bl, 70, 30, 80);
-    var dockParts = [shape(dp, "Dock", "rect", 440, 72, 22, { fill: "#ffffff", fillOpacity: 22, stroke: "#ffffff", strokeOpacity: 35, strokeW: 1, at: [800, 954] })];
+    var dockParts = [shape(dp, "Dock", "rect", 440, 72, 22, { fill: "#ffffff", fillOpacity: 22, stroke: "#ffffff", strokeOpacity: 35, strokeW: 1, at: [720, 902] })];
     var appColors = ["#2f8cff", "#ffcc33", "#ffffff", "#ff3b30", "#8e5cf7"];
-    for (var a = 0; a < 5; a++) dockParts.push(shape(dp, "Dock app " + (a + 1), "rect", 52, 52, 13, { fill: appColors[a], at: [580 + 14 + a * 84 + 26, 918 + 10 + 26] }));
-    dockParts.push(shape(dp, "Browser icon", "ellipse", 36, 36, 0, { fill: "#2f8cff", at: [788, 954] }));
+    for (var a = 0; a < 5; a++) dockParts.push(shape(dp, "Dock app " + (a + 1), "rect", 52, 52, 13, { fill: appColors[a], at: [500 + 14 + a * 84 + 26, 866 + 10 + 26] }));
+    dockParts.push(shape(dp, "Browser icon", "ellipse", 36, 36, 0, { fill: "#2f8cff", at: [708, 902] }));
     for (a = 0; a < dockParts.length; a++) opacity(dockParts[a], T["dock"].o);
 
     // ---------------- phone screen, 360 x 779 ----------------
@@ -269,12 +270,13 @@
     var onDesk = [];
     function desk(L) { L.parent = cam; onDesk.push(L); return L; }
 
-    var lid = desk(shape(main, "Laptop lid", "rect", 1644, 1044, 38, { fill: "#0d0d10", stroke: "#3a3a40", strokeW: 2, at: [800, 500] }));
+    var lid = desk(shape(main, "Laptop lid", "rect", 1484, 984, 38, { fill: "#0d0d10", stroke: "#3a3a40", strokeW: 2, at: [800, 522] }));
     shadow(lid, 75, 60, 120);
-    desk(place(main, dp, "Laptop display", [0, 0], [0, 0]));
-    desk(shape(main, "Notch", "rect", 120, 22, 12, { fill: "#0d0d10", at: [800, -11] }));
-    desk(shape(main, "Laptop base", "rect", 1920, 30, 14, { fill: "#b9babf", at: [800, 1037] }));
-    desk(shape(main, "Laptop base lip", "rect", 160, 10, 5, { fill: "#a9aab0", at: [800, 1027] }));
+    var dl = desk(place(main, dp, "Laptop display", [0, 0], [80, 52]));
+    roundMask(dl, 1440, 940, 12);
+    desk(shape(main, "Notch", "rect", 120, 22, 12, { fill: "#0d0d10", at: [800, 41] }));
+    desk(shape(main, "Laptop base", "rect", 1740, 30, 14, { fill: "#b9babf", at: [800, 1029] }));
+    desk(shape(main, "Laptop base lip", "rect", 160, 10, 5, { fill: "#a9aab0", at: [800, 1019] }));
     var phone = desk(shape(main, "Phone body", "rect", 400, 819, 64, { fill: "#111111", stroke: "#4a4a50", strokeW: 3, at: [1900, 569.5] }));
     shadow(phone, 75, 50, 100);
     var psl = desk(place(main, ps, "Phone screen", [0, 0], [1720, 180]));

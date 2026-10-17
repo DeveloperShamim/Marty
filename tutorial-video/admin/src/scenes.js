@@ -30,10 +30,10 @@
   tl.set('#browser', { opacity: 0, scale: 0.2, y: 160 }, 0);
   cam(0.2, OVER, 0.86, 3.2);                                  // slow push-in
   cam(C(2), { x: -60, y: 0, w: 2200, h: 1060 }, 0.9, 4);
-  cam(C(3), { x: -40, y: -30, w: 1680, h: 1090 }, 0.95, 1.6); // the computer
+  cam(C(3), { x: 40, y: 10, w: 1520, h: 1040 }, 0.95, 1.6); // the computer
   cam(C(4), { x: 1680, y: 140, w: 440, h: 860 }, 0.95, 1.4);  // the phone: same panel
   tl.to('#phoneImg', { opacity: 1, duration: 0.5 }, C(4) + 0.6);
-  cam(E(4) + 0.3, { x: -40, y: -30, w: 1680, h: 1090 }, 0.95, 1.4);
+  cam(E(4) + 0.3, { x: 40, y: 10, w: 1520, h: 1040 }, 0.95, 1.4);
 
   // ================= 2. Open the browser, type /admin (14.8 – 23.5 s) =================
   cursor(C(5), { x: 762, y: 928, w: 52, h: 52 }, 1.1);        // to the browser icon in the dock
