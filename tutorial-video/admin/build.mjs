@@ -24,10 +24,26 @@ const cues = read("admin-tutorial.srt")
     return { s: toSec(a), e: toSec(b), text };
   });
 
+// With the recorded voice: line times come from voice-timing.json (aligned to the recording).
+// Lines the recording leaves out are kept as silent, hidden markers so scene numbering stays the same.
+const voice = ["voiceover.mp3", "voiceover.wav"].find((f) => existsSync(join(HERE, "assets", f)));
+const K = cues.map(() => 1);
+if (voice && existsSync(join(HERE, "voice-timing.json"))) {
+  const vt = JSON.parse(read("voice-timing.json"));
+  cues.forEach((c, i) => {
+    const old = c.e - c.s;
+    c.s = vt.start[i]; c.e = vt.end[i];
+    c.skip = vt.skip.includes(i + 1);
+    // Steps inside a line are spaced for the old length; squeeze them when the voice is quicker.
+    K[i] = c.skip ? 0 : Math.max(0.35, Math.min(1, (c.e - c.s) / old));
+  });
+}
+
 // Words light up in proportion to their length, finishing just before the line ends.
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const subs = cues
   .map((c, i) => {
+    if (c.skip) return `<div class="sub" id="sub${i}"></div>`;
     const words = c.text.split(" ");
     const weight = words.map((w) => [...w].length + 2);
     const total = weight.reduce((a, b) => a + b, 0);
@@ -74,11 +90,10 @@ const home = tileColors
   `<div style="position:absolute;left:24px;top:668px;width:312px;height:84px;border-radius:30px;background:rgba(255,255,255,.22)"></div>` +
   [0, 1, 2, 3].map((i) => `<div style="position:absolute;left:${42 + i * 74}px;top:680px;width:60px;height:60px;border-radius:15px;background:${tileColors[i * 3]}"></div>`).join("");
 
-const scene = read("src/scenes.js");
-const duration = Math.ceil(cues[cues.length - 1].e + 3);
+// "C(n) + x" offsets in the scene script are scaled with each line's new length.
+const scene = read("src/scenes.js").replace(/C\((\d+)\)\s*\+\s*([0-9.]+)/g, (m, n, x) => `C(${n}) + ${(+x * K[n - 1]).toFixed(3)}`);
+const duration = Math.ceil(Math.max(...cues.map((c) => c.e)) + 3);
 
-// The recorded voiceover, if it has been added: assets/voiceover.mp3 (or .wav), starting at 0:00.
-const voice = ["voiceover.mp3", "voiceover.wav"].find((f) => existsSync(join(HERE, "assets", f)));
 const audio = voice ? `<audio src="assets/${voice}" data-start="0"></audio>` : "";
 
 const html = read("src/template.html")
@@ -89,7 +104,7 @@ const html = read("src/template.html")
   .replace("<!--PHONEHOME-->", home)
   .replace("<!--SUBS-->", subs)
   .replace("/*DURATION*/", String(duration))
-  .replace("/*CUES*/", JSON.stringify(cues.map(({ s, e }) => ({ s, e }))))
+  .replace("/*CUES*/", JSON.stringify(cues.map(({ s, e, skip }) => (skip ? { s, e, skip: true } : { s, e }))))
   .replace("/*SCREENS*/", JSON.stringify(Object.fromEntries(Object.entries(screens).map(([k, v]) => [k, { h: v.h, boxes: v.boxes }]))))
   .replace("/*SCENE*/", scene.replace(/^\/\/.*\n/gm, ""));
 

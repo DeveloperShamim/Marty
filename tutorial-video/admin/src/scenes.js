@@ -1,6 +1,6 @@
 // What happens on screen, line by line of the voiceover. C(n) = start of SRT cue n, E(n) = its end.
 // Boxes are "screen.name" from screens.json (positions of real buttons in the captured admin pages).
-({ tl, $, world, box, union, pad, cam, camBrowser, show, scrollTo, scrollToBox, cursor, click, tap, hideCursor, ring, type, toast, C, E, VX, VY, VW, VH }) => {
+({ skipped, tl, $, world, box, union, pad, cam, camBrowser, show, scrollTo, scrollToBox, cursor, click, tap, hideCursor, ring, type, toast, C, E, VX, VY, VW, VH }) => {
   const GREEN = '#28a745', BRAND = '#8b1e33', GOLD = '#c9902f', BLUE = '#2f6fec';
 
   // ---- the long admin menu: its own scrolling layer for items below the fold ----
@@ -388,16 +388,21 @@
   hideCursor(E(166));
 
   // ================= 16. Profit, expenses, customers, staff (673.8 – 746.5 s) =================
-  nav(C(167), 'navAnalytics', 'analytics');
-  cam(C(168), { x: VX + 289, y: VY + 230, w: 1140, h: 200 }, 0.95, 1.1);
-  ring(C(168) + 0.3, [VX + 289, VY + 240, 1130, 110], 3.2, 4);
-  ring(C(169) + 0.2, [VX + 289, VY + 350, 1130, 160], 4.0, 4);
-  cam(C(170), { x: VX + 1100, y: VY + 60, w: 340, h: 100 }, 0.8, 1.1);
-  tap(C(170) + 0.8, 'analytics.export', 0.7);
-  ring(C(171), 'analytics.export', 2.6, 6);
-  hideCursor(E(171));
-  nav(C(172) + 0.3, 'navExpenses', 'expenses');
-  ring(C(173), [VX + 289, VY + 410, 1130, 300], 3.0, 4);
+  if (!skipped(167)) {
+    nav(C(167), 'navAnalytics', 'analytics');
+    cam(C(168), { x: VX + 289, y: VY + 230, w: 1140, h: 200 }, 0.95, 1.1);
+    ring(C(168) + 0.3, [VX + 289, VY + 240, 1130, 110], 3.2, 4);
+    ring(C(169) + 0.2, [VX + 289, VY + 350, 1130, 160], 4.0, 4);
+    cam(C(170), { x: VX + 1100, y: VY + 60, w: 340, h: 100 }, 0.8, 1.1);
+    tap(C(170) + 0.8, 'analytics.export', 0.7);
+    ring(C(171), 'analytics.export', 2.6, 6);
+    hideCursor(E(171));
+    nav(C(172) + 0.3, 'navExpenses', 'expenses');
+    ring(C(173), [VX + 289, VY + 410, 1130, 300], 3.0, 4);
+  } else {
+    // The recording goes straight from abandoned carts to "these costs come off the profit".
+    nav(C(174) - 0.6, 'navExpenses', 'expenses');
+  }
   ring(C(174) + 0.3, [VX + 289, VY + 150, 1130, 115], 4.6, 4);
   nav(C(175), 'navCustomers', 'customers');
   ring(C(175) + 1.6, [VX + 289, VY + 470, 1130, 380], 3.0, 4);
@@ -430,7 +435,7 @@
   ring(C(192) + 4.4, [VX + 289, VY + 640 - 420, 1130, 220], 1.8, 4);
   scrollTo(C(193) - 0.2, 0, 0.8);
   cam(C(193) + 0.5, { x: VX + 289, y: VY + 200, w: 560, h: 80 }, 0.8, 1.2);
-  ring(C(193) + 1.2, [VX + 600, VY + 228, 140, 30], 5.0, 6);       // the Bangla setup guide button
+  ring(C(193) + 1.2, [VX + 364, VY + 226, 58, 22], 5.0, 8);        // the Bangla setup guide button
   hideCursor(C(193));
 
   // ================= 18. Close (794.4 – 806.8 s) =================

@@ -279,8 +279,9 @@ function toast(t, icon, color, title, sub, hold = 3) {
 
 // ---------- subtitles ----------
 CUES.forEach((c, i) => {
+  if (c.skip) return;                      // not in the recording
   const el = $('sub' + i);
-  const next = CUES[i + 1];
+  const next = CUES.slice(i + 1).find((x) => !x.skip);
   const off = next && next.s - c.e < 0.7 ? next.s : c.e + 0.25;
   tl.to(el, { opacity: 1, duration: 0.18, ease: 'none' }, c.s - 0.05);
   tl.to(el, { opacity: 0, duration: 0.12, ease: 'none' }, off - 0.06);
@@ -288,8 +289,8 @@ CUES.forEach((c, i) => {
 });
 
 // ---------- scene ----------
-const C = (n) => CUES[n - 1].s, E = (n) => CUES[n - 1].e;
-SCENE({ tl, $, world, box, union, pad, cam, camBrowser, show, scrollTo, scrollToBox, cursor, click, tap, hideCursor, ring, type, toast, C, E, VX, VY, VW, VH });
+const C = (n) => CUES[n - 1].s, E = (n) => CUES[n - 1].e, skipped = (n) => !!CUES[n - 1].skip;
+SCENE({ skipped, tl, $, world, box, union, pad, cam, camBrowser, show, scrollTo, scrollToBox, cursor, click, tap, hideCursor, ring, type, toast, C, E, VX, VY, VW, VH });
 tl.set({}, {}, DURATION);
 
 // Play once everything (fonts, screenshots) is ready.

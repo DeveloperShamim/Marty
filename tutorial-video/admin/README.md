@@ -16,9 +16,16 @@ Double-click `VantAdminTutorial.html` (Chrome or Edge). It plays by itself.
 Comes in as pictures (no editable source): the admin screenshots in `assets/screens/` and the logo PNGs.
 Everything else is native: the subtitles, notifications, pointer, highlight rings, devices and camera moves.
 
-## Add the voiceover
-Put the recording in `assets/voiceover.mp3` (starting at 0:00, matching `admin-tutorial.srt`), then run
-`node build.mjs`. The audio is added to the page automatically.
+## Voiceover
+`assets/voiceover.mp3` is the ElevenLabs recording (11:17). It is quicker than the original script timing, so
+`voice-timing.json` holds each line's time in the recording, and `admin-tutorial-vo.srt` is the matching subtitle
+file. The build uses these automatically; every step inside a line is scaled to the line's new length.
+
+The recording leaves out script lines 167–173 (Profit & Analytics, Export CSV, Expenses), so the video skips
+those screens and goes from Abandoned Carts straight to "এই খরচগুলো…" on the Expenses page.
+
+To use a new recording: replace `assets/voiceover.mp3`, update `voice-timing.json` (start/end per script line,
+`skip` for lines that aren't spoken), and run `node build.mjs`.
 
 ## Change things
 | What | Where |
