@@ -25,20 +25,26 @@
 
         {{-- Main Hero Slider --}}
         @php
-          $sliderClasses = $deskCards->isNotEmpty()
-            ? 'col-span-2 lg:col-span-7 lg:row-span-2'
-            : 'col-span-2 lg:col-span-10';
+          // With no promo card on desktop the slider spans the full width but keeps the height it has beside the cards
+          // (75:28 ≈ 70% of the width at 15:8). The 15:8 slide is shown whole in the middle over a blurred copy of itself.
+          $heroWide = $deskCards->isEmpty();
+          $sliderClasses = $heroWide
+            ? 'col-span-2 lg:col-span-10 lg:aspect-[75/28]'
+            : 'col-span-2 lg:col-span-7 lg:row-span-2';
+          $slideBox = $heroWide ? 'lg:aspect-auto' : '';
+          $slideImg = $heroWide ? 'lg:relative lg:object-contain' : '';
         @endphp
 
         <div class="{{ $sliderClasses }} relative rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-center aspect-[15/8] w-full bg-transparent">
           @if($heroBanners->count() > 1)
             {{-- Carousel Slider --}}
-            <div id="homeHeroSlider" class="relative w-full h-full aspect-[15/8] overflow-hidden select-none">
+            <div id="homeHeroSlider" class="relative w-full h-full aspect-[15/8] {{ $slideBox }} overflow-hidden select-none">
               @foreach($heroBanners as $i => $slide)
                 <div data-hero-slide class="absolute inset-0 transition-opacity duration-500 ease-in-out {{ $i === 0 ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none' }}">
                   <a href="{{ $slide->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $slide->title ?: 'Banner Slide' }}">
                     @if($slide->image)
-                      <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->title }}" class="w-full h-full object-cover object-center" loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
+                      @if($heroWide)<img src="{{ $slide->imageUrl() }}" alt="" aria-hidden="true" class="hidden lg:block absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-80" loading="{{ $i === 0 ? 'eager' : 'lazy' }}" data-hero-backdrop>@endif
+                      <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->title }}" class="w-full h-full object-cover object-center {{ $slideImg }}" loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
                     @else
                       <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
                         <div class="max-w-md">
@@ -71,10 +77,11 @@
               </div>
             </div>
           @elseif($mainHero)
-            <div class="relative w-full h-full aspect-[15/8] overflow-hidden">
+            <div class="relative w-full h-full aspect-[15/8] {{ $slideBox }} overflow-hidden">
               <a href="{{ $mainHero->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $mainHero->title ?: 'Banner' }}">
                 @if($mainHero->image)
-                  <img src="{{ $mainHero->imageUrl() }}" alt="{{ $mainHero->title }}" class="w-full h-full object-cover object-center">
+                  @if($heroWide)<img src="{{ $mainHero->imageUrl() }}" alt="" aria-hidden="true" class="hidden lg:block absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-80" data-hero-backdrop>@endif
+                  <img src="{{ $mainHero->imageUrl() }}" alt="{{ $mainHero->title }}" class="w-full h-full object-cover object-center {{ $slideImg }}">
                 @else
                   <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
                     <div class="max-w-md">
@@ -88,7 +95,7 @@
               </a>
             </div>
           @else
-            <div class="relative w-full h-full aspect-[15/8] overflow-hidden bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
+            <div class="relative w-full h-full aspect-[15/8] {{ $slideBox }} overflow-hidden bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
               <div class="max-w-md">
                 @if($heroBadge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $heroBadge }}</span>@endif
                 <h2 class="text-xl sm:text-4xl font-extrabold leading-tight">{{ $heroTitle ?: site_name() }}</h2>

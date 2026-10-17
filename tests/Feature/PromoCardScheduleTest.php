@@ -39,6 +39,7 @@ class PromoCardScheduleTest extends TestCase
         $this->assertMatchesRegularExpression('/data-promo-card="desktop" class="hidden lg:flex col-span-1/', $html);
         $this->assertMatchesRegularExpression('/data-promo-card="mobile" class="lg:hidden col-span-1/', $html);
         $this->assertStringContainsString('lg:col-span-7 lg:row-span-2', $html);
+        $this->assertStringNotContainsString('lg:aspect-[75/28]', $html);
     }
 
     public function test_slider_takes_full_width_on_desktop_when_cards_are_phone_only(): void
@@ -47,7 +48,8 @@ class PromoCardScheduleTest extends TestCase
 
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('col-span-2 lg:col-span-10', $html);
+        // Full width on desktop, but no taller than beside the cards
+        $this->assertStringContainsString('col-span-2 lg:col-span-10 lg:aspect-[75/28]', $html);
         $this->assertMatchesRegularExpression('/data-promo-card="mobile" class="lg:hidden col-span-2 lg:col-span-3/', $html);
     }
 
