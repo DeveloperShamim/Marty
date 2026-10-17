@@ -8,7 +8,20 @@ subtitles, in Vant's burgundy with the Vant logo.
 ## Watch it
 Double-click `VantAdminTutorial.html` (Chrome or Edge). It plays by itself.
 
-## Convert it in After Effects
+## Build it in After Effects (script, no plugin needed)
+1. In After Effects: **Preferences → Type → South Asian and Middle Eastern** (then restart AE once), so Bangla letters join.
+2. Install the fonts **Hind Siliguri** (Medium, SemiBold, Bold) and **Inter** (Medium, SemiBold) from Google Fonts.
+3. **File → Scripts → Run Script File…** and choose `VantAdminTutorial.jsx` (keep it next to the `assets` folder).
+
+It creates a folder "Vant Admin Tutorial" with the main comp and 4 precomps (laptop display, browser window,
+browser viewport, phone screen), all native layers: the camera moves are keyframes on the null
+"CAMERA (move me)", the pointer is `assets/cursor.png`, typing is a typewriter expression with a blinking caret,
+and the subtitles are one text layer whose words light up through a text animator.
+
+To regenerate the script after changing the video: `npm install`, then `npm run ae`
+(`node build.mjs` + `node ae/export.mjs`; `node ae/test-jsx.mjs` dry-runs the result).
+
+## Or convert it with CodeFlow
 1. **Window → Extensions → CodeFlow**
 2. Drag `VantAdminTutorial.html` onto the panel (or **Open…**), wait for it to read the frames, then **Build**.
 3. CodeFlow needs Chrome or Edge installed and an internet connection (Google Fonts, GSAP).
