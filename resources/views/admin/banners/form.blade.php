@@ -193,7 +193,7 @@
 function updatePlacementUI(placement) {
   const BASE = 'relative flex flex-col p-3.5 rounded-xl cursor-pointer transition-colors placement-card ';
   const sizes = {
-    hero: ['15/8', '15:8', '1500 × 800 px', 'Hero slides display in the main rotating carousel. Recommended size is <strong>1500 &times; 800 px</strong> (Aspect ratio 15:8).'],
+    hero: ['15/8', '15:8', '1500 × 800 px', 'Hero slides display in the main rotating carousel. Recommended size is <strong>1500 &times; 800 px</strong> (Aspect ratio 15:8). When no promo card shows on desktop, the slide fills a wider frame there and its top and bottom are trimmed a little, so keep text and products near the middle.'],
     hero_side: ['1.82/1', '1.82:1', '868 × 476 px', 'Promo cards sit beside the hero carousel (stacked on desktop, 2-column grid on mobile). Recommended size is <strong>868 &times; 476 px</strong> (Aspect ratio 1.82:1).'],
   };
   ['hero', 'hero_side'].forEach(p => {

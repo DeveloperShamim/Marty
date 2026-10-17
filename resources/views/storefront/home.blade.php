@@ -26,13 +26,12 @@
         {{-- Main Hero Slider --}}
         @php
           // With no promo card on desktop the slider spans the full width but keeps the height it has beside the cards
-          // (75:28 ≈ 70% of the width at 15:8). The 15:8 slide is shown whole in the middle over a blurred copy of itself.
+          // (75:28 ≈ 70% of the width at 15:8). Slide images fill it, so their top and bottom edges are trimmed there.
           $heroWide = $deskCards->isEmpty();
           $sliderClasses = $heroWide
             ? 'col-span-2 lg:col-span-10 lg:aspect-[75/28]'
             : 'col-span-2 lg:col-span-7 lg:row-span-2';
           $slideBox = $heroWide ? 'lg:aspect-auto' : '';
-          $slideImg = $heroWide ? 'lg:relative lg:object-contain' : '';
         @endphp
 
         <div class="{{ $sliderClasses }} relative rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-center aspect-[15/8] w-full bg-transparent">
@@ -43,8 +42,7 @@
                 <div data-hero-slide class="absolute inset-0 transition-opacity duration-500 ease-in-out {{ $i === 0 ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none' }}">
                   <a href="{{ $slide->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $slide->title ?: 'Banner Slide' }}">
                     @if($slide->image)
-                      @if($heroWide)<img src="{{ $slide->imageUrl() }}" alt="" aria-hidden="true" class="hidden lg:block absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-80" loading="{{ $i === 0 ? 'eager' : 'lazy' }}" data-hero-backdrop>@endif
-                      <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->title }}" class="w-full h-full object-cover object-center {{ $slideImg }}" loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
+                      <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->title }}" class="w-full h-full object-cover object-center" loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
                     @else
                       <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
                         <div class="max-w-md">
@@ -80,8 +78,7 @@
             <div class="relative w-full h-full aspect-[15/8] {{ $slideBox }} overflow-hidden">
               <a href="{{ $mainHero->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $mainHero->title ?: 'Banner' }}">
                 @if($mainHero->image)
-                  @if($heroWide)<img src="{{ $mainHero->imageUrl() }}" alt="" aria-hidden="true" class="hidden lg:block absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-80" data-hero-backdrop>@endif
-                  <img src="{{ $mainHero->imageUrl() }}" alt="{{ $mainHero->title }}" class="w-full h-full object-cover object-center {{ $slideImg }}">
+                  <img src="{{ $mainHero->imageUrl() }}" alt="{{ $mainHero->title }}" class="w-full h-full object-cover object-center">
                 @else
                   <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
                     <div class="max-w-md">
