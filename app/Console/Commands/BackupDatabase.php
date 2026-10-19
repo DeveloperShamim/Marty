@@ -38,7 +38,10 @@ class BackupDatabase extends Command
             return self::FAILURE;
         }
 
-        $path = $dir . '/db-' . now()->format('Y-m-d-His') . '.sql.gz';
+        $at = now();
+        while (is_file($path = $dir . '/db-' . $at->format('Y-m-d-His') . '.sql.gz')) {
+            $at = $at->addSecond(); // two backups in the same second
+        }
         $gz = gzopen($path . '.part', 'wb6');
         $pdo = DB::connection()->getPdo();
         $mysql = DB::connection()->getDriverName() === 'mysql';
@@ -57,6 +60,9 @@ class BackupDatabase extends Command
             gzwrite($gz, "\nDROP TABLE IF EXISTS {$q($table)};\n" . end($create) . ";\n");
 
             $rows = 0;
+            if (in_array($table, \App\Support\DatabaseRestore::SKIP_ROWS, true)) {
+                continue; // logins and cache: the table only
+            }
             DB::table($table)->orderByRaw('1')->lazy(500)->chunk(200)->each(function ($chunk) use ($gz, $pdo, $q, $table, &$rows) {
                 $values = $chunk->map(fn ($row) => '(' . collect((array) $row)
                     ->map(fn ($v) => $v === null ? 'NULL' : (is_int($v) || is_float($v) ? (string) $v : $pdo->quote((string) $v)))

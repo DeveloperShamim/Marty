@@ -24,7 +24,7 @@
       <button type="button" onclick="switchSettingsTab('brand', this)" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-white" style="background: var(--brand-dark);">Brand &amp; theme</button>
       <button type="button" onclick="switchSettingsTab('homepage', this)" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Homepage &amp; SEO</button>
       <button type="button" onclick="switchSettingsTab('payments', this)" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Payments &amp; delivery</button>
-      <button type="button" onclick="switchSettingsTab('backups', this)" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Backups</button>
+      <button type="button" onclick="switchSettingsTab('backups', this)" data-tab="backups" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Backups</button>
       <button type="button" onclick="switchSettingsTab('all', this)" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">All sections</button>
       <a href="{{ route('admin.integrations.index') }}" class="h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium text-gray-600 hover:bg-gray-100 inline-flex items-center gap-1">
         Integrations
@@ -43,6 +43,8 @@
     btn.classList.add('text-white');
     btn.classList.remove('text-gray-600', 'hover:bg-gray-100');
     btn.style.background = 'var(--brand-dark)';
+
+    document.querySelectorAll('[data-tab-panel]').forEach(el => el.classList.toggle('hidden', tabName !== 'all' && tabName !== el.dataset.tabPanel));
 
     const forms = document.querySelectorAll('.settings-section-form');
     forms.forEach(f => {
@@ -68,6 +70,8 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    const hashBtn = location.hash ? document.querySelector('.settings-tab-btn[data-tab="' + location.hash.slice(1) + '"]') : null;
+    if (hashBtn) { switchSettingsTab(hashBtn.dataset.tab, hashBtn); return; }
     const firstBtn = document.querySelector('.settings-tab-btn');
     if (firstBtn) switchSettingsTab('brand', firstBtn);
   });
@@ -527,7 +531,7 @@
           Last backup {{ \Illuminate\Support\Carbon::createFromTimestamp(filemtime($lastBackup))->timezone(config('app.timezone'))->format('d M Y, g:i A') }}
           ({{ number_format(filesize($lastBackup) / 1024, 0) }} KB). {{ count($backupFiles) }} {{ \Illuminate\Support\Str::plural('file', count($backupFiles)) }} on the server.
         @else
-          No backup yet. The first one runs on the next cron minute after you save.
+          No backup yet. The first one runs on the next cron minute, or press Back up now.
         @endif
         Older files are deleted when the limit is reached.
       </p>
@@ -538,6 +542,59 @@
       <button type="submit" class="{{ $saveBtn }}" style="background: var(--brand-dark);">Save backup settings</button>
     </div>
   </form>
+
+  <section class="panel p-4 sm:p-5 space-y-4" data-tab-panel="backups" data-backup-files>
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+      <div>
+        <h2 class="text-[15px] font-semibold text-gray-900">Backup files</h2>
+        <p class="text-xs text-gray-500 mt-0.5">Download a copy to keep off the server. Restore replaces all store data with the file's; a copy of the current data is saved first, so a restore can be undone.</p>
+      </div>
+      <form method="POST" action="{{ route('admin.backups.store') }}" class="shrink-0" onsubmit="this.querySelector('button').disabled = true; this.querySelector('button').innerText = 'Backing up...';">
+        @csrf
+        <button type="submit" class="{{ $saveBtn }}" style="background: var(--brand-dark);">Back up now</button>
+      </form>
+    </div>
+
+    @if (count($backupFiles))
+      <ul class="divide-y divide-gray-100 border border-gray-100 rounded-xl">
+        @foreach (array_reverse($backupFiles) as $path)
+          @php $name = basename($path); @endphp
+          <li class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 px-3 py-2.5">
+            <div class="min-w-0 flex-1">
+              <div class="text-[13px] font-medium text-gray-900">
+                {{ \Illuminate\Support\Carbon::createFromTimestamp(filemtime($path))->timezone(config('app.timezone'))->format('d M Y, g:i A') }}
+                @if (str_contains($name, '-upload'))<span class="ml-1 text-[11px] font-semibold text-gray-500">Uploaded</span>@endif
+              </div>
+              <div class="text-[11px] text-gray-500 truncate">{{ $name }} · {{ number_format(filesize($path) / 1024, 0) }} KB</div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <a href="{{ route('admin.backups.download', $name) }}" class="h-8 px-3 rounded-full text-[12px] font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 inline-flex items-center">Download</a>
+              <form method="POST" action="{{ route('admin.backups.restore', $name) }}" onsubmit="if (! confirm('Replace ALL store data (orders, products, customers, settings) with this backup from {{ \Illuminate\Support\Carbon::createFromTimestamp(filemtime($path))->timezone(config('app.timezone'))->format('d M Y, g:i A') }}?\n\nA copy of the current data is saved first.')) return false; this.querySelector('button').disabled = true; this.querySelector('button').innerText = 'Restoring...';">
+                @csrf
+                <button type="submit" class="h-8 px-3 rounded-full text-[12px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100">Restore</button>
+              </form>
+              <form method="POST" action="{{ route('admin.backups.destroy', $name) }}" onsubmit="return confirm('Delete this backup file?');">
+                @csrf @method('DELETE')
+                <button type="submit" class="h-8 w-8 rounded-full text-gray-400 hover:text-rose-600 hover:bg-rose-50 inline-flex items-center justify-center" aria-label="Delete {{ $name }}">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+                </button>
+              </form>
+            </div>
+          </li>
+        @endforeach
+      </ul>
+    @else
+      <p class="text-xs text-gray-500">No backup files yet.</p>
+    @endif
+
+    <form method="POST" action="{{ route('admin.backups.upload') }}" enctype="multipart/form-data" class="flex flex-col sm:flex-row sm:items-center gap-2 pt-1">
+      @csrf
+      <label class="lbl sm:mb-0 shrink-0">Upload a backup</label>
+      <input type="file" name="backup_file" accept=".gz,application/gzip" required class="block w-full text-[13px] text-gray-600 file:mr-3 file:h-8 file:px-3 file:rounded-full file:border-0 file:bg-gray-100 file:text-[12px] file:font-semibold file:text-gray-700" />
+      <button type="submit" class="h-8 px-3 rounded-full text-[12px] font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 shrink-0">Upload</button>
+    </form>
+    <p class="text-[11px] text-gray-500 -mt-2">A .sql.gz file downloaded from this page (from this store or a copy of it). It appears in the list above; nothing changes until you press Restore.</p>
+  </section>
   <script>
   (() => {
     const freq = document.getElementById('backupFrequency');
