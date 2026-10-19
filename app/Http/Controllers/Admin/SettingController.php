@@ -21,6 +21,7 @@ class SettingController extends Controller
         'seo',
         'tracking',
         'legal',
+        'backups',
     ];
 
     public function edit()
@@ -212,6 +213,11 @@ class SettingController extends Controller
                 'tracking_ga4_id'        => ['nullable', 'string', 'max:20', 'regex:/^(|G-[A-Z0-9]+)$/i'],
                 'tracking_meta_pixel_id' => ['nullable', 'string', 'max:20', 'regex:/^(|\d+)$/'],
             ],
+            'backups' => [
+                'backup_frequency' => ['required', \Illuminate\Validation\Rule::in(array_keys(\App\Console\Commands\BackupDatabase::FREQUENCIES))],
+                'backup_time'      => ['required', 'date_format:H:i'],
+                'backup_keep'      => ['required', 'integer', 'min:1', 'max:90'],
+            ],
             'legal' => [
                 'terms_content'   => ['nullable', 'string', 'max:20000'],
                 'privacy_content' => ['nullable', 'string', 'max:20000'],
@@ -264,6 +270,7 @@ class SettingController extends Controller
             'seo' => ['default_meta_title', 'default_meta_description', 'default_meta_keywords'],
             'tracking' => ['tracking_gtm_id', 'tracking_ga4_id', 'tracking_meta_pixel_id'],
             'legal' => ['terms_content', 'privacy_content'],
+            'backups' => ['backup_frequency', 'backup_time', 'backup_keep'],
             default => [],
         };
 
@@ -324,6 +331,7 @@ class SettingController extends Controller
             'seo' => 'SEO defaults',
             'tracking' => 'Marketing & analytics',
             'legal' => 'Legal pages',
+            'backups' => 'Backup schedule',
             default => 'Settings',
         };
     }

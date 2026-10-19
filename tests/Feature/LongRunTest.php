@@ -76,6 +76,56 @@ class LongRunTest extends TestCase
         }
     }
 
+    public function test_admin_sets_the_backup_schedule(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)->get(route('admin.settings.edit'))->assertOk()->assertSee('Save backup settings')->assertSee('data-backup-status', false);
+
+        $this->actingAs($admin)->putJson(route('admin.settings.update-section', 'backups'), ['backup_frequency' => 'hourly', 'backup_time' => '03:30', 'backup_keep' => 14])
+            ->assertStatus(422)->assertJsonValidationErrors('backup_frequency');
+        $this->actingAs($admin)->putJson(route('admin.settings.update-section', 'backups'), ['backup_frequency' => 'weekly', 'backup_time' => '02:15', 'backup_keep' => 30])
+            ->assertOk();
+
+        $this->assertSame('weekly', BackupDatabase::frequency());
+        $this->assertSame('02:15', BackupDatabase::time());
+        $this->assertSame(30, BackupDatabase::keep());
+        $this->assertSame(5, BackupDatabase::keep(5), 'The --keep option still wins');
+    }
+
+    public function test_backup_is_due_according_to_the_schedule(): void
+    {
+        $dir = storage_path(BackupDatabase::DIR);
+        @mkdir($dir, 0750, true);
+        array_map('unlink', glob("$dir/db-*.sql.gz"));
+        $file = "$dir/db-2026-10-19-033000.sql.gz";
+        $at = fn (string $time) => \Illuminate\Support\Carbon::parse("2026-10-19 $time", config('app.timezone'));
+
+        try {
+            Setting::put('backup_frequency', 'daily');
+            Setting::put('backup_time', '03:30');
+            $this->assertTrue(BackupDatabase::isDue($at('01:00')), 'No backup yet: run now');
+
+            touch($file, $at('03:30')->getTimestamp());
+            $this->assertFalse(BackupDatabase::isDue($at('23:59')));
+            $this->assertTrue(BackupDatabase::isDue($at('03:30')->addDay()));
+            $this->assertTrue(BackupDatabase::isDue($at('09:00')->addDay()), 'A missed time catches up');
+
+            Setting::put('backup_frequency', 'weekly');
+            $this->assertFalse(BackupDatabase::isDue($at('03:30')->addDays(6)));
+            $this->assertTrue(BackupDatabase::isDue($at('03:30')->addDays(7)));
+
+            Setting::put('backup_frequency', '6h');
+            $this->assertFalse(BackupDatabase::isDue($at('08:00')));
+            $this->assertTrue(BackupDatabase::isDue($at('09:30')));
+
+            Setting::put('backup_frequency', 'off');
+            $this->assertFalse(BackupDatabase::isDue($at('03:30')->addDays(30)));
+            $this->assertNull(BackupDatabase::maxAgeHours());
+        } finally {
+            array_map('unlink', glob("$dir/db-*.sql.gz"));
+        }
+    }
+
     public function test_env_fallback_survives_a_cached_config(): void
     {
         // After config:cache, env() reads nothing from .env; the value comes from config/settings_env.php

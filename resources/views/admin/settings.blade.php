@@ -24,6 +24,7 @@
       <button type="button" onclick="switchSettingsTab('brand', this)" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-white" style="background: var(--brand-dark);">Brand &amp; theme</button>
       <button type="button" onclick="switchSettingsTab('homepage', this)" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Homepage &amp; SEO</button>
       <button type="button" onclick="switchSettingsTab('payments', this)" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Payments &amp; delivery</button>
+      <button type="button" onclick="switchSettingsTab('backups', this)" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Backups</button>
       <button type="button" onclick="switchSettingsTab('all', this)" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">All sections</button>
       <a href="{{ route('admin.integrations.index') }}" class="h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium text-gray-600 hover:bg-gray-100 inline-flex items-center gap-1">
         Integrations
@@ -53,6 +54,8 @@
       } else if (tabName === 'homepage' && (sec === 'homepage' || sec === 'seo' || sec === 'tracking')) {
         f.classList.remove('hidden');
       } else if (tabName === 'payments' && (sec === 'payments' || sec === 'shipping')) {
+        f.classList.remove('hidden');
+      } else if (tabName === 'backups' && sec === 'backups') {
         f.classList.remove('hidden');
       } else if (tabName === 'couriers' && sec === 'couriers') {
         f.classList.remove('hidden');
@@ -486,6 +489,64 @@
       <button type="submit" class="{{ $saveBtn }}" style="background: var(--brand-dark);">Save delivery settings</button>
     </div>
   </form>
+
+  {{-- BACKUPS --}}
+  @php
+    $backupFiles = glob(storage_path(\App\Console\Commands\BackupDatabase::DIR) . '/db-*.sql.gz') ?: [];
+    $lastBackup = \App\Console\Commands\BackupDatabase::latest();
+    $backupFreq = \App\Console\Commands\BackupDatabase::frequency();
+  @endphp
+  <form method="POST" action="{{ route('admin.settings.update-section', 'backups') }}" class="settings-section-form space-y-4" data-section="backups">
+    @csrf @method('PUT')
+
+    <section class="panel p-4 sm:p-5 space-y-4">
+      <div>
+        <h2 class="text-[15px] font-semibold text-gray-900">Database backups</h2>
+        <p class="text-xs text-gray-500 mt-0.5">A copy of all orders, products, customers and settings is saved on the server in storage/app/backups. Needs the server cron job.</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label class="lbl">How often</label>
+          <select name="backup_frequency" id="backupFrequency" class="inp text-[13px]">
+            @foreach (\App\Console\Commands\BackupDatabase::FREQUENCIES as $val => $label)
+              <option value="{{ $val }}" @selected($backupFreq === $val)>{{ $label }}</option>
+            @endforeach
+          </select>
+        </div>
+        <div id="backupTimeField">
+          <label class="lbl">At (shop time)</label>
+          <input name="backup_time" type="time" class="inp text-[13px]" value="{{ \App\Console\Commands\BackupDatabase::time() }}" required />
+        </div>
+        <div>
+          <label class="lbl">Keep the newest</label>
+          <input name="backup_keep" type="number" min="1" max="90" class="inp text-[13px]" value="{{ \App\Console\Commands\BackupDatabase::keep() }}" required />
+        </div>
+      </div>
+      <p class="text-xs text-gray-500" data-backup-status>
+        @if ($lastBackup)
+          Last backup {{ \Illuminate\Support\Carbon::createFromTimestamp(filemtime($lastBackup))->timezone(config('app.timezone'))->format('d M Y, g:i A') }}
+          ({{ number_format(filesize($lastBackup) / 1024, 0) }} KB). {{ count($backupFiles) }} {{ \Illuminate\Support\Str::plural('file', count($backupFiles)) }} on the server.
+        @else
+          No backup yet. The first one runs on the next cron minute after you save.
+        @endif
+        Older files are deleted when the limit is reached.
+      </p>
+    </section>
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2">
+      <div class="{{ $feedback }}"></div>
+      <button type="submit" class="{{ $saveBtn }}" style="background: var(--brand-dark);">Save backup settings</button>
+    </div>
+  </form>
+  <script>
+  (() => {
+    const freq = document.getElementById('backupFrequency');
+    const time = document.getElementById('backupTimeField');
+    const sync = () => time.classList.toggle('hidden', ! ['daily', 'weekly'].includes(freq.value));
+    freq.addEventListener('change', sync);
+    sync();
+  })();
+  </script>
 
 </div>
 @endsection
