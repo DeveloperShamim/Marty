@@ -219,7 +219,7 @@
   <section class="panel p-4 sm:p-5">
     <h2 class="text-[15px] font-semibold text-gray-900">Revenue and net profit</h2>
     <p class="text-xs text-gray-500 mt-0.5">Across the selected date range.</p>
-    <div class="mt-3 h-64 sm:h-72 w-full">
+    <div class="relative mt-3 h-64 sm:h-72 w-full min-w-0">
       <canvas id="financialChart"></canvas>
     </div>
   </section>

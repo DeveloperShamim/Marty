@@ -1895,8 +1895,8 @@
       const sugg = suggestedValues(o.name).filter((v) => !o.values.some((x) => norm(x) === norm(v)));
       return `<div class="option-group rounded-xl border border-stone-200 p-4 space-y-3" data-g="${gi}">
         <div class="flex items-center gap-2">
-          <input class="og-name flex-1 px-3 py-2 text-sm font-medium rounded-lg border border-stone-200 focus:outline-none focus:border-brand-600 text-stone-900" list="variantOptionNames" value="${esc(o.name)}" placeholder="Option name, e.g. Size or Colour" data-g="${gi}" aria-label="Option name" />
-          <button type="button" class="og-remove h-9 px-3 rounded-lg text-sm text-stone-500 hover:text-rose-600 hover:bg-rose-50" data-g="${gi}">Remove</button>
+          <input class="og-name flex-1 min-w-0 px-3 py-2 text-sm font-medium rounded-lg border border-stone-200 focus:outline-none focus:border-brand-600 text-stone-900" list="variantOptionNames" value="${esc(o.name)}" placeholder="Option name, e.g. Size or Colour" data-g="${gi}" aria-label="Option name" />
+          <button type="button" class="og-remove shrink-0 h-9 px-3 rounded-lg text-sm text-stone-500 hover:text-rose-600 hover:bg-rose-50" data-g="${gi}">Remove</button>
         </div>
         <div class="flex flex-wrap items-center gap-1.5">
           ${chips}
