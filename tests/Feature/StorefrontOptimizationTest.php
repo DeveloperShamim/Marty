@@ -34,8 +34,8 @@ class StorefrontOptimizationTest extends TestCase
         $response = $this->get('/');
         $response->assertStatus(200);
 
-        // Ensures Tailwind CSS engine is loaded for full styling
-        $response->assertSee('cdn.tailwindcss.com');
+        // The built Tailwind stylesheet is loaded for full styling
+        $response->assertSee('theme/css/tw-store.css', false);
 
         // Does not render artificial preloader delay
         $response->assertDontSee('id="preloader"', false);

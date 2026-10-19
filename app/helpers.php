@@ -572,3 +572,28 @@ if (! function_exists('google_callback_url')) {
         return str_starts_with((string) config('app.url'), 'https://') ? preg_replace('#^http://#', 'https://', $url) : $url;
     }
 }
+
+if (! function_exists('tailwind_css')) {
+    /**
+     * The built Tailwind stylesheet ("store" or "admin"), plus the theme colours it reads as "R G B" CSS variables.
+     * Rebuild after changing classes in views: npm run build:css (see tailwind/).
+     *
+     * @param  array<string, string>  $colors  variable name => hex, e.g. ['primary' => '#8B5A2B']
+     */
+    function tailwind_css(string $which, array $colors): \Illuminate\Support\HtmlString
+    {
+        $vars = collect($colors)->map(function ($hex, $name) {
+            $hex = ltrim((string) $hex, '#');
+            $hex = strlen($hex) === 3 ? preg_replace('/(.)/', '$1$1', $hex) : str_pad(substr($hex, 0, 6), 6, '0');
+
+            return '--vt-' . $name . ':' . implode(' ', array_map('hexdec', str_split($hex, 2))) . ';';
+        })->implode('');
+        $file = 'theme/css/tw-' . $which . '.css';
+        $version = @filemtime(public_path($file)) ?: '1';
+
+        return new \Illuminate\Support\HtmlString(
+            '<style>:root{' . e($vars) . '}</style>' . "\n" .
+            '  <link rel="stylesheet" href="' . e(asset($file)) . '?v=' . $version . '" />'
+        );
+    }
+}

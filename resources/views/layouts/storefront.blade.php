@@ -16,43 +16,6 @@
   @endphp
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          // One corner scale for the whole shop: 6 tags · 10 buttons & inputs · 16 cards · 24 large panels · pill.
-          borderRadius: { sm: '6px', DEFAULT: '6px', md: '10px', lg: '10px', xl: '10px', '2xl': '16px', '3xl': '24px' },
-          colors: {
-            brand: {
-              50:  '{{ $theme["primary_soft_bg"] }}',
-              100: '{{ $theme["primary_border"] }}',
-              200: '{{ $theme["primary_border"] }}',
-              300: '{{ $theme["primary"] }}',
-              400: '{{ $theme["primary"] }}',
-              500: '{{ $theme["primary"] }}',
-              600: '{{ $theme["primary"] }}',
-              700: '{{ $theme["primary_hover"] }}',
-              800: '{{ $theme["dark"] }}',
-              900: '{{ $theme["dark"] }}',
-            },
-            accent: {
-              400: '{{ $theme["primary_border"] }}',
-              500: '{{ $theme["primary"] }}',
-              600: '{{ $theme["primary"] }}',
-              700: '{{ $theme["dark"] }}',
-            },
-            ink: '{{ $theme["dark"] }}',
-            surface: {
-              light: '#FFFFFF',
-              soft: '{{ $theme["surface"] }}',
-            },
-          },
-          fontFamily: { sans:['Plus Jakarta Sans','Hind Siliguri','sans-serif'], display:['Plus Jakarta Sans','Hind Siliguri','sans-serif'] },
-        }
-      }
-    };
-  </script>
 
   <style>
     :root {
@@ -326,6 +289,10 @@
   </script>
 
   @include('partials.tracking-head')
+  {{ tailwind_css('store', [
+    'primary' => $theme['primary'], 'hover' => $theme['primary_hover'], 'soft' => $theme['primary_soft_bg'],
+    'border' => $theme['primary_border'], 'dark' => $theme['dark'], 'surface' => $theme['surface'],
+  ]) }}
 </head>
 
 <body class="@yield('body_class', 'bg-white text-ink antialiased')">

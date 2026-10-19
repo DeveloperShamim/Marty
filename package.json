@@ -4,13 +4,15 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "build:css": "node node_modules/tailwindcss3/lib/cli.js -c tailwind/store.config.cjs -i tailwind/input.css -o public/theme/css/tw-store.css --minify && node node_modules/tailwindcss3/lib/cli.js -c tailwind/admin.config.cjs -i tailwind/input.css -o public/theme/css/tw-admin.css --minify"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^3.1",
         "tailwindcss": "^4.0.0",
+        "tailwindcss3": "npm:tailwindcss@^3.4.17",
         "vite": "^8.0.0"
     }
 }

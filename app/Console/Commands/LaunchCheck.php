@@ -34,6 +34,9 @@ class LaunchCheck extends Command
         $beat = is_int($beat) ? \Illuminate\Support\Carbon::createFromTimestamp($beat) : null;
         $this->check($beat && now()->diffInMinutes($beat, true) <= 5, 'Cron / scheduler is running', 'Add the cron job: * * * * * cd ' . base_path() . ' && php artisan schedule:run >> /dev/null 2>&1 (courier sync, clean-ups)', 'warn');
 
+        $backup = BackupDatabase::latest();
+        $this->check($backup && filemtime($backup) > now()->subDays(2)->getTimestamp(), 'Database backup in the last 2 days', 'Runs daily with the cron job; run php artisan app:backup-db once to check it works', 'warn');
+
         // Accounts
         $weak = User::whereIn('role', ['admin', 'store_manager', 'order_manager', 'inventory_manager'])->get()
             ->filter(fn ($u) => Hash::check('password', $u->password))->pluck('email');

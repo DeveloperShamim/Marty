@@ -184,3 +184,19 @@ php artisan chat:prune --days=60 --attachments-only
 ## 📄 License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Styles (Tailwind)
+
+The store and admin use built stylesheets in `public/theme/css/tw-store.css` and `tw-admin.css`, made from the
+classes in the views by Tailwind 3 (configs in `tailwind/`). After adding or changing classes, rebuild and commit them:
+
+    npm install
+    npm run build:css
+
+`LongRunTest::test_built_stylesheets_are_up_to_date` fails when they are stale. Theme colours from Admin → Settings
+reach the CSS as variables printed by `tailwind_css()` in `app/helpers.php`.
+
+## Backups
+
+`php artisan app:backup-db` saves a gzipped SQL copy of the database in `storage/app/backups` (newest 14 kept). The
+scheduler runs it daily at 03:30, so the server cron job must be set up (`php artisan app:launch-check` checks both).

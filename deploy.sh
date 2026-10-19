@@ -17,6 +17,8 @@ fi
 
 echo "→ Maintenance mode on"
 "$PHP" artisan down --retry=15 || true
+# If any step below fails, open the site again instead of leaving it on the maintenance page
+trap 'echo "✗ Deploy stopped at the step above. The site is open again; send this output to your developer."; "$PHP" artisan up || true' ERR
 
 echo "→ Pulling $BRANCH"
 git pull --ff-only origin "$BRANCH"
@@ -34,6 +36,7 @@ echo "→ Caches"
 "$PHP" artisan view:cache
 
 echo "→ Maintenance mode off"
+trap - ERR
 "$PHP" artisan up
 
 echo "✓ Deployed $(git log -1 --format='%h %s')"

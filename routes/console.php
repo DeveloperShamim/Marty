@@ -25,6 +25,10 @@ Schedule::command('couriers:sync', ['--limit' => 1000])
     ->withoutOverlapping()
     ->when(fn () => setting('courier_auto_sync', '1') === '1');
 
+// Daily database copy in storage/app/backups, newest 14 kept (php artisan app:backup-db). Download one now and then,
+// or let the hosting's own backup take the storage folder off the server too.
+Schedule::command('app:backup-db')->dailyAt('03:30')->withoutOverlapping();
+
 // Live chat messages and attachments older than 90 days (stated in the privacy policy).
 Schedule::command('chat:prune --days=90')->daily();
 

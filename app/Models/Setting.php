@@ -32,7 +32,8 @@ class Setting extends Model
             return $val;
         }
 
-        $envVal = env(strtoupper($key));
+        // config/settings_env.php keeps the .env fallback working once the config is cached
+        $envVal = config('settings_env.' . $key) ?? env(strtoupper($key));
 
         return ($envVal !== null && $envVal !== '') ? $envVal : $default;
     }
