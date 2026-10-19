@@ -57,13 +57,13 @@
                 </div>
               @endforeach
 
-              {{-- Chevron Controls --}}
-              <button type="button" data-hero-arrow-prev class="max-sm:hidden absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-neutral-800 shadow-md flex items-center justify-center transition-all opacity-80 hover:opacity-100 hover:scale-105 active:scale-95 focus:outline-none" aria-label="Previous Slide">
-                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></svg>
+              {{-- Chevron Controls: frosted, fade in on hover (always shown on touch tablets; phones swipe) --}}
+              <button type="button" data-hero-arrow-prev class="max-sm:hidden absolute left-3 sm:left-4 [@media(hover:hover)]:translate-x-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/25 hover:bg-black/45 backdrop-blur-md border border-white/25 text-white flex items-center justify-center transition duration-300 active:scale-95 [@media(hover:hover)]:opacity-0 group-hover:opacity-100 group-hover:translate-x-0 focus-visible:opacity-100 focus-visible:translate-x-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70" aria-label="Previous Slide">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></svg>
               </button>
 
-              <button type="button" data-hero-arrow-next class="max-sm:hidden absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-neutral-800 shadow-md flex items-center justify-center transition-all opacity-80 hover:opacity-100 hover:scale-105 active:scale-95 focus:outline-none" aria-label="Next Slide">
-                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
+              <button type="button" data-hero-arrow-next class="max-sm:hidden absolute right-3 sm:right-4 [@media(hover:hover)]:-translate-x-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/25 hover:bg-black/45 backdrop-blur-md border border-white/25 text-white flex items-center justify-center transition duration-300 active:scale-95 [@media(hover:hover)]:opacity-0 group-hover:opacity-100 group-hover:translate-x-0 focus-visible:opacity-100 focus-visible:translate-x-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70" aria-label="Next Slide">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
               </button>
 
               {{-- Indicator Dots --}}
