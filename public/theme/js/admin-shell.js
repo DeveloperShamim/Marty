@@ -220,3 +220,54 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') menu.open = false; });
 })();
 
+
+/* ⋯ row menus (details.order-menu): open as a floating panel pinned to the button, so a card or
+   table that clips its overflow can't cut the menu off. Opens upward when there's no room below. */
+(function () {
+  var GAP = 6, EDGE = 8;
+  function panelOf(d) { return d.querySelector(':scope > summary + *'); }
+  function reset(p) { ['position', 'top', 'bottom', 'left', 'right', 'margin', 'maxHeight', 'overflowY'].forEach(function (k) { p.style[k] = ''; }); }
+  function place(d) {
+    var p = panelOf(d);
+    if (!p) return;
+    reset(p);
+    var s = d.querySelector('summary').getBoundingClientRect();
+    var vw = document.documentElement.clientWidth, vh = window.innerHeight;
+    // The phone tab bar covers the bottom of the screen.
+    var bar = document.getElementById('bottomNav');
+    var bottomEdge = bar && bar.getBoundingClientRect().height && getComputedStyle(bar).display !== 'none' ? bar.getBoundingClientRect().top : vh;
+    p.style.position = 'fixed'; p.style.margin = '0'; p.style.right = 'auto'; p.style.bottom = 'auto';
+    var w = p.offsetWidth, h = p.offsetHeight;
+    var below = bottomEdge - s.bottom - GAP - EDGE, above = s.top - GAP - EDGE;
+    var top = (h <= below || below >= above) ? s.bottom + GAP : s.top - GAP - Math.min(h, above);
+    if (h > Math.max(below, above)) { p.style.maxHeight = Math.max(below, above) + 'px'; p.style.overflowY = 'auto'; }
+    var left = Math.min(Math.max(EDGE, s.right - w), vw - w - EDGE);
+    p.style.top = top + 'px'; p.style.left = left + 'px';
+    // A blurred or transformed ancestor becomes the fixed panel's frame: correct for its offset.
+    var r = p.getBoundingClientRect();
+    if (Math.abs(r.top - top) > 1 || Math.abs(r.left - left) > 1) {
+      p.style.top = (2 * top - r.top) + 'px'; p.style.left = (2 * left - r.left) + 'px';
+    }
+  }
+  document.addEventListener('toggle', function (e) {
+    var d = e.target;
+    if (!d.matches || !d.matches('details.order-menu')) return;
+    if (d.open) {
+      document.querySelectorAll('details.order-menu[open]').forEach(function (o) { if (o !== d) o.removeAttribute('open'); });
+      // Lift the row's own layer so the next row's buttons can't show through the menu.
+      for (var a = d.parentElement; a && a !== document.body; a = a.parentElement) {
+        if (getComputedStyle(a).zIndex !== 'auto') { a.style.zIndex = '30'; d._lifted = a; break; }
+      }
+      place(d);
+    } else {
+      var p = panelOf(d);
+      if (p) reset(p);
+      if (d._lifted) { d._lifted.style.zIndex = ''; d._lifted = null; }
+    }
+  }, true);
+  // The panel doesn't follow the page, so close it when the page scrolls or resizes.
+  function closeAll() { document.querySelectorAll('details.order-menu[open]').forEach(function (d) { d.removeAttribute('open'); }); }
+  window.addEventListener('scroll', closeAll, { passive: true });
+  window.addEventListener('resize', closeAll);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAll(); });
+})();

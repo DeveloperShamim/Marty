@@ -203,3 +203,9 @@ details.bulk-menu > summary::-webkit-details-marker { display: none; }
   /* Selection bars sit just above the bottom bar */
   body:has(#bottomNav) [data-above-nav] { bottom: calc(4.5rem + env(safe-area-inset-bottom)) !important; }
 }
+
+/* Phones: nothing may widen the page. A wide table scrolls inside its own box; absolutely placed bits
+   (like screen-reader labels) stay inside that box instead of stretching the page, which made phones
+   zoom out and show the admin in only part of the screen. */
+.admin-main main .overflow-x-auto:not(.absolute, .fixed, .sticky) { position: relative; }
+html, body.admin-body { overflow-x: clip; }
