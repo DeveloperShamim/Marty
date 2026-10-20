@@ -174,8 +174,9 @@ class DashboardController extends Controller
 
         // Inventory / Live Stock Analytics
         $totalStockUnits = (int) Product::sum('stock_quantity');
-        $lowStockProducts = Product::where('stock_quantity', '<=', 3)->latest()->take(5)->get();
-        $lowStockCount = Product::where('stock_quantity', '<=', 3)->count();
+        // Low stock is 1 to 3 left; sold-out products are counted as out of stock instead
+        $lowStockProducts = Product::whereBetween('stock_quantity', [1, 3])->orderBy('stock_quantity')->latest()->take(5)->get();
+        $lowStockCount = Product::whereBetween('stock_quantity', [1, 3])->count();
         $outOfStockCount = Product::where('stock_quantity', '<=', 0)->count();
 
         // All status counts in one query

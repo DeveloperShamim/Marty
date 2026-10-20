@@ -11,8 +11,8 @@
         'abandoned-carts' => [fn () => \App\Models\AbandonedCart::abandoned()->count(), 'bg-gray-100 text-gray-700', 'to recover'],
         'courier-scan' => [fn () => \App\Models\Order::where('status', 'shipped')
             ->whereIn('courier_status', \App\Services\Courier\CourierStatusUpdater::ATTENTION)->count(), 'bg-amber-100 text-amber-800', 'courier updates need you'],
-        'inventory' => [fn () => \App\Models\ProductSku::where('stock_quantity', '<=', 3)->count()
-            + \App\Models\Product::whereDoesntHave('skus')->where('stock_quantity', '<=', 3)->count(), 'bg-rose-100 text-rose-800', 'low on stock'],
+        'inventory' => [fn () => \App\Models\ProductSku::whereBetween('stock_quantity', [1, 3])->count()
+            + \App\Models\Product::whereDoesntHave('skus')->whereBetween('stock_quantity', [1, 3])->count(), 'bg-rose-100 text-rose-800', 'low on stock'],
     ];
     $visibleKeys = collect($nav)->flatten(1)->pluck('key');
     $badges = collect($badgeSources)->only($visibleKeys)->map(fn ($b) => ['count' => ($b[0])(), 'class' => $b[1], 'hint' => $b[2]]);
