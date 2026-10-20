@@ -28,8 +28,8 @@ class InventoryController extends Controller
 
         if ($filter === 'low_stock') {
             $query->where(function ($q) {
-                $q->where('stock_quantity', '<=', 3)
-                    ->orWhereHas('skus', fn ($sq) => $sq->where('stock_quantity', '<=', 3));
+                $q->whereBetween('stock_quantity', [1, 3])
+                    ->orWhereHas('skus', fn ($sq) => $sq->whereBetween('stock_quantity', [1, 3]));
             });
         } elseif ($filter === 'out_of_stock') {
             $query->where(function ($q) {
@@ -40,8 +40,9 @@ class InventoryController extends Controller
 
         $products = $query->paginate(20)->withQueryString();
 
-        $lowStockCount = ProductSku::where('stock_quantity', '<=', 3)->count()
-            + Product::whereDoesntHave('skus')->where('stock_quantity', '<=', 3)->count();
+        // Low stock is 1 to 3 left; sold out is counted separately below
+        $lowStockCount = ProductSku::whereBetween('stock_quantity', [1, 3])->count()
+            + Product::whereDoesntHave('skus')->whereBetween('stock_quantity', [1, 3])->count();
 
         $outOfStockCount = ProductSku::where('stock_quantity', '<=', 0)->count()
             + Product::whereDoesntHave('skus')->where('stock_quantity', '<=', 0)->count();

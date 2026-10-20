@@ -143,12 +143,15 @@ class Product extends Model
         $this->syncFlashSaleProgress();
     }
 
+    /** 1 to $threshold left. Sold out (0) is "out of stock", not low stock. */
     public function isLowStock(int $threshold = 3): bool
     {
         if ($this->skus()->exists()) {
-            return $this->skus()->where('stock_quantity', '<=', $threshold)->exists();
+            return $this->skus()->whereBetween('stock_quantity', [1, $threshold])->exists();
         }
-        return (int) $this->stock_quantity <= $threshold;
+        $stock = (int) $this->stock_quantity;
+
+        return $stock >= 1 && $stock <= $threshold;
     }
 
     public function isOutOfStock(): bool
