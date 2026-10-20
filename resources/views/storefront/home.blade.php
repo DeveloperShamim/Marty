@@ -108,11 +108,15 @@
           @php
             $onDesk = $deskCards->contains("id", $sideCard->id);
             $onPhone = $phoneCards->contains("id", $sideCard->id);
-            $cardScreens = ($onDesk && $onPhone ? '' : ($onDesk ? 'hidden lg:flex' : 'lg:hidden')) . ($phoneCards->count() === 1 ? ' col-span-2 lg:col-span-3' : ' col-span-1 lg:col-span-3');
+            $cardScreens = ($onDesk && $onPhone ? '' : ($onDesk ? 'hidden lg:flex' : 'lg:hidden')) . ($phoneCards->count() === 1 ? ' col-span-2 lg:col-span-3' : ' col-span-1 lg:col-span-3')
+              // A lone desktop card stands the full height of the slider instead of leaving a gap under it
+              . ($onDesk && $deskCards->count() === 1 ? ' lg:row-span-2' : '');
           @endphp
+          {{-- On desktop the slider sets the height and the cards fill it: the picture is placed absolutely, so a
+               square or tall promo picture is cropped to fit instead of stretching the row and leaving a gap. --}}
           <a href="{{ $sideCard->linkHref() }}" data-promo-card="{{ $sideCard->show_on ?? 'both' }}" class="{{ $cardScreens }} relative flex rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-0.5 bg-transparent aspect-[868/476] lg:aspect-auto lg:h-full min-h-0" aria-label="{{ $sideCard->title ?: 'Promo Card' }}">
             @if($sideCard->image)
-              <img src="{{ $sideCard->imageUrl() }}" alt="{{ $sideCard->title }}" class="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-500" loading="lazy">
+              <img src="{{ $sideCard->imageUrl() }}" alt="{{ $sideCard->title }}" class="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-500" loading="lazy">
             @else
               <div class="w-full h-full bg-gradient-to-br from-neutral-800 to-stone-900 p-4 sm:p-6 text-white flex flex-col justify-between">
                 <div>
