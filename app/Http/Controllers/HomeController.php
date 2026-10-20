@@ -16,6 +16,7 @@ class HomeController extends Controller
 {
     /** How many featured categories get a product row on the homepage, and how many products each row holds. */
     public const HOME_CATEGORY_ROWS = 4;
+    public const HOME_BRAND_ROWS = 4;
     /** A category row slides through up to 8 products; it is topped up to 4 with already-shown ones if short. */
     public const HOME_ROW_SIZE = 8;
     public const HOME_ROW_MIN = 4;
@@ -99,6 +100,25 @@ class HomeController extends Controller
             ->filter(fn (Category $cat) => $cat->products->isNotEmpty())
             ->values();
 
+        // Brands switched on under Admin → Brands get a row each, after the category rows, skipping products shown above
+        $homeBrandRows = Brand::where('is_active', true)
+            ->where('show_on_home', true)
+            ->orderBy('position')->orderBy('name')
+            ->take(self::HOME_BRAND_ROWS)
+            ->get()
+            ->each(function (Brand $brand) use (&$shown) {
+                $products = Product::where('brand_id', $brand->id)->published()->with('images', 'category', 'brand', 'variants', 'skus')
+                    ->latest()->take(16)->get();
+                $fresh = $products->reject(fn ($p) => $shown->contains($p->id));
+                $row = ($fresh->count() >= self::HOME_ROW_MIN
+                    ? $fresh->take(self::HOME_ROW_SIZE)
+                    : $fresh->concat($products->filter(fn ($p) => $shown->contains($p->id)))->take(self::HOME_ROW_MIN))->values();
+                $shown = $shown->merge($row->pluck('id'));
+                $brand->setRelation('products', $row);
+            })
+            ->filter(fn (Brand $brand) => $brand->products->isNotEmpty())
+            ->values();
+
         $justForYou = $this->justForYou($withImages, $shown->merge($newArrivals->take(8)->pluck('id')));
 
         return view('storefront.home', [
@@ -107,6 +127,7 @@ class HomeController extends Controller
             'features'               => Feature::where('is_active', true)->orderBy('position')->get(),
             'categories'             => $categories,
             'featuredHomeCategories' => $featuredHomeCategories,
+            'homeBrandRows'          => $homeBrandRows,
             'coupons'                => Coupon::query()
                 ->where('is_active', true)
                 ->orderByDesc('created_at')

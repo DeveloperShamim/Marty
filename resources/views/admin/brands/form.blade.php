@@ -85,6 +85,13 @@
             <span class="block text-xs text-gray-500">Shown in the home page brands bar.</span>
           </span>
         </label>
+        <label class="flex items-start gap-3 p-3 rounded-xl bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors">
+          <input type="checkbox" name="show_on_home" value="1" class="h-4 w-4 mt-0.5 rounded cursor-pointer" @checked(old('show_on_home', $brand->show_on_home ?? false)) />
+          <span>
+            <span class="block text-[13px] font-medium text-gray-900">Show this brand's products on the homepage</span>
+            <span class="block text-xs text-gray-500">A row of its products, like the featured category rows (up to {{ \App\Http\Controllers\HomeController::HOME_BRAND_ROWS }} brands, in brand order).</span>
+          </span>
+        </label>
       </section>
 
       <section class="panel p-4 sm:p-5 space-y-3">

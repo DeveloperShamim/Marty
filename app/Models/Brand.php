@@ -12,6 +12,7 @@ class Brand extends Model
     protected $casts = [
         'is_active'   => 'boolean',
         'is_featured' => 'boolean',
+        'show_on_home' => 'boolean',
     ];
 
     public function products(): HasMany

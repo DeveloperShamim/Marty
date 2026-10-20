@@ -28,6 +28,7 @@ class BrandController extends Controller
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? '') ?: $data['name']);
         $data['is_active'] = $request->boolean('is_active');
         $data['is_featured'] = $request->boolean('is_featured');
+        $data['show_on_home'] = $request->boolean('show_on_home');
         $this->handleImages($request, $data);
 
         Brand::create($data);
@@ -46,6 +47,7 @@ class BrandController extends Controller
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? '') ?: $data['name'], $brand->id);
         $data['is_active'] = $request->boolean('is_active');
         $data['is_featured'] = $request->boolean('is_featured');
+        $data['show_on_home'] = $request->boolean('show_on_home');
         $this->handleImages($request, $data, $brand);
 
         $brand->update($data);
