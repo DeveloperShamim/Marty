@@ -267,6 +267,10 @@ class MediaController extends Controller
         $quality = max(10, min(100, (int) $request->input('quality', setting('media_compression_quality', 80))));
         $result = $this->optimizeFile($absPath, $quality);
 
+        if (! empty($result['failed'])) {
+            return back()->withErrors(['image' => "This image could not be converted to WebP, so it was left as it is ({$relPath})."]);
+        }
+
         if ($result['converted_webp']) {
             $msg = "⚡ Optimization & WebP Conversion complete (Quality: {$quality}%)! Converted image to WebP format (" . $this->formatBytes($result['initial_bytes']) . " → " . $this->formatBytes($result['final_bytes']) . ").";
         } elseif ($result['saved_bytes'] > 0) {
@@ -295,6 +299,7 @@ class MediaController extends Controller
 
         $totalSavedBytes = 0;
         $optimizedCount = 0;
+        $skipped = 0;
 
         foreach ($paths as $relPath) {
             $relPath = $this->normalizeRelPath(is_string($relPath) ? $relPath : '');
@@ -302,7 +307,9 @@ class MediaController extends Controller
 
             if ($absPath && File::exists($absPath)) {
                 $res = $this->optimizeFile($absPath, $quality);
-                if ($res['saved_bytes'] > 0 || $res['converted_webp']) {
+                if (! empty($res['failed'])) {
+                    $skipped++;
+                } elseif ($res['saved_bytes'] > 0 || $res['converted_webp']) {
                     $totalSavedBytes += $res['saved_bytes'];
                     $optimizedCount++;
                 }
@@ -310,7 +317,9 @@ class MediaController extends Controller
         }
 
         $humanSaved = $this->formatBytes($totalSavedBytes);
-        return back()->with('status', "⚡ Bulk WebP Conversion & Optimization Complete at {$quality}% Quality! Converted/optimized {$optimizedCount} image(s) to WebP format and saved {$humanSaved} disk storage.");
+        $skippedNote = $skipped ? " {$skipped} image(s) could not be converted and were left as they are." : '';
+
+        return back()->with('status', "⚡ Bulk WebP Conversion & Optimization Complete at {$quality}% Quality! Converted/optimized {$optimizedCount} image(s) to WebP format and saved {$humanSaved} disk storage.{$skippedNote}");
     }
 
     public function destroy(Request $request)
@@ -394,10 +403,26 @@ class MediaController extends Controller
         $targetAbsPath = $isConvertWebP ? preg_replace('/\.(png|jpg|jpeg)$/i', '.webp', $absPath) : $absPath;
         $tempPath = $targetAbsPath . '.tmp';
 
+        // WebP needs a full-colour image: palette (8-bit) PNGs and GIFs are converted first
+        if (! imageistruecolor($gdImage)) {
+            imagepalettetotruecolor($gdImage);
+        }
         imagealphablending($gdImage, false);
         imagesavealpha($gdImage, true);
-        imagewebp($gdImage, $tempPath, $quality);
+        try {
+            $written = imagewebp($gdImage, $tempPath, $quality);
+        } catch (\Throwable $e) {
+            $written = false;
+            report($e);
+        }
         imagedestroy($gdImage);
+
+        // A file that cannot be converted is left exactly as it was, so one odd image never stops a bulk run
+        if (! $written) {
+            @unlink($tempPath);
+
+            return ['saved_bytes' => 0, 'percent_saved' => 0, 'initial_bytes' => $initialBytes, 'final_bytes' => $initialBytes, 'converted_webp' => false, 'failed' => true];
+        }
 
         if (file_exists($tempPath)) {
             $finalBytes = filesize($tempPath);

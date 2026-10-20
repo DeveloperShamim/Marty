@@ -21,6 +21,7 @@ class MediaOptimizeTest extends TestCase
     protected function tearDown(): void
     {
         File::delete([public_path($this->png), public_path('uploads/media/optimize-test.webp'),
+            public_path('uploads/media/palette-test.png'), public_path('uploads/media/palette-test.webp'),
             storage_path('app/public/banners/optimize-test.png'), storage_path('app/public/banners/optimize-test.webp'),
             storage_path('app/public/branding/optimize-logo.png'), storage_path('app/public/branding/optimize-logo.webp')]);
         parent::tearDown();
@@ -79,6 +80,27 @@ class MediaOptimizeTest extends TestCase
         $this->assertFileExists(storage_path('app/public/banners/optimize-test.webp'));
         $this->assertFileDoesNotExist(storage_path('app/public/banners/optimize-test.png'));
         $this->assertStringEndsWith('/storage/banners/optimize-test.webp', $banner->fresh()->imageUrl());
+    }
+
+    public function test_palette_png_is_converted_instead_of_crashing_the_bulk_run(): void
+    {
+        if (!function_exists('imagewebp')) {
+            $this->markTestSkipped('GD with WebP is not installed.');
+        }
+
+        // An 8-bit palette PNG, like many logos: imagewebp() rejects these unless converted to full colour first
+        File::ensureDirectoryExists(public_path('uploads/media'));
+        $img = imagecreate(40, 40);
+        imagecolorallocate($img, 255, 120, 0);
+        imagepng($img, public_path('uploads/media/palette-test.png'));
+        $this->assertFalse(imageistruecolor(imagecreatefrompng(public_path('uploads/media/palette-test.png'))));
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)->post(route('admin.media.bulk-optimize'), ['paths' => ['uploads/media/palette-test.png']])
+            ->assertRedirect()->assertSessionHasNoErrors()->assertSessionHas('status', fn ($m) => str_contains($m, 'Converted/optimized 1 image'));
+
+        $this->assertFileExists(public_path('uploads/media/palette-test.webp'));
+        $this->assertFileDoesNotExist(public_path('uploads/media/palette-test.png'));
     }
 
     public function test_files_outside_the_media_library_cannot_be_deleted(): void
