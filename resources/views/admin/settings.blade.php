@@ -261,6 +261,15 @@
         <div><label class="lbl">Shop page subtitle</label><input name="shop_subtitle" class="inp text-[13px]" value="{{ $settings['shop_subtitle'] ?? '' }}" placeholder="Explore our full collection" /></div>
         <div><label class="lbl">Delivery time note</label><input name="delivery_eta_text" class="inp text-[13px]" value="{{ $settings['delivery_eta_text'] ?? '' }}" placeholder="Estimated delivery in 2–3 days" /></div>
       </div>
+      <div>
+        <p class="lbl">Product page trust points</p>
+        <p class="text-[12px] text-stone-500 -mt-1 mb-2">Four short promises shown under the buy buttons on every product page. Empty = the default.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          @foreach(['100% Authentic', 'Cash on delivery', '7-day return', 'Fast delivery'] as $i => $default)
+            <input name="trust_point_{{ $i + 1 }}" maxlength="30" class="inp text-[13px]" value="{{ $settings['trust_point_' . ($i + 1)] ?? '' }}" placeholder="{{ $default }}" aria-label="Trust point {{ $i + 1 }}" />
+          @endforeach
+        </div>
+      </div>
     </section>
 
     <section class="panel p-4 sm:p-5 space-y-4">
@@ -284,6 +293,20 @@
           <label class="lbl">Subtitle</label>
           <input name="home_featured_brands_subtitle" class="inp text-[13px]" value="{{ $settings['home_featured_brands_subtitle'] ?? 'Shop authentic products directly from leading brands' }}" placeholder="Shop authentic products directly from leading brands" />
         </div>
+      </div>
+    </section>
+
+    <section class="panel p-4 sm:p-5">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <h2 class="text-[15px] font-semibold text-gray-900">Show banner text on the picture</h2>
+          <p class="text-xs text-gray-500 mt-0.5">For banner pictures without words of their own: shows each banner's badge, title, subtitle and button on top of its picture. Leave off when the text is already part of the picture.</p>
+        </div>
+        <label class="inline-flex items-center gap-2 cursor-pointer shrink-0">
+          <span class="text-xs text-gray-600 hidden sm:inline">Show</span>
+          <input type="checkbox" name="hero_text_on_image" value="1" @checked(($settings['hero_text_on_image'] ?? '0') === '1') class="sr-only peer" aria-label="Show banner text on the picture">
+          <span class="{{ $switchTrack }}"></span>
+        </label>
       </div>
     </section>
 

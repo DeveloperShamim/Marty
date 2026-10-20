@@ -16,6 +16,7 @@
     $heroSubtitle = $hero?->subtitle ?: setting('hero_fallback_subtitle');
     $heroBadge = $hero?->badge ?: setting('hero_fallback_badge');
     $showHeroCta = (bool) ($heroTitle || $hero?->button_text);
+    $textOnImage = setting('hero_text_on_image') === '1';
   @endphp
 
   {{-- 1. HERO SHOWCASE --}}
@@ -43,6 +44,9 @@
                   <a href="{{ $slide->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $slide->title ?: 'Banner Slide' }}">
                     @if($slide->image)
                       <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->title }}" class="w-full h-full object-cover object-center" loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
+                      @if($textOnImage && ($slide->title || $slide->button_text))
+                        @include('storefront.partials.hero-text-overlay', ['badge' => $slide->badge, 'title' => $slide->title, 'subtitle' => $slide->subtitle, 'button' => $slide->button_text])
+                      @endif
                     @else
                       <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
                         <div class="max-w-md">
@@ -79,6 +83,9 @@
               <a href="{{ $mainHero->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $mainHero->title ?: 'Banner' }}">
                 @if($mainHero->image)
                   <img src="{{ $mainHero->imageUrl() }}" alt="{{ $mainHero->title }}" class="w-full h-full object-cover object-center">
+                  @if($textOnImage && ($mainHero->title || $mainHero->button_text))
+                    @include('storefront.partials.hero-text-overlay', ['badge' => $mainHero->badge, 'title' => $mainHero->title, 'subtitle' => $mainHero->subtitle, 'button' => $mainHero->button_text])
+                  @endif
                 @else
                   <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
                     <div class="max-w-md">

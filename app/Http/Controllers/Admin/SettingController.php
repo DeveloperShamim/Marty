@@ -128,6 +128,10 @@ class SettingController extends Controller
             'homepage' => [
                 'shop_subtitle'       => ['nullable', 'string', 'max:255'],
                 'delivery_eta_text'   => ['nullable', 'string', 'max:120'],
+                'trust_point_1'       => ['nullable', 'string', 'max:30'],
+                'trust_point_2'       => ['nullable', 'string', 'max:30'],
+                'trust_point_3'       => ['nullable', 'string', 'max:30'],
+                'trust_point_4'       => ['nullable', 'string', 'max:30'],
                 'home_categories_title' => ['nullable', 'string', 'max:80'],
                 'home_categories_subtitle' => ['nullable', 'string', 'max:160'],
                 'home_hot_deal_title'   => ['nullable', 'string', 'max:80'],
@@ -141,6 +145,7 @@ class SettingController extends Controller
                 'home_view_more_label'  => ['nullable', 'string', 'max:40'],
                 'default_cta_text'      => ['nullable', 'string', 'max:40'],
                 'hero_fallback_badge'   => ['nullable', 'string', 'max:60'],
+                'hero_text_on_image'    => ['nullable', 'boolean'],
                 'hero_fallback_title'   => ['nullable', 'string', 'max:120'],
                 'hero_fallback_subtitle'=> ['nullable', 'string', 'max:200'],
             ],
@@ -238,7 +243,7 @@ class SettingController extends Controller
                 'theme_primary_color', 'theme_dark_color', 'theme_surface_color',
             ],
             'homepage' => [
-                'shop_subtitle', 'delivery_eta_text',
+                'shop_subtitle', 'trust_point_1', 'trust_point_2', 'trust_point_3', 'trust_point_4', 'delivery_eta_text',
                 'home_categories_title', 'home_categories_subtitle', 'home_hot_deal_title', 'home_featured_title',
                 'home_reviews_title', 'home_reviews_subtitle',
                 'home_featured_brands_title', 'home_featured_brands_subtitle',
@@ -288,6 +293,7 @@ class SettingController extends Controller
         if ($section === 'homepage') {
             Setting::put('show_featured_brands', $request->boolean('show_featured_brands') ? '1' : '0');
             Setting::put('show_home_reviews', $request->boolean('show_home_reviews') ? '1' : '0');
+            Setting::put('hero_text_on_image', $request->boolean('hero_text_on_image') ? '1' : '0');
         }
 
         if ($section === 'couriers') {
