@@ -105,7 +105,7 @@
       <div class="mm-list mt-3 overflow-hidden rounded-2xl bg-stone-100" data-mobile-brands>
         <details class="mm-item group" style="--d:{{ $d++ }}">
           <summary class="flex items-center gap-3 px-5 py-3.5 text-[15px] text-stone-800 transition hover:text-brand-600 active:bg-brand-50 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-            <span class="min-w-0 flex-1 truncate font-semibold">Brands</span>
+            <span class="min-w-0 flex-1 truncate">Brands</span>
             <span class="text-xs text-stone-400">{{ $menuBrands->count() }}</span>
             <svg class="mm-chev h-[18px] w-[18px] shrink-0 text-stone-400 transition" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/></svg>
           </summary>
