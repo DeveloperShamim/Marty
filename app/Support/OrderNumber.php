@@ -13,9 +13,10 @@ class OrderNumber
 {
     public static function prefix(): string
     {
-        $prefix = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) setting('order_number_prefix', 'VB')));
+        // A shop that never set its own prefix gets a neutral ORD (Vant Bangladesh saves VB in its settings)
+        $prefix = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', (string) setting('order_number_prefix', 'ORD')));
 
-        return $prefix !== '' ? substr($prefix, 0, 6) : 'VB';
+        return $prefix !== '' ? substr($prefix, 0, 6) : 'ORD';
     }
 
     public static function generate(bool $pos = false): string
