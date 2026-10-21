@@ -45,14 +45,14 @@
         <span class="text-xs text-brand-600">My account</span>
       </a>
     @else
-      <div class="mm-item mt-2" style="--d:{{ $d++ }}">
-        <p class="text-sm text-stone-500">
-          <a href="{{ route('login') }}" class="font-semibold text-brand-600 hover:underline">Sign in</a>
-          <span class="mx-1 text-stone-300">·</span>
-          <a href="{{ route('register') }}" class="font-semibold text-stone-800 hover:underline">Create account</a>
-        </p>
+      {{-- Sign in and Create account side by side, Google below in the same size and style --}}
+      <div class="mm-item mt-3 space-y-2" style="--d:{{ $d++ }}">
+        <div class="grid grid-cols-2 gap-2">
+          <a href="{{ route('login') }}" class="flex h-10 items-center justify-center rounded-xl bg-brand-600 text-sm font-semibold text-white transition hover:bg-brand-700">Sign in</a>
+          <a href="{{ route('register') }}" class="flex h-10 items-center justify-center rounded-xl bg-white text-sm font-semibold text-stone-800 ring-1 ring-stone-200 transition hover:bg-stone-50">Create account</a>
+        </div>
         @if(google_login_enabled())
-          <div class="mt-3">@include('partials.google-button', ['href' => route('auth.google'), 'class' => 'h-10 px-3 text-sm text-stone-700 ring-stone-200'])</div>
+          @include('partials.google-button', ['href' => route('auth.google'), 'class' => 'h-10 px-3 text-sm text-stone-800 ring-stone-200'])
         @endif
       </div>
     @endauth
