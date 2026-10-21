@@ -97,16 +97,24 @@
       </div>
     @endif
 
-    {{-- Brands: the same list style --}}
-    @if(isset($navBrands) && $navBrands->isNotEmpty())
-      <p class="mm-item mt-6 mb-2 px-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-stone-400" style="--d:{{ $d++ }}">Brands</p>
-      <div class="mm-list overflow-hidden rounded-2xl bg-stone-100" data-mobile-brands>
-        @foreach($navBrands->filter(fn ($b) => ($b->products_count ?? 1) > 0) as $b)
-          <a href="{{ route('shop.brand', $b) }}" class="mm-item flex items-center gap-3 px-5 py-3.5 text-[15px] text-stone-800 transition hover:text-brand-600 active:bg-brand-50" style="--d:{{ $d++ }}">
-            <span class="min-w-0 flex-1 truncate">{{ $b->name }}</span>
-            <svg class="h-[18px] w-[18px] shrink-0 text-stone-400 transition group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/></svg>
-          </a>
-        @endforeach
+    {{-- Brands: closed by default; tap "Brands" to open the full list --}}
+    @php
+      $menuBrands = isset($navBrands) ? $navBrands->filter(fn ($b) => ($b->products_count ?? 1) > 0) : collect();
+    @endphp
+    @if($menuBrands->isNotEmpty())
+      <div class="mm-list mt-3 overflow-hidden rounded-2xl bg-stone-100" data-mobile-brands>
+        <details class="mm-item group" style="--d:{{ $d++ }}">
+          <summary class="flex items-center gap-3 px-5 py-3.5 text-[15px] text-stone-800 transition hover:text-brand-600 active:bg-brand-50 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+            <span class="min-w-0 flex-1 truncate font-semibold">Brands</span>
+            <span class="text-xs text-stone-400">{{ $menuBrands->count() }}</span>
+            <svg class="mm-chev h-[18px] w-[18px] shrink-0 text-stone-400 transition" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/></svg>
+          </summary>
+          <div class="mm-list pb-1">
+            @foreach($menuBrands as $b)
+              <a href="{{ route('shop.brand', $b) }}" class="block truncate pl-8 pr-5 py-3 text-sm text-stone-600 hover:text-brand-600">{{ $b->name }}</a>
+            @endforeach
+          </div>
+        </details>
       </div>
     @endif
 
