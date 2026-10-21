@@ -24,8 +24,10 @@ class ExampleTest extends TestCase
         $response = $this->get('/non-existent-route-path');
 
         $response->assertStatus(404);
-        $response->assertSee('ERROR 404');
-        $response->assertSee('Page Lost in Transit');
+        $response->assertSee('404');
+        $response->assertSee('Page not found');
+        $response->assertSee('name="q"', false);          // search box
+        $response->assertSee(route('track'), false);       // way back to tracking
     }
 }
 

@@ -40,55 +40,14 @@
 
   <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10">
 
-    {{-- Hero Banner Section --}}
-    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-stone-900 via-stone-850 to-stone-950 text-white shadow-2xl border border-stone-800/90 p-6 sm:p-10 mb-8 sm:mb-10">
-      {{-- Ambient radial background glows --}}
-      <div class="absolute -right-20 -top-20 w-80 h-80 bg-brand-600/20 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -left-20 -bottom-20 w-80 h-80 bg-emerald-600/15 rounded-full blur-3xl pointer-events-none"></div>
-
-      <div class="relative z-10 max-w-3xl">
-        {{-- Live Status Pill --}}
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-800/90 border border-stone-700/80 text-emerald-400 text-[11px] sm:text-xs font-bold tracking-wide uppercase mb-3 sm:mb-4 shadow-sm">
-          <span class="relative flex h-2 w-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span>Live Shipment Tracker</span>
-        </div>
-
-        <h1 class="text-2xl sm:text-4xl font-extrabold font-display tracking-tight text-white mb-2 sm:mb-3">
-          Track Your Order Status
-        </h1>
-        <p class="text-stone-300 text-xs sm:text-base font-medium leading-relaxed max-w-2xl">
-          Enter your <span class="text-white font-bold">Order Number</span> and the <span class="text-white font-bold">Phone Number</span> used at checkout to see real-time dispatch, courier movement, and estimated delivery.
-        </p>
-
-        {{-- Quick Feature Highlights --}}
-        <div class="flex flex-wrap items-center gap-3 sm:gap-6 mt-5 pt-5 border-t border-stone-800/80 text-xs text-stone-300">
-          <div class="flex items-center gap-1.5">
-            <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-            <span>Real-time Status</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-            <span>Live Courier Links</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-            <span>Instant WhatsApp Support</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     {{-- Interactive Tracking Input Card --}}
     <div class="rounded-3xl bg-white border border-stone-200/90 shadow-xl p-5 sm:p-8 mb-8 sm:mb-12">
       <div class="mb-4">
-        <h2 class="text-base sm:text-lg font-bold font-display text-stone-900 flex items-center gap-2">
-          <svg class="w-5 h-5 text-brand-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          <span>Find your shipment</span>
-        </h2>
-        <p class="text-xs sm:text-sm text-stone-500 mt-0.5">Please provide both details below to authenticate and view your order progress.</p>
+        <h1 class="text-lg sm:text-2xl font-bold font-display text-stone-900 flex items-center gap-2">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 text-brand-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <span>Track your order</span>
+        </h1>
+        <p class="text-xs sm:text-sm text-stone-500 mt-1">Enter your order number and the phone number you used at checkout.</p>
       </div>
 
       @if($errors->any())
@@ -117,7 +76,7 @@
               type="text" 
               name="order_number" 
               value="{{ $orderNumberInput }}" 
-              placeholder="e.g. ORD-260912-XXXX" 
+              placeholder="e.g. {{ \App\Support\OrderNumber::prefix() }}-482913" 
               required 
               autocomplete="off"
               class="w-full border border-stone-200/90 bg-stone-50/50 pl-9 pr-4 py-3 text-xs sm:text-sm font-medium text-stone-900 placeholder:text-stone-400 focus:outline-none focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all font-mono rounded-xl"
