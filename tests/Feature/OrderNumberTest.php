@@ -36,6 +36,7 @@ class OrderNumberTest extends TestCase
 
     public function test_shop_and_pos_orders_get_prefix_plus_six_digits(): void
     {
+        Setting::put('order_number_prefix', 'VB');
         $this->assertMatchesRegularExpression('/^VB-\d{6}$/', $this->checkout()->order_number);
 
         $admin = User::factory()->create(['role' => 'admin']);
@@ -47,6 +48,16 @@ class OrderNumberTest extends TestCase
 
         Setting::put('order_number_prefix', 'vant');
         $this->assertMatchesRegularExpression('/^VANT-\d{6}$/', OrderNumber::generate());
+    }
+
+    public function test_a_shop_without_its_own_prefix_gets_a_neutral_ord_not_vants_vb(): void
+    {
+        Setting::forgetCache(); // settings are cached between requests
+        $this->assertSame('ORD', OrderNumber::prefix());
+        $this->assertMatchesRegularExpression('/^ORD-\d{6}$/', OrderNumber::generate());
+
+        Setting::put('order_number_prefix', 'UL');
+        $this->assertMatchesRegularExpression('/^UL-P-\d{6}$/', OrderNumber::generate(pos: true));
     }
 
     public function test_track_order_and_courier_scan_accept_just_the_digits(): void
