@@ -36,6 +36,7 @@ class CategoryController extends Controller
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? '') ?: $data['name']);
         $data['is_active'] = $request->boolean('is_active');
         $data['is_featured'] = $request->boolean('is_featured');
+        $data['show_in_home_slider'] = $request->boolean('show_in_home_slider');
         $this->handleImage($request, $data);
 
         Category::create($data);
@@ -57,6 +58,7 @@ class CategoryController extends Controller
         $data['slug'] = $this->uniqueSlug(($data['slug'] ?? '') ?: $data['name'], $category->id);
         $data['is_active'] = $request->boolean('is_active');
         $data['is_featured'] = $request->boolean('is_featured');
+        $data['show_in_home_slider'] = $request->boolean('show_in_home_slider');
         $this->handleImage($request, $data);
 
         $category->update($data);
