@@ -188,4 +188,20 @@ class HomeLayoutTest extends TestCase
         $this->assertSame(['Footwear', 'Slides', 'Watches'], $categories->pluck('name')->all());
         $this->assertSame([2, 1, 1], $categories->pluck('products_count')->all(), 'The main tile counts its sub-categories too');
     }
+
+    public function test_admin_can_hide_a_category_from_the_homepage_slider(): void
+    {
+        $footwear = Category::create(['name' => 'Footwear', 'slug' => 'footwear', 'is_active' => true, 'position' => 0]);
+        $slides = Category::create(['name' => 'Slides', 'slug' => 'slides', 'is_active' => true, 'position' => 0, 'parent_id' => $footwear->id]);
+        $this->product($slides, 'Slide');
+
+        $admin = \App\Models\User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)->put(route('admin.categories.update', $slides), [
+            'name' => 'Slides', 'slug' => 'slides', 'parent_id' => $footwear->id, 'is_active' => 1,
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertFalse($slides->fresh()->show_in_home_slider);
+
+        $this->assertSame(['Footwear'], $this->get(route('home'))->viewData('categories')->pluck('name')->all());
+        $this->get(route('admin.categories.create'))->assertSee('name="show_in_home_slider" value="1"', false);
+    }
 }

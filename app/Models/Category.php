@@ -15,6 +15,7 @@ class Category extends Model
     protected $casts = [
         'is_active'   => 'boolean',
         'is_featured' => 'boolean',
+        'show_in_home_slider' => 'boolean',
         // Some MySQL drivers return this as a string; nest() compares it strictly with the integer ids
         'parent_id'   => 'integer',
     ];

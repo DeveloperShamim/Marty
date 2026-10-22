@@ -25,12 +25,14 @@ class HomeController extends Controller
     {
         $withImages = fn ($q) => $q->published()->with('images', 'category', 'brand', 'variants', 'skus');
 
-        // Each main category followed by its sub-categories; a main category's count includes its sub-categories
+        // Each main category followed by its sub-categories; a main category's count includes its sub-categories.
+        // Categories switched off under Admin → Categories → "Show in homepage categories" are left out.
         $categories = Category::nest(Category::where('is_active', true)
             ->withCount(['products' => fn ($q) => $q->published()])
             ->orderBy('position')
             ->get())
             ->flatMap(fn (Category $cat) => collect([$cat])->concat($cat->children))
+            ->filter(fn (Category $cat) => $cat->show_in_home_slider !== false)
             ->values();
 
         // Brands show as a logo row that links to each brand's page; featured brands lead it
