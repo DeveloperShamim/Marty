@@ -25,11 +25,13 @@ class HomeController extends Controller
     {
         $withImages = fn ($q) => $q->published()->with('images', 'category', 'brand', 'variants', 'skus');
 
-        // Main categories only; a main category's count includes its sub-categories
+        // Each main category followed by its sub-categories; a main category's count includes its sub-categories
         $categories = Category::nest(Category::where('is_active', true)
             ->withCount(['products' => fn ($q) => $q->published()])
             ->orderBy('position')
-            ->get());
+            ->get())
+            ->flatMap(fn (Category $cat) => collect([$cat])->concat($cat->children))
+            ->values();
 
         // Brands show as a logo row that links to each brand's page; featured brands lead it
         $featuredBrands = Brand::where('is_active', true)
