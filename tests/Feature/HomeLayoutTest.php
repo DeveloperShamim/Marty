@@ -173,4 +173,19 @@ class HomeLayoutTest extends TestCase
         $this->assertStringNotContainsString('animate-pulse"></span>', $html);
         $this->assertMatchesRegularExpression('/<a href="tel:01775-075543"[^>]*data-nav-hotline/', $html);
     }
+
+    public function test_category_slider_lists_each_sub_category_right_after_its_main_category(): void
+    {
+        $footwear = Category::create(['name' => 'Footwear', 'slug' => 'footwear', 'is_active' => true, 'position' => 0]);
+        $slides = Category::create(['name' => 'Slides', 'slug' => 'slides', 'is_active' => true, 'position' => 0, 'parent_id' => $footwear->id]);
+        $watches = Category::create(['name' => 'Watches', 'slug' => 'watches', 'is_active' => true, 'position' => 1]);
+        $this->product($footwear, 'Boot');
+        $this->product($slides, 'Slide');
+        $this->product($watches, 'Watch');
+
+        $categories = $this->get(route('home'))->assertOk()->viewData('categories');
+
+        $this->assertSame(['Footwear', 'Slides', 'Watches'], $categories->pluck('name')->all());
+        $this->assertSame([2, 1, 1], $categories->pluck('products_count')->all(), 'The main tile counts its sub-categories too');
+    }
 }
