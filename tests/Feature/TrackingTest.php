@@ -188,4 +188,63 @@ class TrackingTest extends TestCase
         $this->actingAs($admin)->postJson(route('admin.integrations.test-meta'))
             ->assertStatus(422)->assertJson(['ok' => false, 'message' => 'Not connected: Invalid OAuth access token.']);
     }
+
+    public function test_browser_shop_events_are_forwarded_to_meta_with_the_pixel_event_id(): void
+    {
+        $this->saveAll();
+        Http::fake(['graph.facebook.com/*' => Http::response(['events_received' => 1])]);
+        $customer = User::factory()->create(['phone' => '01712345678', 'email' => 'Karim@Example.com']);
+
+        $html = $this->get('/')->getContent();
+        $this->assertStringContainsString("fbq('track', 'PageView', {}, { eventID: id })", $html, 'The page view pixel carries an event id');
+        $this->assertStringContainsString("window.vtCapi('PageView', id)", $html);
+        $this->assertStringContainsString("fetch('/se'", $html);
+
+        $this->actingAs($customer)->withCredentials()->withUnencryptedCookies(['_fbp' => 'fb.1.111.222'])
+            ->withHeaders(['User-Agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Safari/604.1'])
+            ->postJson(route('tracking.meta'), [
+                'event' => 'AddToCart', 'event_id' => 'AddToCart-1761200000000-abc123', 'url' => url('/product/bifold'),
+                'custom' => ['value' => 1000, 'content_ids' => ['7'], 'contents' => [['id' => '7', 'quantity' => 1, 'item_price' => 1000]],
+                    'content_name' => 'Bifold', 'num_items' => 1],
+            ])->assertNoContent();
+
+        Http::assertSent(function (HttpRequest $r) use ($customer) {
+            $e = $r['data'][0];
+
+            return str_contains($r->url(), 'graph.facebook.com/v21.0/123456789012/events')
+                && $e['event_name'] === 'AddToCart'
+                && $e['event_id'] === 'AddToCart-1761200000000-abc123'
+                && $e['event_source_url'] === url('/product/bifold')
+                && $e['user_data']['fbp'] === 'fb.1.111.222'
+                && $e['user_data']['ph'] === hash('sha256', '8801712345678')
+                && $e['user_data']['em'] === hash('sha256', 'karim@example.com')
+                && $e['user_data']['external_id'] === hash('sha256', 'user-' . $customer->id)
+                && $e['custom_data']['value'] == 1000
+                && $e['custom_data']['contents'] === [['id' => '7', 'quantity' => 1, 'item_price' => 1000.0]]
+                && $e['custom_data']['currency'] === 'BDT';
+        });
+    }
+
+    public function test_bots_bad_events_and_a_switched_off_conversions_api_send_nothing(): void
+    {
+        Http::fake();
+        $browser = ['User-Agent' => 'Mozilla/5.0 (Linux; Android 14) Chrome/130.0 Mobile Safari/537.36'];
+        $pageView = ['event' => 'PageView', 'event_id' => 'PageView-1-abc', 'url' => 'https://elsewhere.example/page'];
+
+        // Conversions API off: the endpoint quietly does nothing and the page has no relay
+        $this->withHeaders($browser)->postJson(route('tracking.meta'), $pageView)->assertNoContent();
+        $this->assertStringNotContainsString('window.vtCapi', $this->get('/')->getContent());
+
+        $this->saveAll();
+        $this->withHeaders(['User-Agent' => 'facebookexternalhit/1.1'])->postJson(route('tracking.meta'), $pageView)->assertNoContent();
+        $this->withHeaders($browser)->postJson(route('tracking.meta'), ['event' => 'Purchase', 'event_id' => 'x'])->assertStatus(422);
+        $this->withHeaders($browser)->postJson(route('tracking.meta'), ['event' => 'PageView', 'event_id' => '<script>'])->assertStatus(422);
+        Http::assertNothingSent();
+
+        Http::fake(['graph.facebook.com/*' => Http::response(['events_received' => 1])]);
+        $this->withHeaders($browser)->postJson(route('tracking.meta'), $pageView)->assertNoContent();
+        Http::assertSent(fn (HttpRequest $r) => $r['data'][0]['event_name'] === 'PageView'
+            && ! isset($r['data'][0]['custom_data'])
+            && $r['data'][0]['event_source_url'] === url('/'));
+    }
 }

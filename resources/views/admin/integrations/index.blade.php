@@ -438,7 +438,7 @@
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
             <h2 class="text-[15px] font-semibold text-gray-900 flex flex-wrap items-center gap-x-2 gap-y-1">Facebook Pixel &amp; Conversions API @include('admin.integrations.partials.guide-button', ['guide' => 'meta'])</h2>
-            <p class="text-xs text-gray-500 mt-0.5">Browser pixel plus server-side purchases, counted once.</p>
+            <p class="text-xs text-gray-500 mt-0.5">Browser pixel plus the same events from your server, counted once.</p>
           </div>
           {!! $chip(($settings['tracking_meta_capi_enabled'] ?? '0') === '1' && $hasCapiToken, ($settings['tracking_meta_capi_enabled'] ?? '0') === '1' && $hasCapiToken ? 'CAPI on' : 'CAPI off') !!}
         </div>
@@ -461,7 +461,7 @@
             <span class="{{ $switchTrack }} shrink-0 mt-0.5"></span>
             <span class="min-w-0">
               <span class="block text-[13px] font-semibold text-gray-900">Conversions API (server-side)</span>
-              <span class="block text-xs text-gray-500 mt-0.5">Sends each order from your server to Meta with the customer's hashed phone and email, so sales hidden by ad-blockers and iPhone privacy still count.</span>
+              <span class="block text-xs text-gray-500 mt-0.5">Sends each order, page view, product view, add to cart and checkout from your server to Meta (orders with the customer's hashed phone and email), so shoppers hidden by ad-blockers and iPhone privacy still count.</span>
             </span>
           </label>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

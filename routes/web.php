@@ -63,6 +63,8 @@ Route::get('/order/{order}', [CheckoutController::class, 'confirmation'])->name(
 // Order tracking (public)
 Route::get('/track', [TrackOrderController::class, 'show'])->name('track');
 Route::post('/track', [TrackOrderController::class, 'find'])->middleware('throttle:track')->name('track.find');
+// Shop events from the browser, forwarded to Meta's Conversions API (a plain path so ad-blockers leave it alone)
+Route::post('/se', \App\Http\Controllers\MetaEventController::class)->middleware('throttle:120,1')->name('tracking.meta');
 
 // Courier status callbacks (Steadfast / Pathao / RedX). No CSRF: authenticated by the secret.
 Route::post('/webhooks/courier/{provider}/{token?}', [\App\Http\Controllers\CourierWebhookController::class, 'handle'])
