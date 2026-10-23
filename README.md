@@ -21,7 +21,7 @@ A ready-to-launch Laravel online shop with a full admin panel, built for stores 
 
 ## Requirements
 
-- PHP 8.2+ with the usual Laravel extensions
+- PHP 8.3+ with the usual Laravel extensions (pdo_mysql, mbstring, openssl, curl, gd, intl, zip, fileinfo)
 - MySQL/MariaDB (SQLite works for local testing)
 - Composer
 - Node.js is **not** needed to run the shop. The compiled CSS is committed in `public/theme/css/`.
@@ -46,6 +46,12 @@ php artisan storage:link
 - With `APP_ENV=local` the seeder fills a **demo shop**: settings, categories, a house brand, banners, coupons and staff accounts. Add demo products and orders with
   `php artisan db:seed --class=ProductSeeder` and `php artisan db:seed --class=OrderSeeder`.
 - With `APP_ENV=production` it only creates an admin account (`ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env`, or a printed random password), the default settings and categories. No demo products, orders or `password` accounts.
+
+Add a cron job that runs every minute (courier status sync, cleanup and other scheduled tasks need it):
+
+```
+* * * * * cd /path/to/vantor && php artisan schedule:run >> /dev/null 2>&1
+```
 
 Run `php artisan app:launch-check` before going live.
 
