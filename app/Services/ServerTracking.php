@@ -11,11 +11,20 @@ use Illuminate\Support\Facades\Log;
  * Protocol. They still count when an ad-blocker or iPhone privacy setting stops the browser pixel. The same
  * event id ("purchase-<order number>") and transaction id are used in the browser, so Meta and GA4 count
  * each order once.
+ *
+ * PageView, ViewContent, AddToCart and InitiateCheckout reach Meta the same way: the browser posts each one
+ * with its pixel event id to the shop (MetaEventController), which forwards it from the server.
  */
 class ServerTracking
 {
     public const META_API = 'https://graph.facebook.com/v21.0';
     public const GA4_API = 'https://www.google-analytics.com/mp/collect';
+
+    /** Browser events the shop forwards to Meta. Purchase is not here: checkout sends it from the server itself. */
+    public const META_BROWSER_EVENTS = ['PageView', 'ViewContent', 'AddToCart', 'InitiateCheckout'];
+
+    /** Crawlers and link previews run the pixel too; they are not shoppers, so their events are dropped. */
+    public const BOT_AGENTS = '/bot|crawl|spider|slurp|facebookexternalhit|lighthouse|headless|preview|curl|wget|python|http-client|monitor|pingdom/i';
 
     public static function purchaseEventId(Order $order): string
     {
@@ -92,6 +101,42 @@ class ServerTracking
                 'num_items'    => (int) $order->items->sum('quantity'),
             ],
         ];
+    }
+
+    /** A shop event from the browser, in Conversions API form, with the same event id the pixel used. */
+    public function metaBrowserEvent(string $name, string $eventId, array $custom, array $context, ?\App\Models\User $user = null): array
+    {
+        $event = [
+            'event_name'       => $name,
+            'event_time'       => now()->timestamp,
+            'event_id'         => $eventId,
+            'action_source'    => 'website',
+            'event_source_url' => $context['url'] ?? url('/'),
+            'user_data'        => array_filter([
+                'ph'                => $user ? self::hashed(self::phoneE164($user->phone)) : null,
+                'em'                => $user ? self::hashed($user->email) : null,
+                'fn'                => $user ? self::hashed(strtok((string) $user->name, ' ') ?: null) : null,
+                'country'           => self::hashed('bd'),
+                'external_id'       => $user ? self::hashed('user-' . $user->id) : null,
+                'client_ip_address' => $context['ip'] ?? null,
+                'client_user_agent' => $context['user_agent'] ?? null,
+                'fbp'               => ($context['fbp'] ?? '') ?: null,
+                'fbc'               => ($context['fbc'] ?? '') ?: null,
+            ]),
+        ];
+        if ($name !== 'PageView') {
+            $event['custom_data'] = array_filter([
+                'currency'     => setting('currency_code', 'BDT'),
+                'value'        => isset($custom['value']) ? (float) $custom['value'] : null,
+                'content_type' => 'product',
+                'content_ids'  => $custom['content_ids'] ?? null,
+                'contents'     => $custom['contents'] ?? null,
+                'content_name' => $custom['content_name'] ?? null,
+                'num_items'    => isset($custom['num_items']) ? (int) $custom['num_items'] : null,
+            ], fn ($v) => $v !== null && $v !== []);
+        }
+
+        return $event;
     }
 
     /**

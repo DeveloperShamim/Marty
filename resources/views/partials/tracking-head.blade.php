@@ -33,7 +33,25 @@ n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
 t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script',
 'https://connect.facebook.net/en_US/fbevents.js');
 fbq('init', '{{ $pixelId }}');
-fbq('track', 'PageView');
+window.vtEventId = function (name) { return name + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10); };
+@if(tracking_meta_capi_ready())
+/* The same event, with the pixel's event id, sent from the server through the shop (Conversions API). */
+window.vtCapi = function (name, eventId, custom) {
+  try {
+    var t = document.querySelector('meta[name="csrf-token"]');
+    fetch('{{ route('tracking.meta', [], false) }}', {
+      method: 'POST', keepalive: true, credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': t ? t.content : '' },
+      body: JSON.stringify({ event: name, event_id: eventId, url: location.href, custom: custom || {} })
+    }).catch(function () {});
+  } catch (e) { /* tracking must never break the shop */ }
+};
+@endif
+(function () {
+  var id = window.vtEventId('PageView');
+  fbq('track', 'PageView', {}, { eventID: id });
+  if (window.vtCapi) document.addEventListener('DOMContentLoaded', function () { window.vtCapi('PageView', id); });
+})();
 </script>
 @endif
 
@@ -82,13 +100,17 @@ window.vtTrack = function (name, d) {
 
     var meta = { view_item: 'ViewContent', add_to_cart: 'AddToCart', begin_checkout: 'InitiateCheckout', purchase: 'Purchase' }[name];
     if (meta && typeof fbq === 'function') {
-      fbq('track', meta, {
+      var metaData = {
         content_type: 'product', currency: cfg.currency, value: value,
         content_ids: items.map(function (i) { return i.item_id; }),
         contents: items.map(function (i) { return { id: i.item_id, quantity: i.quantity, item_price: i.price }; }),
         content_name: items.length === 1 ? items[0].item_name : undefined,
         num_items: items.reduce(function (s, i) { return s + i.quantity; }, 0)
-      }, d.event_id ? { eventID: d.event_id } : undefined);
+      };
+      // One id for the pixel and the server copy, so Meta counts the event once (checkout sends Purchase itself)
+      var metaId = d.event_id || window.vtEventId(meta);
+      fbq('track', meta, metaData, { eventID: metaId });
+      if (meta !== 'Purchase' && window.vtCapi) window.vtCapi(meta, metaId, metaData);
     }
 
     var tt = { view_item: 'ViewContent', add_to_cart: 'AddToCart', begin_checkout: 'InitiateCheckout', purchase: 'CompletePayment' }[name];
