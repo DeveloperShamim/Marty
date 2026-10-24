@@ -23,11 +23,34 @@
 
 <div class="space-y-4 max-w-full">
 
+  {{-- Tag Manager loads a tag the shop already sends: every event would count twice --}}
+  @if($gtmOverlap && ($gtmOverlap['duplicates'] || $gtmOverlap['error']))
+    <section class="rounded-xl bg-amber-50 ring-1 ring-amber-200 p-4 text-amber-900" data-gtm-overlap>
+      <div class="flex flex-col sm:flex-row sm:items-start gap-3">
+        <div class="min-w-0 flex-1">
+          @if($gtmOverlap['duplicates'])
+            <p class="text-sm font-semibold">Your Tag Manager container {{ $gtmOverlap['container'] }} also loads {{ collect($gtmOverlap['duplicates'])->map(fn ($d) => $d['tool'] . ' ' . $d['id'])->join(', ', ' and ') }}.</p>
+            <p class="mt-1 text-[13px] text-amber-800">The shop already sends {{ count($gtmOverlap['duplicates']) === 1 ? 'this tag' : 'these tags' }} itself, so every event is counted twice{{ collect($gtmOverlap['duplicates'])->contains('tool', 'Meta Pixel') ? ', and the Tag Manager copies of Meta events never match the server-side ones' : '' }}.
+              Pause or delete {{ count($gtmOverlap['duplicates']) === 1 ? 'that tag' : 'those tags' }} in Tag Manager and publish, or clear the Tag Manager container ID below.</p>
+          @else
+            <p class="text-sm font-semibold">Could not check Tag Manager container {{ $gtmOverlap['container'] }} for duplicate tags.</p>
+            <p class="mt-1 text-[13px] text-amber-800">{{ $gtmOverlap['error'] }}</p>
+          @endif
+          <p class="mt-1.5 text-[11px] text-amber-700">Checked {{ \Illuminate\Support\Carbon::createFromTimestamp($gtmOverlap['checked_at'])->diffForHumans() }}. Tag Manager changes can take a few minutes to go live.</p>
+        </div>
+        <form method="POST" action="{{ route('admin.integrations.check-gtm') }}" class="shrink-0">
+          @csrf
+          <button type="submit" class="h-9 px-4 rounded-full bg-white ring-1 ring-amber-200 text-[13px] font-semibold text-amber-900 cursor-pointer">Check again</button>
+        </form>
+      </div>
+    </section>
+  @endif
+
   {{-- Tabs --}}
   <nav class="-mx-3 sm:mx-0 px-3 sm:px-0 overflow-x-auto no-scrollbar" aria-label="Integration sections">
     <div class="inline-flex items-center gap-1 p-1 rounded-full bg-white shadow-panel whitespace-nowrap">
       @foreach($tabs as $key => [$label, $on])
-        <button type="button" onclick="switchIntegrationTab('{{ $key }}', this)"
+        <button type="button" data-tab="{{ $key }}" onclick="switchIntegrationTab('{{ $key }}', this)"
                 class="integration-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium inline-flex items-center gap-1.5 transition-colors {{ $loop->first ? 'text-white' : 'text-gray-600 hover:bg-gray-100' }}"
                 @if($loop->first) style="background: var(--brand-dark);" @endif>
           {{ $label }}
@@ -56,6 +79,13 @@
       }
     });
   }
+
+  // ?tab=tracking opens that section (used after "Check again")
+  document.addEventListener('DOMContentLoaded', function () {
+    var tab = new URLSearchParams(location.search).get('tab');
+    var btn = tab && document.querySelector('.integration-tab-btn[data-tab="' + tab + '"]');
+    if (btn) switchIntegrationTab(tab, btn);
+  });
 
   const EYE_ICON = @json($eyeIcon);
   const EYE_OFF_ICON = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.9 4.2A10 10 0 0 1 12 4c6.5 0 10 7 10 7a17 17 0 0 1-2.2 3.2M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="m2 2 20 20"/></svg>';
@@ -415,7 +445,7 @@
           <div>
             <label class="lbl">Tag Manager container ID</label>
             <input name="tracking_gtm_id" class="inp font-mono text-[13px] uppercase" value="{{ $settings['tracking_gtm_id'] ?? '' }}" placeholder="GTM-XXXXXXX" />
-            <p class="text-[11px] text-gray-400 mt-1.5">Optional, if you manage tags in Google Tag Manager.</p>
+            <p class="text-[11px] text-gray-400 mt-1.5">Only for tools not set up on this page. A Meta Pixel or GA4 tag inside Tag Manager doubles the events.</p>
           </div>
           <div>
             <label class="lbl">Search Console tag</label>

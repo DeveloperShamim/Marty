@@ -247,4 +247,52 @@ class TrackingTest extends TestCase
             && ! isset($r['data'][0]['custom_data'])
             && $r['data'][0]['event_source_url'] === url('/'));
     }
+
+    public function test_admin_is_warned_when_tag_manager_loads_the_same_pixel_or_ga4(): void
+    {
+        $this->saveAll(['tracking_gtm_id' => 'gtm-abc123']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        // A container with a Meta Pixel tag (same pixel id) and a GA4 tag, like the one on Unilife
+        Http::fake(['www.googletagmanager.com/*' => Http::response('var data={"macros":[{"function":"__c","vtp_value":"G-ABC123"},{"function":"__c","vtp_value":"123456789012"}]};"https://connect.facebook.net/en_US/fbevents.js"')]);
+
+        $page = $this->actingAs($admin)->get(route('admin.integrations.index'))->assertOk()->getContent();
+        $this->assertStringContainsString('data-gtm-overlap', $page);
+        $this->assertStringContainsString('Your Tag Manager container GTM-ABC123 also loads Meta Pixel 123456789012 and GA4 G-ABC123.', $page);
+        $this->assertStringContainsString('never match the server-side ones', $page);
+        Http::assertSent(fn (HttpRequest $r) => $r->url() === 'https://www.googletagmanager.com/gtm.js?id=GTM-ABC123');
+
+        // Kept for a day: reloading the page does not fetch Tag Manager again
+        $this->actingAs($admin)->get(route('admin.integrations.index'))->assertOk();
+        Http::assertSentCount(1);
+    }
+
+    public function test_check_again_picks_up_a_cleaned_tag_manager_container(): void
+    {
+        $this->saveAll(['tracking_gtm_id' => 'GTM-ABC123']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        Http::fake(['www.googletagmanager.com/*' => Http::sequence()
+            ->push('{"vtp_value":"123456789012"}')
+            ->push('{"function":"__clarity"}')]);
+
+        $this->actingAs($admin)->get(route('admin.integrations.index'))->assertSee('also loads Meta Pixel 123456789012', false);
+
+        $this->actingAs($admin)->post(route('admin.integrations.check-gtm'))
+            ->assertRedirect(route('admin.integrations.index', ['tab' => 'tracking']))
+            ->assertSessionHas('status', 'Tag Manager checked: no duplicate tags.');
+        $this->actingAs($admin)->get(route('admin.integrations.index'))->assertOk()->assertDontSee('data-gtm-overlap', false);
+    }
+
+    public function test_no_warning_without_tag_manager_and_a_clear_note_when_it_cannot_be_checked(): void
+    {
+        $this->saveAll();
+        $admin = User::factory()->create(['role' => 'admin']);
+        Http::fake(['www.googletagmanager.com/*' => Http::response('Not found', 404)]);
+        $this->actingAs($admin)->get(route('admin.integrations.index'))->assertOk()->assertDontSee('data-gtm-overlap', false);
+        Http::assertNothingSent();
+
+        $this->saveAll(['tracking_gtm_id' => 'GTM-NOPE1']);
+        $this->actingAs($admin)->get(route('admin.integrations.index'))->assertOk()
+            ->assertSee('Could not check Tag Manager container GTM-NOPE1')
+            ->assertSee('Tag Manager has no published container with this ID.');
+    }
 }
