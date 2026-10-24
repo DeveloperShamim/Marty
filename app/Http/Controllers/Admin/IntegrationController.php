@@ -56,10 +56,11 @@ class IntegrationController extends Controller
         $bdKeys = array_map(fn ($k) => $k + ['used' => $usage[$k['id']]['used'] ?? 0, 'blocked' => $usage[$k['id']]['blocked'] ?? null], $bdCourier->keys());
 
         return view('admin.integrations.index', [
-            'settings' => $settings,
-            'webhooks' => $webhooks,
-            'lastSync' => $lastSync,
-            'bdKeys'   => $bdKeys,
+            'settings'   => $settings,
+            'webhooks'   => $webhooks,
+            'lastSync'   => $lastSync,
+            'bdKeys'     => $bdKeys,
+            'gtmOverlap' => app(\App\Services\GtmOverlapCheck::class)->result(),
         ]);
     }
 
@@ -123,6 +124,20 @@ class IntegrationController extends Controller
         }
 
         return back()->with('status', $message);
+    }
+
+    /** "Check again" after the tags inside Tag Manager were changed. */
+    public function checkGtm(\App\Services\GtmOverlapCheck $check)
+    {
+        $result = $check->result(fresh: true);
+        $message = match (true) {
+            $result === null             => 'No Tag Manager container is set.',
+            $result['error'] !== null    => $result['error'],
+            $result['duplicates'] === [] => 'Tag Manager checked: no duplicate tags.',
+            default                      => 'Tag Manager still has duplicate tags.',
+        };
+
+        return redirect()->route('admin.integrations.index', ['tab' => 'tracking'])->with('status', $message);
     }
 
     /** "Test Meta CAPI connection": sends one PageView with the saved pixel and token (and test code, if set). */

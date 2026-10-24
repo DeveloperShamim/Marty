@@ -307,6 +307,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::put('integrations/{section}', [AdminIntegrationController::class, 'update'])->middleware('area:integrations')->name('integrations.update');
             Route::post('integrations/test-mail', [AdminIntegrationController::class, 'testMail'])->middleware('area:integrations')->name('integrations.test-mail');
             Route::post('integrations/test-meta', [AdminIntegrationController::class, 'testMeta'])->middleware('area:integrations')->name('integrations.test-meta');
+            Route::post('integrations/check-gtm', [AdminIntegrationController::class, 'checkGtm'])->middleware('area:integrations')->name('integrations.check-gtm');
 
             // System Settings
             Route::get('settings', [SettingController::class, 'edit'])->middleware('area:settings')->name('settings.edit');
