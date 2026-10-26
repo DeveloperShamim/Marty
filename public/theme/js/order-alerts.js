@@ -3,6 +3,7 @@
  * Polls the order feed (every 20s, 60s in a background tab) and shows a card per new storefront
  * order with Confirm / Open / Print. Alerts live in localStorage, so they follow the admin from
  * page to page and stay in sync across tabs; the chime and desktop notification fire once.
+ * Each card closes by itself 30s after it arrives (not while hovered or saving); the bell keeps the count.
  */
 (function () {
   var cfg = document.getElementById('orderAlertsConfig');
@@ -16,7 +17,7 @@
     seen: 'admin.orders.lastSeen', alerts: 'admin.orders.alerts', more: 'admin.orders.more',
     chimed: 'admin.orders.chimed', sound: 'admin.orders.sound', count: 'admin.orders.reviewCount',
   };
-  var VISIBLE_MS = 20000, HIDDEN_MS = 60000, MAX_ALERTS = 20;
+  var VISIBLE_MS = 20000, HIDDEN_MS = 60000, MAX_ALERTS = 20, ALERT_MS = 30000;
   function shownCount() { return window.innerWidth < 640 ? 1 : 3; } // one card on phones, three on larger screens
 
   function get(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } }
@@ -122,6 +123,21 @@
     delete feedback[id];
     render();
   }
+
+  // Close cards older than ALERT_MS. Waits while the pointer is over the stack or a Confirm is saving.
+  function expire() {
+    if (stack.matches(':hover')) return;
+    var now = Date.now();
+    var alerts = get(K.alerts, []);
+    var stamped = false;
+    alerts.forEach(function (a) { if (!a.added) { a.added = now; stamped = true; } }); // cards saved before auto-close existed
+    var keep = alerts.filter(function (a) { return feedback[a.id] || now - a.added < ALERT_MS; });
+    if (keep.length === alerts.length) { if (stamped) set(K.alerts, alerts); return; }
+    set(K.alerts, keep);
+    if (!keep.length) set(K.more, 0);
+    render();
+  }
+  setInterval(expire, 2000);
 
   stack.addEventListener('click', function (e) {
     var el = e.target.closest('[data-act]');
@@ -242,7 +258,8 @@
 
       var alerts = get(K.alerts, []);
       var known = alerts.map(function (a) { return a.id; });
-      d.orders.slice().reverse().forEach(function (o) { if (known.indexOf(o.id) === -1) alerts.unshift(o); });
+      var now = Date.now();
+      d.orders.slice().reverse().forEach(function (o) { if (known.indexOf(o.id) === -1) { o.added = now; alerts.unshift(o); } });
       set(K.alerts, alerts.slice(0, MAX_ALERTS));
       if (d.more) set(K.more, (get(K.more, 0) || 0) + d.more);
       render();
