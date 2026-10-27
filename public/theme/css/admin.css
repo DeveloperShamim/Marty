@@ -124,10 +124,20 @@
   .sb-collapsed #sidebar .sb-collapse-icon { transform: scaleX(-1); }
   .sb-collapsed #sidebar .sb-dot { left: auto; right: .55rem; }
 }
-#sidebar .sb-chevron { opacity: 0; transition: opacity .15s, transform .15s; }
+#sidebar .sb-chevron { opacity: .7; transition: opacity .15s, transform .15s; }
 #sidebar .sb-group-toggle:hover .sb-chevron,
 #sidebar .sb-group-toggle:focus-visible .sb-chevron,
 #sidebar .sb-group.is-folded .sb-chevron { opacity: 1; }
+/* Calm menu: the open page on a light grey box, and the pages it shares as a small tree under it */
+#sidebar .sb-item.sb-on { background: color-mix(in srgb, var(--brand-dark) 7%, #fff); }
+#sidebar .sb-tree { position: relative; margin: 2px 0 6px 20px; padding-left: 14px; }
+#sidebar .sb-tree::before { content: ""; position: absolute; left: 0; top: 0; bottom: 16px; width: 1px; background: #e7e5e4; }
+#sidebar .sb-sub { position: relative; }
+#sidebar .sb-sub::before { content: ""; position: absolute; left: -14px; top: 50%; width: 10px; height: 10px; margin-top: -10px;
+  border-left: 1px solid #e7e5e4; border-bottom: 1px solid #e7e5e4; border-bottom-left-radius: 8px; }
+#sidebar .sb-sub:hover { background: #f5f5f4; }
+#sidebar .sb-sub[aria-current] { background: color-mix(in srgb, var(--brand-dark) 5%, #fff); }
+.sb-collapsed #sidebar .sb-tree { display: none; }
 
 /* Pill buttons used in page headings (dashboard etc.) */
 .pill-btn { display: inline-flex; align-items: center; gap: .5rem; height: 2.375rem; padding: 0 1rem; border-radius: 9999px; background: #fff; color: #1c1917; font-size: .8125rem; font-weight: 500; box-shadow: 0 1px 2px rgba(28,25,23,.04), 0 8px 20px -14px rgba(28,25,23,.25); transition: background-color .15s ease; }
@@ -209,3 +219,6 @@ details.bulk-menu > summary::-webkit-details-marker { display: none; }
    zoom out and show the admin in only part of the screen. */
 .admin-main main .overflow-x-auto:not(.absolute, .fixed, .sticky) { position: relative; }
 html, body.admin-body { overflow-x: clip; }
+
+/* Sidebar cards: flatter than page cards, a hairline border and no drop shadow (after the frosted-surface rule) */
+.admin-body #sidebar :is(.sidebar-nav, nav + div) { box-shadow: none; }

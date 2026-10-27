@@ -33,9 +33,10 @@
     // "Settings" moves into the Support card; everything else stays in the main menu card.
     $support = $nav['Settings'] ?? [];
     unset($nav['Settings']);
+    // The open page sits on a light grey box (styled as .sb-on in admin.css), not a dark pill
     $itemClass = fn ($on) => $on
-        ? 'text-white font-semibold shadow-[0_8px_18px_-10px_rgba(0,0,0,.7)]'
-        : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900 font-medium';
+        ? 'sb-on text-gray-900 font-semibold'
+        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 font-medium';
 @endphp
 <aside id="sidebar" class="sb-cards fixed lg:sticky inset-y-0 left-0 lg:top-[84px] z-50 lg:z-auto w-[272px] lg:w-[236px] xl:w-[248px] max-w-[85vw] h-dvh lg:h-auto lg:max-h-[calc(100dvh-100px)] shrink-0 overflow-y-auto overscroll-contain no-scrollbar bg-[#F0EFED] lg:bg-transparent p-3 lg:p-0 flex flex-col gap-3 -translate-x-full lg:translate-x-0 transition-transform duration-200 shadow-2xl lg:shadow-none" aria-label="Admin navigation">
   <div class="lg:hidden flex items-center justify-between px-2 pt-1 pb-1">
@@ -50,7 +51,7 @@
     @foreach($nav as $group => $items)
       @php $groupActive = collect($items)->contains(fn ($i) => \App\Support\AdminNav::isOn($i)); @endphp
       <div class="sb-group {{ $loop->first ? '' : 'mt-4' }}" data-group="{{ $group }}" @if($groupActive) data-active @endif>
-        <button type="button" class="sb-group-toggle w-full flex items-center justify-between h-6 px-3 mb-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-gray-400 hover:text-gray-600" aria-expanded="true">
+        <button type="button" class="sb-group-toggle w-full flex items-center gap-1.5 h-7 px-3 mb-0.5 text-[13px] font-medium text-gray-500 hover:text-gray-800" aria-expanded="true">
           <span class="sb-label">{{ $group === '' ? 'Home' : $group }}</span>
           <svg class="sb-chevron sb-label w-3.5 h-3.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
         </button>
@@ -67,18 +68,18 @@
   {{-- Support --}}
   <div class="bg-white rounded-[24px] shadow-panel px-3 py-4">
     <div class="sb-group" data-group="Support">
-      <p class="h-6 px-3 mb-1 flex items-center text-[11px] font-semibold uppercase tracking-[0.1em] text-gray-400">Support</p>
+      <p class="h-7 px-3 mb-0.5 flex items-center text-[13px] font-medium text-gray-500">Support</p>
       <div class="sb-items space-y-1">
         @foreach($support as $i)
           @include('admin.partials.sidebar-item', ['i' => $i])
         @endforeach
-        <a href="{{ route('shop') }}" target="_blank" rel="noopener" class="sb-item group flex items-center gap-3 h-10 px-3 rounded-full text-[14px] font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors" data-label="View store" data-search="view store shop website support">
+        <a href="{{ route('shop') }}" target="_blank" rel="noopener" class="sb-item group flex items-center gap-3 h-10 px-3 rounded-xl text-[14px] font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors" data-label="View store" data-search="view store shop website support">
           <svg class="w-[18px] h-[18px] shrink-0 text-gray-400 group-hover:text-gray-700" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14 21 3"/></svg>
           <span class="sb-label flex-1">View store</span>
         </a>
         <form method="POST" action="{{ route('admin.logout') }}">
           @csrf
-          <button type="submit" class="sb-item group w-full flex items-center gap-3 h-10 px-3 rounded-full text-[14px] font-medium text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer" data-label="Log out" data-search="log out sign out logout support">
+          <button type="submit" class="sb-item group w-full flex items-center gap-3 h-10 px-3 rounded-xl text-[14px] font-medium text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer" data-label="Log out" data-search="log out sign out logout support">
             <svg class="w-[18px] h-[18px] shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
             <span class="sb-label flex-1 text-left">Log out</span>
           </button>
