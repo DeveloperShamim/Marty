@@ -166,6 +166,10 @@ body.admin-body {
   box-shadow: 0 1px 2px color-mix(in srgb, var(--brand-dark) 5%, transparent), 0 16px 36px -26px color-mix(in srgb, var(--brand-dark) 40%, transparent);
   -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%);
 }
+/* A blurred card traps a fixed child inside its clipped box, so drop the blur while one of its ⋯ menus is open */
+.admin-main main :is(.panel, .card, .bg-white.border.rounded-xl, .bg-white.border.rounded-2xl, .bg-white.rounded-xl.border, .bg-white.rounded-2xl.border):not(input, select, textarea, button, .absolute, .fixed, .fixed *):has(details.order-menu[open]) {
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
 /* Tables: header rows in a light brand tint, rows hover in white */
 .admin-main main table thead { background: color-mix(in srgb, var(--brand-soft) 35%, transparent); }
 .admin-main main table tbody tr:hover { background-color: rgba(255,255,255,.6); }
