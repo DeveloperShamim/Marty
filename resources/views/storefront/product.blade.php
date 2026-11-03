@@ -786,11 +786,42 @@
   @endif
 
   {{-- Image Lightbox Modal --}}
-  <div id="imageLightboxModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 hidden transition-opacity duration-300 opacity-0" aria-hidden="true">
-    <div class="relative max-w-4xl w-full max-h-[92vh] bg-stone-950/80 backdrop-blur-md rounded-2xl sm:rounded-3xl p-2 sm:p-3 overflow-hidden flex flex-col items-center justify-center shadow-2xl">
-      <button type="button" id="closeLightbox" class="absolute top-3 sm:top-4 right-3 sm:right-4 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-bold flex items-center justify-center text-lg transition-all focus:outline-none cursor-pointer" aria-label="Close Lightbox">✕</button>
-      <img id="lightboxImg" src="" class="max-h-[86vh] w-auto h-auto object-contain rounded-xl sm:rounded-2xl" alt="Enlarged product image" />
+  {{-- Full-screen viewer: swipe or arrows for the next photo; pinch, double-tap, click or scroll to zoom; drag to look around --}}
+  <style>
+    #imageLightboxModal { position: fixed; inset: 0; z-index: 70; background: rgba(12,10,9,.96); opacity: 0; transition: opacity .25s ease; user-select: none; -webkit-user-select: none; }
+    #imageLightboxModal.is-open { opacity: 1; }
+    #lbStage { position: absolute; inset: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; touch-action: none; }
+    #lightboxImg { max-width: 100%; max-height: 100%; object-fit: contain; transform-origin: center center; will-change: transform; cursor: zoom-in; -webkit-user-drag: none; }
+    #imageLightboxModal.is-zoomed #lightboxImg { cursor: grab; }
+    #imageLightboxModal.is-zoomed #lightboxImg:active { cursor: grabbing; }
+    .lb-btn { position: absolute; z-index: 2; width: 44px; height: 44px; border-radius: 9999px; border: 0; display: flex; align-items: center; justify-content: center; color: #fff; background: rgba(255,255,255,.14); cursor: pointer; transition: background .15s ease; -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+    .lb-btn:hover { background: rgba(255,255,255,.26); }
+    .lb-btn svg { width: 20px; height: 20px; }
+    #closeLightbox { top: max(12px, env(safe-area-inset-top)); right: 12px; }
+    #lbPrev { left: 12px; top: 50%; transform: translateY(-50%); }
+    #lbNext { right: 12px; top: 50%; transform: translateY(-50%); }
+    #lbCount { position: absolute; z-index: 2; top: max(22px, calc(env(safe-area-inset-top) + 10px)); left: 16px; color: rgba(255,255,255,.85); font-size: 13px; font-weight: 600; letter-spacing: .04em; font-variant-numeric: tabular-nums; pointer-events: none; }
+    #lbHint { position: absolute; z-index: 2; left: 50%; bottom: max(20px, env(safe-area-inset-bottom)); transform: translateX(-50%); padding: 6px 14px; border-radius: 9999px; background: rgba(255,255,255,.14); color: rgba(255,255,255,.9); font-size: 12px; white-space: nowrap; pointer-events: none; transition: opacity .3s ease; }
+    #imageLightboxModal.is-zoomed #lbHint, #imageLightboxModal.is-zoomed .lb-nav { opacity: 0; pointer-events: none; }
+    @media (max-width: 639px) { .lb-nav { display: none; } }
+  </style>
+  <div id="imageLightboxModal" class="hidden" role="dialog" aria-modal="true" aria-label="Product photos" aria-hidden="true">
+    <div id="lbStage">
+      <img id="lightboxImg" src="" alt="{{ $product->name }}" draggable="false" />
     </div>
+    @if($product->images->count() > 1)
+      <span id="lbCount"></span>
+      <button type="button" id="lbPrev" class="lb-btn lb-nav" aria-label="Previous photo">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <button type="button" id="lbNext" class="lb-btn lb-nav" aria-label="Next photo">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </button>
+    @endif
+    <button type="button" id="closeLightbox" class="lb-btn" aria-label="Close">
+      <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <span id="lbHint"></span>
   </div>
 
   {{-- Mobile & Tablet Floating Action Buttons (`lg:hidden`) - Floating with No Background Below --}}
@@ -894,24 +925,182 @@
   }
 
   if (mainImg && modal && lightboxImg) {
-    mainImg.classList.add('cursor-pointer');
-    mainImg.addEventListener('click', () => {
-      lightboxImg.src = mainImg.src;
+    const stage = document.getElementById('lbStage');
+    const lbPrev = document.getElementById('lbPrev');
+    const lbNext = document.getElementById('lbNext');
+    const lbCount = document.getElementById('lbCount');
+    const lbHint = document.getElementById('lbHint');
+    const touchFirst = window.matchMedia('(pointer: coarse)').matches;
+    const many = thumbBtns.length > 1;
+    const MAX_ZOOM = 4, TAP_ZOOM = 2.5;
+    let lbIndex = 0, scale = 1, tx = 0, ty = 0;
+    const pointers = new Map();
+    let drag = null, pinch = null, lastTap = 0;
+
+    if (lbHint) lbHint.textContent = touchFirst
+      ? (many ? 'Double-tap or pinch to zoom · swipe for more' : 'Double-tap or pinch to zoom')
+      : 'Click or scroll to zoom';
+
+    function apply(animate) {
+      lightboxImg.style.transition = animate ? 'transform .25s ease' : 'none';
+      lightboxImg.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+      modal.classList.toggle('is-zoomed', scale > 1.01);
+    }
+
+    // Keep a zoomed photo from being dragged off the screen.
+    function clampPan() {
+      const r = stage.getBoundingClientRect();
+      const mx = Math.max(0, (lightboxImg.offsetWidth * scale - r.width) / 2);
+      const my = Math.max(0, (lightboxImg.offsetHeight * scale - r.height) / 2);
+      tx = Math.min(mx, Math.max(-mx, tx));
+      ty = Math.min(my, Math.max(-my, ty));
+    }
+
+    // Zoom so the point under (clientX, clientY) stays where it is.
+    function zoomAt(next, clientX, clientY, animate) {
+      const r = stage.getBoundingClientRect();
+      const px = clientX - (r.left + r.width / 2), py = clientY - (r.top + r.height / 2);
+      next = Math.min(MAX_ZOOM, Math.max(1, next));
+      tx = px - (px - tx) * next / scale;
+      ty = py - (py - ty) * next / scale;
+      scale = next;
+      if (scale === 1) { tx = 0; ty = 0; }
+      clampPan();
+      apply(animate);
+    }
+
+    function resetZoom(animate) { scale = 1; tx = 0; ty = 0; apply(animate); }
+
+    function show(i) {
+      const n = thumbBtns.length;
+      lbIndex = (i + n) % n;
+      resetZoom(false);
+      lightboxImg.src = thumbBtns[lbIndex].getAttribute('data-thumb') || mainImg.src;
+      if (lbCount) lbCount.textContent = (lbIndex + 1) + ' / ' + n;
+      setActiveImage(lbIndex); // the page gallery follows, so closing lands on the same photo
+    }
+
+    function openViewer() {
+      show(currentIndex);
       modal.classList.remove('hidden');
-      setTimeout(() => modal.classList.remove('opacity-0'), 10);
-    });
+      modal.setAttribute('aria-hidden', 'false');
+      document.documentElement.style.overflow = 'hidden';
+      requestAnimationFrame(() => modal.classList.add('is-open'));
+    }
 
-    const hideModal = () => {
-      modal.classList.add('opacity-0');
-      setTimeout(() => modal.classList.add('hidden'), 300);
-    };
+    function hideModal() {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.documentElement.style.overflow = '';
+      pointers.clear(); drag = null; pinch = null;
+      setTimeout(() => { modal.classList.add('hidden'); resetZoom(false); }, 250);
+    }
 
+    function toggleZoom(clientX, clientY) {
+      if (scale > 1.01) resetZoom(true);
+      else zoomAt(TAP_ZOOM, clientX, clientY, true);
+    }
+
+    mainImg.classList.add('cursor-pointer');
+    mainImg.addEventListener('click', openViewer);
     if (closeBtn) closeBtn.addEventListener('click', hideModal);
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) hideModal();
+    if (lbPrev) lbPrev.addEventListener('click', () => show(lbIndex - 1));
+    if (lbNext) lbNext.addEventListener('click', () => show(lbIndex + 1));
+
+    function midpoint() {
+      const [a, b] = Array.from(pointers.values());
+      return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, d: Math.hypot(a.x - b.x, a.y - b.y) || 1 };
+    }
+
+    function startDrag(p) { drag = { x: p.x, y: p.y, tx, ty, moved: false, onImage: p.onImage }; }
+
+    stage.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      stage.setPointerCapture(e.pointerId);
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, onImage: e.target === lightboxImg });
+      if (pointers.size === 2) {
+        const m = midpoint();
+        pinch = { d: m.d, scale, x: m.x, y: m.y };
+        drag = null;
+      } else if (pointers.size === 1) {
+        startDrag(pointers.get(e.pointerId));
+      }
     });
+
+    stage.addEventListener('pointermove', (e) => {
+      if (!pointers.has(e.pointerId)) return;
+      const p = pointers.get(e.pointerId);
+      p.x = e.clientX; p.y = e.clientY;
+
+      if (pinch && pointers.size >= 2) {
+        const m = midpoint();
+        zoomAt(pinch.scale * m.d / pinch.d, m.x, m.y, false);
+        tx += m.x - pinch.x; ty += m.y - pinch.y;
+        pinch.x = m.x; pinch.y = m.y;
+        clampPan(); apply(false);
+        return;
+      }
+      if (!drag) return;
+      const dx = p.x - drag.x, dy = p.y - drag.y;
+      if (Math.abs(dx) + Math.abs(dy) > 6) drag.moved = true;
+      if (!drag.moved) return;
+      if (scale > 1.01) {
+        tx = drag.tx + dx; ty = drag.ty + dy;
+        clampPan();
+      } else {
+        // Not zoomed: the photo follows the finger sideways (swipe) or downwards (swipe to close).
+        const sideways = Math.abs(dx) > Math.abs(dy);
+        tx = sideways && many ? dx : 0;
+        ty = sideways ? 0 : Math.max(0, dy);
+      }
+      apply(false);
+    });
+
+    function endPointer(e) {
+      if (!pointers.has(e.pointerId)) return;
+      pointers.delete(e.pointerId);
+
+      if (pinch) {
+        if (pointers.size === 1) { pinch = null; startDrag(Array.from(pointers.values())[0]); drag.moved = true; }
+        if (pointers.size === 0) pinch = null;
+        if (scale < 1.05) resetZoom(true);
+        return;
+      }
+      if (!drag || pointers.size) return;
+      const d = drag; drag = null;
+      if (e.type === 'pointercancel') { if (scale <= 1.01) resetZoom(true); return; }
+
+      if (d.moved) {
+        if (scale > 1.01) return;
+        const dx = e.clientX - d.x, dy = e.clientY - d.y;
+        if (many && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) show(lbIndex + (dx < 0 ? 1 : -1));
+        else if (dy > 100 && dy > Math.abs(dx)) hideModal();
+        else resetZoom(true);
+        return;
+      }
+
+      // A tap: tapping the dark area closes; on the photo, double-tap (touch) or click (mouse) zooms.
+      if (!d.onImage && scale <= 1.01) { hideModal(); return; }
+      if (e.pointerType === 'mouse') { toggleZoom(e.clientX, e.clientY); return; }
+      const now = Date.now();
+      if (now - lastTap < 300) { lastTap = 0; toggleZoom(e.clientX, e.clientY); }
+      else lastTap = now;
+    }
+    stage.addEventListener('pointerup', endPointer);
+    stage.addEventListener('pointercancel', endPointer);
+
+    stage.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      zoomAt(scale * (e.deltaY < 0 ? 1.2 : 1 / 1.2), e.clientX, e.clientY, false);
+    }, { passive: false });
+
+    window.addEventListener('resize', () => { if (!modal.classList.contains('hidden')) { clampPan(); apply(false); } });
+
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !modal.classList.contains('hidden')) hideModal();
+      if (modal.classList.contains('hidden')) return;
+      if (e.key === 'Escape') hideModal();
+      else if (e.key === 'ArrowRight' && many) show(lbIndex + 1);
+      else if (e.key === 'ArrowLeft' && many) show(lbIndex - 1);
     });
   }
 
