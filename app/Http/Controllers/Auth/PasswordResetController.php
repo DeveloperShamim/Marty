@@ -21,16 +21,15 @@ class PasswordResetController extends Controller
         $request->validate(['email' => ['required', 'email']]);
 
         $user = User::where('email', $request->input('email'))->first();
-        if (! $user) {
-            return back()->withErrors(['email' => 'No account found with that email address.'])->onlyInput('email');
-        }
+        $email = $user?->email ?? strtolower(trim((string) $request->input('email')));
 
-        $code = $otp->send($user->email, 'reset', $user->name);
-        $request->session()->put('otp_email', $user->email);
+        // Same answer whether or not the account exists, so the form can't be used to find out who shops here.
+        $code = $user ? $otp->send($user->email, 'reset', $user->name) : null;
+        $request->session()->put('otp_email', $email);
         $request->session()->put('otp_purpose', 'reset');
 
         return redirect()->route('verify')
-            ->with('status', 'We sent a password reset code to your email.')
+            ->with('status', 'If an account uses that email, we sent it a password reset code.')
             ->with('dev_otp', app()->environment('local') ? $code : null);
     }
 
@@ -56,6 +55,9 @@ class PasswordResetController extends Controller
 
         $user = User::where('email', $email)->firstOrFail();
         $user->update(['password' => $request->input('password')]); // hashed by cast
+        // Old remember-me cookies stop working; other signed-in browsers are signed out by AuthenticateSession.
+        $user->setRememberToken(\Illuminate\Support\Str::random(60));
+        $user->save();
         $request->session()->forget('reset_verified');
 
         Auth::login($user);

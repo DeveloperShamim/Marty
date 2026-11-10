@@ -17,8 +17,15 @@ class SecurityHeaders
         $headers->set('X-Content-Type-Options', 'nosniff');               // don't guess file types (uploaded files)
         $headers->set('X-Frame-Options', 'SAMEORIGIN');                    // no clickjacking inside other sites' frames
         $headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        // Camera: admin barcode scanner. Microphone: voice notes in live chat.
-        $headers->set('Permissions-Policy', 'camera=(self), microphone=(self), geolocation=(), payment=()');
+        // Camera: admin barcode scanner.
+        $headers->set('Permissions-Policy', 'camera=(self), microphone=(), geolocation=(), payment=()');
+
+        // Content Security Policy, the parts that can't break the store's inline scripts or tracking tags:
+        // no <base> tag hijacking, no Flash/plugin objects, no framing by other sites, http assets upgraded.
+        if (! $headers->has('Content-Security-Policy')) {
+            $headers->set('Content-Security-Policy', "base-uri 'self'; object-src 'none'; frame-ancestors 'self'"
+                . ($request->isSecure() ? '; upgrade-insecure-requests' : ''));
+        }
 
         if ($request->isSecure() && app()->environment('production')) {
             $headers->set('Strict-Transport-Security', 'max-age=31536000'); // always use HTTPS for a year

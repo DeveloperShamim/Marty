@@ -50,14 +50,15 @@ class LaunchReadinessTest extends TestCase
             ->assertHeader('X-Content-Type-Options', 'nosniff')
             ->assertHeader('X-Frame-Options', 'SAMEORIGIN')
             ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
-            ->assertHeader('Permissions-Policy');
+            ->assertHeader('Permissions-Policy')
+            ->assertHeader('Content-Security-Policy', "base-uri 'self'; object-src 'none'; frame-ancestors 'self'");
     }
 
-    public function test_privacy_policy_lists_courier_checks_chat_and_unfinished_checkouts(): void
+    public function test_privacy_policy_lists_courier_checks_and_unfinished_checkouts(): void
     {
         $this->get(route('privacy'))->assertOk()
             ->assertSee('BD Courier')
-            ->assertSee('Live chat messages')
+            ->assertDontSee('Live chat messages')
             ->assertSee('saved even if you don')
             ->assertSee('deleted automatically after 60 days')
             ->assertDontSee('contractually obligated');
