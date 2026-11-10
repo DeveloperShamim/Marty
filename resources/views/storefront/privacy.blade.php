@@ -247,7 +247,6 @@
                 <li>IP Address &amp; Device User-Agent</li>
                 <li>UTM Traffic Referral Source</li>
                 <li>Checkout details you type (name, phone, address), saved even if you don't finish the order, so we can help you complete it</li>
-                <li>Live chat messages, photos and voice notes you send us</li>
               </ul>
             </div>
           </div>
@@ -368,7 +367,7 @@
             We implement industry-standard administrative and technical security measures to protect your information against unauthorized access, disclosure, or alteration. All web communications are transmitted via SSL (HTTPS) encryption.
           </p>
           <p class="text-sm text-slate-600 leading-relaxed">
-            <strong>How long we keep data:</strong> unfinished checkout details are deleted automatically after 60 days, and live chat messages and attachments after 90 days. Order records are kept for accounting, warranty and returns.
+            <strong>How long we keep data:</strong> unfinished checkout details are deleted automatically after 60 days. Chats on WhatsApp and Messenger are kept by those services under their own privacy policies. Order records are kept for accounting, warranty and returns.
           </p>
         </article>
 

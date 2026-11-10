@@ -22,8 +22,13 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\CanonicalHost::class,
         ]);
         $middleware->web(append: [
+            // Signs a browser out when the account's password changed elsewhere (password change or reset)
+            \Illuminate\Session\Middleware\AuthenticateSession::class,
             \App\Http\Middleware\TrackUtmSource::class,
         ]);
+
+        // Only the store's own address may appear in links the app builds (Host header can't be spoofed)
+        $middleware->trustHosts(at: fn () => array_values(array_filter([parse_url((string) config('app.url'), PHP_URL_HOST)])), subdomains: true);
 
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
 

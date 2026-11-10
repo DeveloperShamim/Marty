@@ -14,7 +14,7 @@ class LoginController extends Controller
         $redirect = $request->query('redirect');
         if (is_string($redirect) && $redirect !== '') {
             // Only allow same-app relative paths or current-app absolute URLs.
-            if (str_starts_with($redirect, '/') || str_starts_with($redirect, url('/'))) {
+            if (self::isSafeRedirect($redirect)) {
                 $request->session()->put('url.intended', $redirect);
             }
         }
@@ -66,5 +66,29 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('home')->with('status', 'You have been signed out.');
+    }
+
+    /**
+     * A path on this site ("/checkout"), or a full URL whose host is exactly this site's host.
+     * "//evil.com", "/\\evil.com" and "https://vantbd.com.evil.com" are refused (they leave the site).
+     */
+    public static function isSafeRedirect(string $target): bool
+    {
+        if (preg_match('/[\x00-\x1F\x7F\\\\]/', $target)) {
+            return false;
+        }
+        if (str_starts_with($target, '/')) {
+            return ! str_starts_with($target, '//');
+        }
+
+        $parts = parse_url($target);
+        $site = parse_url(url('/'));
+
+        return is_array($parts)
+            && in_array(strtolower($parts['scheme'] ?? ''), ['http', 'https'], true)
+            && isset($parts['host'], $site['host'])
+            && strtolower($parts['host']) === strtolower($site['host'])
+            && ! isset($parts['user'])
+            && ($parts['port'] ?? null) === ($site['port'] ?? null);
     }
 }

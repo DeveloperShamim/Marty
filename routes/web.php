@@ -79,13 +79,6 @@ Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::get('/page/{slug}', [PageController::class, 'show'])->name('page');
 
-// Live Support Chat (Storefront Customer)
-Route::get('/chat/conversation', [\App\Http\Controllers\ChatController::class, 'getConversation'])->name('chat.conversation');
-Route::post('/chat/send', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->middleware('throttle:chat')->name('chat.send');
-Route::post('/chat/send-attachment', [\App\Http\Controllers\ChatController::class, 'sendAttachment'])->middleware('throttle:chat-upload')->name('chat.send-attachment');
-Route::post('/chat/send-voice', [\App\Http\Controllers\ChatController::class, 'sendVoiceNote'])->middleware('throttle:chat-upload')->name('chat.send-voice');
-Route::get('/chat/poll', [\App\Http\Controllers\ChatController::class, 'pollMessages'])->name('chat.poll');
-
 // SEO & Google Search Console
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');

@@ -30,13 +30,21 @@ class AppServiceProvider extends ServiceProvider
 
         // Rate Limiters for Authentication & Security
         RateLimiter::for('login', function (Request $request) {
-            $key = strtolower(trim((string) $request->input('email', ''))) . '|' . $request->ip();
-            return Limit::perMinute(5)->by($key);
+            $email = strtolower(trim((string) $request->input('email', '')));
+            return [
+                Limit::perMinute(5)->by($email . '|' . $request->ip()),   // one person mistyping
+                Limit::perMinute(10)->by('email:' . $email),               // one account tried from many IPs
+                Limit::perMinute(20)->by('ip:' . $request->ip()),          // one IP trying many accounts
+            ];
         });
 
         RateLimiter::for('admin-login', function (Request $request) {
-            $key = strtolower(trim((string) $request->input('email', ''))) . '|' . $request->ip();
-            return Limit::perMinute(5)->by($key);
+            $email = strtolower(trim((string) $request->input('email', '')));
+            return [
+                Limit::perMinute(5)->by($email . '|' . $request->ip()),   // one person mistyping
+                Limit::perMinute(10)->by('email:' . $email),               // one account tried from many IPs
+                Limit::perMinute(20)->by('ip:' . $request->ip()),          // one IP trying many accounts
+            ];
         });
 
         RateLimiter::for('otp', function (Request $request) {
@@ -54,14 +62,6 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('coupon', function (Request $request) {
-            return Limit::perMinute(10)->by($request->ip());
-        });
-
-        RateLimiter::for('chat', function (Request $request) {
-            return Limit::perMinute(30)->by($request->ip());
-        });
-
-        RateLimiter::for('chat-upload', function (Request $request) {
             return Limit::perMinute(10)->by($request->ip());
         });
 
