@@ -171,9 +171,25 @@
   });
 
   // Automatically hide popped icons when visitor scrolls
+  // On phones the button floats over product cards, so while the visitor scrolls it
+  // tucks half off the right edge and fades, then comes back once scrolling stops.
+  const phoneQuery = window.matchMedia('(max-width: 767px)');
+  let tuckTimer = null;
+  if (root) root.style.transition = 'transform .25s ease, opacity .25s ease';
+  function tuck(on) {
+    if (!root) return;
+    root.style.transform = on ? 'translateX(60%)' : '';
+    root.style.opacity = on ? '0.55' : '';
+  }
+
   window.addEventListener('scroll', () => {
     if (isOpen) {
       closeSpeedDial();
+    }
+    if (phoneQuery.matches) {
+      tuck(true);
+      clearTimeout(tuckTimer);
+      tuckTimer = setTimeout(() => tuck(false), 900);
     }
   }, { passive: true });
 

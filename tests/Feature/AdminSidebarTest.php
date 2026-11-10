@@ -54,7 +54,7 @@ class AdminSidebarTest extends TestCase
 
         $html = $this->actingAs($admin)->get(route('admin.dashboard'))->assertOk()->getContent();
 
-        $this->assertMatchesRegularExpression('/data-group="Store content".*Homepage.*Size Guide.*Media Library/s', $html);
+        $this->assertMatchesRegularExpression('/data-group="Store content".*Homepage.*Pages.*Size Guide.*Media Library/s', $html);
         $this->assertMatchesRegularExpression('/data-group="Marketing".*Coupons.*Promotions.*Abandoned Carts/s', $html);
         $this->assertMatchesRegularExpression('/data-group="Catalog".*Products.*Inventory.*Catalog setup.*Reviews/s', $html);
         $this->assertStringNotContainsString('data-label="My Account"', $html, 'Account is in the sidebar footer');
@@ -66,7 +66,7 @@ class AdminSidebarTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $html = $this->actingAs($admin)->get(route('admin.brands.index'))->assertOk()->getContent();
 
-        $this->assertCount(20, array_diff($this->menuLabels($html), ['View store', 'Log out']));
+        $this->assertCount(21, array_diff($this->menuLabels($html), ['View store', 'Log out']));
         $this->assertMatchesRegularExpression('/data-label="Catalog setup"[^>]*aria-current="page"/', $html);
         $this->assertMatchesRegularExpression('/data-page-tabs.*Categories.*aria-current="true"[^>]*>Brands<.*Variations/s', $html);
         // Searching the menu for a tab's name still finds its entry.

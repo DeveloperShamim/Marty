@@ -70,6 +70,60 @@ class SettingController extends Controller
     }
 
     /** Send a test email to the admin using the current mail settings. */
+    /**
+     * "Use colours from my logo": the logo's strongest colour as the accent, and a deep shade of it
+     * for headings and the top bar. Only fills the colour fields; the owner still presses Save.
+     */
+    public function logoColours()
+    {
+        $logo = ltrim((string) setting('logo', ''), '/');
+        $path = match (true) {
+            $logo === '', str_starts_with($logo, 'http') => null,
+            str_starts_with($logo, 'uploads/') => public_path($logo),
+            default => storage_path('app/public/' . $logo),
+        };
+        $primary = $path ? extract_dominant_color_from_image($path) : null;
+
+        if (! $primary) {
+            return response()->json([
+                'message' => $logo === ''
+                    ? 'Upload a logo first, then try again.'
+                    : 'Could not find a clear colour in the logo (SVG and very pale logos are skipped). Pick a colour by hand.',
+            ], 422);
+        }
+
+        return response()->json(['primary' => strtoupper($primary), 'dark' => self::deepShade($primary)]);
+    }
+
+    /** The same hue at about 16% lightness, e.g. #8B5A2B → #3D2813. */
+    private static function deepShade(string $hex): string
+    {
+        [$r, $g, $b] = array_map(fn ($c) => hexdec($c) / 255, str_split(ltrim($hex, '#'), 2));
+        $max = max($r, $g, $b);
+        $min = min($r, $g, $b);
+        $d = $max - $min;
+        $h = 0.0;
+        if ($d > 0) {
+            $h = match ($max) {
+                $r => fmod(($g - $b) / $d + 6, 6),
+                $g => ($b - $r) / $d + 2,
+                default => ($r - $g) / $d + 4,
+            } / 6;
+        }
+        $s = $d > 0 ? min(0.55, $d / (1 - abs($max + $min - 1))) : 0;
+        $l = 0.16;
+
+        $c = (1 - abs(2 * $l - 1)) * $s;
+        $x = $c * (1 - abs(fmod($h * 6, 2) - 1));
+        $m = $l - $c / 2;
+        [$r1, $g1, $b1] = match ((int) floor($h * 6) % 6) {
+            0 => [$c, $x, 0], 1 => [$x, $c, 0], 2 => [0, $c, $x],
+            3 => [0, $x, $c], 4 => [$x, 0, $c], default => [$c, 0, $x],
+        };
+
+        return sprintf('#%02X%02X%02X', round(($r1 + $m) * 255), round(($g1 + $m) * 255), round(($b1 + $m) * 255));
+    }
+
     public function testMail(Request $request)
     {
         $to = $request->validate(['test_email' => ['required', 'email']])['test_email'];
@@ -120,6 +174,8 @@ class SettingController extends Controller
                 'theme_primary_color' => ['nullable', 'string', 'regex:/^#([a-fA-F0-9]{3}){1,2}$/'],
                 'theme_dark_color'    => ['nullable', 'string', 'regex:/^#([a-fA-F0-9]{3}){1,2}$/'],
                 'theme_surface_color' => ['nullable', 'string', 'regex:/^#([a-fA-F0-9]{3}){1,2}$/'],
+                'theme_font'          => ['nullable', \Illuminate\Validation\Rule::in(array_keys(\App\Support\StoreStyle::FONTS))],
+                'theme_corners'       => ['nullable', \Illuminate\Validation\Rule::in(array_keys(\App\Support\StoreStyle::CORNERS))],
                 'logo_file'       => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,webp', 'max:2048'],
                 'favicon_file'    => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,webp,ico', 'max:1024'],
                 'remove_logo'     => ['nullable', 'boolean'],
@@ -132,10 +188,8 @@ class SettingController extends Controller
                 'home_categories_subtitle' => ['nullable', 'string', 'max:160'],
                 'home_hot_deal_title'   => ['nullable', 'string', 'max:80'],
                 'home_featured_title'   => ['nullable', 'string', 'max:80'],
-                'show_home_reviews'     => ['nullable', 'boolean'],
                 'home_reviews_title'    => ['nullable', 'string', 'max:80'],
                 'home_reviews_subtitle' => ['nullable', 'string', 'max:200'],
-                'show_featured_brands'         => ['nullable', 'boolean'],
                 'home_featured_brands_title'   => ['nullable', 'string', 'max:80'],
                 'home_featured_brands_subtitle'=> ['nullable', 'string', 'max:200'],
                 'home_view_more_label'  => ['nullable', 'string', 'max:40'],
@@ -236,6 +290,7 @@ class SettingController extends Controller
                 'facebook_url', 'messenger_url', 'instagram_url', 'twitter_url',
                 'search_placeholder',
                 'theme_primary_color', 'theme_dark_color', 'theme_surface_color',
+                'theme_font', 'theme_corners',
             ],
             'homepage' => [
                 'shop_subtitle', 'delivery_eta_text',
@@ -283,11 +338,6 @@ class SettingController extends Controller
                 $value = strtoupper($value);
             }
             Setting::put($key, $value);
-        }
-
-        if ($section === 'homepage') {
-            Setting::put('show_featured_brands', $request->boolean('show_featured_brands') ? '1' : '0');
-            Setting::put('show_home_reviews', $request->boolean('show_home_reviews') ? '1' : '0');
         }
 
         if ($section === 'couriers') {

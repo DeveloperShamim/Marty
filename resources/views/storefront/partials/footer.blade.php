@@ -47,7 +47,7 @@
         @if(has_custom_logo())
           <a href="{{ route('home') }}" class="inline-flex rounded-xl bg-white px-3 py-2" aria-label="{{ $site }}"><img src="{{ logo_url() }}" alt="{{ $site }}" class="h-9 w-auto max-w-[180px] object-contain" /></a>
         @else
-          @include('partials.brand', ['size' => 'md', 'light' => true, 'class' => '[&_*]:!text-white'])
+          @include('partials.brand', ['size' => 'md', 'light' => true])
         @endif
         @if($footerText !== '')
           <p class="text-sm text-white/60 leading-relaxed max-w-sm">{{ $footerText }}</p>
@@ -126,6 +126,9 @@
             <li><a href="{{ route('login') }}" class="{{ $linkClass }}">My account</a></li>
             <li><a href="{{ route('terms') }}" class="{{ $linkClass }}">Terms &amp; returns</a></li>
             <li><a href="{{ route('privacy') }}" class="{{ $linkClass }}">Privacy policy</a></li>
+            @foreach(\App\Models\Page::inFooter()->get(['title', 'slug']) as $footerPage)
+              <li><a href="{{ $footerPage->url() }}" class="{{ $linkClass }}">{{ $footerPage->title }}</a></li>
+            @endforeach
           </ul>
         </div>
       </div>

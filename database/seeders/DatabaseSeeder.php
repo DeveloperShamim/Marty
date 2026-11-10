@@ -39,7 +39,27 @@ class DatabaseSeeder extends Seeder
         $this->seedFeatures();
         $this->seedCoupons();
         $this->call(BannerSeeder::class);
+        $this->seedPages();
         $this->seedStaffActivityLogs();
+    }
+
+    /** Starter pages (Admin → Pages) every shop needs; plain wording the owner edits. Only into an empty table. */
+    private function seedPages(): void
+    {
+        if (\App\Models\Page::count() > 0) {
+            return;
+        }
+
+        $pages = [
+            ['About us', 'about-us', "We are an online shop based in Bangladesh. We pick every product with care and deliver it to your door anywhere in the country.\n\n## Why shop with us\n- Cash on delivery all over Bangladesh\n- bKash, Nagad and Rocket accepted\n- Friendly help by phone and WhatsApp"],
+            ['Shipping & delivery', 'shipping', "## Delivery time\n- Inside Dhaka: 1–2 working days\n- Outside Dhaka: 2–4 working days\n\n## Delivery charge\nThe delivery charge is shown at checkout before you place your order.\n\n## Tracking\nWe send your parcel with a trusted courier. Use **Track order** at the top of the site to see where it is."],
+            ['Returns & refunds', 'returns', "If something is wrong with your order, tell us within 7 days of delivery.\n\n## How to return\n- Call or WhatsApp us with your order number\n- Keep the product unused, with its tags and box\n- We arrange the pickup or tell you where to send it\n\n## Refunds\nOnce we receive the product, we refund to your bKash or Nagad within 3–5 working days, or send a replacement."],
+            ['FAQ', 'faq', "## How do I order?\nAdd a product to your cart, fill in your name, phone and address, and press Place order. We call to confirm.\n\n## Can I pay on delivery?\nYes. Cash on delivery is available all over Bangladesh.\n\n## How do I track my order?\nUse **Track order** at the top of the site with your order number or phone number."],
+        ];
+
+        foreach ($pages as $i => [$title, $slug, $body]) {
+            \App\Models\Page::create(['title' => $title, 'slug' => $slug, 'body' => $body, 'position' => $i, 'is_published' => true, 'show_in_footer' => true]);
+        }
     }
 
     private function seedUsers(): void
@@ -140,7 +160,7 @@ class DatabaseSeeder extends Seeder
             'pay_bkash_enabled' => '1',
             'pay_nagad_enabled' => '0',
             'pay_rocket_enabled' => '0',
-            'show_cards_in_footer' => '1',
+            'show_cards_in_footer' => '0', // no card gateway yet; turn on in Payments once one is connected
             'shipping_inside_dhaka' => '70',
             'shipping_outside_dhaka' => '130',
             'tax_percent' => '0',
@@ -247,6 +267,7 @@ class DatabaseSeeder extends Seeder
         if (Brand::count() === 0) {
             $this->seedBrands();
         }
+        $this->seedPages();
         if (Feature::count() === 0) {
             $this->seedFeatures();
         }

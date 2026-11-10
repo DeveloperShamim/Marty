@@ -78,21 +78,24 @@ class PromoCardScheduleTest extends TestCase
     public function test_admin_saves_device_and_dates(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
+        // Dates in the future (relative to today) so the card is always "scheduled", whenever the test runs
+        $start = now()->addDays(5)->setTime(10, 0);
+        $end = now()->addDays(30)->setTime(23, 0);
 
         $this->actingAs($admin)->post(route('admin.banners.store'), [
             'title' => 'Key Features', 'placement' => 'hero_side', 'image_url' => 'https://example.com/k.jpg',
-            'show_on' => 'mobile', 'starts_at' => '2026-11-01T10:00', 'ends_at' => '2026-11-30T23:00', 'is_active' => '1',
+            'show_on' => 'mobile', 'starts_at' => $start->format('Y-m-d\TH:i'), 'ends_at' => $end->format('Y-m-d\TH:i'), 'is_active' => '1',
         ])->assertRedirect(route('admin.banners.index'));
 
         $banner = Banner::firstWhere('title', 'Key Features');
         $this->assertSame('mobile', $banner->show_on);
-        $this->assertSame('2026-11-01 10:00', $banner->starts_at->format('Y-m-d H:i'));
+        $this->assertSame($start->format('Y-m-d H:i'), $banner->starts_at->format('Y-m-d H:i'));
         $this->assertSame('scheduled', $banner->status());
 
         $this->actingAs($admin)->get(route('admin.banners.index'))->assertOk()
             ->assertSee('Promo cards')->assertSee('Phone only')->assertSee('data-banner-status="scheduled"', false);
         $this->actingAs($admin)->get(route('admin.banners.edit', $banner))->assertOk()
-            ->assertSee('value="2026-11-01T10:00"', false);
+            ->assertSee('value="' . $start->format('Y-m-d\TH:i') . '"', false);
     }
 
     public function test_end_must_follow_start_and_slides_show_everywhere(): void

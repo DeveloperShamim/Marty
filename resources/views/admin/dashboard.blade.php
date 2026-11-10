@@ -65,6 +65,50 @@
     $rowCols = $openLists->count() === 1 ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 divide-y md:divide-y-0' : 'divide-y';
   @endphp
 
+  {{-- Finish setting up your store: shown to owners until every step is done (App\Support\SetupChecklist) --}}
+  @if(\App\Support\StaffAccess::allows(auth()->user(), 'settings'))
+    @php
+      $setup = collect(\App\Support\SetupChecklist::items());
+      $setupDone = $setup->where('done', true)->count();
+    @endphp
+    @if($setupDone < $setup->count())
+      <section class="panel p-4 sm:p-5" data-setup-checklist>
+        <div class="flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <h2 class="text-[15px] sm:text-base font-semibold text-gray-900">Finish setting up your store</h2>
+            <p class="text-xs text-gray-500 mt-0.5">{{ $setupDone }} of {{ $setup->count() }} done. This card goes away when all steps are done.</p>
+          </div>
+          <span class="shrink-0 text-xs font-semibold tabular-nums text-gray-700">{{ (int) round($setupDone / $setup->count() * 100) }}%</span>
+        </div>
+        <div class="mt-3 h-1.5 rounded-full bg-gray-100 overflow-hidden" aria-hidden="true">
+          <div class="h-full rounded-full" style="width: {{ $setupDone / $setup->count() * 100 }}%; background: var(--brand);"></div>
+        </div>
+        <ul class="mt-3 divide-y divide-gray-100">
+          @foreach($setup->sortBy('done') as $step)
+            <li class="flex items-center gap-3 py-2.5" data-setup-step="{{ $step['key'] }}" data-done="{{ $step['done'] ? '1' : '0' }}">
+              @if($step['done'])
+                <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full text-white" style="background: var(--brand);" aria-label="Done">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.6" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+                </span>
+              @else
+                <span class="h-6 w-6 shrink-0 rounded-full border-2 border-gray-300" aria-label="Not done"></span>
+              @endif
+              <span class="min-w-0 flex-1">
+                <span class="block text-[13px] font-medium {{ $step['done'] ? 'text-gray-400 line-through' : 'text-gray-900' }}">{{ $step['label'] }}</span>
+                @unless($step['done'])
+                  <span class="block text-[11px] text-gray-500 mt-0.5 leading-snug">{{ $step['hint'] }}</span>
+                @endunless
+              </span>
+              @unless($step['done'])
+                <a href="{{ $step['url'] }}" class="shrink-0 h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-xs font-medium text-gray-800 inline-flex items-center">{{ $step['action'] }}</a>
+              @endunless
+            </li>
+          @endforeach
+        </ul>
+      </section>
+    @endif
+  @endif
+
   {{-- Needs action: everything waiting on you, at a glance --}}
   @php
     $initials = fn ($name) => mb_strtoupper(collect(preg_split('/\s+/', trim((string) $name)))->filter()->take(2)->map(fn ($w) => mb_substr($w, 0, 1))->implode('')) ?: '?';
