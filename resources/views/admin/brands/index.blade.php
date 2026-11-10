@@ -17,7 +17,7 @@
 <div class="space-y-4 max-w-full">
 
   {{-- Home page brands bar --}}
-  @php $sectionEnabled = setting('show_featured_brands', '1') === '1'; @endphp
+  @php $sectionEnabled = \App\Support\HomeSections::isOn('brands'); @endphp
   <section class="panel p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
     <div class="min-w-0">
       <h2 class="text-[15px] font-semibold text-gray-900 flex items-center gap-2 flex-wrap">
@@ -27,13 +27,9 @@
       <p class="text-xs text-gray-500 mt-0.5 truncate">Subtitle: "{{ setting('home_featured_brands_subtitle', 'Shop authentic products directly from leading brands') }}"</p>
     </div>
     <div class="flex items-center gap-2 shrink-0">
-      <form method="POST" action="{{ route('admin.settings.update-section', 'homepage') }}" class="flex-1 sm:flex-none">
-        @csrf @method('PUT')
-        <input type="hidden" name="show_featured_brands" value="{{ $sectionEnabled ? '0' : '1' }}">
-        <button type="submit" class="w-full h-9 px-3.5 rounded-full text-[13px] font-medium cursor-pointer {{ $sectionEnabled ? 'bg-gray-100 hover:bg-gray-200 text-gray-800' : 'text-white' }}" @unless($sectionEnabled) style="background: var(--brand-dark);" @endunless>
-          {{ $sectionEnabled ? 'Hide from home page' : 'Show on home page' }}
-        </button>
-      </form>
+      <a href="{{ route('admin.home-sections.index') }}" class="flex-1 sm:flex-none h-9 px-3.5 rounded-full text-[13px] font-medium inline-flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-800">
+        {{ $sectionEnabled ? 'Hide or move on home page' : 'Show on home page' }}
+      </a>
       <a href="{{ route('admin.settings.edit') }}" class="h-9 px-3.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-[13px] font-medium inline-flex items-center gap-1.5 shrink-0">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.6a2 2 0 0 1-1 1.7l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.7v-.6a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
         Settings

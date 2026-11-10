@@ -277,7 +277,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::put('news-ticker', [\App\Http\Controllers\Admin\NewsTickerController::class, 'update'])->middleware('area:news-ticker')->name('news-ticker.update');
 
             // Menu bar (the store's top menu)
-            Route::get('header-menu', [\App\Http\Controllers\Admin\HeaderMenuController::class, 'index'])->middleware('area:header-menu')->name('header-menu.index');
+            // Store pages: About us, FAQ, Shipping, Returns…
+        Route::resource('pages', \App\Http\Controllers\Admin\PageController::class)->except('show')->middleware('area:pages');
+
+        // Homepage sections: order and show/hide
+        Route::get('home-sections', [\App\Http\Controllers\Admin\HomeSectionController::class, 'index'])->middleware('area:home-sections')->name('home-sections.index');
+        Route::put('home-sections', [\App\Http\Controllers\Admin\HomeSectionController::class, 'update'])->middleware('area:home-sections')->name('home-sections.update');
+
+        Route::get('header-menu', [\App\Http\Controllers\Admin\HeaderMenuController::class, 'index'])->middleware('area:header-menu')->name('header-menu.index');
             Route::put('header-menu', [\App\Http\Controllers\Admin\HeaderMenuController::class, 'update'])->middleware('area:header-menu')->name('header-menu.update');
 
             // Size Guide
@@ -310,6 +317,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('settings/backups/{file}', [\App\Http\Controllers\Admin\BackupController::class, 'download'])->middleware('area:settings')->name('backups.download');
             Route::post('settings/backups/{file}/restore', [\App\Http\Controllers\Admin\BackupController::class, 'restore'])->middleware('area:settings')->name('backups.restore');
             Route::delete('settings/backups/{file}', [\App\Http\Controllers\Admin\BackupController::class, 'destroy'])->middleware('area:settings')->name('backups.destroy');
+            Route::get('settings/logo-colours', [SettingController::class, 'logoColours'])->middleware('area:settings')->name('settings.logo-colours');
             Route::post('settings/test-mail', [SettingController::class, 'testMail'])->middleware('area:settings')->name('settings.test-mail');
         });
 

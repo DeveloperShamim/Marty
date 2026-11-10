@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Page;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PageController extends Controller
@@ -54,7 +56,15 @@ class PageController extends Controller
             return $this->privacy();
         }
 
-        abort(404);
+        // Pages written in Admin → Pages (About us, FAQ, Shipping…)
+        $page = Page::published()->where('slug', $slug)->firstOrFail();
+
+        return view('storefront.page', [
+            'title'           => $page->title,
+            'heading'         => $page->title,
+            'bodyHtml'        => $page->bodyHtml(),
+            'metaDescription' => $page->meta_description ?: Str::limit(preg_replace('/\s+/', ' ', strip_tags((string) $page->body)), 155),
+        ]);
     }
 
     private function defaultTerms(): string

@@ -27,7 +27,7 @@
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', 'Hind Siliguri', system-ui, sans-serif;
+  font-family: var(--font-body, 'Plus Jakarta Sans'), 'Hind Siliguri', system-ui, sans-serif;
   color: var(--fk-ink);
   background: #fff;
 }
@@ -51,7 +51,7 @@ body {
   flex-direction: column;
   background: #fff;
   border: 1px solid #f0f0f0;
-  border-radius: 16px;
+  border-radius: var(--r-card, 16px);
   overflow: hidden;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -71,7 +71,7 @@ body {
   font-size: 10px;
   font-weight: 800;
   padding: 3px 8px;
-  border-radius: 6px;
+  border-radius: var(--r-sm, 6px);
   letter-spacing: -0.01em;
   box-shadow: 0 2px 6px rgba(0,0,0,0.12);
 }
@@ -154,7 +154,7 @@ body {
   font-weight: 700;
   padding: 9px 12px;
   border: 1.5px solid var(--brand-primary, #E8751B);
-  border-radius: 10px;
+  border-radius: var(--r-md, 10px);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
@@ -174,7 +174,7 @@ body {
   text-align: center;
   background: #fff;
   border: 1px solid #e8eceb;
-  border-radius: 10px;
+  border-radius: var(--r-md, 10px);
   padding: 12px 10px 14px;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -186,7 +186,7 @@ body {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: var(--r-sm, 6px);
   margin-bottom: 10px;
   background: var(--fk-surface);
 }
@@ -217,7 +217,7 @@ body {
   font-weight: 600;
   font-size: 13px;
   padding: 0.5rem 0.85rem;
-  border-radius: 10px;
+  border-radius: var(--r-md, 10px);
   cursor: pointer;
 }
 .variant-chip.is-active,
@@ -421,7 +421,7 @@ button.gallery-thumb-btn:active,
 .btn-view-details {
   background-color: var(--brand-primary, #1D68FE) !important;
   color: #ffffff !important;
-  border-radius: 10px !important;
+  border-radius: var(--r-md, 10px) !important;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -441,7 +441,7 @@ button.gallery-thumb-btn:active,
   height: 36px !important;
   min-width: 36px !important;
   padding: 0 !important;
-  border-radius: 10px !important;
+  border-radius: var(--r-md, 10px) !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;

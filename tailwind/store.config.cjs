@@ -6,8 +6,13 @@ module.exports = {
   safelist,
   theme: {
     extend: {
-      // One corner scale for the whole shop: 6 tags · 10 buttons & inputs · 16 cards · 24 large panels · pill.
-      borderRadius: { sm: '6px', DEFAULT: '6px', md: '10px', lg: '10px', xl: '10px', '2xl': '16px', '3xl': '24px' },
+      // One corner scale for the whole shop: tags · buttons & inputs · cards · large panels · pill.
+      // The sizes are CSS variables set by the store layout from Settings → Brand & theme → Corners
+      // (App\Support\StoreStyle); the fallbacks are the "Rounded" style: 6 · 10 · 16 · 24.
+      borderRadius: {
+        sm: 'var(--r-sm, 6px)', DEFAULT: 'var(--r-sm, 6px)', md: 'var(--r-md, 10px)', lg: 'var(--r-md, 10px)',
+        xl: 'var(--r-md, 10px)', '2xl': 'var(--r-card, 16px)', '3xl': 'var(--r-panel, 24px)',
+      },
       colors: {
         brand: {
           50: v('soft'), 100: v('border'), 200: v('border'),
@@ -18,7 +23,11 @@ module.exports = {
         ink: v('dark'),
         surface: { light: '#FFFFFF', soft: v('surface') },
       },
-      fontFamily: { sans: ['Plus Jakarta Sans', 'Hind Siliguri', 'sans-serif'], display: ['Plus Jakarta Sans', 'Hind Siliguri', 'sans-serif'] },
+      // Font pair from Settings → Brand & theme → Font (CSS variables set by the store layout)
+      fontFamily: {
+        sans: ['var(--font-body, "Plus Jakarta Sans")', 'Hind Siliguri', 'sans-serif'],
+        display: ['var(--font-display, "Plus Jakarta Sans")', 'Hind Siliguri', 'sans-serif'],
+      },
     },
   },
 };

@@ -36,6 +36,11 @@ class SitemapController extends Controller
             }
         }
 
+        // Store pages (Admin → Pages)
+        foreach (\App\Models\Page::published()->get() as $page) {
+            $urls[] = ['loc' => $page->url(), 'priority' => '0.5', 'changefreq' => 'monthly', 'lastmod' => $page->updated_at?->toAtomString()];
+        }
+
         // Products
         foreach (Product::published()->get() as $product) {
             $urls[] = [
