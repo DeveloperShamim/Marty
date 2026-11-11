@@ -358,7 +358,17 @@ if (! function_exists('favicon_url')) {
             return asset('storage/' . ltrim($f, '/'));
         }
 
-        return asset('favicon.png'); // Vant mark; upload your own in Store Settings → Brand
+        if (setting('logo')) {
+            return logo_url();
+        }
+
+        // No icon or logo yet: the shop's first letter on its brand colour, so a new store never shows another shop's mark
+        $letter = mb_strtoupper(mb_substr(trim((string) site_name()) ?: 'S', 0, 1));
+        $colour = preg_match('/^#[0-9A-Fa-f]{6}$/', (string) setting('theme_primary_color')) ? setting('theme_primary_color') : '#111827';
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="' . $colour . '"/>'
+            . '<text x="32" y="44" font-family="Arial,sans-serif" font-size="36" font-weight="700" fill="#fff" text-anchor="middle">' . e($letter) . '</text></svg>';
+
+        return 'data:image/svg+xml;base64,' . base64_encode($svg);
     }
 }
 

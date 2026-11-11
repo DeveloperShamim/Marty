@@ -28,6 +28,9 @@
                 <div class="relative w-full aspect-square rounded-lg sm:rounded-xl overflow-hidden mb-1.5 sm:mb-2.5 bg-stone-100/80 grid place-items-center">
                   @if($cat->image)
                     <img src="{{ $cat->imageUrl() }}" alt="{{ $cat->name }}" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-108" />
+                  @elseif($cat->icon && mb_strlen($cat->icon) <= 4)
+                    {{-- No photo yet: the category's emoji (set by the starter pack, editable in Categories) --}}
+                    <div class="w-full h-full grid place-items-center bg-brand-50 text-4xl sm:text-6xl group-hover:scale-108 transition-transform" aria-hidden="true">{{ $cat->icon }}</div>
                   @else
                     <div class="w-full h-full grid place-items-center bg-stone-100 text-stone-700 font-extrabold text-lg sm:text-2xl group-hover:scale-108 transition-transform">
                       {{ mb_strtoupper(mb_substr($cat->name, 0, 1)) }}

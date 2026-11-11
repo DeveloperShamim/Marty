@@ -87,6 +87,17 @@ php artisan migrate:fresh --seed
 > - Default site settings for **SoleBd**
 > - 9 Brands, 6 Categories, 72 Products, SKUs, variants, banners, coupons, reviews, orders, support chats, visitor traffic, and audit logs
 
+### 5b. New client store (blank, with the client's name)
+
+On a fresh copy for a new client, after migrating and seeding, run:
+
+```bash
+php artisan store:new --name="Glow Mart" --type=beauty --phone=01811-223344 \
+  --email=hello@glowmart.com --admin-email=owner@glowmart.com
+```
+
+This replaces the demo shop's name, wording, logo, payment numbers, categories, coupons, banners and trust strip with a starter pack for that business type, and picks a matching style pack. Types: `fashion`, `beauty`, `electronics`, `grocery`, `home`, `general`. With `--admin-email`, it creates an admin and prints the password once. It refuses to run on a store that already has products or orders. Then log in to `/admin`: the Dashboard checklist shows what is left (logo, payments, first product, banner photo, courier, email).
+
 ### 6. Link storage (for image uploads)
 
 #### Standard Local / VPS Setup:
