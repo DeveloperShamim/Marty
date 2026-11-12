@@ -12,10 +12,14 @@
     </div>
   </section>
   <section class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10">
-    <div class="rounded-2xl bg-white border border-slate-100 p-6 sm:p-8 text-slate-600 leading-relaxed space-y-4">
-      @foreach(preg_split('/\n\n+/', (string) $body) as $para)
-        @if(trim($para))<p>{{ $para }}</p>@endif
-      @endforeach
+    <div class="rounded-2xl bg-white border border-slate-100 p-6 sm:p-8 text-slate-600 leading-relaxed space-y-4 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-ink [&_h2]:pt-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1.5 [&_strong]:text-ink" data-store-page>
+      @isset($bodyHtml)
+        {{ $bodyHtml }}
+      @else
+        @foreach(preg_split('/\n\n+/', (string) $body) as $para)
+          @if(trim($para))<p>{{ $para }}</p>@endif
+        @endforeach
+      @endisset
     </div>
   </section>
 @endsection

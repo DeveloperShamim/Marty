@@ -45,6 +45,8 @@ class StaffAccess
         'free-delivery'   => [self::STORE],
         'news-ticker'     => [self::STORE],
         'header-menu'     => [self::STORE],
+        'home-sections'   => [self::STORE],
+        'pages'           => [self::STORE],
         // Admin only
         'staff'           => [],
         'activity-logs'   => [],

@@ -37,8 +37,8 @@
   $headClass = 'text-[11px] font-semibold uppercase tracking-[0.14em] text-white/45 mb-3';
 @endphp
 
-{{-- Footer: dark brand panel. Brand and ways to reach the shop on the left; Shop, Categories and Help links
-     on the right (Categories from sm up); payments and copyright in the bottom bar. --}}
+{{-- Footer: dark brand panel. Brand and ways to reach the shop on the left; Shop, Categories, Help and
+     Information links on the right; payments and copyright in the bottom bar. --}}
 <footer class="mt-16 sm:mt-20 text-white/80 font-sans overflow-hidden" style="background-color: var(--brand-dark, #1c1917);" data-footer>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-10 pb-8 sm:pt-14 sm:pb-10">
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-9 lg:gap-10">
@@ -47,7 +47,7 @@
         @if(has_custom_logo())
           <a href="{{ route('home') }}" class="inline-flex rounded-xl bg-white px-3 py-2" aria-label="{{ $site }}"><img src="{{ logo_url() }}" alt="{{ $site }}" class="h-9 w-auto max-w-[180px] object-contain" /></a>
         @else
-          @include('partials.brand', ['size' => 'md', 'light' => true, 'class' => '[&_*]:!text-white'])
+          @include('partials.brand', ['size' => 'md', 'light' => true])
         @endif
         @if($footerText !== '')
           <p class="text-sm text-white/60 leading-relaxed max-w-sm">{{ $footerText }}</p>
@@ -96,7 +96,11 @@
         @endif
       </div>
 
-      <div class="lg:col-span-8 grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-8 text-sm lg:pl-10">
+      @php
+        $footerPages = \App\Models\Page::inFooter()->get(['title', 'slug']);
+        $linkCols = 3 + ($footerCats->isNotEmpty() ? 1 : 0);
+      @endphp
+      <div class="lg:col-span-8 grid grid-cols-2 gap-x-6 gap-y-8 text-sm lg:pl-10 {{ $linkCols === 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-3' }}" data-footer-links>
         <div>
           <p class="{{ $headClass }}">Shop</p>
           <ul>
@@ -109,7 +113,7 @@
           </ul>
         </div>
         @if($footerCats->isNotEmpty())
-          <div class="hidden sm:block">
+          <div>
             <p class="{{ $headClass }}">Categories</p>
             <ul>
               @foreach($footerCats as $cat)
@@ -124,6 +128,14 @@
             <li><a href="{{ route('track') }}" class="{{ $linkClass }}">Track your order</a></li>
             <li><a href="{{ route('contact') }}" class="{{ $linkClass }}">Contact us</a></li>
             <li><a href="{{ route('login') }}" class="{{ $linkClass }}">My account</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="{{ $headClass }}">Information</p>
+          <ul>
+            @foreach($footerPages as $footerPage)
+              <li><a href="{{ $footerPage->url() }}" class="{{ $linkClass }}">{{ $footerPage->title }}</a></li>
+            @endforeach
             <li><a href="{{ route('terms') }}" class="{{ $linkClass }}">Terms &amp; returns</a></li>
             <li><a href="{{ route('privacy') }}" class="{{ $linkClass }}">Privacy policy</a></li>
           </ul>

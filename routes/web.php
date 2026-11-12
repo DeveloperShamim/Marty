@@ -79,13 +79,6 @@ Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::get('/page/{slug}', [PageController::class, 'show'])->name('page');
 
-// Live Support Chat (Storefront Customer)
-Route::get('/chat/conversation', [\App\Http\Controllers\ChatController::class, 'getConversation'])->name('chat.conversation');
-Route::post('/chat/send', [\App\Http\Controllers\ChatController::class, 'sendMessage'])->middleware('throttle:chat')->name('chat.send');
-Route::post('/chat/send-attachment', [\App\Http\Controllers\ChatController::class, 'sendAttachment'])->middleware('throttle:chat-upload')->name('chat.send-attachment');
-Route::post('/chat/send-voice', [\App\Http\Controllers\ChatController::class, 'sendVoiceNote'])->middleware('throttle:chat-upload')->name('chat.send-voice');
-Route::get('/chat/poll', [\App\Http\Controllers\ChatController::class, 'pollMessages'])->name('chat.poll');
-
 // SEO & Google Search Console
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
@@ -284,7 +277,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::put('news-ticker', [\App\Http\Controllers\Admin\NewsTickerController::class, 'update'])->middleware('area:news-ticker')->name('news-ticker.update');
 
             // Menu bar (the store's top menu)
-            Route::get('header-menu', [\App\Http\Controllers\Admin\HeaderMenuController::class, 'index'])->middleware('area:header-menu')->name('header-menu.index');
+            // Store pages: About us, FAQ, Shipping, Returns…
+        Route::resource('pages', \App\Http\Controllers\Admin\PageController::class)->except('show')->middleware('area:pages');
+
+        // Homepage sections: order and show/hide
+        Route::get('home-sections', [\App\Http\Controllers\Admin\HomeSectionController::class, 'index'])->middleware('area:home-sections')->name('home-sections.index');
+        Route::put('home-sections', [\App\Http\Controllers\Admin\HomeSectionController::class, 'update'])->middleware('area:home-sections')->name('home-sections.update');
+
+        Route::get('header-menu', [\App\Http\Controllers\Admin\HeaderMenuController::class, 'index'])->middleware('area:header-menu')->name('header-menu.index');
             Route::put('header-menu', [\App\Http\Controllers\Admin\HeaderMenuController::class, 'update'])->middleware('area:header-menu')->name('header-menu.update');
 
             // Size Guide
@@ -317,6 +317,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('settings/backups/{file}', [\App\Http\Controllers\Admin\BackupController::class, 'download'])->middleware('area:settings')->name('backups.download');
             Route::post('settings/backups/{file}/restore', [\App\Http\Controllers\Admin\BackupController::class, 'restore'])->middleware('area:settings')->name('backups.restore');
             Route::delete('settings/backups/{file}', [\App\Http\Controllers\Admin\BackupController::class, 'destroy'])->middleware('area:settings')->name('backups.destroy');
+            Route::get('settings/logo-colours', [SettingController::class, 'logoColours'])->middleware('area:settings')->name('settings.logo-colours');
             Route::post('settings/test-mail', [SettingController::class, 'testMail'])->middleware('area:settings')->name('settings.test-mail');
         });
 

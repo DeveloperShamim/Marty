@@ -62,7 +62,9 @@ class OtpController extends Controller
             return redirect()->route('login');
         }
 
-        $code = $otp->send($email, $purpose);
+        // A reset started for an email with no account sends nothing (the screen still says it did).
+        $user = User::where('email', $email)->first();
+        $code = $user ? $otp->send($user->email, $purpose, $user->name) : null;
 
         return back()
             ->with('status', 'A new code has been sent.')

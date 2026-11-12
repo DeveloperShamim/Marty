@@ -200,11 +200,17 @@ class MediaController extends Controller
     public function upload(Request $request)
     {
         $request->validate([
-            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp,gif,svg', 'max:5120'],
+            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
         ]);
 
         $file = $request->file('image');
-        $fileName = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
+        // The extension comes from the file's real content, never the uploaded name: "photo.html" holding
+        // a PNG is saved as .png, so an upload can't become a web page or script on the store's domain.
+        $ext = \App\Support\SafeUpload::imageExtension($file);
+        if ($ext === null) {
+            return back()->withErrors(['image' => 'Please upload a JPG, PNG, WebP or GIF image.']);
+        }
+        $fileName = time() . '_' . (Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) ?: 'image') . '.' . $ext;
         $targetDir = public_path('uploads/media');
 
         if (!File::exists($targetDir)) {

@@ -6,10 +6,14 @@ use App\Models\EmailOtp;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 
 class OtpService
 {
     private const TTL_MINUTES = 10;
+
+    /** Wrong codes allowed per code before it stops working. */
+    private const MAX_ATTEMPTS = 5;
 
     /**
      * Generate a fresh 6-digit code, store it (hashed) and email it.
@@ -42,10 +46,23 @@ class OtpService
             ->latest()
             ->first();
 
-        if (! $otp || ! $otp->isValid() || ! Hash::check($code, $otp->code)) {
+        if (! $otp || ! $otp->isValid()) {
             return false;
         }
 
+        // Each code allows a few wrong tries, from any number of IP addresses; then it is thrown away
+        // and the customer asks for a new one. Stops guessing the 6 digits from many machines.
+        $failKey = 'otp-fail:' . $otp->id;
+        if (! Hash::check($code, $otp->code)) {
+            if (RateLimiter::hit($failKey, self::TTL_MINUTES * 60) >= self::MAX_ATTEMPTS) {
+                $otp->delete();
+                RateLimiter::clear($failKey);
+            }
+
+            return false;
+        }
+
+        RateLimiter::clear($failKey);
         $otp->update(['consumed_at' => now()]);
 
         return true;

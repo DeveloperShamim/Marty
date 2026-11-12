@@ -889,7 +889,8 @@ class ProductController extends Controller
     private function saveUploadedProductImage($file, string $dir): string
     {
         $uuid = Str::uuid()->toString();
-        $ext = strtolower($file->getClientOriginalExtension() ?: 'jpg');
+        // Extension from the real content, never the uploaded name (see SafeUpload)
+        $ext = \App\Support\SafeUpload::imageExtension($file) ?? 'jpg';
         $filename = $uuid . '.' . $ext;
         $file->move($dir, $filename);
 

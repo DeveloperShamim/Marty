@@ -15,12 +15,9 @@ class AccountController extends Controller
 
         $orders = Order::query()
             ->with(['items.product'])
-            ->where(function ($q) use ($user) {
-                $q->where('user_id', $user->id);
-                if ($user->phone) {
-                    $q->orWhere('customer_phone', $user->phone);
-                }
-            })
+            // Only orders placed while signed in to this account. The profile phone is never verified,
+            // so matching guest orders by phone would show anyone's orders to whoever types their number.
+            ->where('user_id', $user->id)
             ->latest()
             ->get();
 
@@ -59,10 +56,8 @@ class AccountController extends Controller
     {
         $user = Auth::user();
 
-        $owns = $order->user_id === $user->id
-            || ($user->phone && $order->customer_phone === $user->phone);
-
-        abort_unless($owns, 403);
+        // Guest orders are opened from Track Order with the order number and phone, not from the account.
+        abort_unless($order->user_id !== null && $order->user_id === $user->id, 404);
     }
 
     public function updateProfile(Request $request)
@@ -92,6 +87,10 @@ class AccountController extends Controller
         }
 
         Auth::user()->update(['password' => $request->input('password')]);
+        // Every other browser signed in to this account is signed out (AuthenticateSession checks the
+        // password hash); this one stays signed in, and its remember-me cookie gets the new hash.
+        Auth::logoutOtherDevices($request->input('password'));
+        $request->session()->regenerate();
 
         return back()->with('status', 'Password changed.');
     }

@@ -15,8 +15,7 @@ class TrackOrderController extends Controller
 
         if ($orderQuery !== '') {
             $foundOrder = Order::with(['items.product', 'coupon'])
-                ->where('order_number', $orderQuery)
-                ->orWhere('id', $orderQuery)
+                ->where('order_number', $orderQuery) // never by database id: counting ids would reveal every order number
                 ->first();
 
             if ($foundOrder) {

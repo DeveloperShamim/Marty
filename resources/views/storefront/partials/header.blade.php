@@ -8,7 +8,7 @@
 
 @php
   // Top news ticker (Admin → Store Settings → Homepage → Top News Ticker): one headline per line ("||" also works).
-  $promoMessages = collect(preg_split('/\R|\|\|/', $promoText))->map(fn ($m) => trim(strip_tags($m, '<b><strong><span>')))->filter()->values();
+  $promoMessages = collect(preg_split('/\R|\|\|/', $promoText))->map(fn ($m) => trim(preg_replace('/<(\/?)(b|strong|span)\b[^>]*>/i', '<$1$2>', strip_tags($m, '<b><strong><span>'))))->filter()->values();
 
   // Live coupon codes mentioned in a headline become tap-to-copy.
   if ($promoMessages->isNotEmpty()) {

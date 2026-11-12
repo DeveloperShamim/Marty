@@ -21,11 +21,11 @@
   {{-- Tabs --}}
   <nav class="-mx-3 sm:mx-0 px-3 sm:px-0 overflow-x-auto no-scrollbar" aria-label="Settings sections">
     <div class="inline-flex items-center gap-1 p-1 rounded-full bg-white shadow-panel whitespace-nowrap">
-      <button type="button" onclick="switchSettingsTab('brand', this)" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-white" style="background: var(--brand-dark);">Brand &amp; theme</button>
-      <button type="button" onclick="switchSettingsTab('homepage', this)" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Homepage &amp; SEO</button>
-      <button type="button" onclick="switchSettingsTab('payments', this)" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Payments &amp; delivery</button>
+      <button type="button" onclick="switchSettingsTab('brand', this)" data-tab="brand" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-white" style="background: var(--brand-dark);">Brand &amp; theme</button>
+      <button type="button" onclick="switchSettingsTab('homepage', this)" data-tab="homepage" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Homepage &amp; SEO</button>
+      <button type="button" onclick="switchSettingsTab('payments', this)" data-tab="payments" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Payments &amp; delivery</button>
       <button type="button" onclick="switchSettingsTab('backups', this)" data-tab="backups" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Backups</button>
-      <button type="button" onclick="switchSettingsTab('all', this)" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">All sections</button>
+      <button type="button" onclick="switchSettingsTab('all', this)" data-tab="all" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">All sections</button>
       <a href="{{ route('admin.integrations.index') }}" class="h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium text-gray-600 hover:bg-gray-100 inline-flex items-center gap-1">
         Integrations
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
@@ -128,51 +128,125 @@
       </div>
     </section>
 
-    {{-- Theme colours --}}
-    <section class="panel p-4 sm:p-5 space-y-4">
-      <div class="flex items-start justify-between gap-3">
+    {{-- Theme: colours, font, corners, with a live preview --}}
+    @php
+      $curFont = array_key_exists($settings['theme_font'] ?? 'jakarta', \App\Support\StoreStyle::FONTS) ? ($settings['theme_font'] ?? 'jakarta') : 'jakarta';
+      $curCorners = array_key_exists($settings['theme_corners'] ?? 'rounded', \App\Support\StoreStyle::CORNERS) ? ($settings['theme_corners'] ?? 'rounded') : 'rounded';
+    @endphp
+    <link href="{{ \App\Support\StoreStyle::allFontsUrl() }}" rel="stylesheet" />
+    <section class="panel p-4 sm:p-5 space-y-4" data-theme-panel>
+      <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div class="min-w-0">
-          <h2 class="text-[15px] font-semibold text-gray-900">Theme colours</h2>
-          <p class="text-xs text-gray-500 mt-0.5">Three core colours; hover states and tints follow automatically.</p>
+          <h2 class="text-[15px] font-semibold text-gray-900">Theme</h2>
+          <p class="text-xs text-gray-500 mt-0.5">Colours, font and corner style. The preview updates as you change them; press Save to publish.</p>
         </div>
-        <button type="button" onclick="setThemeColors('#8B5A2B', '#2B1D14', '#FAF7F2')" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-xs font-medium text-gray-700 inline-flex items-center gap-1.5 shrink-0">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
-          Reset
-        </button>
+        <div class="flex flex-wrap sm:justify-end gap-1.5 shrink-0">
+          <button type="button" id="logoColoursBtn" data-url="{{ route('admin.settings.logo-colours') }}" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-xs font-medium text-gray-700 inline-flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/></svg>
+            Colours from my logo
+          </button>
+          <button type="button" onclick="applyStylePack('#8B5A2B', '#2B1D14', '#FAF7F2', 'jakarta', 'rounded')" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-xs font-medium text-gray-700 inline-flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+            Reset
+          </button>
+        </div>
       </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        @foreach([
-          ['primary', 'theme_primary_color', '#16A34A', 'Primary accent', 'Buttons, badges, pills'],
-          ['dark', 'theme_dark_color', '#1C1917', 'Dark', 'Headings, titles, top bar'],
-          ['surface', 'theme_surface_color', '#FAFAF5', 'Surface', 'Page and section backgrounds'],
-        ] as [$cKey, $cName, $cDefault, $cLabel, $cHint])
-          <div class="rounded-2xl bg-gray-50 p-3">
-            <label class="lbl">{{ $cLabel }}</label>
-            <div class="flex items-center gap-2">
-              <input type="color" id="{{ $cKey }}Picker" value="{{ $settings[$cName] ?? $cDefault }}" class="h-9 w-11 rounded-lg border border-gray-200 p-0.5 bg-white cursor-pointer shrink-0" onchange="document.getElementById('{{ $cKey }}Input').value = this.value" />
-              <input type="text" id="{{ $cKey }}Input" name="{{ $cName }}" class="inp h-9 py-0 font-mono text-[13px] uppercase" value="{{ $settings[$cName] ?? $cDefault }}" placeholder="{{ $cDefault }}" oninput="document.getElementById('{{ $cKey }}Picker').value = this.value" />
-            </div>
-            <p class="text-[11px] text-gray-500 mt-1.5">{{ $cHint }}</p>
-          </div>
-        @endforeach
-      </div>
+      <p id="logoColoursMsg" class="hidden text-xs rounded-xl px-3 py-2"></p>
 
       <div>
-        <p class="text-xs text-gray-500 mb-2">Presets</p>
+        <p class="text-xs text-gray-500 mb-2">Style packs <span class="text-gray-400">· colours, font and corners in one click</span></p>
         <div class="flex flex-wrap gap-1.5">
-          @foreach([
-            ['#8B5A2B', '#2B1D14', '#FAF7F2', 'Leather brown'],
-            ['#16A34A', '#1C1917', '#FAFAF5', 'Eco green'],
-            ['#D97706', '#064E3B', '#FFFDF9', 'Harvest gold'],
-            ['#059669', '#111827', '#F4F4F5', 'Emerald'],
-            ['#E8751B', '#353535', '#F8FAFC', 'Sunset orange'],
-            ['#2563EB', '#0F172A', '#F8FAFC', 'Sapphire'],
-          ] as [$pp, $pd, $ps, $pl])
-            <button type="button" onclick="setThemeColors('{{ $pp }}', '{{ $pd }}', '{{ $ps }}')" class="{{ $presetBtn }}">
-              <span class="h-3 w-3 rounded-full" style="background: {{ $pp }};"></span>{{ $pl }}
+          @foreach(\App\Support\StoreStyle::PACKS as [$kl, $kp, $kd, $ks, $kf, $kc])
+            <button type="button" onclick="applyStylePack('{{ $kp }}', '{{ $kd }}', '{{ $ks }}', '{{ $kf }}', '{{ $kc }}')" class="{{ $presetBtn }}">
+              <span class="h-3 w-3 rounded-full" style="background: {{ $kp }};"></span>{{ $kl }}
             </button>
           @endforeach
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4">
+        <div class="space-y-4 min-w-0">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            @foreach([
+              ['primary', 'theme_primary_color', '#16A34A', 'Primary accent', 'Buttons, badges, pills'],
+              ['dark', 'theme_dark_color', '#1C1917', 'Dark', 'Headings, titles, top bar'],
+              ['surface', 'theme_surface_color', '#FAFAF5', 'Surface', 'Page and section backgrounds'],
+            ] as [$cKey, $cName, $cDefault, $cLabel, $cHint])
+              <div class="rounded-2xl bg-gray-50 p-3">
+                <label class="lbl">{{ $cLabel }}</label>
+                <div class="flex items-center gap-2">
+                  <input type="color" id="{{ $cKey }}Picker" value="{{ $settings[$cName] ?? $cDefault }}" class="h-9 w-11 rounded-lg border border-gray-200 p-0.5 bg-white cursor-pointer shrink-0" oninput="document.getElementById('{{ $cKey }}Input').value = this.value; updateThemePreview()" />
+                  <input type="text" id="{{ $cKey }}Input" name="{{ $cName }}" class="inp h-9 py-0 font-mono text-[13px] uppercase" value="{{ $settings[$cName] ?? $cDefault }}" placeholder="{{ $cDefault }}" oninput="document.getElementById('{{ $cKey }}Picker').value = this.value; updateThemePreview()" />
+                </div>
+                <p class="text-[11px] text-gray-500 mt-1.5">{{ $cHint }}</p>
+              </div>
+            @endforeach
+          </div>
+
+          <div>
+            <p class="text-xs text-gray-500 mb-2">Colour presets</p>
+            <div class="flex flex-wrap gap-1.5">
+              @foreach([
+                ['#8B5A2B', '#2B1D14', '#FAF7F2', 'Leather brown'],
+                ['#16A34A', '#1C1917', '#FAFAF5', 'Eco green'],
+                ['#D97706', '#064E3B', '#FFFDF9', 'Harvest gold'],
+                ['#059669', '#111827', '#F4F4F5', 'Emerald'],
+                ['#E8751B', '#353535', '#F8FAFC', 'Sunset orange'],
+                ['#2563EB', '#0F172A', '#F8FAFC', 'Sapphire'],
+                ['#DB2777', '#4A1D35', '#FFF7FA', 'Rose'],
+                ['#7C3AED', '#1E1B4B', '#FAF9FF', 'Violet'],
+              ] as [$pp, $pd, $ps, $pl])
+                <button type="button" onclick="setThemeColors('{{ $pp }}', '{{ $pd }}', '{{ $ps }}')" class="{{ $presetBtn }}">
+                  <span class="h-3 w-3 rounded-full" style="background: {{ $pp }};"></span>{{ $pl }}
+                </button>
+              @endforeach
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="lbl" for="themeFont">Font</label>
+              <select id="themeFont" name="theme_font" class="inp text-[13px]" onchange="updateThemePreview()">
+                @foreach(\App\Support\StoreStyle::FONTS as $fKey => [$fLabel, $fHead, $fBody])
+                  <option value="{{ $fKey }}" data-head="{{ $fHead }}" data-body="{{ $fBody }}" @selected($curFont === $fKey)>{{ $fLabel }}</option>
+                @endforeach
+              </select>
+              <p class="text-[11px] text-gray-500 mt-1.5">Bangla text always uses Hind Siliguri.</p>
+            </div>
+            <div>
+              <span class="lbl">Corners</span>
+              <div class="grid grid-cols-3 gap-1.5">
+                @foreach(\App\Support\StoreStyle::CORNERS as $rKey => [$rLabel, $rSm, $rMd, $rCard])
+                  <label class="cursor-pointer">
+                    <input type="radio" name="theme_corners" value="{{ $rKey }}" data-md="{{ $rMd }}" data-card="{{ $rCard }}" class="peer sr-only" @checked($curCorners === $rKey) onchange="updateThemePreview()">
+                    <span class="h-9 px-2 border border-gray-200 bg-white text-[12px] font-medium text-gray-700 flex items-center justify-center gap-1.5 peer-checked:border-gray-900 peer-checked:bg-gray-900 peer-checked:text-white" style="border-radius: {{ $rMd }}px;">{{ $rLabel }}</span>
+                  </label>
+                @endforeach
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {{-- Live preview: a mini store header and product card in the chosen look --}}
+        <div class="min-w-0">
+          <p class="text-xs text-gray-500 mb-2">Preview</p>
+          <div id="themePreview" class="border border-gray-200 overflow-hidden" style="border-radius: 16px;">
+            <div data-pv="bar" class="px-3 py-2 text-[10px] font-bold text-white tracking-wide">FREE DELIVERY OVER ৳1,500</div>
+            <div data-pv="page" class="p-3 space-y-3">
+              <div class="flex items-center justify-between">
+                <span data-pv="logo" class="text-[15px] font-extrabold truncate">{{ $settings['site_name'] ?? 'Your store' }}</span>
+                <span data-pv="search" class="h-6 w-20 border border-gray-200 bg-white"></span>
+              </div>
+              <div data-pv="card" class="bg-white border border-gray-200 p-2.5 shadow-sm">
+                <div data-pv="img" class="aspect-[4/3] mb-2 flex items-end p-1.5">
+                  <span data-pv="badge" class="text-[9px] font-bold text-white px-1.5 py-0.5">-15%</span>
+                </div>
+                <p data-pv="title" class="text-[13px] font-bold leading-snug">Classic Leather Wallet</p>
+                <p class="text-[12px] mt-0.5"><span data-pv="price" class="font-extrabold">৳1,190</span> <span class="text-gray-400 line-through text-[11px]">৳1,450</span></p>
+                <span data-pv="btn" class="mt-2 h-8 flex items-center justify-center text-[12px] font-bold text-white">Order now</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -237,9 +311,73 @@
       document.getElementById('primaryInput').value = primary;
       document.getElementById('darkPicker').value = dark;
       document.getElementById('darkInput').value = dark;
-      document.getElementById('surfacePicker').value = surface;
-      document.getElementById('surfaceInput').value = surface;
+      if (surface) {
+        document.getElementById('surfacePicker').value = surface;
+        document.getElementById('surfaceInput').value = surface;
+      }
+      updateThemePreview();
     }
+
+    function applyStylePack(primary, dark, surface, font, corners) {
+      document.getElementById('themeFont').value = font;
+      const radio = document.querySelector('input[name="theme_corners"][value="' + corners + '"]');
+      if (radio) radio.checked = true;
+      setThemeColors(primary, dark, surface);
+    }
+
+    function updateThemePreview() {
+      const pv = document.getElementById('themePreview');
+      if (!pv) return;
+      const q = (k) => pv.querySelector('[data-pv="' + k + '"]');
+      const hex = (id, fallback) => (/^#([0-9a-f]{3}){1,2}$/i.test(document.getElementById(id).value) ? document.getElementById(id).value : fallback);
+      const primary = hex('primaryInput', '#16A34A'), dark = hex('darkInput', '#1C1917'), surface = hex('surfaceInput', '#FAFAF5');
+      const opt = document.getElementById('themeFont').selectedOptions[0];
+      const corner = document.querySelector('input[name="theme_corners"]:checked');
+      const md = (corner ? corner.dataset.md : 10) + 'px', card = (corner ? corner.dataset.card : 16) + 'px';
+      const head = "'" + opt.dataset.head + "', 'Hind Siliguri', sans-serif", body = "'" + opt.dataset.body + "', 'Hind Siliguri', sans-serif";
+
+      pv.style.fontFamily = body;
+      pv.style.borderRadius = card;
+      q('bar').style.background = dark;
+      q('page').style.background = surface;
+      q('logo').style.color = primary;
+      q('logo').style.fontFamily = head;
+      q('title').style.fontFamily = head;
+      q('title').style.color = dark;
+      q('price').style.color = dark;
+      q('search').style.borderRadius = md;
+      q('card').style.borderRadius = card;
+      q('img').style.borderRadius = md;
+      q('img').style.background = 'linear-gradient(135deg, ' + primary + '22, ' + primary + '55)';
+      q('badge').style.background = primary;
+      q('badge').style.borderRadius = md;
+      q('btn').style.background = primary;
+      q('btn').style.borderRadius = md;
+    }
+
+    (function () {
+      updateThemePreview();
+      const btn = document.getElementById('logoColoursBtn');
+      const msg = document.getElementById('logoColoursMsg');
+      if (!btn) return;
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        msg.className = 'hidden text-xs rounded-xl px-3 py-2';
+        try {
+          const res = await fetch(btn.dataset.url, { headers: { 'Accept': 'application/json' } });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || 'Could not read the logo.');
+          setThemeColors(data.primary, data.dark, null);
+          msg.textContent = 'Colours taken from your logo: ' + data.primary + '. Press Save to publish them.';
+          msg.className = 'text-xs rounded-xl px-3 py-2 bg-emerald-50 text-emerald-800';
+        } catch (e) {
+          msg.textContent = e.message;
+          msg.className = 'text-xs rounded-xl px-3 py-2 bg-amber-50 text-amber-800';
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    })();
     </script>
   </form>
 
@@ -269,11 +407,7 @@
           <h2 class="text-[15px] font-semibold text-gray-900">Featured brands section</h2>
           <p class="text-xs text-gray-500 mt-0.5">Show or hide the brands carousel on the homepage.</p>
         </div>
-        <label class="inline-flex items-center gap-2 cursor-pointer shrink-0">
-          <span class="text-xs text-gray-600 hidden sm:inline">Show</span>
-          <input type="checkbox" name="show_featured_brands" value="1" @checked(($settings['show_featured_brands'] ?? '1') === '1') class="sr-only peer" aria-label="Show featured brands">
-          <span class="{{ $switchTrack }}"></span>
-        </label>
+        <a href="{{ route('admin.home-sections.index') }}" class="shrink-0 text-xs text-gray-600 underline hover:text-gray-900">Show or hide in Sections</a>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -293,11 +427,7 @@
           <h2 class="text-[15px] font-semibold text-gray-900">Customer feedback section</h2>
           <p class="text-xs text-gray-500 mt-0.5">Verified customer reviews on the homepage. <a href="{{ route('admin.reviews.index') }}" class="underline hover:text-gray-800">Manage reviews</a></p>
         </div>
-        <label class="inline-flex items-center gap-2 cursor-pointer shrink-0">
-          <span class="text-xs text-gray-600 hidden sm:inline">Show</span>
-          <input type="checkbox" name="show_home_reviews" value="1" @checked(($settings['show_home_reviews'] ?? '1') === '1') class="sr-only peer" aria-label="Show customer feedback">
-          <span class="{{ $switchTrack }}"></span>
-        </label>
+        <a href="{{ route('admin.home-sections.index') }}" class="shrink-0 text-xs text-gray-600 underline hover:text-gray-900">Show or hide in Sections</a>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -425,6 +555,17 @@
             </span>
           </label>
         @endforeach
+
+        <label class="{{ $payRow }}">
+          <span class="min-w-0">
+            <span class="text-[13px] font-medium text-gray-900 block">Show “Cards” badge in the footer</span>
+            <span class="text-[11px] text-gray-500 block mt-0.5 leading-relaxed">Only turn this on if customers can really pay by card (through a card payment gateway).</span>
+          </span>
+          <span class="shrink-0 inline-flex">
+            <input type="checkbox" name="show_cards_in_footer" value="1" class="peer sr-only" @checked(($settings['show_cards_in_footer'] ?? '0') === '1')>
+            <span class="{{ $switchTrack }}"></span>
+          </span>
+        </label>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">

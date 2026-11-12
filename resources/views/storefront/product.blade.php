@@ -351,7 +351,7 @@
       @if($product->description)
         @if(strip_tags($product->description) !== $product->description)
           <div class="product-rich-description prose prose-stone max-w-none text-stone-700 leading-relaxed text-xs sm:text-sm md:text-base space-y-4">
-            {!! $product->description !!}
+            {!! \App\Support\SafeHtml::clean($product->description) !!}
           </div>
         @else
           <div class="text-stone-700 leading-relaxed max-w-4xl space-y-3.5 text-xs sm:text-sm md:text-base">
@@ -1156,7 +1156,7 @@
 })();
 
 (function() {
-  window.productSkus = {!! $skusPayload->toJson() !!};
+  window.productSkus = {!! $skusPayload->toJson(JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!};
 })();
 
 function findPdpMatchingSku(skus, selectedAttrs) {

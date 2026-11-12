@@ -9,13 +9,14 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  {{-- Font pair from Settings → Brand & theme (App\Support\StoreStyle) --}}
+  <link href="{{ \App\Support\StoreStyle::fontsUrl() }}" rel="stylesheet" />
 
   @php
     $theme = generate_3_color_matching_theme();
   @endphp
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <link rel="stylesheet" href="{{ asset('theme/vendor/swiper/swiper-bundle.min.css') }}" />
 
   <style>
     :root {
@@ -25,7 +26,10 @@
       --brand-border: {{ $theme['primary_border'] }};
       --brand-dark: {{ $theme['dark'] }};
       --brand-surface: {{ $theme['surface'] }};
+      {!! \App\Support\StoreStyle::cssVars() !!}
     }
+    body { font-family: var(--font-body); }
+    h1, h2, h3, .font-display { font-family: var(--font-display); }
 
     /* Ensure clean viewport scaling without breaking position: sticky */
     html {
@@ -348,7 +352,7 @@
 
   <script src="{{ asset('theme/js/auto-row.js') }}?v={{ filemtime(public_path('theme/js/auto-row.js')) }}"></script>
   <script src="{{ asset('theme/js/storefront.js') }}?v={{ filemtime(public_path('theme/js/storefront.js')) }}"></script>
-  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script src="{{ asset('theme/vendor/swiper/swiper-bundle.min.js') }}"></script>
   @stack('scripts')
 </body>
 </html>
