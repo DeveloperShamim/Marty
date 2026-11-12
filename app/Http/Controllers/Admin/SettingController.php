@@ -220,6 +220,11 @@ class SettingController extends Controller
                 'tax_percent'            => ['required', 'numeric', 'min:0', 'max:100'],
                 'shipping_inside_label'  => ['nullable', 'string', 'max:80'],
                 'shipping_outside_label' => ['nullable', 'string', 'max:80'],
+                'shipping_inside_time'   => ['nullable', 'string', 'max:40'],
+                'shipping_outside_time'  => ['nullable', 'string', 'max:40'],
+                'pdp_authentic_label'    => ['nullable', 'string', 'max:40'],
+                'pdp_quality_badge'      => ['nullable', 'string', 'max:40'],
+                'pdp_return_text'        => ['nullable', 'string', 'max:40'],
                 'currency_symbol'        => ['nullable', 'string', 'max:8'],
                 'currency_code'          => ['nullable', 'string', 'max:8'],
             ],
@@ -307,6 +312,8 @@ class SettingController extends Controller
             'shipping' => [
                 'shipping_inside_dhaka', 'shipping_outside_dhaka', 'tax_percent',
                 'shipping_inside_label', 'shipping_outside_label',
+                'shipping_inside_time', 'shipping_outside_time',
+                'pdp_authentic_label', 'pdp_quality_badge', 'pdp_return_text',
                 'currency_symbol', 'currency_code',
             ],
             'couriers' => [
