@@ -20,6 +20,22 @@
     $isOutOfStock = $product->isOutOfStock();
     $savings = $product->on_sale ? ($product->regular_price - $product->price) : 0;
 
+    // Store-wide lines set in Admin → Store Settings → Delivery; an empty one is not shown
+    $authenticLabel = trim((string) setting('pdp_authentic_label', ''));
+    $qualityBadge = trim((string) setting('pdp_quality_badge', ''));
+    $returnText = trim((string) setting('pdp_return_text', ''));
+    $insideLabel = setting('shipping_inside_label', 'Inside Dhaka');
+    $outsideLabel = setting('shipping_outside_label', 'Outside Dhaka');
+    $insideTime = setting('shipping_inside_time', '1–2 days');
+    $outsideTime = setting('shipping_outside_time', '2–3 days');
+    $codEnabled = (string) setting('pay_cod_enabled', '1') === '1';
+    $onlineMethods = collect(\App\Services\FreeDelivery::ONLINE_METHODS)
+        ->filter(fn ($m) => (string) setting("pay_{$m}_enabled", '1') === '1' && setting("{$m}_number"))
+        ->map(fn ($m) => ['bkash' => 'bKash', 'nagad' => 'Nagad', 'rocket' => 'Rocket'][$m])
+        ->values();
+    $onlineMethodsText = $onlineMethods->join(', ', ' or ');
+    $returnsPage = $returnText !== '' ? \App\Models\Page::published()->where('slug', 'returns')->first() : null;
+
     $brandObj = null;
     if (!empty($product->brand_id)) {
         $brandObj = \App\Models\Brand::find($product->brand_id);
@@ -41,6 +57,45 @@
             ]);
         }
     }
+
+    // Product data for Google: lets search results show the price, stock and star rating
+    $productUrl = rtrim((string) config('app.url'), '/') . '/' . ltrim(request()->path(), '/');
+    $activeSkus = $product->skus->where('is_active', true);
+    $skuPrices = $activeSkus->map(fn ($s) => (float) $s->getCalculatedSalePrice())->filter(fn ($p) => $p > 0);
+    $currency = strtoupper((string) setting('currency_code', 'BDT'));
+    $availability = 'https://schema.org/' . ($isOutOfStock ? 'OutOfStock' : 'InStock');
+    $offer = $skuPrices->unique()->count() > 1
+        ? [
+            '@type' => 'AggregateOffer',
+            'lowPrice' => number_format($skuPrices->min(), 2, '.', ''),
+            'highPrice' => number_format($skuPrices->max(), 2, '.', ''),
+            'offerCount' => $skuPrices->count(),
+        ]
+        : ['@type' => 'Offer', 'price' => number_format((float) $product->price, 2, '.', '')];
+    $offer += [
+        'priceCurrency' => $currency,
+        'availability' => $availability,
+        'itemCondition' => 'https://schema.org/NewCondition',
+        'url' => $productUrl,
+    ];
+    $galleryUrls = $product->images->map(fn ($i) => $i->url())->filter()->values()->all();
+    $jsonLd = array_filter([
+        '@context' => 'https://schema.org',
+        '@type' => 'Product',
+        'name' => $product->name,
+        'image' => $galleryUrls ?: array_filter([$product->imageUrl()]),
+        'description' => \Illuminate\Support\Str::limit(trim(preg_replace('/\s+/', ' ', strip_tags((string) ($product->meta_description ?: $product->short_description ?: $product->description)))), 500) ?: null,
+        'sku' => $product->sku ?: null,
+        'category' => $product->category?->name,
+        'brand' => ($brandName = $brandObj?->name ?: (is_string($product->brand) ? trim($product->brand) : ''))
+            ? ['@type' => 'Brand', 'name' => $brandName] : null,
+        'offers' => $offer,
+        'aggregateRating' => $reviews->total() > 0 ? [
+            '@type' => 'AggregateRating',
+            'ratingValue' => round((float) $product->approvedReviews()->avg('rating'), 1),
+            'reviewCount' => $reviews->total(),
+        ] : null,
+    ]);
 @endphp
 
 @section('content')
@@ -113,7 +168,7 @@
           <span>Zoom</span>
         </div>
 
-        <img id="galleryMain" data-gallery-main src="{{ $product->imageUrl() }}" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 select-none {{ $isOutOfStock ? 'opacity-70 grayscale-[30%]' : '' }}" alt="{{ $product->name }}" />
+        <img id="galleryMain" data-gallery-main src="{{ $product->imageUrl() }}" loading="eager" fetchpriority="high" decoding="async" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 select-none {{ $isOutOfStock ? 'opacity-70 grayscale-[30%]' : '' }}" alt="{{ $product->name }}" />
       </div>
     </div>
 
@@ -157,9 +212,11 @@
 
         {{-- Authentic & SKU Row --}}
         <div class="flex items-center gap-2 sm:gap-2.5 mt-1.5 sm:mt-2 text-xs text-stone-500 flex-wrap">
-          <span class="text-emerald-700 font-medium">✓ Verified Authentic</span>
+          @if($authenticLabel !== '')
+            <span class="text-emerald-700 font-medium">✓ {{ $authenticLabel }}</span>
+          @endif
           @if($product->sku)
-            <span class="text-stone-300">·</span>
+            @if($authenticLabel !== '')<span class="text-stone-300">·</span>@endif
             <span class="text-stone-400">SKU: <span class="font-mono text-stone-600">{{ $product->sku }}</span></span>
           @endif
         </div>
@@ -273,8 +330,8 @@
               <p class="text-emerald-700 font-semibold mt-0.5">Free delivery on this product, anywhere in Bangladesh</p>
             @else
               <dl class="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-stone-600">
-                <dt>{{ setting('shipping_inside_label', 'Inside Dhaka') }}</dt><dd><b class="text-stone-900">{{ money(setting('shipping_inside_dhaka', 60)) }}</b> · 1–2 days</dd>
-                <dt>{{ setting('shipping_outside_label', 'Outside Dhaka') }}</dt><dd><b class="text-stone-900">{{ money(setting('shipping_outside_dhaka', 120)) }}</b> · 2–3 days</dd>
+                <dt>{{ $insideLabel }}</dt><dd><b class="text-stone-900">{{ money(setting('shipping_inside_dhaka', 60)) }}</b> · {{ $insideTime }}</dd>
+                <dt>{{ $outsideLabel }}</dt><dd><b class="text-stone-900">{{ money(setting('shipping_outside_dhaka', 120)) }}</b> · {{ $outsideTime }}</dd>
               </dl>
             @endif
           </div>
@@ -282,19 +339,22 @@
         @if($onlineFree)
           <div class="flex items-start gap-3 px-3.5 py-2.5 text-emerald-800">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
-            <span>Free delivery when you pay with bKash, Nagad or Rocket{{ $fdOffer['online_min'] > 0 ? ' on orders of ' . money($fdOffer['online_min']) . ' or more' : '' }}{{ $fdOffer['online_zones'] === 'inside_dhaka' ? ' (inside Dhaka)' : ($fdOffer['online_zones'] === 'outside_dhaka' ? ' (outside Dhaka)' : '') }}</span>
+            <span>Free delivery when you pay with {{ $onlineMethodsText }}{{ $fdOffer['online_min'] > 0 ? ' on orders of ' . money($fdOffer['online_min']) . ' or more' : '' }}{{ $fdOffer['online_zones'] === 'inside_dhaka' ? ' (inside Dhaka)' : ($fdOffer['online_zones'] === 'outside_dhaka' ? ' (outside Dhaka)' : '') }}</span>
           </div>
         @endif
       </div>
 
       {{-- Trust points: short, never cut off --}}
-      <ul class="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-2.5 pt-3 text-xs text-stone-700">
-        @foreach([
-          ['Genuine leather', 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'],
-          ['Cash on delivery', 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
-          ['7-day return', 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'],
+      @php
+        $trustPoints = array_values(array_filter([
+          $qualityBadge !== '' ? [$qualityBadge, 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'] : null,
+          $codEnabled ? ['Cash on delivery', 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'] : null,
+          $returnText !== '' ? [$returnText, 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'] : null,
           ['Fast delivery', 'M13 10V3L4 14h7v7l9-11h-7z'],
-        ] as [$label, $path])
+        ]));
+      @endphp
+      <ul class="grid grid-cols-2 sm:flex sm:flex-wrap gap-x-3 sm:gap-x-5 gap-y-2.5 pt-3 text-xs text-stone-700">
+        @foreach($trustPoints as [$label, $path])
           <li class="flex items-center gap-2 min-w-0">
             <svg class="w-4 h-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $path }}"/></svg>
             <span class="leading-tight">{{ $label }}</span>
@@ -414,35 +474,42 @@
 
     {{-- Tab 3: Shipping & Warranty --}}
     <div id="pdpTabPaneDelivery" class="pdp-tab-pane hidden space-y-4">
+      {{-- Every card reads the same settings as the delivery box above, so the two never disagree --}}
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
-        <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-extrabold text-sm">✓</div>
-          <div>
-            <h4 class="text-sm font-bold text-stone-900 mb-0.5">100% Verified Authentic</h4>
-            <p class="text-xs text-stone-500 leading-relaxed">Direct genuine source with complete packaging, serial verification and official standards.</p>
+        @if($authenticLabel !== '')
+          <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-extrabold text-sm">✓</div>
+            <div>
+              <h4 class="text-sm font-bold text-stone-900 mb-0.5">{{ $authenticLabel }}</h4>
+              <p class="text-xs text-stone-500 leading-relaxed">Checked by our team and packed with care before it leaves us.</p>
+            </div>
           </div>
-        </div>
+        @endif
         <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 font-extrabold text-sm">🚚</div>
-          <div>
-            <h4 class="text-sm font-bold text-stone-900 mb-0.5">Fast Nationwide Delivery</h4>
-            <p class="text-xs text-stone-500 leading-relaxed">24–48 hours inside Dhaka Metro and 48–72 hours across all 64 districts with live tracking updates.</p>
+            <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 font-extrabold text-sm">🚚</div>
+            <div>
+              <h4 class="text-sm font-bold text-stone-900 mb-0.5">Delivery</h4>
+              <p class="text-xs text-stone-500 leading-relaxed">@if($product->free_delivery)Free delivery on this product. @endif{{ $insideLabel }}: {{ $insideTime }}@unless($product->free_delivery) ({{ money(setting('shipping_inside_dhaka', 60)) }})@endunless. {{ $outsideLabel }}: {{ $outsideTime }}@unless($product->free_delivery) ({{ money(setting('shipping_outside_dhaka', 120)) }})@endunless.</p>
+            </div>
           </div>
-        </div>
-        <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 font-extrabold text-sm">💳</div>
-          <div>
-            <h4 class="text-sm font-bold text-stone-900 mb-0.5">Cash on Delivery &amp; Mobile Pay</h4>
-            <p class="text-xs text-stone-500 leading-relaxed">Inspect your package upon arrival. Pay cash on delivery or instant bKash, Nagad, or Cards.</p>
+        @if($codEnabled || $onlineMethods->isNotEmpty())
+          <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 font-extrabold text-sm">💳</div>
+            <div>
+              <h4 class="text-sm font-bold text-stone-900 mb-0.5">Payment</h4>
+              <p class="text-xs text-stone-500 leading-relaxed">@if($codEnabled)Pay cash when your order arrives{{ $onlineMethods->isNotEmpty() ? ', or pay with ' . $onlineMethodsText : '' }}.@else Pay with {{ $onlineMethodsText }}.@endif</p>
+            </div>
           </div>
-        </div>
-        <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 font-extrabold text-sm">🔄</div>
-          <div>
-            <h4 class="text-sm font-bold text-stone-900 mb-0.5">7-Day Replacement Support</h4>
-            <p class="text-xs text-stone-500 leading-relaxed">In the rare event of transit damage or manufacturing defect, our support team replaces it immediately.</p>
+        @endif
+        @if($returnText !== '')
+          <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 font-extrabold text-sm">🔄</div>
+            <div>
+              <h4 class="text-sm font-bold text-stone-900 mb-0.5">{{ $returnText }}</h4>
+              <p class="text-xs text-stone-500 leading-relaxed">Something wrong with your order? Tell us and we will sort it out.@if($returnsPage) <a href="{{ route('page', $returnsPage->slug) }}" class="underline underline-offset-2 hover:text-stone-800">Read the return policy</a>@endif</p>
+            </div>
           </div>
-        </div>
+        @endif
       </div>
     </div>
 
