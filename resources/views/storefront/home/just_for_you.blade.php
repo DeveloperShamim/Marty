@@ -7,7 +7,7 @@
         <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">Just for you</h2>
       </div>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+    <div class="pgrid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
       @foreach($justForYou as $product)
         {{-- Phones show 8 --}}
         <div class="grid min-w-0 {{ $loop->index >= 8 ? 'max-md:hidden' : '' }}">

@@ -1481,7 +1481,10 @@
         });
       }
 
-      targetGroup.classList.add("ring-2", "ring-rose-500", "bg-rose-50/60", "p-2.5", "rounded-2xl", "transition-all", "duration-300");
+      // Ring + shake that draws the eye without changing the layout (no padding change, so nothing jumps)
+      targetGroup.classList.remove("pdp-attn");
+      void targetGroup.offsetWidth; // restart the shake if tapped again
+      targetGroup.classList.add("pdp-attn", "ring-2", "ring-rose-500", "ring-offset-4", "bg-rose-50/60", "rounded-xl", "transition-all", "duration-300");
       const firstBtn = targetGroup.querySelector(".variant-btn:not([disabled])");
       if (firstBtn) {
         setTimeout(() => {
@@ -1491,7 +1494,7 @@
         }, 350);
       }
       setTimeout(() => {
-        targetGroup.classList.remove("ring-2", "ring-rose-500", "bg-rose-50/60", "p-2.5", "rounded-2xl");
+        targetGroup.classList.remove("pdp-attn", "ring-2", "ring-rose-500", "ring-offset-4", "bg-rose-50/60", "rounded-xl");
       }, 2500);
       return true;
     }

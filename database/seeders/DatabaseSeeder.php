@@ -214,6 +214,7 @@ class DatabaseSeeder extends Seeder
             'theme_primary_color'  => '#8B5A2B',
             'theme_dark_color'     => '#2B1D14',
             'theme_surface_color'  => '#FAF7F2',
+            'theme_width'          => 'standard', // or 'wide': 1,440px and 5 products per row on big screens
         ];
     }
 

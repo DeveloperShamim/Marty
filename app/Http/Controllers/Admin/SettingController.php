@@ -176,6 +176,7 @@ class SettingController extends Controller
                 'theme_surface_color' => ['nullable', 'string', 'regex:/^#([a-fA-F0-9]{3}){1,2}$/'],
                 'theme_font'          => ['nullable', \Illuminate\Validation\Rule::in(array_keys(\App\Support\StoreStyle::FONTS))],
                 'theme_corners'       => ['nullable', \Illuminate\Validation\Rule::in(array_keys(\App\Support\StoreStyle::CORNERS))],
+                'theme_width'         => ['nullable', \Illuminate\Validation\Rule::in(array_keys(\App\Support\StoreStyle::WIDTHS))],
                 'logo_file'       => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,webp', 'max:2048'],
                 'favicon_file'    => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,webp,ico', 'max:1024'],
                 'remove_logo'     => ['nullable', 'boolean'],
@@ -295,7 +296,7 @@ class SettingController extends Controller
                 'facebook_url', 'messenger_url', 'instagram_url', 'twitter_url',
                 'search_placeholder',
                 'theme_primary_color', 'theme_dark_color', 'theme_surface_color',
-                'theme_font', 'theme_corners',
+                'theme_font', 'theme_corners', 'theme_width',
             ],
             'homepage' => [
                 'shop_subtitle', 'delivery_eta_text',

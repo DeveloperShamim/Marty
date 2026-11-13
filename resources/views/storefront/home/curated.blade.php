@@ -23,7 +23,7 @@
   <div id="homeTabPanes">
     {{-- Pane 1: Best Sellers --}}
     <div id="homePane-best-sellers" class="home-tab-pane">
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+      <div class="pgrid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
         @foreach($bestSellers->take(8) as $product)
           <div class="{{ $loop->index >= 6 ? 'max-sm:hidden' : '' }} grid min-w-0">
             @include('storefront.partials.product-card', ['product' => $product])
@@ -35,7 +35,7 @@
 
     {{-- Pane 2: New Arrivals --}}
     <div id="homePane-new-arrivals" class="home-tab-pane hidden">
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+      <div class="pgrid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
         @foreach($newArrivals->take(8) as $product)
           <div class="{{ $loop->index >= 6 ? 'max-sm:hidden' : '' }} grid min-w-0">
             @include('storefront.partials.product-card', ['product' => $product])

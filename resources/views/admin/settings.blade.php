@@ -132,6 +132,7 @@
     @php
       $curFont = array_key_exists($settings['theme_font'] ?? 'jakarta', \App\Support\StoreStyle::FONTS) ? ($settings['theme_font'] ?? 'jakarta') : 'jakarta';
       $curCorners = array_key_exists($settings['theme_corners'] ?? 'rounded', \App\Support\StoreStyle::CORNERS) ? ($settings['theme_corners'] ?? 'rounded') : 'rounded';
+      $curWidth = array_key_exists($settings['theme_width'] ?? 'standard', \App\Support\StoreStyle::WIDTHS) ? ($settings['theme_width'] ?? 'standard') : 'standard';
     @endphp
     <link href="{{ \App\Support\StoreStyle::allFontsUrl() }}" rel="stylesheet" />
     <section class="panel p-4 sm:p-5 space-y-4" data-theme-panel>
@@ -224,6 +225,19 @@
                 @endforeach
               </div>
             </div>
+          </div>
+
+          <div data-theme-width>
+            <span class="lbl">Page width</span>
+            <div class="grid grid-cols-2 gap-1.5 sm:max-w-sm">
+              @foreach(\App\Support\StoreStyle::WIDTHS as $wKey => [$wLabel])
+                <label class="cursor-pointer">
+                  <input type="radio" name="theme_width" value="{{ $wKey }}" class="peer sr-only" @checked($curWidth === $wKey)>
+                  <span class="h-9 px-2 rounded-lg border border-gray-200 bg-white text-[12px] font-medium text-gray-700 flex items-center justify-center peer-checked:border-gray-900 peer-checked:bg-gray-900 peer-checked:text-white">{{ $wLabel }}</span>
+                </label>
+              @endforeach
+            </div>
+            <p class="text-[11px] text-gray-500 mt-1.5">Wide fills big screens and shows 5 products per row instead of 4. Phones, laptops and checkout look the same either way.</p>
           </div>
         </div>
 

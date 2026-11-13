@@ -30,6 +30,17 @@
     }
     body { font-family: var(--font-body); }
     h1, h2, h3, .font-display { font-family: var(--font-display); }
+    /* Page width "Wide" (Admin → Store Settings → Theme): wider containers and 5 products per row
+       on large screens only. Standard prints no store-wide class, so none of this applies. */
+    @media (min-width: 1280px) {
+      body.store-wide .max-w-7xl { max-width: 1440px; }
+      body.store-wide .pgrid:not(.shop-grid) { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      body.store-wide .prow-item { width: calc((100% - 4rem) / 5); }
+    }
+    @media (min-width: 1440px) {
+      /* The shop grid shares the row with the 270px filter sidebar, so it gets its 5th column later */
+      body.store-wide .shop-grid.pgrid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    }
 
     /* Ensure clean viewport scaling without breaking position: sticky */
     html {
@@ -99,8 +110,8 @@
     .fk-add-btn,
     .add-to-cart-btn,
     .add-to-cart,
-    #pdAddToCart,
     #qmAddToCartBtn {
+      /* The product page's own Add to Cart (#pdAddToCart) is outlined and styled in product.blade.php */
       background-color: var(--brand-primary) !important;
       border: 1px solid var(--brand-primary) !important;
       color: #ffffff !important;
@@ -110,7 +121,6 @@
     .fk-add-btn:hover,
     .add-to-cart-btn:hover,
     .add-to-cart:hover,
-    #pdAddToCart:hover,
     #qmAddToCartBtn:hover {
       background-color: var(--brand-hover) !important;
       border-color: var(--brand-hover) !important;
@@ -299,7 +309,7 @@
   ]) }}
 </head>
 
-<body class="@yield('body_class', 'bg-white text-ink antialiased')">
+<body class="@yield('body_class', 'bg-white text-ink antialiased'){{ \App\Support\StoreStyle::isWide() && ! request()->routeIs('checkout.*') ? ' store-wide' : '' }}">
   @include('partials.tracking-body')
 
   @hasSection('checkout_header')

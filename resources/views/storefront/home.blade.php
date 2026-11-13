@@ -308,6 +308,9 @@ document.addEventListener('DOMContentLoaded', function () {
         640: { slidesPerView: 5, spaceBetween: 12 },
         768: { slidesPerView: 6, spaceBetween: 14 },
         1024: { slidesPerView: 7, spaceBetween: 16 },
+@if(\App\Support\StoreStyle::isWide())
+        1280: { slidesPerView: 8, spaceBetween: 16 }, // Wide page width: one more category in the row
+@endif
       },
     });
   }
