@@ -25,7 +25,7 @@
   $sections = [
     [
       'items' => $heroSlides, 'placement' => 'hero', 'active' => $activeHeroCount,
-      'title' => 'Hero carousel', 'hint' => 'Main rotating slider at the top of the homepage. Best size 1500 × 800 px (15:8).',
+      'title' => 'Hero carousel', 'hint' => 'Main rotating slider at the top of the homepage. Best size 1500 × 800 px (15:8). Keep text away from the top and bottom edges: the Wide page width trims about 8% there on large screens.',
       'aspect' => 'aspect-[15/8]', 'add' => 'Add slide', 'untitled' => 'Untitled slide',
       'empty' => 'No carousel slides yet', 'emptyHint' => 'Add a slide to show promotions, new arrivals or seasonal deals.',
       'confirm' => 'Are you sure you want to delete this banner slide?',

@@ -2,8 +2,6 @@
 {{-- 4. FLASH DEALS while a timed sale runs (Admin → Flash Sale "Ends at" in the future), otherwise OUR PICKS --}}
 @if($flashActive)
   <section class="mt-10 sm:mt-14" data-reveal data-home-flash>
-    <div class="flex items-end justify-between mb-4 sm:mb-6 gap-3 flex-wrap">
-      <div>
         <div class="flex items-center gap-2 mb-1.5 flex-wrap">
           @if($flashEndsIso)
             <div data-countdown-end="{{ $flashEndsIso }}" class="flex items-center gap-1 font-mono font-bold text-stone-600 text-xs">
@@ -15,12 +13,7 @@
             </div>
           @endif
         </div>
-        <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">
-          {{ setting('home_hot_deal_title', 'Special Flash Discounts') }}
-        </h2>
-      </div>
-
-    </div>
+    <x-home-heading :title="setting('home_hot_deal_title', 'Special Flash Discounts')" />
 
     <div class="pgrid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
       @foreach($flashProducts->take(8) as $product)
@@ -34,9 +27,7 @@
   </section>
 @elseif($ourPicks->isNotEmpty())
   <section class="mt-10 sm:mt-14" data-reveal data-our-picks>
-    <div class="text-center mb-4 sm:mb-6" data-centered-heading>
-      <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">{{ setting('home_picks_title', 'Top Selling Products') }}</h2>
-    </div>
+    <x-home-heading :title="setting('home_picks_title', 'Top Selling Products')" />
     <div class="pgrid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
       @foreach($ourPicks as $product)
         {{-- Phones show the first 4 --}}

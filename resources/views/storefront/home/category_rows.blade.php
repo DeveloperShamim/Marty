@@ -3,10 +3,8 @@
 @if(($featuredHomeCategories ?? collect())->isNotEmpty())
   @foreach($featuredHomeCategories as $featuredCat)
     @if($featuredCat->products->isNotEmpty())
-      <section class="mt-12 sm:mt-16" data-reveal>
-        <div class="flex items-end justify-between mb-4 sm:mb-6 gap-3">
-          <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">{{ $featuredCat->name }}</h2>
-        </div>
+      <section class="mt-10 sm:mt-14" data-reveal>
+        <x-home-heading :title="$featuredCat->name" />
 
         {{-- One row that slides by itself (pauses on touch or hover); swipe sideways too. 2 visible on phones, 4 from tablets up --}}
         <div class="flex gap-2.5 sm:gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth scroll-px-3 sm:scroll-px-0 -mx-3 px-3 sm:mx-0 sm:px-0 pb-1" data-auto-row>

@@ -1,22 +1,15 @@
 {{-- Homepage section, included in the order set in Admin → Homepage → Sections (App\Support\HomeSections) --}}
 {{-- 10. EXCLUSIVE COUPONS & VOUCHERS: last, after Just for you --}}
 @if($coupons->isNotEmpty())
-  <section class="mt-12 sm:mt-16 last:mb-12" data-reveal data-home-coupons>
-    <div class="flex items-end justify-between mb-4 pb-3">
-      <div>
-        <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">
-          Exclusive Vouchers &amp; Offers
-        </h2>
-      </div>
-      <div class="flex items-center gap-2">
+  <section class="mt-10 sm:mt-14" data-reveal data-home-coupons>
+    <x-home-heading :title="'Exclusive Vouchers & Offers'">
         <button type="button" id="couponPrev" class="h-8 w-8 rounded-full bg-white hover:bg-brand-500 hover:text-white border border-stone-200 hover:border-brand-500 text-stone-700 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Previous Coupon">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
         </button>
         <button type="button" id="couponNext" class="h-8 w-8 rounded-full bg-white hover:bg-brand-500 hover:text-white border border-stone-200 hover:border-brand-500 text-stone-700 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Next Coupon">
           <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
         </button>
-      </div>
-    </div>
+    </x-home-heading>
 
     <div class="swiper couponsSwiper !py-1 !px-0.5 -mx-0.5">
       <div class="swiper-wrapper">
@@ -57,7 +50,7 @@
 
               <div class="mt-4 pt-3 border-t border-dashed border-stone-200 flex items-center justify-between gap-2">
                 <span class="text-[11px] font-medium text-stone-400">At checkout</span>
-                <button type="button" onclick="applyAndCopyCoupon('{{ $coupon->code }}')" class="inline-flex items-center gap-1.5 rounded-xl bg-stone-900 hover:bg-black text-white font-bold text-xs px-3.5 py-1.5 shadow-2xs transition-colors cursor-pointer">
+                <button type="button" data-use-coupon="{{ $coupon->code }}" class="inline-flex items-center gap-1.5 rounded-xl bg-stone-900 hover:bg-black text-white font-bold text-xs px-3.5 py-1.5 shadow-2xs transition-colors cursor-pointer">
                   <span>Use Code</span>
                   <span class="text-xs font-mono">&rarr;</span>
                 </button>

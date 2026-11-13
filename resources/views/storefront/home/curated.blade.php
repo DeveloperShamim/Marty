@@ -1,12 +1,9 @@
 {{-- Homepage section, included in the order set in Admin → Homepage → Sections (App\Support\HomeSections) --}}
 {{-- 5. CURATED PRODUCT SHOWCASE WITH INTERACTIVE SEGMENTED TABS (Solves product repetition) --}}
-<section class="mt-12 sm:mt-16" data-reveal>
-  <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
-    <div>
-      <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">
-        Curated Collection
-      </h2>
-    </div>
+<section class="mt-10 sm:mt-14" data-reveal>
+  {{-- On phones the tabs sit under the title at full width --}}
+  <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-4 sm:mb-6 gap-3 sm:gap-4" data-home-heading>
+    <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">Curated Collection</h2>
 
     {{-- Segmented Tab Switcher --}}
     <div class="w-full sm:w-auto flex sm:inline-flex p-1 rounded-xl bg-stone-100 border border-stone-200/70 text-xs font-bold" id="homeProductTabs" role="tablist">

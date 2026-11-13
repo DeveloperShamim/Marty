@@ -1,15 +1,9 @@
 {{-- Homepage section, included in the order set in Admin → Homepage → Sections (App\Support\HomeSections) --}}
 {{-- 3. SHOP BY CATEGORY --}}
 @if($categories->isNotEmpty())
-  <section class="mt-8 sm:mt-12" data-reveal>
-    {{-- Centred heading; arrows sit on the right --}}
-    <div class="relative flex items-center justify-center mb-4 sm:mb-6" data-centered-heading>
-      <div class="text-center">
-        <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">
-          {{ setting('home_categories_title', 'Featured Categories') }}
-        </h2>
-      </div>
-      <div class="absolute right-0 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1.5 sm:gap-2">
+  <section class="mt-10 sm:mt-14" data-reveal>
+    <x-home-heading :title="setting('home_categories_title', 'Featured Categories')">
+      <div class="hidden sm:flex items-center gap-1.5 sm:gap-2">
         <button type="button" id="catPrev" class="h-7 w-7 sm:h-8 sm:w-8 rounded-full border border-stone-200 bg-white hover:bg-brand-500 hover:text-white hover:border-brand-500 text-stone-600 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Previous Category">
           <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
         </button>
@@ -17,7 +11,7 @@
           <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
         </button>
       </div>
-    </div>
+    </x-home-heading>
 
     <div class="relative group/carousel">
       <div class="swiper categoriesSwiper !py-2 !px-0.5 -mx-0.5">

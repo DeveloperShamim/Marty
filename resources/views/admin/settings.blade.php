@@ -237,7 +237,7 @@
                 </label>
               @endforeach
             </div>
-            <p class="text-[11px] text-gray-500 mt-1.5">Wide fills big screens and shows 5 products per row instead of 4. Phones, laptops and checkout look the same either way.</p>
+            <p class="text-[11px] text-gray-500 mt-1.5">Wide fills big screens and shows 5 products per row instead of 4. Phones, laptops and checkout look the same either way. The homepage banner keeps its height on Wide, so about 8% of each slide is trimmed top and bottom: keep banner text near the middle.</p>
           </div>
         </div>
 

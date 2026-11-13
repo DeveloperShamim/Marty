@@ -36,7 +36,7 @@
               <span class="font-semibold text-[13px] text-gray-900">Carousel slide</span>
               <input type="radio" name="placement" value="hero" class="accent-primary h-4 w-4" @checked($currentPlacement === 'hero') onchange="updatePlacementUI('hero')">
             </span>
-            <span class="mt-1 text-xs text-gray-500">Main rotating slider. Best size 1500 &times; 800 px (15:8).</span>
+            <span class="mt-1 text-xs text-gray-500">Main rotating slider. Best size 1500 &times; 800 px (15:8). Keep text away from the top and bottom edges.</span>
           </label>
 
           <label class="relative flex flex-col p-3.5 rounded-xl ring-1 cursor-pointer transition-colors placement-card {{ $currentPlacement === 'hero_side' ? 'ring-2 ring-gray-900 bg-gray-50' : 'ring-gray-200 hover:bg-gray-50' }}" id="label-placement-hero_side">
@@ -181,7 +181,7 @@
         </div>
 
         <p class="text-xs text-gray-500 leading-relaxed rounded-xl bg-gray-50 p-3" id="placementGuidelinesText">
-          Hero slides display in the main rotating carousel. Recommended size is <strong>1500 &times; 800 px</strong> (Aspect ratio 15:8).
+          Hero slides display in the main rotating carousel. Recommended size is <strong>1500 &times; 800 px</strong> (Aspect ratio 15:8). On the Wide page width, large screens trim about 8% off the top and bottom of each slide, so keep text and products away from those edges.
         </p>
       </section>
     </div>
@@ -193,8 +193,8 @@
 function updatePlacementUI(placement) {
   const BASE = 'relative flex flex-col p-3.5 rounded-xl cursor-pointer transition-colors placement-card ';
   const sizes = {
-    hero: ['15/8', '15:8', '1500 × 800 px', 'Hero slides display in the main rotating carousel. Recommended size is <strong>1500 &times; 800 px</strong> (Aspect ratio 15:8). When no promo card shows on desktop, the slide fills a wider frame there and its top and bottom are trimmed a little, so keep text and products near the middle.'],
-    hero_side: ['1.82/1', '1.82:1', '868 × 476 px', 'Promo cards sit beside the hero carousel (stacked on desktop, 2-column grid on mobile). Recommended size is <strong>868 &times; 476 px</strong> (Aspect ratio 1.82:1).'],
+    hero: ['15/8', '15:8', '1500 × 800 px', 'Hero slides display in the main rotating carousel. Recommended size is <strong>1500 &times; 800 px</strong> (Aspect ratio 15:8). When no promo card shows on desktop, the slide fills a wider frame there and its top and bottom are trimmed a little, so keep text and products near the middle. On the Wide page width, large screens trim about 8% off the top and bottom of each slide, so keep text and products away from those edges.'],
+    hero_side: ['1.82/1', '1.82:1', '868 × 476 px', 'Promo cards sit beside the hero carousel (stacked on desktop, 2-column grid on mobile). Recommended size is <strong>868 &times; 476 px</strong> (Aspect ratio 1.82:1). On the Wide page width, large screens trim a little off the top and bottom.'],
   };
   ['hero', 'hero_side'].forEach(p => {
     document.getElementById('label-placement-' + p).className = BASE + (p === placement ? 'ring-2 ring-gray-900 bg-gray-50' : 'ring-1 ring-gray-200 hover:bg-gray-50');
