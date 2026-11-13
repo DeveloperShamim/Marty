@@ -1,16 +1,13 @@
 {{-- Homepage section, included in the order set in Admin → Homepage → Sections (App\Support\HomeSections) --}}
 {{-- 8. VERIFIED CUSTOMER REVIEWS & SOCIAL PROOF --}}
 @if($homeReviews->isNotEmpty())
-  <section class="mt-14 sm:mt-16 mb-12" data-reveal>
-    <div class="text-center max-w-xl mx-auto mb-6 sm:mb-10 px-4">
-      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200/80 text-amber-900 text-xs font-bold mb-2 shadow-2xs">
+  <section class="mt-10 sm:mt-14" data-reveal>
+    <x-home-heading :title="setting('home_reviews_title', 'Customer Feedback')">
+      <div class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-amber-50 border border-amber-200/80 text-amber-900 text-[11px] sm:text-xs font-bold shadow-2xs whitespace-nowrap">
         <span class="text-amber-500 tracking-wider">★★★★★</span>
         <span>Real Verified Buyers</span>
       </div>
-      <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">
-        {{ setting('home_reviews_title', 'Customer Feedback') }}
-      </h2>
-    </div>
+    </x-home-heading>
 
     {{-- Review Cards: swipe row on phones, 2 columns on tablets, 3 on desktop --}}
     @php $reviewCols = $homeReviews->count() % 3 === 0 ? 'lg:grid-cols-3' : 'lg:grid-cols-2'; @endphp

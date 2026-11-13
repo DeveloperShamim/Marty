@@ -1,14 +1,8 @@
 {{-- Homepage section, included in the order set in Admin → Homepage → Sections (App\Support\HomeSections) --}}
 {{-- 6. SHOP BY BRAND: logos only, each opens the brand's page (hidden while the shop has a single brand) --}}
 @if(isset($featuredBrands) && $featuredBrands->count() > 1)
-  <section class="mt-14 sm:mt-16" data-reveal>
-    <div class="flex items-end justify-between mb-3 sm:mb-4">
-      <div>
-        <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">
-          {{ setting('home_featured_brands_title', 'Official Brands') }}
-        </h2>
-      </div>
-      <div class="flex items-center gap-1.5 sm:gap-2">
+  <section class="mt-10 sm:mt-14" data-reveal>
+    <x-home-heading :title="setting('home_featured_brands_title', 'Official Brands')">
         <a href="{{ route('shop') }}" class="text-xs font-bold text-stone-600 hover:text-brand-600 mr-2 hidden sm:inline-block transition-colors">View All Brands &rarr;</a>
         <button type="button" id="brandPrev" class="h-7 w-7 sm:h-8 sm:w-8 rounded-full border border-stone-200 bg-white hover:bg-brand-500 hover:text-white hover:border-brand-500 text-stone-600 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Previous Brand">
           <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
@@ -16,8 +10,7 @@
         <button type="button" id="brandNext" class="h-7 w-7 sm:h-8 sm:w-8 rounded-full border border-stone-200 bg-white hover:bg-brand-500 hover:text-white hover:border-brand-500 text-stone-600 transition-all shadow-2xs flex items-center justify-center focus:outline-none cursor-pointer" aria-label="Next Brand">
           <svg class="h-3.5 w-3.5 sm:h-4 sm:w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
         </button>
-      </div>
-    </div>
+    </x-home-heading>
 
     <div class="relative group/carousel">
       <div class="swiper brandsSwiper !py-2 !px-0.5 -mx-0.5">

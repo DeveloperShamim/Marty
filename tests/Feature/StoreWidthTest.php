@@ -81,4 +81,12 @@ class StoreWidthTest extends TestCase
         $this->get(route('shop'))->assertOk()->assertSee('pgrid shop-grid', false);
         $this->get(route('product.show', $this->product))->assertOk()->assertSee('prow-item', false);
     }
+
+    /** Wide keeps the homepage banner at the height it has on Standard, and admin says slides are trimmed. */
+    public function test_wide_holds_the_homepage_banner_height(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('data-hero-main', $html);
+        $this->assertStringContainsString('body.store-wide [data-hero-main] { height: 430px; aspect-ratio: auto; }', $html);
+    }
 }

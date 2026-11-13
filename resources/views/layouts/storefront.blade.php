@@ -36,6 +36,10 @@
       body.store-wide .max-w-7xl { max-width: 1440px; }
       body.store-wide .pgrid:not(.shop-grid) { grid-template-columns: repeat(5, minmax(0, 1fr)); }
       body.store-wide .prow-item { width: calc((100% - 4rem) / 5); }
+      /* The homepage banner would grow to about 520px with the wider page; hold it at 430px, the height it
+         has on Standard, so the categories and first products stay on the first screen. Slides are cropped
+         from the centre (about 8% off the top and bottom at full width). */
+      body.store-wide [data-hero-main] { height: 430px; aspect-ratio: auto; }
     }
     @media (min-width: 1440px) {
       /* The shop grid shares the row with the 270px filter sidebar, so it gets its 5th column later */
