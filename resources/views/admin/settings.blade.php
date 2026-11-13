@@ -132,6 +132,7 @@
     @php
       $curFont = array_key_exists($settings['theme_font'] ?? 'jakarta', \App\Support\StoreStyle::FONTS) ? ($settings['theme_font'] ?? 'jakarta') : 'jakarta';
       $curCorners = array_key_exists($settings['theme_corners'] ?? 'rounded', \App\Support\StoreStyle::CORNERS) ? ($settings['theme_corners'] ?? 'rounded') : 'rounded';
+      $curWidth = array_key_exists($settings['theme_width'] ?? 'standard', \App\Support\StoreStyle::WIDTHS) ? ($settings['theme_width'] ?? 'standard') : 'standard';
     @endphp
     <link href="{{ \App\Support\StoreStyle::allFontsUrl() }}" rel="stylesheet" />
     <section class="panel p-4 sm:p-5 space-y-4" data-theme-panel>
@@ -224,6 +225,19 @@
                 @endforeach
               </div>
             </div>
+          </div>
+
+          <div data-theme-width>
+            <span class="lbl">Page width</span>
+            <div class="grid grid-cols-2 gap-1.5 sm:max-w-sm">
+              @foreach(\App\Support\StoreStyle::WIDTHS as $wKey => [$wLabel])
+                <label class="cursor-pointer">
+                  <input type="radio" name="theme_width" value="{{ $wKey }}" class="peer sr-only" @checked($curWidth === $wKey)>
+                  <span class="h-9 px-2 rounded-lg border border-gray-200 bg-white text-[12px] font-medium text-gray-700 flex items-center justify-center peer-checked:border-gray-900 peer-checked:bg-gray-900 peer-checked:text-white">{{ $wLabel }}</span>
+                </label>
+              @endforeach
+            </div>
+            <p class="text-[11px] text-gray-500 mt-1.5">Wide fills big screens and shows 5 products per row instead of 4. Phones, laptops and checkout look the same either way.</p>
           </div>
         </div>
 
@@ -626,6 +640,22 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div><label class="lbl">Inside zone label</label><input name="shipping_inside_label" class="inp text-[13px]" value="{{ $settings['shipping_inside_label'] ?? '' }}" placeholder="Inside Dhaka" /></div>
         <div><label class="lbl">Outside zone label</label><input name="shipping_outside_label" class="inp text-[13px]" value="{{ $settings['shipping_outside_label'] ?? '' }}" placeholder="Outside Dhaka" /></div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div><label class="lbl">Inside zone delivery time</label><input name="shipping_inside_time" maxlength="40" class="inp text-[13px]" value="{{ $settings['shipping_inside_time'] ?? '' }}" placeholder="1–2 days" /></div>
+        <div><label class="lbl">Outside zone delivery time</label><input name="shipping_outside_time" maxlength="40" class="inp text-[13px]" value="{{ $settings['shipping_outside_time'] ?? '' }}" placeholder="2–3 days" /></div>
+      </div>
+    </section>
+
+    <section class="panel p-4 sm:p-5 space-y-4">
+      <div>
+        <h2 class="text-[15px] font-semibold text-gray-900">Product page promises</h2>
+        <p class="text-xs text-gray-500 mt-0.5">Short lines shown on every product page. Leave one empty to hide it.</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div><label class="lbl">Line under the product name</label><input name="pdp_authentic_label" maxlength="40" class="inp text-[13px]" value="{{ $settings['pdp_authentic_label'] ?? '' }}" placeholder="Verified Authentic" /></div>
+        <div><label class="lbl">Quality badge</label><input name="pdp_quality_badge" maxlength="40" class="inp text-[13px]" value="{{ $settings['pdp_quality_badge'] ?? '' }}" placeholder="Genuine leather" /></div>
+        <div><label class="lbl">Return promise</label><input name="pdp_return_text" maxlength="40" class="inp text-[13px]" value="{{ $settings['pdp_return_text'] ?? '' }}" placeholder="7-day return" /></div>
       </div>
     </section>
 

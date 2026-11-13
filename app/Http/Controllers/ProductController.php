@@ -74,6 +74,10 @@ class ProductController extends Controller
             ->paginate(8, ['*'], 'reviews_page')
             ->withQueryString();
 
+        // Average and count of approved reviews: shown under the title, above the reviews and sent to Google
+        $ratingCount = $reviews->total();
+        $ratingAvg = $ratingCount > 0 ? round((float) $product->approvedReviews()->avg('rating'), 1) : 0.0;
+
         $hasPurchased = false;
         $alreadyReviewed = false;
 
@@ -115,6 +119,8 @@ class ProductController extends Controller
             'colors',
             'weights',
             'reviews',
+            'ratingAvg',
+            'ratingCount',
             'hasPurchased',
             'alreadyReviewed',
             'canReview'

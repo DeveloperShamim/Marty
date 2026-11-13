@@ -1,202 +1,140 @@
-# SoleBd — Premium E-Commerce Storefront (Laravel)
+# Vant Bangladesh — Laravel E-Commerce Store
 
-A full-featured Laravel e-commerce application for a fashion & lifestyle store (shoes, luxury watches, genuine leather goods, bags & eyewear). Includes a high-converting storefront and a comprehensive admin panel.
+A ready-to-launch Laravel online shop with a full admin panel, built for Bangladeshi stores that sell on Facebook and
+ship cash on delivery. The demo data is set up as **Vant Bangladesh**, a leather goods shop, and every part of the
+look (name, logo, colours, fonts, homepage, menus, pages) can be changed from the admin panel.
 
 ---
 
-## ✨ Feature Highlights
+## Features
 
-| Area | Details |
+### Storefront
+
+| Area | What it does |
 |---|---|
-| 💬 **Live Customer Support Chat** | Floating widget with home & thread views, voice notes 🎙️, photo attachments 📷, product cards 🛍️, coupon sharing 🎟️, order tracking 🧾, status dropdown, 1-click storage cleanup 🧹, and Asia/Dhaka local timezone |
-| 🏪 **Storefront** | Modern responsive homepage, shop catalog, single product, contact, cart, order confirmation |
-| 🎨 **3-Color Theme Engine** | Pick 3 theme colors in admin → site colors update live across storefront & chat widget |
-| 🏷️ **Brands** | 9 Official brand pages (Nike, Adidas, Apex, Casio, Seiko, Picard, Fossil, Ray-Ban, Woodland) with logos and product counts |
-| 📦 **Products** | SKUs, color/size variants, flash sales, specs, customer reviews, square product media |
-| 🗂️ **Categories** | 6 Categories (Sneakers & Running Shoes, Formal & Dress Footwear, Luxury & Sport Watches, Leather Belts & Wallets, Bags & Backpacks, Eyewear & Accessories) |
-| 🎡 **Hero Banners** | Widescreen hero slider banners with custom background fit and call-to-action buttons |
-| 🛒 **Cart & Checkout** | Session cart, coupon codes, mobile payment (bKash, Nagad, Rocket, COD), auto contact sync |
-| 📋 **Orders** | Order management, status tracking, invoice PDF printing, UTM source tracking |
-| 🛡️ **Fraud Detection** | Zero-API local risk scoring, TrxID validation, blacklist management |
-| 👥 **Staff & Role Control** | Role-based access control (RBAC), 4 staff roles, account suspension |
-| 📜 **Staff Audit Logs** | Automated activity log timeline for all staff actions + 1-click Clear Audit Logs feature |
-| 👤 **Admin Profile** | Super Admin profile management to update email address & password credentials (`/admin/profile`) |
-| 👥 **Visitor Analytics** | Live real-time visitor monitor, 14-day Chart.js line chart, device tracking |
-| 🚚 **Courier Sync** | 1-click dispatch to Steadfast, Pathao, RedX via API |
-| 🛒 **Abandoned Carts** | Track uncompleted checkouts, 1-click WhatsApp/SMS recovery |
-| ⚡ **Admin Cache Clear** | 1-click topbar cache optimization (`optimize:clear`) |
-| ⚙️ **Admin Dashboard** | Settings, Banner, Brand, Category, Product, Order, Coupon, User management |
-| 🔐 **Auth** | Login, Register, Google OAuth 1-click login, OTP email verification |
-| 📨 **Mail & OTP** | SMTP config, customer OTP toggle |
-| 📈 **SEO & Tracking** | Meta tags, Facebook Pixel, Google Analytics / GTM |
+| **Shop** | Mobile-first home, shop, category, brand and product pages, phone tab bar, sliding product rows, full-screen photo viewer with swipe and zoom |
+| **Ordering** | Order now on every card, option picker with colour swatches, side cart, one-page checkout with delivery zone picked from the typed address, optional delivery note |
+| **Payments** | Cash on delivery, bKash, Nagad and Rocket with TrxID check; safe COD orders can confirm themselves |
+| **Accounts** | Customer account, order tracking, Google login and email OTP |
+| **Pages** | About us, FAQ, Shipping, Returns or any page at `/page/{slug}`, shown in the footer and sitemap |
+| **SEO** | Meta tags, sitemap, robots.txt, one store address (www and http redirect to `APP_URL`), shop-styled 404 page |
+
+### Admin panel (`/admin`)
+
+| Area | What it does |
+|---|---|
+| **Dashboard** | Today and this month, profit, orders to ship, needs-action list, top products, store performance, and a "Finish setting up your store" checklist |
+| **Orders** | Status tabs, bulk confirm / send to courier / cancel, invoices and parcel labels, staff call notes, new-order alerts that close by themselves |
+| **Couriers** | One-click booking with Steadfast, Pathao and RedX, automatic delivery updates, courier scan for hand-over and returns |
+| **Fraud check** | Risk score per order, blacklist, customer delivery history across couriers (BD Courier) |
+| **POS** | Counter sales with barcode scanning, receipts and barcode printing; online and shop stock stay in sync |
+| **Catalog** | Products with colour/size variants, one-level sub-categories, brands, inventory with low-stock alerts, size guide, reviews, CSV import/export |
+| **Media** | Media library with bulk image compression |
+| **Marketing** | Flash sale with countdown, coupons, free-delivery rules, header ticker, promo cards with dates, abandoned-cart recovery by WhatsApp/SMS |
+| **Store builder** | Logo, 3 theme colours (or colours from the logo), 6 font pairs, corner style, 5 one-click style packs, live preview |
+| **Homepage & menus** | Show, hide and reorder homepage sections; hero slider; build the top menu bar with dropdowns (light or dark); choose which categories show in the slider |
+| **Profit** | Expenses, net profit, sales by channel, visitor analytics, CSV exports |
+| **Tracking** | Meta Pixel + Conversions API, GA4 (browser and server), TikTok Pixel, Google Ads, GTM, with setup guides in English and Bangla and a duplicate-tag warning |
+| **Staff** | Super Admin, Store Manager, Order Manager and Inventory Manager roles, each with its own phone menu bar; suspension and audit log |
+| **Backups** | Daily database backup on a schedule you set, back up now, download, upload and restore |
 
 ---
 
-## 🚀 Quick Setup (Fresh Install)
+## Requirements
 
-### Prerequisites
-- PHP >= 8.2
+- PHP 8.3+ with the usual Laravel extensions (pdo_mysql, mbstring, openssl, curl, gd, intl, zip, fileinfo)
+- MySQL / MariaDB (SQLite works for local testing)
 - Composer
-- MySQL or any supported DB
-- Node.js and npm
+- Node.js is only needed to rebuild the CSS. The compiled CSS is committed in `public/theme/css/`.
 
-### 1. Clone the repository
+## Install
 
 ```bash
 git clone https://github.com/DeveloperShamim/Marty.git
 cd Marty
-```
-
-### 2. Install PHP dependencies
-
-```bash
+git checkout VantBangladesh
 composer install
-```
-
-### 3. Install Node dependencies and build assets
-
-```bash
-npm install
-npm run build
-```
-
-### 4. Configure environment
-
-```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-Open `.env` and set your database credentials:
-
-```env
-APP_NAME=SoleBd
-DB_DATABASE=solebd
-DB_USERNAME=root
-DB_PASSWORD=your_password
-```
-
-### 5. Run migrations and seed the database
+Set `APP_NAME`, `APP_URL` and the database in `.env`, then:
 
 ```bash
-php artisan migrate:fresh --seed
-```
-
-> This runs **all** migrations and seeds:
-> - Super Admin and staff accounts (see credentials below)
-> - Default site settings for **SoleBd**
-> - 9 Brands, 6 Categories, 72 Products, SKUs, variants, banners, coupons, reviews, orders, support chats, visitor traffic, and audit logs
-
-### 6. Link storage (for image uploads)
-
-#### Standard Local / VPS Setup:
-```bash
+php artisan migrate --seed
 php artisan storage:link
-```
-
-#### Shared Hosting / cPanel Setup (`public_html`):
-If your web host uses `public_html` instead of `public`:
-
-**Option A (SSH Command Line):**
-```bash
-# 1. Symlink public folder to public_html
-ln -s public public_html
-
-# 2. Run Artisan storage link (supports both public and public_html automatically)
-php artisan storage:link
-```
-
-**Option B (Without SSH / PHP Helper Script):**
-Create a `link.php` script inside your `public_html` folder with the following code:
-```php
-<?php
-// Symlink storage/app/public to public_html/storage
-symlink(__DIR__.'/../storage/app/public', __DIR__.'/storage');
-echo "Storage link created successfully!";
-```
-Visit `http://yourdomain.com/link.php` once in your browser, then delete `link.php`.
-
-### 7. Start the dev server
-
-```bash
 php artisan serve
 ```
 
-Visit: **http://127.0.0.1:8000**
+- With `APP_ENV=local` the seeder fills a **demo shop**: settings, categories, brands, banners, coupons, starter pages
+  and staff accounts. Add demo products and orders with
+  `php artisan db:seed --class=ProductSeeder` and `php artisan db:seed --class=OrderSeeder`.
+- With `APP_ENV=production` it only creates an admin account (`ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env`, or a random
+  password printed once), the default settings and categories. No demo data or `password` accounts, unless you set
+  `SEED_DEMO=true`.
 
----
+### Cron job
 
-## 🧹 Chat Storage Maintenance
+Courier status sync, daily backups and cleanup need the scheduler. Add this cron job to run every minute:
 
-To clean up old voice notes and attachment media files from your server storage:
-```bash
-# Clean chat media files older than 90 days
-php artisan chat:prune --days=90
-
-# Clean ONLY attachment files (keeping text history)
-php artisan chat:prune --days=60 --attachments-only
+```
+* * * * * cd /path/to/site && php artisan schedule:run >> /dev/null 2>&1
 ```
 
----
+Run `php artisan app:launch-check` before going live. It checks the cron job, backups and other settings.
 
-## 🔑 Default Login Credentials
+### Shared hosting (cPanel)
 
-### Admin & Staff Panel — `/admin`
+Point the domain's document root at `public/`. If the host only allows `public_html`, symlink it with
+`ln -s public public_html`, then run `php artisan storage:link`.
 
-| Role | Email Login | Password | Access Level |
-| :--- | :--- | :--- | :--- |
-| 👑 **Super Admin** | `admin@solebd.com` | `password` | 100% Full Access |
-| 👔 **Store Manager** | `store.manager@solebd.com` | `password` | Both Orders & Catalog Access |
-| 📦 **Order Manager** | `order.manager@solebd.com` | `password` | Orders, Support & Customer Access |
-| 🏭 **Inventory Manager** | `inventory.manager@solebd.com` | `password` | Products, Stock & Catalog Access |
+## Demo logins (local demo data only)
 
-### Customer Account
+| Role | Email | Password |
+|---|---|---|
+| Super Admin | `admin@vantbd.com` | `password` |
+| Store Manager | `manager@vantbd.com` | `password` |
+| Order Manager | `orders@vantbd.com` | `password` |
+| Inventory Manager | `inventory@vantbd.com` | `password` |
+| Customer | `customer@vantbd.com` | `password` |
 
-| Field    | Value               |
-|----------|---------------------|
-| Email    | `customer@solebd.com` |
-| Password | `password`          |
+Change these passwords, or don't seed demo data, on a live store.
 
----
+## Useful commands
 
-## 🌱 Seeding Details
-
-### What `php artisan migrate:fresh --seed` seeds
-
-| Seeder                  | Contents                                                                 |
-|-------------------------|--------------------------------------------------------------------------|
-| `seedUsers()`           | 4 Staff accounts (Super Admin, Store Manager, Order Manager, Inventory Manager) + 1 Customer |
-| `seedSettings()`        | All SoleBd site settings (name, theme colors, contact, payment, SEO)     |
-| `seedCategories()`      | 6 categories: Sneakers & Running Shoes, Formal Footwear, Luxury Watches, Leather Belts & Wallets, Bags & Backpacks, Eyewear |
-| `seedBrands()`          | 9 brands: Nike, Adidas, Apex, Casio, Seiko, Picard, Fossil, Ray-Ban, Woodland |
-| `seedFeatures()`        | Homepage trust/feature badges                                            |
-| `seedCoupons()`         | Sample discount coupons                                                  |
-| `BannerSeeder`          | Homepage hero banner slides                                              |
-| `seedProducts()`        | 72 product catalog items linked to categories and brands                |
-| `seedReviews()`         | Customer product reviews                                                 |
-| `seedOrders()`          | Sample orders with fraud risk scores and UTM source tracking             |
-| `seedConversations()`   | Sample customer live support chat threads & messages                     |
-| `seedVisitorLogs()`     | 14 days of realistic storefront traffic for Visitor Analytics            |
-| `seedStaffActivityLogs()`| Sample audit timeline entries for employee action logs                   |
-
----
-
-## 📄 License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Command | What it does |
+|---|---|
+| `php artisan app:launch-check` | Checks the store is ready to go live |
+| `php artisan app:backup-db` | Saves a gzipped SQL copy in `storage/app/backups` (newest 14 kept); also runs daily |
+| `php artisan couriers:sync` | Pulls the latest delivery status from the couriers; also runs on the schedule |
+| `php artisan test` | Runs the test suite |
 
 ## Styles (Tailwind)
 
-The store and admin use built stylesheets in `public/theme/css/tw-store.css` and `tw-admin.css`, made from the
-classes in the views by Tailwind 3 (configs in `tailwind/`). After adding or changing classes, rebuild and commit them:
+The store and admin use built stylesheets in `public/theme/css/tw-store.css` and `tw-admin.css`, made by Tailwind 3
+from the classes in the views (configs in `tailwind/`). Theme colours from Admin → Settings reach the CSS as variables
+printed by `tailwind_css()` in `app/helpers.php`, so colour changes need no rebuild. After adding or changing classes in
+a view, rebuild and commit the CSS:
 
-    npm install
-    npm run build:css
+```bash
+npm install
+npm run build:css
+```
 
-`LongRunTest::test_built_stylesheets_are_up_to_date` fails when they are stale. Theme colours from Admin → Settings
-reach the CSS as variables printed by `tailwind_css()` in `app/helpers.php`.
+`LongRunTest::test_built_stylesheets_are_up_to_date` fails when they are stale. Swiper, Chart.js, JsBarcode and
+SortableJS are served from `public/theme/vendor/` at pinned versions.
 
-## Backups
+## Updating the live site
 
-`php artisan app:backup-db` saves a gzipped SQL copy of the database in `storage/app/backups` (newest 14 kept). The
-scheduler runs it daily at 03:30, so the server cron job must be set up (`php artisan app:launch-check` checks both).
+On the server, from the project folder:
+
+```bash
+bash deploy.sh
+```
+
+It puts the site in maintenance mode, pulls `VantBangladesh` (or `$BRANCH`), installs packages, runs migrations,
+refreshes caches and opens the site again. If a step fails, the site is opened again and the error is shown.
+
+## License
+
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

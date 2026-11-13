@@ -22,7 +22,7 @@
 
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+    <div class="pgrid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
       @foreach($flashProducts->take(8) as $product)
         {{-- Phones show the first 4; View all deals has the rest --}}
         <div class="{{ $loop->index >= 4 ? 'max-sm:hidden' : '' }} grid min-w-0">
@@ -37,7 +37,7 @@
     <div class="text-center mb-4 sm:mb-6" data-centered-heading>
       <h2 class="text-base sm:text-xl font-medium text-stone-900 leading-tight">{{ setting('home_picks_title', 'Top Selling Products') }}</h2>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+    <div class="pgrid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
       @foreach($ourPicks as $product)
         {{-- Phones show the first 4 --}}
         <div class="{{ $loop->index >= 4 ? 'max-sm:hidden' : '' }} grid min-w-0">

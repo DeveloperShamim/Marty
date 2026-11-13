@@ -295,7 +295,7 @@
           <a href="{{ route('shop') }}" class="mt-3 inline-flex text-brand-600 font-semibold text-sm">Browse all products</a>
         </div>
       @else
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div class="pgrid shop-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           @foreach($products as $product)
             @include('storefront.partials.product-card', ['product' => $product])
           @endforeach

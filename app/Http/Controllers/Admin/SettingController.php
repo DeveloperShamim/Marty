@@ -176,6 +176,7 @@ class SettingController extends Controller
                 'theme_surface_color' => ['nullable', 'string', 'regex:/^#([a-fA-F0-9]{3}){1,2}$/'],
                 'theme_font'          => ['nullable', \Illuminate\Validation\Rule::in(array_keys(\App\Support\StoreStyle::FONTS))],
                 'theme_corners'       => ['nullable', \Illuminate\Validation\Rule::in(array_keys(\App\Support\StoreStyle::CORNERS))],
+                'theme_width'         => ['nullable', \Illuminate\Validation\Rule::in(array_keys(\App\Support\StoreStyle::WIDTHS))],
                 'logo_file'       => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,webp', 'max:2048'],
                 'favicon_file'    => ['nullable', 'file', 'mimes:png,jpg,jpeg,svg,webp,ico', 'max:1024'],
                 'remove_logo'     => ['nullable', 'boolean'],
@@ -220,6 +221,11 @@ class SettingController extends Controller
                 'tax_percent'            => ['required', 'numeric', 'min:0', 'max:100'],
                 'shipping_inside_label'  => ['nullable', 'string', 'max:80'],
                 'shipping_outside_label' => ['nullable', 'string', 'max:80'],
+                'shipping_inside_time'   => ['nullable', 'string', 'max:40'],
+                'shipping_outside_time'  => ['nullable', 'string', 'max:40'],
+                'pdp_authentic_label'    => ['nullable', 'string', 'max:40'],
+                'pdp_quality_badge'      => ['nullable', 'string', 'max:40'],
+                'pdp_return_text'        => ['nullable', 'string', 'max:40'],
                 'currency_symbol'        => ['nullable', 'string', 'max:8'],
                 'currency_code'          => ['nullable', 'string', 'max:8'],
             ],
@@ -290,7 +296,7 @@ class SettingController extends Controller
                 'facebook_url', 'messenger_url', 'instagram_url', 'twitter_url',
                 'search_placeholder',
                 'theme_primary_color', 'theme_dark_color', 'theme_surface_color',
-                'theme_font', 'theme_corners',
+                'theme_font', 'theme_corners', 'theme_width',
             ],
             'homepage' => [
                 'shop_subtitle', 'delivery_eta_text',
@@ -307,6 +313,8 @@ class SettingController extends Controller
             'shipping' => [
                 'shipping_inside_dhaka', 'shipping_outside_dhaka', 'tax_percent',
                 'shipping_inside_label', 'shipping_outside_label',
+                'shipping_inside_time', 'shipping_outside_time',
+                'pdp_authentic_label', 'pdp_quality_badge', 'pdp_return_text',
                 'currency_symbol', 'currency_code',
             ],
             'couriers' => [
