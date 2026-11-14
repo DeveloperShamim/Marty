@@ -282,26 +282,26 @@ body.store-wide .lx-wrap { max-width: 1440px; }
 /* One product: centre the single card so it doesn't sit to one side of the page */
 .lx-grid-1 { margin-left: auto; margin-right: auto; }
 
-/* Phones: headline first, then the product. The photo no longer fills the first screen. */
+/* Phones: a text-only hero (no photo), then the Batch 01 cards straight below, so the first screen shows the
+   headline and the wallets with their prices. The products' own cards carry Order now and the bag button. */
 @media (max-width: 639px) {
-  .lx-hero-media { order: 0; }
-  .lx-hero-card { max-width: 22rem; margin: 0 auto; }
-  /* With the rotating card, its own View product / Buy now replace the Shop now button and batch line */
-  .lx-hero-rot .lx-hero-cta, .lx-hero-rot .lx-meta { display: none; }
-  /* Rotating card on phones: a compact row, square photo on the left, name, price and buttons on the right */
-  .lx-hero-rot .lx-rot-slide { display: grid; grid-template-columns: 42% minmax(0, 1fr); padding-bottom: 1.6rem; }
-  .lx-hero-rot .lx-rot-img { margin: .65rem 0 0 .65rem; align-self: center; border-radius: .75rem; border: 1px solid var(--lx-line); }
-  .lx-hero-rot .lx-rot-body { border-top: 0; justify-content: center; gap: .6rem; padding: .7rem .8rem .2rem; }
-  .lx-hero-rot .lx-rot-info { flex-direction: column; align-items: flex-start; gap: .2rem; }
-  .lx-hero-rot .lx-rot-name { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-size: 14.5px; }
-  .lx-hero-rot .lx-rot-btns { grid-template-columns: 1fr; gap: .45rem; }
-  .lx-hero-rot .lx-rot-btns .lx-btn { padding: .6rem .5rem; font-size: 13.5px; }
-  .lx-hero-rot .lx-rot-tag { top: .4rem; left: .4rem; font-size: 9.5px; }
-  /* Dots move under the card, out of the photo */
-  .lx-hero-rot .lx-rot-over { top: auto; bottom: 0; aspect-ratio: auto; height: 1.75rem; }
-  .lx-hero-rot .lx-rot-dots { bottom: .2rem; background: transparent; box-shadow: none; padding: 0; }
-  .lx-hero-rot .lx-rot-dot { width: 16px; }
-  .lx-hero-rot .lx-rot-dot.is-on::before { width: 14px; }
+  .lx-hero { padding: 1rem 0 1.1rem; }
+  /* The cards below show prices, colours and stock, so the hero keeps only its words */
+  .lx-hero-media, .lx-hero .lx-finish, .lx-hero-cta, .lx-hero .lx-meta { display: none !important; }
+  #collection { padding-top: 1.1rem; }
+  #collection .lx-head { margin-bottom: .9rem; gap: .25rem; }
+  #collection .lx-intro { display: none; }
+  #collection .lx-h2 { font-size: 21px; }
+  /* Two products sit side by side, like three or more */
+  .lx-grid-2 { grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .lx-grid-2 .lx-card { padding: .6rem; border-radius: .9rem; }
+  .lx-grid-2 .lx-card-top { margin-bottom: .5rem; }
+  .lx-grid-2 .lx-card-name { font-size: 13px; }
+  .lx-grid-2 .lx-card-sum { display: none; }
+  .lx-grid-2 .lx-card-body { padding-top: .6rem; }
+  .lx-grid-2 .lx-card-foot { flex-direction: column; align-items: stretch; margin-top: .6rem; padding-top: .6rem; }
+  .lx-grid-2 .lx-card-btns { display: grid; grid-template-columns: auto 1fr; }
+  .lx-grid-2 .lx-bag-btn { width: 2.5rem; }
 }
 
 /* Comparison table: the specification column stays in place while the products scroll, and with 5 or more
