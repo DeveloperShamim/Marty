@@ -17,6 +17,14 @@
   @endphp
 
   <link rel="stylesheet" href="{{ asset('theme/vendor/swiper/swiper-bundle.min.css') }}" />
+  @if(\App\Support\LaunchMode::isOn())
+    {{-- Launch mode (Admin → Homepage → Launch mode): its homepage styles and, when picked, the dark leather look --}}
+    <link rel="stylesheet" href="{{ asset('theme/css/launch.css') }}?v={{ @filemtime(public_path('theme/css/launch.css')) }}" />
+    @if(\App\Support\LaunchMode::isDark())
+      <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+      <meta name="theme-color" content="#0a0a0b" />
+    @endif
+  @endif
 
   <style>
     :root {
@@ -313,7 +321,7 @@
   ]) }}
 </head>
 
-<body class="@yield('body_class', 'bg-white text-ink antialiased'){{ \App\Support\StoreStyle::isWide() && ! request()->routeIs('checkout.*') ? ' store-wide' : '' }}">
+<body class="@yield('body_class', 'bg-white text-ink antialiased'){{ \App\Support\StoreStyle::isWide() && ! request()->routeIs('checkout.*') ? ' store-wide' : '' }}{{ \App\Support\LaunchMode::isDark() && ! request()->routeIs('checkout.*') ? ' lx-dark' : '' }}">
   @include('partials.tracking-body')
 
   @hasSection('checkout_header')

@@ -36,6 +36,7 @@ class AdminNav
             'free-delivery' => ['Free Delivery', 'admin.free-delivery.index', '<path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>', 'shipping offer courier charge waive'],
             'news-ticker' => ['News Ticker', 'admin.news-ticker.index', '<path d="M15 18h-5"/><path d="M18 14h-8"/><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0v-9a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="10" y="6" rx="1"/>', 'headline announcement promo bar top banner'],
             'home-sections' => ['Homepage Sections', 'admin.home-sections.index', '<rect width="18" height="7" x="3" y="3" rx="1"/><rect width="18" height="7" x="3" y="14" rx="1"/>', 'homepage order sections layout show hide reorder'],
+            'launch-mode' => ['Launch Mode', 'admin.launch-mode.index', '<path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>', 'launch batch limited release collection compare wallet small catalogue dark'],
             'header-menu' => ['Menu Bar', 'admin.header-menu.index', '<path d="M4 6h16"/><path d="M4 12h10"/><path d="M4 18h7"/><path d="m16 15 3 3 3-3"/>', 'navigation nav menubar header links dropdown'],
             'abandoned-carts' => ['Abandoned Carts', 'admin.abandoned-carts.index', '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>', 'cart recovery'],
             'analytics' => ['Profit & Analytics', 'admin.analytics.index', '<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/>', 'report aov revenue sales profit'],
@@ -60,7 +61,7 @@ class AdminNav
             'reviews',
         ],
         'Store content' => [
-            ['Homepage', 'banners', ['banners' => 'Hero banners', 'home-sections' => 'Sections', 'features' => 'Trust strip', 'news-ticker' => 'News ticker', 'header-menu' => 'Menu bar']],
+            ['Homepage', 'banners', ['banners' => 'Hero banners', 'home-sections' => 'Sections', 'launch-mode' => 'Launch mode', 'features' => 'Trust strip', 'news-ticker' => 'News ticker', 'header-menu' => 'Menu bar']],
             'pages',
             'size-guide',
             'media',

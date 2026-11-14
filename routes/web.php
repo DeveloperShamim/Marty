@@ -284,6 +284,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('home-sections', [\App\Http\Controllers\Admin\HomeSectionController::class, 'index'])->middleware('area:home-sections')->name('home-sections.index');
         Route::put('home-sections', [\App\Http\Controllers\Admin\HomeSectionController::class, 'update'])->middleware('area:home-sections')->name('home-sections.update');
 
+        // Launch mode: small-catalogue homepage (Batch collection, comparison, trust row)
+        Route::get('launch-mode', [\App\Http\Controllers\Admin\LaunchModeController::class, 'index'])->middleware('area:launch-mode')->name('launch-mode.index');
+        Route::put('launch-mode', [\App\Http\Controllers\Admin\LaunchModeController::class, 'update'])->middleware('area:launch-mode')->name('launch-mode.update');
+
         Route::get('header-menu', [\App\Http\Controllers\Admin\HeaderMenuController::class, 'index'])->middleware('area:header-menu')->name('header-menu.index');
             Route::put('header-menu', [\App\Http\Controllers\Admin\HeaderMenuController::class, 'update'])->middleware('area:header-menu')->name('header-menu.update');
 
