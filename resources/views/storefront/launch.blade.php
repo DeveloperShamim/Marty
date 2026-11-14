@@ -51,13 +51,9 @@
 
 <div class="lx-page">
 
-  {{-- 1. HERO: text on the left, the product photo filling the right half (on phones: photo first) --}}
+  {{-- 1. HERO: text on the left, the product photo filling a framed card on the right (on phones: photo first) --}}
   <section class="lx-hero">
-    <div class="lx-hero-media">
-      @if($lead)
-        <img src="{{ $lead->imageUrl() }}" alt="{{ $lead->name }}" loading="eager" data-lx-hero-img data-default="{{ $lead->imageUrl() }}">
-      @endif
-    </div>
+    <div class="lx-wrap lx-hero-grid">
     <div class="lx-hero-copy">
       <div class="lx-hero-inner">
         @if($heroBadge)<p class="lx-eyebrow">{{ $heroBadge }}</p>@endif
@@ -92,6 +88,14 @@
           </p>
         @endif
       </div>
+    </div>
+    <div class="lx-hero-media">
+      @if($lead)
+        <a href="{{ route('product.show', $lead) }}" class="lx-hero-card" aria-label="{{ $lead->name }}">
+          <img src="{{ $lead->imageUrl() }}" alt="{{ $lead->name }}" loading="eager" data-lx-hero-img data-default="{{ $lead->imageUrl() }}">
+        </a>
+      @endif
+    </div>
     </div>
   </section>
 
