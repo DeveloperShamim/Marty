@@ -278,3 +278,51 @@ body.store-wide .lx-wrap { max-width: 1440px; }
   .lx-rot-name, .lx-rot-price { font-size: 15px; }
   .lx-rot-btns .lx-btn { padding: .75rem .5rem; font-size: 14px; }
 }
+
+/* One product: centre the single card so it doesn't sit to one side of the page */
+.lx-grid-1 { margin-left: auto; margin-right: auto; }
+
+/* Phones: headline first, then the product. The photo no longer fills the first screen. */
+@media (max-width: 639px) {
+  .lx-hero-media { order: 0; }
+  .lx-hero-card { max-width: 22rem; margin: 0 auto; }
+  /* With the rotating card, its own View product / Buy now replace the Shop now button and batch line */
+  .lx-hero-rot .lx-hero-cta, .lx-hero-rot .lx-meta { display: none; }
+  /* Rotating card on phones: a compact row, square photo on the left, name, price and buttons on the right */
+  .lx-hero-rot .lx-rot-slide { display: grid; grid-template-columns: 42% minmax(0, 1fr); padding-bottom: 1.6rem; }
+  .lx-hero-rot .lx-rot-img { margin: .65rem 0 0 .65rem; align-self: center; border-radius: .75rem; border: 1px solid var(--lx-line); }
+  .lx-hero-rot .lx-rot-body { border-top: 0; justify-content: center; gap: .6rem; padding: .7rem .8rem .2rem; }
+  .lx-hero-rot .lx-rot-info { flex-direction: column; align-items: flex-start; gap: .2rem; }
+  .lx-hero-rot .lx-rot-name { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-size: 14.5px; }
+  .lx-hero-rot .lx-rot-btns { grid-template-columns: 1fr; gap: .45rem; }
+  .lx-hero-rot .lx-rot-btns .lx-btn { padding: .6rem .5rem; font-size: 13.5px; }
+  .lx-hero-rot .lx-rot-tag { top: .4rem; left: .4rem; font-size: 9.5px; }
+  /* Dots move under the card, out of the photo */
+  .lx-hero-rot .lx-rot-over { top: auto; bottom: 0; aspect-ratio: auto; height: 1.75rem; }
+  .lx-hero-rot .lx-rot-dots { bottom: .2rem; background: transparent; box-shadow: none; padding: 0; }
+  .lx-hero-rot .lx-rot-dot { width: 16px; }
+  .lx-hero-rot .lx-rot-dot.is-on::before { width: 14px; }
+}
+
+/* Comparison table: the specification column stays in place while the products scroll, and with 5 or more
+   products a computer gets a visible scrollbar and the "scroll sideways" line */
+.lx-th-spec, .lx-td-spec { position: sticky; left: 0; z-index: 1; background: var(--lx-card); }
+.lx-tr-price .lx-td-spec { background: #fbfaf8; }
+.lx-table thead .lx-th-spec { background: #f8f7f6; }
+.lx-desk-only { display: none; }
+@media (min-width: 768px) { .lx-desk-only { display: block; } }
+@media (hover: hover) and (pointer: fine) {
+  .lx-table-many { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, #a4693a 45%, transparent) transparent; }
+  .lx-table-many::-webkit-scrollbar { display: block; height: 8px; }
+  .lx-table-many::-webkit-scrollbar-thumb { background: color-mix(in srgb, #a4693a 45%, transparent); border-radius: 999px; }
+}
+
+/* Product page while launch mode is on: Order now and Add to cart in the launch look (cognac, normal case)
+   instead of black capitals */
+#pdBuyNow, #stickyBarBuyNow { background: #a4693a !important; border-color: #a4693a !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important; }
+#pdBuyNow:hover, #stickyBarBuyNow:hover { background: #8a552b !important; }
+#pdAddToCart, #stickyBarAddToCart { border-color: #a4693a !important; color: #8a552b !important; border-width: 1.5px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important; }
+#pdBuyNow:disabled, #stickyBarBuyNow:disabled { background: #e7e5e4 !important; border-color: #e7e5e4 !important; }
+#pdAddToCart:disabled, #stickyBarAddToCart:disabled { border-color: #e7e5e4 !important; color: #a8a29e !important; }
+#pdBuyNowText, #pdAddToCartText, #stickyBarBuyNowText, #stickyBarAddToCartText { text-transform: lowercase; }
+#pdBuyNowText::first-letter, #pdAddToCartText::first-letter, #stickyBarBuyNowText::first-letter, #stickyBarAddToCartText::first-letter { text-transform: uppercase; }
