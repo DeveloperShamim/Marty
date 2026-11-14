@@ -33,6 +33,18 @@
     return $c + ['image' => $img ? image_url($img->path, $lead->slug) : null];
   })->values() : collect();
 
+  // One product: the hero already shows its main photo, so the collection card shows its second photo when
+  // it has one (and no separate hero picture was uploaded), instead of the same picture twice in a row
+  $cardImg = function ($p) use ($count, $H) {
+    if ($count === 1 && empty($H['image'])) {
+      $second = $p->images->skip(1)->first();
+      if ($second) {
+        return image_url($second->path, $p->slug);
+      }
+    }
+    return $p->imageUrl();
+  };
+
   $gridClass = match (true) {
     $count <= 1 => 'lx-grid-1',
     $count === 2 => 'lx-grid-2',
@@ -62,7 +74,7 @@
 <div class="lx-page">
 
   {{-- 1. HERO: text on the left, the product photo filling a framed card on the right (on phones: photo first) --}}
-  <section class="lx-hero">
+  <section class="lx-hero {{ $rotate ? 'lx-hero-rot' : '' }}">
     <div class="lx-wrap lx-hero-grid">
     <div class="lx-hero-copy">
       <div class="lx-hero-inner">
@@ -190,7 +202,7 @@
                 @endif
               </div>
               <a href="{{ route('product.show', $p) }}" class="lx-card-img">
-                <img src="{{ $p->imageUrl() }}" alt="{{ $p->name }}" loading="{{ $i < 4 ? 'eager' : 'lazy' }}">
+                <img src="{{ $cardImg($p) }}" alt="{{ $p->name }}" loading="{{ $i < 4 ? 'eager' : 'lazy' }}">
               </a>
               <div class="lx-card-body">
                 <a href="{{ route('product.show', $p) }}" class="lx-card-name">{{ $p->name }}</a>
@@ -291,8 +303,12 @@
             @if($L['compare']['heading'])<h2 class="lx-h2">{{ $L['compare']['heading'] }}</h2>@endif
           </div>
           <p class="lx-intro lx-phone-only">Swipe the table sideways to see every wallet.</p>
+          @if($count >= 5)
+            {{-- 5 or more products don't fit side by side on a computer either --}}
+            <p class="lx-intro lx-desk-only">Scroll the table sideways to see every wallet.</p>
+          @endif
         </div>
-        <div class="lx-table-wrap">
+        <div class="lx-table-wrap {{ $count >= 5 ? 'lx-table-many' : '' }}">
           <table class="lx-table" style="--lx-cols: {{ $count }}">
             <thead>
               <tr>

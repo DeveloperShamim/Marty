@@ -716,7 +716,14 @@
     </style>
   </section>
 
-  {{-- Customer Reviews & Feedback Section --}}
+  {{-- Customer Reviews & Feedback Section. In launch mode (Admin → Homepage → Launch mode) a product with no
+       reviews yet leaves it out instead of showing an empty box, unless this customer can write one now. --}}
+  @php
+    $showReviews = ! \App\Support\LaunchMode::isOn() || $reviews->isNotEmpty() || session('status')
+      || $errors->hasAny(['rating', 'author_name', 'author_email', 'title', 'body', 'review_body'])
+      || (auth()->check() && $hasPurchased && ! $alreadyReviewed);
+  @endphp
+  @if($showReviews)
   <section id="reviews" class="mt-10 rounded-2xl border border-stone-200/80 bg-white p-5 sm:p-8 shadow-2xs space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-5">
       <div>
@@ -905,6 +912,7 @@
       </div>
     @endif
   </section>
+  @endif
 
   {{-- Related Products: one row that slides by itself, ending in a See all card --}}
   @if($related->isNotEmpty())

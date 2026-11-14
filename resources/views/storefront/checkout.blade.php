@@ -160,7 +160,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
               <div>
                 <label class="block text-[11px] sm:text-xs font-semibold text-slate-700 mb-1">Full name <span class="text-red-500">*</span></label>
-                <input name="customer_name" value="{{ old('customer_name', $user?->name) }}" required placeholder="e.g. Marty Customer" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
+                <input name="customer_name" value="{{ old('customer_name', $user?->name) }}" required placeholder="e.g. Rahim Uddin" class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-brand-300 focus:border-brand-500 bg-white" />
               </div>
               
               <div>

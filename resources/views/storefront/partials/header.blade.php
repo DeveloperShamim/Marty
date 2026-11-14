@@ -40,7 +40,9 @@
   }
 @endphp
 
-@if($tickerItems->isNotEmpty())
+{{-- Launch mode (Admin → Homepage → Launch mode) leaves the deals ticker out, so the premium launch look isn't
+     topped by a "Hot Deals" bar; it comes back as it was when launch mode is switched off --}}
+@if($tickerItems->isNotEmpty() && ! \App\Support\LaunchMode::isOn())
   @php
     // Each of the two copies must be wider than the widest screen, so short lists are repeated.
     $tickerChars = max(1, mb_strlen(strip_tags($tickerItems->implode(' '))) + 6 * $tickerItems->count());

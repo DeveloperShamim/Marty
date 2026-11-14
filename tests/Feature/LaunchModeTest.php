@@ -166,4 +166,33 @@ class LaunchModeTest extends TestCase
         $this->assertFalse(LaunchMode::config()['hero']['rotate']);
         $this->get('/')->assertDontSee('class="lx-rot"', false)->assertSee('class="lx-hero-card"', false);
     }
+
+    public function test_product_page_leaves_out_the_empty_reviews_box_and_the_deals_ticker_only_in_launch_mode(): void
+    {
+        $p = $this->wallet('Prime Trifold');
+        Setting::put('header_promo_text', 'Use code HELLO for a deal');
+
+        $this->get(route('product.show', $p))->assertOk()
+            ->assertSee('id="reviews"', false)
+            ->assertSee('class="promo-marquee', false);
+
+        LaunchMode::save(['product_ids' => [$p->id]], true);
+        Setting::forgetCache();
+
+        $this->get(route('product.show', $p))->assertOk()
+            ->assertDontSee('id="reviews"', false)
+            ->assertDontSee('class="promo-marquee', false);
+    }
+
+    public function test_desktop_scroll_hint_shows_for_five_or_more_products_only(): void
+    {
+        $ids = collect(range(1, 5))->map(fn ($i) => $this->wallet("Wallet {$i}")->id)->all();
+
+        LaunchMode::save(['product_ids' => array_slice($ids, 0, 4)], true);
+        $this->get('/')->assertOk()->assertDontSee('Scroll the table sideways');
+
+        LaunchMode::save(['product_ids' => $ids], true);
+        Setting::forgetCache();
+        $this->get('/')->assertOk()->assertSee('Scroll the table sideways')->assertSee('lx-table-many', false);
+    }
 }
