@@ -83,7 +83,7 @@
     <div class="max-w-7xl mx-auto pl-1.5 pr-2.5 sm:px-6 py-1.5 sm:py-3 flex items-center justify-between gap-1 sm:gap-6">
 
       {{-- Phones: menu + search on the left --}}
-      <div class="flex items-center shrink-0 lg:hidden">
+      <div class="flex items-center shrink-0 max-md:flex-1 lg:hidden">
         <button type="button" data-open-menu class="text-ink hover:text-brand-600 w-9 h-9 min-[390px]:w-10 min-[390px]:h-10 sm:w-11 sm:h-11 flex items-center justify-center rounded-xl hover:bg-stone-100 active:scale-95 transition-all shrink-0 cursor-pointer" aria-label="Open Menu">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3.5 6h17M6.5 12h14M3.5 18h17"/></svg>
         </button>
@@ -92,8 +92,8 @@
         </button>
       </div>
 
-      {{-- Brand logo: centred between the icons on phones --}}
-      <div class="flex-1 md:flex-none flex justify-center md:justify-start min-w-0">
+      {{-- Brand logo: on phones the icon groups either side take equal space, so the logo sits in the true middle of the screen whatever buttons show --}}
+      <div class="flex-none flex justify-center md:justify-start min-w-0">
         @include('partials.brand', ['compactMobile' => true, 'logoClass' => 'max-[429px]:max-w-[112px] max-[389px]:max-w-[88px] max-[359px]:max-w-[80px] max-[429px]:h-7'])
       </div>
 
@@ -109,11 +109,13 @@
       </form>
 
       {{-- Top Actions: Track Order, Account, Cart --}}
-      <div class="ml-auto flex items-center gap-0.5 sm:gap-4 lg:gap-6 shrink-0">
-        {{-- Flash sale button (all screen sizes) --}}
+      <div class="ml-auto flex items-center max-md:flex-1 max-md:justify-end gap-0.5 sm:gap-4 lg:gap-6 shrink-0">
+        {{-- Flash sale: a round lightning icon on phones (same size as the menu and search icons, so the logo stays clear),
+             the full "Flash Sale" button from tablet up. Hidden on phones on the product page. --}}
         @if($hasFlashSale ?? false)
-          <a href="{{ route('shop', ['flash' => 1]) }}" class="flash-pill mr-2 min-[390px]:mr-3.5 sm:mr-0 inline-flex items-center gap-1 h-8 sm:h-9 px-2 min-[390px]:px-2.5 sm:px-3.5 rounded-lg text-white text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider whitespace-nowrap shrink-0">
-            <span class="max-[359px]:hidden">Flash&nbsp;</span>Sale
+          <a href="{{ route('shop', ['flash' => 1]) }}" data-flash-pill aria-label="Flash Sale" class="flash-pill {{ request()->routeIs('product.show') ? 'max-md:hidden' : '' }} mr-1.5 sm:mr-0 inline-flex items-center justify-center gap-1 w-8 h-8 sm:w-auto sm:h-9 sm:px-3.5 rounded-full sm:rounded-lg text-white text-[11px] font-extrabold uppercase tracking-wider whitespace-nowrap shrink-0">
+            <svg class="sm:hidden w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 2 4.5 13.5h6L9.5 22l9-11.5h-6L13.5 2Z"/></svg>
+            <span class="hidden sm:inline">Flash Sale</span>
           </a>
         @endif
 

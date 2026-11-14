@@ -34,7 +34,7 @@
           $slideBox = $heroWide ? 'lg:aspect-auto' : '';
         @endphp
 
-        <div class="{{ $sliderClasses }} relative rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-center aspect-[15/8] w-full bg-transparent">
+        <div data-hero-main class="{{ $sliderClasses }} relative rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-center aspect-[15/8] w-full bg-transparent">
           @if($heroBanners->count() > 1)
             {{-- Carousel Slider --}}
             <div id="homeHeroSlider" class="relative w-full h-full aspect-[15/8] {{ $slideBox }} overflow-hidden select-none">
@@ -165,7 +165,7 @@
   @endif
   @endif
 
-  <main class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+  <main class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pb-12">
 
     {{-- Sections 3-10 in the owner's order; each one hides itself when it has nothing to show --}}
     @foreach(\App\Support\HomeSections::ordered() as $homeSection)
@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  /* ---------------- 3. Categories Swiper ---------------- */
+  /* ---------------- 3. Categories Swiper (moves only by arrows or swipe; the hero is the one thing that slides by itself) ---------------- */
   if (typeof Swiper !== 'undefined' && document.querySelector('.categoriesSwiper')) {
     new Swiper('.categoriesSwiper', {
       slidesPerView: 3.25,
@@ -292,11 +292,6 @@ document.addEventListener('DOMContentLoaded', function () {
       spaceBetween: 8,
       rewind: true,
       speed: 600,
-      autoplay: {
-        delay: 2800,
-        disableOnInteraction: false,
-        pauseOnMouseEnter: true,
-      },
       watchSlidesProgress: true,
       navigation: {
         nextEl: '#catNext',
@@ -308,6 +303,9 @@ document.addEventListener('DOMContentLoaded', function () {
         640: { slidesPerView: 5, spaceBetween: 12 },
         768: { slidesPerView: 6, spaceBetween: 14 },
         1024: { slidesPerView: 7, spaceBetween: 16 },
+@if(\App\Support\StoreStyle::isWide())
+        1280: { slidesPerView: 8, spaceBetween: 16 }, // Wide page width: one more category in the row
+@endif
       },
     });
   }
@@ -319,11 +317,6 @@ document.addEventListener('DOMContentLoaded', function () {
       spaceBetween: 8,
       rewind: true,
       speed: 600,
-      autoplay: {
-        delay: 3200,
-        disableOnInteraction: false,
-        pauseOnMouseEnter: true,
-      },
       watchSlidesProgress: true,
       navigation: {
         nextEl: '#brandNext',
@@ -359,7 +352,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
-/* ---------------- Coupon 1-Tap Copy & Auto-Apply ---------------- */
+/* ---------------- Coupon: copy the code, and apply it at checkout ---------------- */
+// With something in the cart the shopper goes straight to checkout, where the code is applied.
+// With an empty cart there is no checkout to go to, so the code is copied and kept; checkout applies it later.
 window.applyAndCopyCoupon = function(code) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(code).catch(function() {});
@@ -367,6 +362,16 @@ window.applyAndCopyCoupon = function(code) {
   try {
     sessionStorage.setItem('auto_apply_coupon', code);
   } catch (e) {}
+
+  var badge = document.querySelector('[data-cart-count]');
+  var cartHasItems = !!badge && !badge.classList.contains('hidden') && parseInt(badge.textContent, 10) > 0;
+  if (!cartHasItems) {
+    if (window.showToast) {
+      window.showToast('Code ' + code + ' copied. It applies by itself at checkout.', 'success');
+    }
+    return;
+  }
+
   if (window.showToast) {
     window.showToast('Coupon ' + code + ' copied! Applying at checkout...', 'success');
   }
@@ -374,5 +379,9 @@ window.applyAndCopyCoupon = function(code) {
     window.location.href = "{{ route('checkout.show') }}?coupon=" + encodeURIComponent(code);
   }, 250);
 };
+document.addEventListener('click', function (e) {
+  var btn = e.target.closest('[data-use-coupon]');
+  if (btn) window.applyAndCopyCoupon(btn.getAttribute('data-use-coupon'));
+});
 </script>
 @endpush

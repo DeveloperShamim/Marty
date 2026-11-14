@@ -108,19 +108,59 @@ class HomeLayoutTest extends TestCase
         $this->assertStringContainsString('data-our-picks', $this->get('/')->assertOk()->getContent(), 'An ended sale goes back to Our picks');
     }
 
-    public function test_featured_categories_and_top_selling_have_centred_headings_and_no_subtitles(): void
+    /** Every section uses the one left-aligned heading; none is centred. */
+    public function test_section_headings_share_one_left_aligned_style_and_have_no_subtitles(): void
     {
         $cat = Category::create(['name' => 'Wallets', 'slug' => 'wallets', 'is_active' => true]);
         $this->product($cat, 'Picked Wallet', ['is_featured' => true]);
         \App\Models\Setting::put('home_categories_subtitle', 'Shop our collection by category');
 
         $html = $this->get('/')->assertOk()->getContent();
-        $this->assertSame(2, substr_count($html, 'data-centered-heading'));
+        $this->assertStringNotContainsString('data-centered-heading', $html);
+        $this->assertGreaterThanOrEqual(3, substr_count($html, 'data-home-heading'), 'Categories, Top Selling and Curated');
         $this->assertStringContainsString('Featured Categories', $html);
         $this->assertStringContainsString('Top Selling Products', $html);
         $this->assertStringNotContainsString('Shop our collection by category', $html);
         $this->assertStringNotContainsString('Handpicked for you', $html);
         $this->assertStringNotContainsString('Apply promo codes at checkout', $html);
+    }
+
+    /** A product ticked both Featured and Best seller shows in Top Selling only, while enough other best sellers exist. */
+    public function test_best_sellers_tab_does_not_repeat_top_selling(): void
+    {
+        $cat = Category::create(['name' => 'Wallets', 'slug' => 'wallets', 'is_active' => true]);
+        $this->product($cat, 'Both Wallet', ['is_featured' => true, 'is_best_seller' => true]);
+        foreach (range(1, 4) as $i) $this->product($cat, "Seller $i", ['is_best_seller' => true]);
+
+        $res = $this->get('/')->assertOk();
+        $this->assertSame(['Both Wallet'], $res->viewData('ourPicks')->pluck('name')->all());
+        $best = $res->viewData('bestSellers')->pluck('name');
+        $this->assertCount(4, $best);
+        $this->assertNotContains('Both Wallet', $best->all());
+    }
+
+    /** With too few other best sellers the tab keeps the repeat rather than look half empty. */
+    public function test_best_sellers_tab_keeps_repeats_when_the_catalogue_is_small(): void
+    {
+        $cat = Category::create(['name' => 'Wallets', 'slug' => 'wallets', 'is_active' => true]);
+        $this->product($cat, 'Both Wallet', ['is_featured' => true, 'is_best_seller' => true]);
+        $this->product($cat, 'Seller 1', ['is_best_seller' => true]);
+
+        $this->assertContains('Both Wallet', $this->get('/')->assertOk()->viewData('bestSellers')->pluck('name')->all());
+    }
+
+    /** Category and brand rows move only by arrows or swipe; an empty cart keeps the shopper on the page when a coupon is used. */
+    public function test_rows_do_not_slide_by_themselves_and_coupon_handles_an_empty_cart(): void
+    {
+        $cat = Category::create(['name' => 'Wallets', 'slug' => 'wallets', 'is_active' => true]);
+        $this->product($cat, 'Wallet');
+        \App\Models\Coupon::create(['code' => 'TEN', 'type' => 'percentage', 'value' => 10, 'is_active' => true]);
+
+        $html = $this->get('/')->assertOk()->getContent();
+        $this->assertStringNotContainsString('autoplay:', $html);
+        $this->assertStringContainsString('data-use-coupon="TEN"', $html);
+        $this->assertStringNotContainsString('onclick="applyAndCopyCoupon', $html);
+        $this->assertStringContainsString('It applies by itself at checkout.', $html);
     }
 
     public function test_you_may_also_like_is_one_sliding_row_ending_in_see_all(): void

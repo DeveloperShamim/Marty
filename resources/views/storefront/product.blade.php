@@ -20,6 +20,22 @@
     $isOutOfStock = $product->isOutOfStock();
     $savings = $product->on_sale ? ($product->regular_price - $product->price) : 0;
 
+    // Store-wide lines set in Admin → Store Settings → Delivery; an empty one is not shown
+    $authenticLabel = trim((string) setting('pdp_authentic_label', ''));
+    $qualityBadge = trim((string) setting('pdp_quality_badge', ''));
+    $returnText = trim((string) setting('pdp_return_text', ''));
+    $insideLabel = setting('shipping_inside_label', 'Inside Dhaka');
+    $outsideLabel = setting('shipping_outside_label', 'Outside Dhaka');
+    $insideTime = setting('shipping_inside_time', '1–2 days');
+    $outsideTime = setting('shipping_outside_time', '2–3 days');
+    $codEnabled = (string) setting('pay_cod_enabled', '1') === '1';
+    $onlineMethods = collect(\App\Services\FreeDelivery::ONLINE_METHODS)
+        ->filter(fn ($m) => (string) setting("pay_{$m}_enabled", '1') === '1' && setting("{$m}_number"))
+        ->map(fn ($m) => ['bkash' => 'bKash', 'nagad' => 'Nagad', 'rocket' => 'Rocket'][$m])
+        ->values();
+    $onlineMethodsText = $onlineMethods->join(', ', ' or ');
+    $returnsPage = $returnText !== '' ? \App\Models\Page::published()->where('slug', 'returns')->first() : null;
+
     $brandObj = null;
     if (!empty($product->brand_id)) {
         $brandObj = \App\Models\Brand::find($product->brand_id);
@@ -29,21 +45,54 @@
     }
     if (!$brandObj && is_string($product->brand) && trim($product->brand) !== '') {
         $bName = trim($product->brand);
+        // Look the brand up only; a page view must never create one. An unknown brand shows as plain text.
         $brandObj = \App\Models\Brand::where('name', 'LIKE', $bName)
             ->orWhere('slug', \Illuminate\Support\Str::slug($bName))
             ->first();
-
-        if (!$brandObj) {
-            $brandObj = \App\Models\Brand::create([
-                'name' => $bName,
-                'slug' => \Illuminate\Support\Str::slug($bName),
-                'is_active' => true,
-            ]);
-        }
     }
+
+    // Product data for Google: lets search results show the price, stock and star rating
+    $productUrl = rtrim((string) config('app.url'), '/') . '/' . ltrim(request()->path(), '/');
+    $activeSkus = $product->skus->where('is_active', true);
+    $skuPrices = $activeSkus->map(fn ($s) => (float) $s->getCalculatedSalePrice())->filter(fn ($p) => $p > 0);
+    $currency = strtoupper((string) setting('currency_code', 'BDT'));
+    $availability = 'https://schema.org/' . ($isOutOfStock ? 'OutOfStock' : 'InStock');
+    $offer = $skuPrices->unique()->count() > 1
+        ? [
+            '@type' => 'AggregateOffer',
+            'lowPrice' => number_format($skuPrices->min(), 2, '.', ''),
+            'highPrice' => number_format($skuPrices->max(), 2, '.', ''),
+            'offerCount' => $skuPrices->count(),
+        ]
+        : ['@type' => 'Offer', 'price' => number_format((float) $product->price, 2, '.', '')];
+    $offer += [
+        'priceCurrency' => $currency,
+        'availability' => $availability,
+        'itemCondition' => 'https://schema.org/NewCondition',
+        'url' => $productUrl,
+    ];
+    $galleryUrls = $product->images->map(fn ($i) => $i->url())->filter()->values()->all();
+    $jsonLd = array_filter([
+        '@context' => 'https://schema.org',
+        '@type' => 'Product',
+        'name' => $product->name,
+        'image' => $galleryUrls ?: array_filter([$product->imageUrl()]),
+        'description' => \Illuminate\Support\Str::limit(trim(preg_replace('/\s+/', ' ', strip_tags((string) ($product->meta_description ?: $product->short_description ?: $product->description)))), 500) ?: null,
+        'sku' => $product->sku ?: null,
+        'category' => $product->category?->name,
+        'brand' => ($brandName = $brandObj?->name ?: (is_string($product->brand) ? trim($product->brand) : ''))
+            ? ['@type' => 'Brand', 'name' => $brandName] : null,
+        'offers' => $offer,
+        'aggregateRating' => $ratingCount > 0 ? [
+            '@type' => 'AggregateRating',
+            'ratingValue' => $ratingAvg,
+            'reviewCount' => $ratingCount,
+        ] : null,
+    ]);
 @endphp
 
 @section('content')
+<script type="application/ld+json">{!! json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
 <main class="max-w-7xl mx-auto px-3.5 sm:px-5 lg:px-6 py-4 sm:py-6 pb-28 lg:pb-8">
   <style>[data-selected-val-hint]:empty::after { content: 'Choose one'; color: #a8a29e; font-weight: 500; }</style>
 
@@ -59,13 +108,16 @@
   </nav>
 
   {{-- Main Product Card Container --}}
-  <div class="bg-white rounded-2xl sm:rounded-3xl shadow-[0_2px_24px_-4px_rgba(0,0,0,0.04)] border border-stone-100 p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-6 md:gap-8 lg:gap-12 items-start">
-    {{-- Left: Gallery (Horizontal Thumbnails on Mobile/Tablet, Vertical on Desktop) --}}
-    <div class="flex flex-col-reverse lg:flex-row gap-3 sm:gap-4 items-start w-full lg:w-1/2 shrink-0">
+  {{-- On phones the card has no frame or padding, so the photo uses the full width between the page margins --}}
+  <div class="sm:bg-white sm:rounded-3xl sm:shadow-[0_2px_24px_-4px_rgba(0,0,0,0.04)] sm:border sm:border-stone-100 p-0 sm:p-6 lg:p-8">
+   <div class="flex flex-col lg:flex-row gap-6 md:gap-8 lg:gap-12 items-start">
+    {{-- Left: Gallery (Horizontal Thumbnails on Mobile/Tablet, Vertical on Desktop). On desktop it stays in view while a longer info column scrolls. --}}
+    <div class="flex flex-col-reverse lg:flex-row gap-3 sm:gap-4 lg:gap-2 items-start w-full lg:w-[53%] shrink-0 lg:sticky lg:top-28">
       @if($product->images->count() > 0)
-        <div class="flex lg:flex-col gap-2.5 sm:gap-3 overflow-x-auto lg:overflow-y-auto w-full lg:w-20 shrink-0 pb-1.5 lg:pb-0 max-h-[480px] no-scrollbar">
+        {{-- p-1 leaves room for the ring around the selected thumbnail. Phones use the dots under the photo instead. --}}
+        <div class="{{ $product->images->count() > 1 ? 'hidden sm:flex' : 'flex' }} lg:flex-col gap-2.5 sm:gap-3 overflow-x-auto lg:overflow-y-auto w-full lg:w-[5.5rem] shrink-0 p-1 max-h-[480px] no-scrollbar">
           @foreach($product->images as $img)
-            <button type="button" data-thumb="{{ $img->url() }}" data-color="{{ strtolower(trim($img->color ?? '')) }}" data-variation-tag="{{ strtolower(trim($img->color ?? '')) }}" data-alt="{{ strtolower(trim($img->alt ?? '')) }}" class="gallery-thumb-btn relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl sm:rounded-2xl {{ $loop->first ? 'opacity-100 shadow-md scale-100' : 'opacity-40 hover:opacity-80 scale-95 hover:scale-100' }} shrink-0 overflow-hidden transition-all duration-300 focus:outline-none focus:ring-0 active:outline-none border-0 outline-none cursor-pointer p-0 block bg-transparent">
+            <button type="button" data-thumb="{{ $img->url() }}" data-color="{{ strtolower(trim($img->color ?? '')) }}" data-variation-tag="{{ strtolower(trim($img->color ?? '')) }}" data-alt="{{ strtolower(trim($img->alt ?? '')) }}" class="gallery-thumb-btn relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl sm:rounded-2xl {{ $loop->first ? 'opacity-100 ring-2 ring-stone-900 ring-offset-1' : 'opacity-75' }} hover:opacity-100 shrink-0 overflow-hidden transition-all duration-300 focus:outline-none active:outline-none border-0 outline-none cursor-pointer p-0 block bg-transparent">
               <img src="{{ $img->url() }}" loading="lazy" decoding="async" class="w-full h-full object-cover pointer-events-none block" alt="{{ $img->alt }}">
             </button>
           @endforeach
@@ -92,17 +144,26 @@
 
         {{-- Mobile & Tablet Image Counter Pill --}}
         @if($product->images->count() > 1)
-          <div id="galleryCounterPill" class="absolute bottom-3.5 left-3.5 z-10 bg-stone-950/60 backdrop-blur-md text-white/95 px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-wider font-mono pointer-events-none shadow-sm">
+          <div id="galleryCounterPill" class="hidden sm:block absolute bottom-3.5 left-3.5 z-10 bg-stone-950/60 backdrop-blur-md text-white/95 px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-wider font-mono pointer-events-none shadow-sm">
             <span id="galleryCurrentIdx">1</span> / {{ $product->images->count() }}
           </div>
         @endif
 
-        {{-- Smooth Borderless Nav Arrows --}}
+        {{-- Phones: dots show there are more photos (swipe or tap a dot); they follow the active photo --}}
         @if($product->images->count() > 1)
-          <button type="button" id="pdPrevImg" class="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/85 hover:bg-white backdrop-blur-md shadow-md text-stone-800 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer border-0" aria-label="Previous Image">
+          <div class="sm:hidden absolute bottom-3 inset-x-0 z-10 flex justify-center gap-1.5" data-gallery-dots>
+            @foreach($product->images as $img)
+              <button type="button" data-dot="{{ $loop->index }}" class="h-1.5 rounded-full transition-all duration-300 shadow-sm {{ $loop->first ? 'w-5 bg-white' : 'w-1.5 bg-white/60' }}" aria-label="Photo {{ $loop->iteration }}"></button>
+            @endforeach
+          </div>
+        @endif
+
+        {{-- Arrows: desktop and tablet only (on hover); phones swipe or use the dots --}}
+        @if($product->images->count() > 1)
+          <button type="button" id="pdPrevImg" class="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/85 hover:bg-white backdrop-blur-md shadow-md text-stone-800 items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer border-0" aria-label="Previous Image">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
           </button>
-          <button type="button" id="pdNextImg" class="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/85 hover:bg-white backdrop-blur-md shadow-md text-stone-800 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer border-0" aria-label="Next Image">
+          <button type="button" id="pdNextImg" class="hidden sm:flex absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/85 hover:bg-white backdrop-blur-md shadow-md text-stone-800 items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer border-0" aria-label="Next Image">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
           </button>
         @endif
@@ -113,12 +174,12 @@
           <span>Zoom</span>
         </div>
 
-        <img id="galleryMain" data-gallery-main src="{{ $product->imageUrl() }}" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 select-none {{ $isOutOfStock ? 'opacity-70 grayscale-[30%]' : '' }}" alt="{{ $product->name }}" />
+        <img id="galleryMain" data-gallery-main src="{{ $product->imageUrl() }}" loading="eager" fetchpriority="high" decoding="async" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 select-none {{ $isOutOfStock ? 'opacity-70 grayscale-[30%]' : '' }}" alt="{{ $product->name }}" />
       </div>
     </div>
 
     {{-- Right: Modern Clean Product Info Panel --}}
-    <div class="w-full lg:w-1/2 space-y-4">
+    <div class="w-full lg:flex-1 min-w-0 space-y-4">
       <div>
         {{-- Clean Category & Stock Line --}}
         <div class="flex items-center justify-between gap-3 text-xs text-stone-500 font-medium pb-1.5">
@@ -135,17 +196,18 @@
             @endif
           </div>
 
-          <div>
+          <div id="pdStockLine">
+            {{-- Same pill markup as the script in syncPdpVariantStockAndPrice() writes when a variation is picked --}}
             @if($isOutOfStock)
-              <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600">
+              <span class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full">
                 <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Out of Stock
               </span>
             @elseif($product->stock_quantity > 0 && $product->stock_quantity <= 5)
-              <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600">
+              <span class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full">
                 <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Only {{ $product->stock_quantity }} Left
               </span>
             @else
-              <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+              <span class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> In Stock
               </span>
             @endif
@@ -155,12 +217,26 @@
         {{-- Product Title --}}
         <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-stone-900 tracking-tight leading-snug">{{ $product->name }}</h1>
 
+        {{-- Star rating: only once there is at least one approved review --}}
+        @if($ratingCount > 0)
+          <a href="#reviews" class="inline-flex items-center gap-1.5 mt-1.5 text-xs sm:text-sm text-stone-600 hover:text-stone-900 transition-colors" data-pdp-rating>
+            <span class="text-amber-400 tracking-tight" aria-hidden="true">@for($s = 1; $s <= 5; $s++){{ $s <= round($ratingAvg) ? '★' : '☆' }}@endfor</span>
+            <span class="font-bold text-stone-900">{{ number_format($ratingAvg, 1) }}</span>
+            <span class="underline underline-offset-2">({{ $ratingCount }} {{ $ratingCount === 1 ? 'review' : 'reviews' }})</span>
+          </a>
+        @endif
+
         {{-- Authentic & SKU Row --}}
         <div class="flex items-center gap-2 sm:gap-2.5 mt-1.5 sm:mt-2 text-xs text-stone-500 flex-wrap">
-          <span class="text-emerald-700 font-medium">✓ Verified Authentic</span>
+          @if($authenticLabel !== '')
+            <span class="inline-flex items-center gap-1 text-[13px] text-emerald-700 font-semibold" data-pdp-authentic>
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              {{ $authenticLabel }}
+            </span>
+          @endif
           @if($product->sku)
-            <span class="text-stone-300">·</span>
-            <span class="text-stone-400">SKU: <span class="font-mono text-stone-600">{{ $product->sku }}</span></span>
+            @if($authenticLabel !== '')<span class="text-stone-300">·</span>@endif
+            <span class="text-stone-500">SKU: <span class="font-mono text-stone-700">{{ $product->sku }}</span></span>
           @endif
         </div>
 
@@ -238,8 +314,8 @@
 
           {{-- Balanced 50/50 CTA Buttons Grid --}}
           <div id="mainProductActions" class="flex items-center gap-2.5 sm:gap-3 flex-1">
-            {{-- Add to Cart (Brand Colored) --}}
-            <button type="button" id="pdAddToCart" data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" class="flex-1 h-11 sm:h-12 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider cursor-pointer select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
+            {{-- Add to Cart: outlined, so the solid Order Now beside it is the main action --}}
+            <button type="button" id="pdAddToCart" data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" class="flex-1 h-11 sm:h-12 bg-white hover:bg-brand-50 border-2 border-brand-600 disabled:border-stone-200 active:scale-[0.98] text-brand-700 font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider cursor-pointer select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
               <svg class="w-4 h-4 shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
               <span id="pdAddToCartText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : setting('default_cta_text', 'ADD TO CART') }}</span>
             </button>
@@ -252,7 +328,7 @@
         </div>
 
         @if($whatsapp)
-          <a href="https://wa.me/{{ $whatsapp }}?text={{ urlencode('Hi, I want to inquire about: '.$product->name.' - '.url()->current()) }}" target="_blank" rel="noopener" class="w-full h-10 sm:h-11 bg-white hover:bg-stone-50 border border-stone-200 hover:border-stone-300 text-stone-800 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm">
+          <a href="https://wa.me/{{ $whatsapp }}?text={{ urlencode('Hi, I want to inquire about: '.$product->name.' - '.url()->current()) }}" target="_blank" rel="noopener" class="w-full h-10 sm:h-11 bg-white hover:bg-emerald-50 border-2 border-emerald-500 text-emerald-700 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm" data-pdp-whatsapp>
             <svg class="w-4 h-4 text-emerald-600 fill-current shrink-0" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-1.147 4.19 4.18-1.096z"/></svg>
             <span>Order or Inquire on WhatsApp</span>
           </a>
@@ -264,17 +340,30 @@
         $fdOffer = \App\Services\FreeDelivery::config();
         $onlineFree = ! $product->free_delivery && $fdOffer['online_enabled'] && \App\Services\FreeDelivery::onlinePaymentAvailable();
       @endphp
-      <div class="mt-1 rounded-xl border border-stone-200 divide-y divide-stone-100 text-xs sm:text-sm">
+      {{-- Phones: folded to one tappable line so the first screen stays on photo, price and buying.
+           Desktop: always open (the summary line is hidden there). --}}
+      @php
+        $deliverySummary = $product->free_delivery
+            ? 'Free on this product'
+            : 'from ' . money(min((float) setting('shipping_inside_dhaka', 60), (float) setting('shipping_outside_dhaka', 120))) . ' · ' . $insideTime;
+      @endphp
+      <details open class="mt-1 rounded-xl border border-stone-200 text-xs sm:text-sm group/fold" data-pdp-fold>
+        <summary class="lg:hidden flex items-center gap-3 px-3.5 py-3 cursor-pointer list-none select-none [&::-webkit-details-marker]:hidden">
+          <svg class="w-5 h-5 text-stone-500 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <span class="flex-1 min-w-0 truncate"><b class="font-semibold text-stone-900">Delivery</b> <span class="text-stone-600">· {{ $deliverySummary }}</span>@if($onlineFree)<span class="text-emerald-700"> · free with {{ $onlineMethodsText }}</span>@endif</span>
+          <svg class="w-4 h-4 text-stone-400 shrink-0 transition-transform group-open/fold:rotate-180" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        </summary>
+      <div class="divide-y divide-stone-100 max-lg:border-t max-lg:border-stone-100">
         <div class="flex items-start gap-3 px-3.5 py-3">
-          <svg class="w-5 h-5 text-stone-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+          <svg class="max-lg:hidden w-5 h-5 text-stone-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
           <div class="min-w-0 flex-1">
-            <p class="font-semibold text-stone-900">Delivery</p>
+            <p class="max-lg:hidden font-semibold text-stone-900">Delivery</p>
             @if($product->free_delivery)
               <p class="text-emerald-700 font-semibold mt-0.5">Free delivery on this product, anywhere in Bangladesh</p>
             @else
               <dl class="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-stone-600">
-                <dt>{{ setting('shipping_inside_label', 'Inside Dhaka') }}</dt><dd><b class="text-stone-900">{{ money(setting('shipping_inside_dhaka', 60)) }}</b> · 1–2 days</dd>
-                <dt>{{ setting('shipping_outside_label', 'Outside Dhaka') }}</dt><dd><b class="text-stone-900">{{ money(setting('shipping_outside_dhaka', 120)) }}</b> · 2–3 days</dd>
+                <dt>{{ $insideLabel }}</dt><dd><b class="text-stone-900">{{ money(setting('shipping_inside_dhaka', 60)) }}</b> · {{ $insideTime }}</dd>
+                <dt>{{ $outsideLabel }}</dt><dd><b class="text-stone-900">{{ money(setting('shipping_outside_dhaka', 120)) }}</b> · {{ $outsideTime }}</dd>
               </dl>
             @endif
           </div>
@@ -282,19 +371,30 @@
         @if($onlineFree)
           <div class="flex items-start gap-3 px-3.5 py-2.5 text-emerald-800">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
-            <span>Free delivery when you pay with bKash, Nagad or Rocket{{ $fdOffer['online_min'] > 0 ? ' on orders of ' . money($fdOffer['online_min']) . ' or more' : '' }}{{ $fdOffer['online_zones'] === 'inside_dhaka' ? ' (inside Dhaka)' : ($fdOffer['online_zones'] === 'outside_dhaka' ? ' (outside Dhaka)' : '') }}</span>
+            {{-- A product that already meets the minimum says so plainly, instead of quoting the minimum --}}
+            @php $fdQualifies = $fdOffer['online_min'] > 0 && (float) $product->price >= (float) $fdOffer['online_min']; @endphp
+            <span data-pdp-online-free>Free delivery{{ $fdQualifies ? ' on this product' : '' }} when you pay with {{ $onlineMethodsText }}{{ $fdOffer['online_min'] > 0 && ! $fdQualifies ? ' on orders of ' . money($fdOffer['online_min']) . ' or more' : '' }}{{ $fdOffer['online_zones'] === 'inside_dhaka' ? ' (inside Dhaka)' : ($fdOffer['online_zones'] === 'outside_dhaka' ? ' (outside Dhaka)' : '') }}</span>
           </div>
         @endif
       </div>
+      </details>
+      {{-- Close the fold on phones before the page paints; desktop keeps it open, also after the window is widened --}}
+      <script>(function (fold, mq) {
+        if (!mq.matches) fold.removeAttribute('open');
+        mq.addEventListener('change', function (e) { if (e.matches) fold.setAttribute('open', ''); });
+      })(document.currentScript.previousElementSibling, window.matchMedia('(min-width: 1024px)'));</script>
 
       {{-- Trust points: short, never cut off --}}
-      <ul class="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-2.5 pt-3 text-xs text-stone-700">
-        @foreach([
-          ['Genuine leather', 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'],
-          ['Cash on delivery', 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
-          ['7-day return', 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'],
+      @php
+        $trustPoints = array_values(array_filter([
+          $qualityBadge !== '' ? [$qualityBadge, 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'] : null,
+          $codEnabled ? ['Cash on delivery', 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'] : null,
+          $returnText !== '' ? [$returnText, 'M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'] : null,
           ['Fast delivery', 'M13 10V3L4 14h7v7l9-11h-7z'],
-        ] as [$label, $path])
+        ]));
+      @endphp
+      <ul class="grid grid-cols-2 sm:flex sm:flex-wrap gap-x-3 sm:gap-x-5 gap-y-2.5 pt-3 text-xs text-stone-700">
+        @foreach($trustPoints as [$label, $path])
           <li class="flex items-center gap-2 min-w-0">
             <svg class="w-4 h-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $path }}"/></svg>
             <span class="leading-tight">{{ $label }}</span>
@@ -302,21 +402,26 @@
         @endforeach
       </ul>
 
-      {{-- Bullet Highlights --}}
-      @if($bulletSpecs->isNotEmpty())
-        <div class="pt-3 border-t border-stone-100">
-          <p class="text-xs font-bold uppercase tracking-wider text-stone-400 mb-2">Key Highlights</p>
-          <ul class="grid grid-cols-1 {{ count($bulletSpecs) > 1 ? 'sm:grid-cols-2' : '' }} gap-x-4 gap-y-2 text-[13px] sm:text-sm text-stone-700">
-            @foreach($bulletSpecs as $bullet)
-              <li class="flex items-start gap-2">
-                <svg class="w-4 h-4 mt-px shrink-0 text-brand-600" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                <span class="leading-snug">{{ $bullet }}</span>
-              </li>
-            @endforeach
-          </ul>
-        </div>
-      @endif
     </div>
+   </div>
+
+    {{-- Highlights: full width under the photo and the info, so neither column is left with a blank area.
+         Two or more points make a ticked list; a single line is shown as a plain sentence. --}}
+    @if($bulletSpecs->count() > 1)
+      <div class="mt-5 sm:mt-6 pt-4 sm:pt-5 border-t border-stone-100" data-pdp-highlights>
+        <p class="text-xs font-bold uppercase tracking-wider text-stone-400 mb-2.5">Key Highlights</p>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2 text-[13px] sm:text-sm text-stone-700">
+          @foreach($bulletSpecs as $bullet)
+            <li class="flex items-start gap-2">
+              <svg class="w-4 h-4 mt-px shrink-0 text-brand-600" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              <span class="leading-snug">{{ $bullet }}</span>
+            </li>
+          @endforeach
+        </ul>
+      </div>
+    @elseif($bulletSpecs->count() === 1)
+      <p class="mt-5 sm:mt-6 pt-4 sm:pt-5 border-t border-stone-100 text-sm text-stone-600 leading-relaxed" data-pdp-summary>{{ $bulletSpecs->first() }}</p>
+    @endif
   </div>
 
   {{-- Luxury Product Information & Specifications Section --}}
@@ -350,11 +455,11 @@
     <div id="pdpTabPaneDescription" class="pdp-tab-pane space-y-5">
       @if($product->description)
         @if(strip_tags($product->description) !== $product->description)
-          <div class="product-rich-description prose prose-stone max-w-none text-stone-700 leading-relaxed text-xs sm:text-sm md:text-base space-y-4">
+          <div class="product-rich-description prose prose-stone max-w-none text-stone-700 leading-relaxed text-sm md:text-base space-y-4">
             {!! \App\Support\SafeHtml::clean($product->description) !!}
           </div>
         @else
-          <div class="text-stone-700 leading-relaxed max-w-4xl space-y-3.5 text-xs sm:text-sm md:text-base">
+          <div class="text-stone-700 leading-relaxed max-w-4xl space-y-3.5 text-sm md:text-base">
             @foreach(preg_split('/\n\n+/', (string) $product->description) as $para)
               @if(trim($para))<p>{{ $para }}</p>@endif
             @endforeach
@@ -414,35 +519,42 @@
 
     {{-- Tab 3: Shipping & Warranty --}}
     <div id="pdpTabPaneDelivery" class="pdp-tab-pane hidden space-y-4">
+      {{-- Every card reads the same settings as the delivery box above, so the two never disagree --}}
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
-        <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-extrabold text-sm">✓</div>
-          <div>
-            <h4 class="text-sm font-bold text-stone-900 mb-0.5">100% Verified Authentic</h4>
-            <p class="text-xs text-stone-500 leading-relaxed">Direct genuine source with complete packaging, serial verification and official standards.</p>
+        @if($authenticLabel !== '')
+          <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-white border border-stone-200 text-brand-600 flex items-center justify-center shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div>
+            <div>
+              <h4 class="text-sm font-bold text-stone-900 mb-0.5">{{ $authenticLabel }}</h4>
+              <p class="text-xs text-stone-500 leading-relaxed">Checked by our team and packed with care before it leaves us.</p>
+            </div>
           </div>
-        </div>
+        @endif
         <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 font-extrabold text-sm">🚚</div>
-          <div>
-            <h4 class="text-sm font-bold text-stone-900 mb-0.5">Fast Nationwide Delivery</h4>
-            <p class="text-xs text-stone-500 leading-relaxed">24–48 hours inside Dhaka Metro and 48–72 hours across all 64 districts with live tracking updates.</p>
+            <div class="w-10 h-10 rounded-xl bg-white border border-stone-200 text-brand-600 flex items-center justify-center shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+            <div>
+              <h4 class="text-sm font-bold text-stone-900 mb-0.5">Delivery</h4>
+              <p class="text-xs text-stone-500 leading-relaxed">@if($product->free_delivery)Free delivery on this product. @endif{{ $insideLabel }}: {{ $insideTime }}@unless($product->free_delivery) ({{ money(setting('shipping_inside_dhaka', 60)) }})@endunless. {{ $outsideLabel }}: {{ $outsideTime }}@unless($product->free_delivery) ({{ money(setting('shipping_outside_dhaka', 120)) }})@endunless.</p>
+            </div>
           </div>
-        </div>
-        <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 font-extrabold text-sm">💳</div>
-          <div>
-            <h4 class="text-sm font-bold text-stone-900 mb-0.5">Cash on Delivery &amp; Mobile Pay</h4>
-            <p class="text-xs text-stone-500 leading-relaxed">Inspect your package upon arrival. Pay cash on delivery or instant bKash, Nagad, or Cards.</p>
+        @if($codEnabled || $onlineMethods->isNotEmpty())
+          <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-white border border-stone-200 text-brand-600 flex items-center justify-center shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg></div>
+            <div>
+              <h4 class="text-sm font-bold text-stone-900 mb-0.5">Payment</h4>
+              <p class="text-xs text-stone-500 leading-relaxed">@if($codEnabled)Pay cash when your order arrives{{ $onlineMethods->isNotEmpty() ? ', or pay with ' . $onlineMethodsText : '' }}.@else Pay with {{ $onlineMethodsText }}.@endif</p>
+            </div>
           </div>
-        </div>
-        <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
-          <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0 font-extrabold text-sm">🔄</div>
-          <div>
-            <h4 class="text-sm font-bold text-stone-900 mb-0.5">7-Day Replacement Support</h4>
-            <p class="text-xs text-stone-500 leading-relaxed">In the rare event of transit damage or manufacturing defect, our support team replaces it immediately.</p>
+        @endif
+        @if($returnText !== '')
+          <div class="p-4 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-start gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-white border border-stone-200 text-brand-600 flex items-center justify-center shrink-0"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></div>
+            <div>
+              <h4 class="text-sm font-bold text-stone-900 mb-0.5">{{ $returnText }}</h4>
+              <p class="text-xs text-stone-500 leading-relaxed">Something wrong with your order? Tell us and we will sort it out.@if($returnsPage) <a href="{{ route('page', $returnsPage->slug) }}" class="underline underline-offset-2 hover:text-stone-800">Read the return policy</a>@endif</p>
+            </div>
           </div>
-        </div>
+        @endif
       </div>
     </div>
 
@@ -516,6 +628,15 @@
       .product-rich-description .desc-media-toolbar {
         display: none !important;
       }
+
+      /* "Choose a colour first": a short shake on the option group (added by storefront.js) */
+      @keyframes pdpAttn {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-6px); }
+        40%, 80% { transform: translateX(6px); }
+      }
+      .pdp-attn { animation: pdpAttn .45s ease-in-out 2; }
+      @media (prefers-reduced-motion: reduce) { .pdp-attn { animation: none; } }
 
       /* Eye-Catching Shimmer & Breathing Motion on BUY NOW Button */
       @keyframes buyNowShimmer {
@@ -596,11 +717,18 @@
   </section>
 
   {{-- Customer Reviews & Feedback Section --}}
-  <section id="reviews" class="mt-10 rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-8 shadow-2xs space-y-6">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+  <section id="reviews" class="mt-10 rounded-2xl border border-stone-200/80 bg-white p-5 sm:p-8 shadow-2xs space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-stone-100 pb-5">
       <div>
         <h2 class="text-lg sm:text-xl font-bold text-stone-900 tracking-tight">Customer reviews</h2>
         <p class="text-xs sm:text-sm text-stone-500 mt-0.5">From buyers who purchased this product</p>
+        @if($ratingCount > 0)
+          <p class="flex items-center gap-2 mt-2" data-reviews-summary>
+            <span class="text-2xl font-black text-stone-900 leading-none">{{ number_format($ratingAvg, 1) }}</span>
+            <span class="text-amber-400 text-base tracking-tight" aria-hidden="true">@for($s = 1; $s <= 5; $s++){{ $s <= round($ratingAvg) ? '★' : '☆' }}@endfor</span>
+            <span class="text-xs sm:text-sm text-stone-500">out of 5 · {{ $ratingCount }} {{ $ratingCount === 1 ? 'review' : 'reviews' }}</span>
+          </p>
+        @endif
       </div>
 
       <div class="flex items-center gap-3">
@@ -609,9 +737,14 @@
             ✓ Feedback Submitted
           </span>
         @elseif(auth()->check() && ! $hasPurchased)
-          <span class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-50 text-slate-500 border border-slate-200 text-xs font-medium" title="Only customers who purchased this item can leave a review">
+          <span class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-50 text-stone-500 border border-stone-200 text-xs font-medium" title="Only customers who purchased this item can leave a review">
             🔒 Verified Buyers Only
           </span>
+        @elseif(! auth()->check())
+          {{-- Posting a review needs an account, so a guest is sent to log in instead of filling a form that cannot be sent --}}
+          <a href="{{ route('login') }}" class="inline-flex items-center gap-2 rounded-xl bg-white hover:bg-stone-50 border border-stone-200 hover:border-stone-300 text-stone-800 font-bold text-xs sm:text-sm px-4 py-2.5 transition-all" data-review-login>
+            Log in to write a review
+          </a>
         @else
           <button type="button" id="toggleReviewFormBtn" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm px-4 py-2.5 shadow-2xs transition-all cursor-pointer">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -628,16 +761,17 @@
     @endif
 
     {{-- Review Submission Form (Classic Card) --}}
-    <div id="reviewFormDrawer" class="{{ $errors->has('review_body') ? '' : 'hidden' }} rounded-2xl bg-white border border-slate-200/90 p-5 sm:p-7 shadow-xs space-y-5">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+    @php $reviewFields = ['rating', 'author_name', 'author_email', 'title', 'body']; @endphp
+    <div id="reviewFormDrawer" class="{{ $errors->hasAny(array_merge($reviewFields, ['review_body'])) ? '' : 'hidden' }} rounded-2xl bg-white border border-stone-200/90 p-5 sm:p-7 shadow-xs space-y-5">
+      <div class="flex items-center justify-between border-b border-stone-100 pb-4">
         <div>
-          <h3 class="font-extrabold text-base sm:text-lg text-slate-900 flex items-center gap-2">
+          <h3 class="font-extrabold text-base sm:text-lg text-stone-900 flex items-center gap-2">
             <span class="w-1.5 h-4 bg-brand-600 rounded-full"></span>
             <span>Write a Customer Review</span>
           </h3>
-          <p class="text-xs text-slate-500 mt-0.5">Please share your honest feedback about this product</p>
+          <p class="text-xs text-stone-500 mt-0.5">Please share your honest feedback about this product</p>
         </div>
-        <button type="button" id="closeReviewFormBtn" class="inline-flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
+        <button type="button" id="closeReviewFormBtn" class="inline-flex items-center gap-1 text-xs font-bold text-stone-500 hover:text-stone-800 bg-stone-100 hover:bg-stone-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer">
           <span>Cancel</span> ✕
         </button>
       </div>
@@ -645,9 +779,20 @@
       <form method="POST" action="{{ route('product.reviews.store', $product) }}" class="space-y-4">
         @csrf
 
+        {{-- Anything wrong with the form is listed here, so the form never closes without saying why --}}
+        @if($errors->hasAny($reviewFields))
+          <ul class="text-xs text-red-600 font-semibold bg-red-50 border border-red-200 p-2.5 rounded-xl space-y-1" data-review-errors>
+            @foreach($reviewFields as $reviewField)
+              @foreach($errors->get($reviewField) as $reviewError)
+                <li>{{ $reviewError }}</li>
+              @endforeach
+            @endforeach
+          </ul>
+        @endif
+
         {{-- Classic Interactive Star Rating --}}
         <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+          <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
             Rating <span class="text-red-500">*</span>
           </label>
           <input type="hidden" name="rating" id="reviewRatingInput" value="{{ old('rating', 5) }}">
@@ -655,8 +800,8 @@
           <div class="flex flex-wrap items-center gap-3">
             <div class="flex items-center gap-1" id="starRatingContainer">
               @for($i = 1; $i <= 5; $i++)
-                <button type="button" data-star-value="{{ $i }}" class="star-rating-btn p-1 text-slate-200 hover:scale-110 transition-transform focus:outline-none cursor-pointer" aria-label="{{ $i }} Stars">
-                  <svg class="w-7 h-7 star-svg {{ $i <= old('rating', 5) ? 'text-amber-400 fill-amber-400' : 'text-slate-200 fill-slate-200' }}" viewBox="0 0 20 20">
+                <button type="button" data-star-value="{{ $i }}" class="star-rating-btn p-1 text-stone-200 hover:scale-110 transition-transform focus:outline-none cursor-pointer" aria-label="{{ $i }} Stars">
+                  <svg class="w-7 h-7 star-svg {{ $i <= old('rating', 5) ? 'text-amber-400 fill-amber-400' : 'text-stone-200 fill-stone-200' }}" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                   </svg>
                 </button>
@@ -671,25 +816,25 @@
         {{-- Author Name & Email (No Headline Field) --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+            <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
               Your Name <span class="text-red-500">*</span>
             </label>
-            <input name="author_name" value="{{ old('author_name', auth()->user()?->name) }}" required placeholder="e.g. Asif Chowdhury" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 focus:border-brand-500 focus:ring-2 focus:ring-brand-200/50 focus:outline-none transition-all" />
+            <input name="author_name" value="{{ old('author_name', auth()->user()?->name) }}" required placeholder="e.g. Asif Chowdhury" class="w-full rounded-xl border border-stone-200 bg-stone-50/50 hover:bg-white focus:bg-white px-3.5 py-2.5 text-xs sm:text-sm text-stone-800 focus:border-brand-500 focus:ring-2 focus:ring-brand-200/50 focus:outline-none transition-all" />
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+            <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
               Checkout Email <span class="text-red-500">*</span>
             </label>
-            <input type="email" name="author_email" value="{{ old('author_email', auth()->user()?->email) }}" required placeholder="Enter email used when ordering" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 focus:border-brand-500 focus:ring-2 focus:ring-brand-200/50 focus:outline-none transition-all" />
+            <input type="email" name="author_email" value="{{ old('author_email', auth()->user()?->email) }}" required placeholder="Enter email used when ordering" class="w-full rounded-xl border border-stone-200 bg-stone-50/50 hover:bg-white focus:bg-white px-3.5 py-2.5 text-xs sm:text-sm text-stone-800 focus:border-brand-500 focus:ring-2 focus:ring-brand-200/50 focus:outline-none transition-all" />
           </div>
         </div>
 
         {{-- Feedback Body --}}
         <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+          <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
             Your Review <span class="text-red-500">*</span>
           </label>
-          <textarea name="body" rows="4" required placeholder="Write your review here. What did you think about the product quality, fit, and delivery?" class="w-full rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-white focus:bg-white px-3.5 py-2.5 text-xs sm:text-sm text-slate-800 focus:border-brand-500 focus:ring-2 focus:ring-brand-200/50 focus:outline-none transition-all">{{ old('body') }}</textarea>
+          <textarea name="body" rows="4" required placeholder="Write your review here. What did you think about the product quality, fit, and delivery?" class="w-full rounded-xl border border-stone-200 bg-stone-50/50 hover:bg-white focus:bg-white px-3.5 py-2.5 text-xs sm:text-sm text-stone-800 focus:border-brand-500 focus:ring-2 focus:ring-brand-200/50 focus:outline-none transition-all">{{ old('body') }}</textarea>
           @error('review_body')
             <p class="text-xs text-red-600 mt-1.5 font-semibold flex items-center gap-1.5 bg-red-50 border border-red-200 p-2.5 rounded-xl">
               <span>⚠️</span> <span>{{ $message }}</span>
@@ -698,8 +843,8 @@
         </div>
 
         {{-- Submit Button --}}
-        <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-          <span class="text-[11px] text-slate-400 flex items-center gap-1">
+        <div class="flex items-center justify-between pt-2 border-t border-stone-100">
+          <span class="text-[11px] text-stone-400 flex items-center gap-1">
             <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
             Verified purchase check enabled
           </span>
@@ -714,31 +859,31 @@
     @if($reviews->isNotEmpty())
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @foreach($reviews as $rev)
-          <div class="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-2xs space-y-3">
+          <div class="rounded-2xl border border-stone-200/80 bg-white p-4 sm:p-5 shadow-2xs space-y-3">
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-1 text-amber-400 text-sm">
                 @php $rScore = (int) ($rev->rating ?: 5); @endphp
                 @for($s = 1; $s <= 5; $s++)
                   <span>{{ $s <= $rScore ? '★' : '☆' }}</span>
                 @endfor
-                <span class="text-xs font-bold text-slate-700 ml-1">{{ $rScore }}.0</span>
+                <span class="text-xs font-bold text-stone-700 ml-1">{{ $rScore }}.0</span>
               </div>
-              <span class="text-[11px] text-slate-400">{{ $rev->created_at?->diffForHumans() ?? 'Recent' }}</span>
+              <span class="text-[11px] text-stone-400">{{ $rev->created_at?->diffForHumans() ?? 'Recent' }}</span>
             </div>
 
             @if($rev->title)
-              <h4 class="font-extrabold text-sm text-slate-900 leading-snug">{{ $rev->title }}</h4>
+              <h4 class="font-extrabold text-sm text-stone-900 leading-snug">{{ $rev->title }}</h4>
             @endif
 
-            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+            <p class="text-xs sm:text-sm text-stone-600 leading-relaxed font-normal">
               “{{ $rev->body }}”
             </p>
 
-            <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+            <div class="flex items-center gap-2 pt-2 border-t border-stone-100">
               <div class="h-7 w-7 rounded-full bg-brand-50 text-brand-700 font-extrabold text-[11px] grid place-items-center shrink-0 border border-brand-200">
                 {{ mb_strtoupper(mb_substr($rev->author_name, 0, 1)) }}
               </div>
-              <span class="font-bold text-xs text-slate-800">{{ $rev->author_name }}</span>
+              <span class="font-bold text-xs text-stone-800">{{ $rev->author_name }}</span>
               <span class="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/70">
                 ✓ Verified
               </span>
@@ -753,10 +898,10 @@
         </div>
       @endif
     @else
-      <div class="rounded-2xl border border-dashed border-slate-200 p-8 text-center space-y-2">
+      <div class="rounded-2xl border border-dashed border-stone-200 p-8 text-center space-y-2">
         <div class="text-2xl">💬</div>
-        <h4 class="font-bold text-sm text-slate-800">No customer reviews yet</h4>
-        <p class="text-xs text-slate-500">Have you purchased this product? Be the first to share your feedback!</p>
+        <h4 class="font-bold text-sm text-stone-800">No customer reviews yet</h4>
+        <p class="text-xs text-stone-500">Have you purchased this product? Be the first to share your feedback!</p>
       </div>
     @endif
   </section>
@@ -769,12 +914,12 @@
       </div>
       <div class="flex gap-2.5 sm:gap-4 overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth scroll-px-3 sm:scroll-px-0 -mx-3 px-3 sm:mx-0 sm:px-0 pb-1" data-auto-row>
         @foreach($related as $rel)
-          <div class="w-[calc((100%-0.625rem)/2)] shrink-0 snap-start sm:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-3rem)/4)] grid min-w-0">
+          <div class="prow-item w-[calc((100%-0.625rem)/2)] shrink-0 snap-start sm:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-3rem)/4)] grid min-w-0">
             @include('storefront.partials.product-card', ['product' => $rel])
           </div>
         @endforeach
         @if($product->category)
-          <a href="{{ route('shop.category', $product->category) }}" class="w-[calc((100%-0.625rem)/2)] shrink-0 snap-start sm:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-3rem)/4)] flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-stone-300 bg-stone-50/80 hover:border-brand-500/50 text-stone-800 hover:text-brand-600 transition-colors p-4 text-center" data-row-see-all>
+          <a href="{{ route('shop.category', $product->category) }}" class="prow-item w-[calc((100%-0.625rem)/2)] shrink-0 snap-start sm:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-3rem)/4)] flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-stone-300 bg-stone-50/80 hover:border-brand-500/50 text-stone-800 hover:text-brand-600 transition-colors p-4 text-center" data-row-see-all>
             <span class="h-11 w-11 rounded-full bg-white border border-stone-200 flex items-center justify-center shadow-2xs">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
             </span>
@@ -828,8 +973,8 @@
   <div id="stickyMobileBar" class="lg:hidden fixed bottom-6 sm:bottom-7 left-4 right-4 sm:left-6 sm:right-6 z-50 pointer-events-none transition-all duration-300 ease-out transform translate-y-28 opacity-0" style="bottom: max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1.25rem));">
     <div class="max-w-md mx-auto grid grid-cols-2 gap-2.5 sm:gap-3 w-full pointer-events-auto">
       {{-- Add to Cart (Brand Orange Floating Pill Button) --}}
-      <button type="button" id="stickyBarAddToCart" class="h-12 bg-brand-600 hover:bg-brand-700 active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border border-white/10 select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none rounded-xl" @disabled($isOutOfStock)>
-        <svg class="w-4 h-4 text-white shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+      <button type="button" id="stickyBarAddToCart" class="h-12 bg-white hover:bg-brand-50 active:scale-[0.98] text-brand-700 font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-brand-600 disabled:border-stone-200 select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none rounded-xl" @disabled($isOutOfStock)>
+        <svg class="w-4 h-4 shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
         <span id="stickyBarAddToCartText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : 'ADD TO CART' }}</span>
       </button>
 
@@ -869,6 +1014,14 @@
     const counterEl = document.getElementById('galleryCurrentIdx');
     if (counterEl) counterEl.textContent = currentIndex + 1;
 
+    document.querySelectorAll('[data-gallery-dots] [data-dot]').forEach((dot, i) => {
+      const on = i === currentIndex;
+      dot.classList.toggle('w-5', on);
+      dot.classList.toggle('bg-white', on);
+      dot.classList.toggle('w-1.5', !on);
+      dot.classList.toggle('bg-white/60', !on);
+    });
+
     thumbBtns.forEach((x, i) => {
       const oldIndicator = x.querySelector('[data-thumb-indicator]');
       if (oldIndicator) oldIndicator.remove();
@@ -876,17 +1029,21 @@
       if (check) check.remove();
 
       if (i === currentIndex) {
-        x.classList.add('opacity-100', 'shadow-md', 'scale-100');
-        x.classList.remove('opacity-40', 'scale-95');
+        x.classList.add('opacity-100', 'ring-2', 'ring-stone-900', 'ring-offset-1');
+        x.classList.remove('opacity-75');
       } else {
-        x.classList.remove('opacity-100', 'shadow-md', 'scale-100');
-        x.classList.add('opacity-40', 'scale-95');
+        x.classList.remove('opacity-100', 'ring-2', 'ring-stone-900', 'ring-offset-1');
+        x.classList.add('opacity-75');
       }
     });
   }
 
   thumbBtns.forEach((btn, index) => {
     btn.addEventListener('click', () => setActiveImage(index));
+  });
+
+  document.querySelectorAll('[data-gallery-dots] [data-dot]').forEach((dot) => {
+    dot.addEventListener('click', (e) => { e.stopPropagation(); setActiveImage(parseInt(dot.dataset.dot, 10) || 0); });
   });
 
   if (prevBtn) prevBtn.addEventListener('click', () => setActiveImage(currentIndex - 1));
@@ -1095,7 +1252,6 @@
     }, { passive: false });
 
     window.addEventListener('resize', () => { if (!modal.classList.contains('hidden')) { clampPan(); apply(false); } });
-
     document.addEventListener('keydown', (e) => {
       if (modal.classList.contains('hidden')) return;
       if (e.key === 'Escape') hideModal();
@@ -1254,6 +1410,26 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
   // Find exact matching SKU combination
   const matchedSku = findPdpMatchingSku(window.productSkus, selectedAttrs);
 
+  // The stock line beside the category follows the chosen variation once every option is picked
+  const stockLine = document.getElementById('pdStockLine');
+  if (stockLine) {
+    if (stockLine.dataset.initial === undefined) stockLine.dataset.initial = stockLine.innerHTML;
+    const groupCount = document.querySelectorAll('[data-variant-group]').length;
+    const allPicked = groupCount > 0 && Object.keys(selectedAttrs).length === groupCount;
+    if (matchedSku && allPicked) {
+      const left = parseInt(matchedSku.stock, 10) || 0;
+      if (left <= 0) {
+        stockLine.innerHTML = '<span class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Out of Stock</span>';
+      } else if (left <= 5) {
+        stockLine.innerHTML = '<span class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Only ' + left + ' Left</span>';
+      } else {
+        stockLine.innerHTML = '<span class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> In Stock</span>';
+      }
+    } else {
+      stockLine.innerHTML = stockLine.dataset.initial;
+    }
+  }
+
   let finalPrice = basePrice;
   let finalReg = baseReg;
 
@@ -1305,7 +1481,8 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
   }
 
   // Currency Formatter Helper
-  const formatMoney = (num) => '৳' + (Number(num) % 1 === 0 ? Number(num).toLocaleString('en-US') : Number(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+  const pdpCurrency = {!! json_encode(currency_symbol(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!};
+  const formatMoney = (num) => pdpCurrency + (Number(num) % 1 === 0 ? Number(num).toLocaleString('en-US') : Number(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 
   // Update Offer / Sale Price element
   priceEl.textContent = formatMoney(finalPrice);
@@ -1345,20 +1522,7 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
     }
   }
 
-  // Sync Mobile Sticky Bar Price
-  const mobPrice = document.querySelector('[data-mobile-price]');
-  if (mobPrice) mobPrice.textContent = formatMoney(finalPrice);
-  const mobReg = document.querySelector('[data-mobile-reg]');
-  if (mobReg) {
-    if (hasDiscount) {
-      mobReg.textContent = formatMoney(finalReg);
-      mobReg.classList.remove('hidden');
-    } else {
-      mobReg.classList.add('hidden');
-    }
-  }
-
-  const pdpDefaultCta = "{{ setting('default_cta_text', 'ADD TO CART') }}";
+  const pdpDefaultCta = {!! json_encode((string) setting('default_cta_text', 'ADD TO CART'), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!};
   if (addBtn) {
     addBtn.disabled = !isAvailable;
     if (btnText) btnText.textContent = isAvailable ? pdpDefaultCta : 'OUT OF STOCK';
@@ -1367,15 +1531,6 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
     buyBtn.disabled = !isAvailable;
     const buyBtnText = document.getElementById('pdBuyNowText') || buyBtn.querySelector('span');
     if (buyBtnText) buyBtnText.textContent = isAvailable ? 'ORDER NOW' : 'OUT OF STOCK';
-  }
-
-  const mobStock = document.querySelector('[data-mobile-stock]');
-  if (mobStock) {
-    if (!isAvailable) {
-      mobStock.innerHTML = '<span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500"></span><span class="text-[11px] font-semibold text-rose-600 truncate">Out of Stock</span>';
-    } else {
-      mobStock.innerHTML = '<span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span><span class="text-[11px] font-semibold text-emerald-700 truncate">In Stock · Ready to Ship</span>';
-    }
   }
 
   const stickyAddBtn = document.getElementById('stickyBarAddToCart');
@@ -1454,36 +1609,6 @@ document.querySelectorAll('[data-variant-group] .variant-btn').forEach((b) => b.
 // Run initial sync on load
 syncPdpVariantStockAndPrice();
 
-// Live Flash Sale Countdown Timer
-const pdpTimerEl = document.querySelector('[data-pdp-flash-timer]');
-if (pdpTimerEl) {
-  const endsAt = pdpTimerEl.dataset.endsAt;
-  if (endsAt) {
-    const targetTime = new Date(endsAt).getTime();
-    const updatePdpTimer = () => {
-      const now = new Date().getTime();
-      const diff = Math.max(0, targetTime - now);
-      
-      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const s = Math.floor((diff % (1000 * 60)) / 1000);
-
-      const daysEl = pdpTimerEl.querySelector('[data-timer-days]');
-      const hoursEl = pdpTimerEl.querySelector('[data-timer-hours]');
-      const minsEl = pdpTimerEl.querySelector('[data-timer-mins]');
-      const secsEl = pdpTimerEl.querySelector('[data-timer-secs]');
-
-      if (daysEl) daysEl.textContent = String(d).padStart(2, '0');
-      if (hoursEl) hoursEl.textContent = String(h).padStart(2, '0');
-      if (minsEl) minsEl.textContent = String(m).padStart(2, '0');
-      if (secsEl) secsEl.textContent = String(s).padStart(2, '0');
-    };
-    updatePdpTimer();
-    setInterval(updatePdpTimer, 1000);
-  }
-}
-
 // Customer Review Form Toggle & Interactive Star Rating Picker
 const toggleReviewBtn = document.getElementById('toggleReviewFormBtn');
 const closeReviewBtn = document.getElementById('closeReviewFormBtn');
@@ -1523,10 +1648,10 @@ if (starRatingContainer && starRatingInput) {
       const starSvg = btn.querySelector('.star-svg');
       if (idx < val) {
         starSvg.classList.add('text-amber-400', 'fill-amber-400');
-        starSvg.classList.remove('text-slate-200', 'fill-slate-200');
+        starSvg.classList.remove('text-stone-200', 'fill-stone-200');
       } else {
         starSvg.classList.remove('text-amber-400', 'fill-amber-400');
-        starSvg.classList.add('text-slate-200', 'fill-slate-200');
+        starSvg.classList.add('text-stone-200', 'fill-stone-200');
       }
     });
     if (starRatingLabel && labels[val]) {

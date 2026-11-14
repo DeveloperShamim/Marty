@@ -75,6 +75,17 @@ class HomeController extends Controller
             ->where('is_featured', true)->latest()->take(8)->get();
         $topSection = $flashActive ? $flashProducts : $ourPicks;
 
+        // The two tabs below don't repeat what the top section (or the tab before) already shows,
+        // unless that would leave a tab with fewer than 4 products.
+        $withoutRepeats = function ($list, $shownIds) {
+            $fresh = $list->reject(fn ($p) => $shownIds->contains($p->id))->values();
+
+            return $fresh->count() >= self::HOME_ROW_MIN ? $fresh : $list;
+        };
+        $topIds = $topSection->take(8)->pluck('id');
+        $bestSellers = $withoutRepeats($bestSellers, $topIds);
+        $newArrivals = $withoutRepeats($newArrivals, $topIds->merge($bestSellers->take(8)->pluck('id')));
+
         $homeReviews = ProductReview::approved()
             ->with('product')
             ->latest()

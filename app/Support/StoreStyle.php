@@ -35,6 +35,28 @@ class StoreStyle
         'fresh'   => ['Fresh', '#16A34A', '#14532D', '#F7FBF5', 'poppins', 'rounded'],
     ];
 
+    /**
+     * Page width on large screens. key => [label, content width in px].
+     * Standard is the original layout (4 products per row); Wide widens every storefront container
+     * and shows 5 products per row from 1280px up. Phones, tablets and checkout are never affected.
+     */
+    public const WIDTHS = [
+        'standard' => ['Standard (1,200px)', 1200],
+        'wide'     => ['Wide (1,440px)', 1440],
+    ];
+
+    public static function width(): string
+    {
+        $key = (string) setting('theme_width', 'standard');
+
+        return array_key_exists($key, self::WIDTHS) ? $key : 'standard';
+    }
+
+    public static function isWide(): bool
+    {
+        return self::width() === 'wide';
+    }
+
     public static function font(): string
     {
         $key = (string) setting('theme_font', 'jakarta');

@@ -166,6 +166,11 @@ class DatabaseSeeder extends Seeder
             'tax_percent' => '0',
             'shipping_inside_label' => 'Inside Dhaka',
             'shipping_outside_label' => 'Outside Dhaka',
+            'shipping_inside_time' => '1–2 days',
+            'shipping_outside_time' => '2–3 days',
+            'pdp_authentic_label' => 'Verified Authentic',
+            'pdp_quality_badge' => 'Genuine leather',
+            'pdp_return_text' => '7-day return',
             'currency_symbol' => '৳',
             'currency_code' => 'BDT',
             'default_meta_title' => 'Vant Bangladesh — Genuine Leather Wallets, Belts, Watches & Shoes',
@@ -209,6 +214,7 @@ class DatabaseSeeder extends Seeder
             'theme_primary_color'  => '#8B5A2B',
             'theme_dark_color'     => '#2B1D14',
             'theme_surface_color'  => '#FAF7F2',
+            'theme_width'          => 'standard', // or 'wide': 1,440px and 5 products per row on big screens
         ];
     }
 
