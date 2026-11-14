@@ -17,9 +17,16 @@
   $heroText = $H['text'] ?? '';
   $heroBadge = $H['badge'] ?? '';
   $heroBtn = ($H['button'] ?? '') ?: 'Shop now';
-  // Colour dots swap the photo: an image tagged with that colour (Admin → Products → photo colour), else the main photo
-  $heroColors = $lead ? collect($colorsOf($lead))->take(5)->map(function ($c) use ($lead) {
-    $img = $lead->images->first(fn ($i) => strtolower(trim((string) $i->color)) === strtolower(trim($c['name'])));
+  // The hero picture uploaded in Launch mode, else the first product's photo
+  $heroImg = ! empty($H['image']) ? image_url($H['image']) : $lead?->imageUrl();
+  // Colour dots swap the photo: the colour's picture from Launch mode, else a product photo tagged with that
+  // colour (Admin → Products → photo colour), else the main hero picture
+  $heroColors = $lead ? collect($colorsOf($lead))->take(5)->map(function ($c) use ($lead, $H) {
+    $key = mb_strtolower(trim($c['name']));
+    if (! empty($H['color_images'][$key])) {
+      return $c + ['image' => image_url($H['color_images'][$key])];
+    }
+    $img = $lead->images->first(fn ($i) => mb_strtolower(trim((string) $i->color)) === $key);
     return $c + ['image' => $img ? image_url($img->path, $lead->slug) : null];
   })->values() : collect();
 
@@ -92,7 +99,7 @@
     <div class="lx-hero-media">
       @if($lead)
         <a href="{{ route('product.show', $lead) }}" class="lx-hero-card" aria-label="{{ $lead->name }}">
-          <img src="{{ $lead->imageUrl() }}" alt="{{ $lead->name }}" loading="eager" data-lx-hero-img data-default="{{ $lead->imageUrl() }}">
+          <img src="{{ $heroImg }}" alt="{{ $lead->name }}" loading="eager" data-lx-hero-img data-default="{{ $heroImg }}">
         </a>
       @endif
     </div>

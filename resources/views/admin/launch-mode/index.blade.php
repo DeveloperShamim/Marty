@@ -59,7 +59,7 @@
   <section class="panel p-4 sm:p-5 flex flex-col gap-4">
     <div>
       <h2 class="text-[15px] font-semibold text-gray-900">Top of the page</h2>
-      <p class="text-xs text-gray-500 mt-0.5">The big photo is the first product in your collection. Its colour dots switch the photo when a photo of that product is tagged with the colour (Products → edit → photo colour, e.g. "Black").</p>
+      <p class="text-xs text-gray-500 mt-0.5">The big photo is your hero picture below, or else the first product in your collection. Its colour dots switch to that colour's picture.</p>
     </div>
     <div class="grid sm:grid-cols-2 gap-3">
       <div>
@@ -78,6 +78,45 @@
     <div class="sm:w-1/2">
       <label class="lbl" for="lmHeroBtn">Button</label>
       <input id="lmHeroBtn" class="inp" name="hero[button]" value="{{ old('hero.button', $c['hero']['button'] ?? 'Shop now') }}" maxlength="40">
+    </div>
+
+    @php
+      $heroImg = $c['hero']['image'] ?? null;
+      $heroColorImgs = $c['hero']['color_images'] ?? [];
+      $leadColors = $picked->first() ? (\App\Support\ProductCardOptions::for($picked->first())['colors'] ?? []) : [];
+    @endphp
+    <div class="rounded-2xl ring-1 ring-gray-200 p-3 space-y-3">
+      <div class="flex items-center gap-3">
+        <span class="h-16 w-16 shrink-0 rounded-xl bg-gray-100 overflow-hidden grid place-items-center text-[10px] text-gray-400 text-center">
+          @if($heroImg)<img src="{{ image_url($heroImg) }}" alt="" class="h-full w-full object-cover">@else Product photo @endif
+        </span>
+        <span class="min-w-0 flex-1">
+          <label class="lbl" for="lmHeroImg">Hero picture <span class="font-normal text-gray-400">(optional)</span></label>
+          <input id="lmHeroImg" type="file" name="hero_image" accept="image/*" class="block w-full text-xs text-gray-600">
+          <span class="block text-[11px] text-gray-500 mt-1">Square (1:1) fits the card exactly, e.g. 1200 × 1200. Without one, the first product's photo shows. Up to 4 MB.</span>
+          @if($heroImg)<label class="mt-1 inline-flex items-center gap-1.5 text-[11px] text-gray-600"><input type="checkbox" name="hero_image_remove" value="1"> Remove</label>@endif
+        </span>
+      </div>
+      @if($leadColors)
+        <div>
+          <p class="text-[11px] text-gray-500 mb-2">A picture for each colour (optional). It shows when a customer taps that colour's dot.</p>
+          <div class="grid sm:grid-cols-2 gap-2">
+            @foreach($leadColors as $col)
+              @php $ck = mb_strtolower(trim($col['name'])); $cimg = $heroColorImgs[$ck] ?? null; @endphp
+              <div class="flex items-center gap-2.5 rounded-xl bg-gray-50 p-2">
+                <span class="h-10 w-10 shrink-0 rounded-lg overflow-hidden ring-1 ring-gray-200" @if($col['swatch']) style="background: {{ $col['swatch'] }}" @endif>
+                  @if($cimg)<img src="{{ image_url($cimg) }}" alt="" class="h-full w-full object-cover">@endif
+                </span>
+                <span class="min-w-0 flex-1">
+                  <span class="block text-[12px] font-medium text-gray-800">{{ $col['name'] }}</span>
+                  <input type="file" name="hero_color_image[{{ $ck }}]" accept="image/*" class="block w-full text-[11px] text-gray-600" aria-label="Picture for {{ $col['name'] }}">
+                  @if($cimg)<label class="inline-flex items-center gap-1.5 text-[11px] text-gray-600"><input type="checkbox" name="hero_color_image_remove[{{ $ck }}]" value="1"> Remove</label>@endif
+                </span>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      @endif
     </div>
   </section>
 

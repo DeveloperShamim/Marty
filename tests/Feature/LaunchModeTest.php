@@ -107,4 +107,31 @@ class LaunchModeTest extends TestCase
         $this->assertSame($m['pillars'][1]['image'], $m2['pillars'][1]['image']);
         \Illuminate\Support\Facades\Storage::disk('public')->assertMissing($m['image']);
     }
+
+    public function test_hero_picture_and_colour_pictures_replace_the_product_photo(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $admin = User::factory()->create(['role' => 'admin']);
+        $a = $this->wallet('Prime Trifold');
+
+        $this->actingAs($admin)->put(route('admin.launch-mode.update'), [
+            'launch_mode' => '1', 'product_ids' => [$a->id],
+            'hero_image' => \Illuminate\Http\UploadedFile::fake()->image('hero.jpg', 1200, 1200),
+            'hero_color_image' => ['black' => \Illuminate\Http\UploadedFile::fake()->image('black.jpg', 1200, 1200)],
+        ])->assertRedirect();
+        Setting::forgetCache();
+        $h = LaunchMode::config()['hero'];
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($h['image']);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($h['color_images']['black']);
+        $this->get('/')->assertSee(basename($h['image']), false);
+
+        $this->actingAs($admin)->put(route('admin.launch-mode.update'), [
+            'launch_mode' => '1', 'product_ids' => [$a->id], 'hero_image_remove' => '1', 'hero_color_image_remove' => ['black' => '1'],
+        ])->assertRedirect();
+        Setting::forgetCache();
+        $h2 = LaunchMode::config()['hero'];
+        $this->assertNull($h2['image']);
+        $this->assertSame([], $h2['color_images']);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertMissing($h['image']);
+    }
 }
