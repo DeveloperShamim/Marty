@@ -38,7 +38,7 @@
       <span class="{{ $switch }} mt-0.5"></span>
       <span class="min-w-0">
         <span class="block text-[15px] font-semibold text-gray-900">Launch mode {{ $on ? 'is on' : 'is off' }}</span>
-        <span class="block text-xs text-gray-500 mt-0.5">On: the homepage shows one hero banner, your collection, the material story, the comparison table and the trust row. Category rows, brands, flash sale, best sellers, "Just for you" and coupons are hidden so the store doesn't look empty. Off: your normal homepage comes back exactly as it was. Nothing in your products or other settings changes either way.</span>
+        <span class="block text-xs text-gray-500 mt-0.5">On: the homepage shows a big photo of your first product, your collection, the material story, the comparison table and the trust row. Category rows, brands, flash sale, best sellers, "Just for you" and coupons are hidden so the store doesn't look empty. Off: your normal homepage comes back exactly as it was. Nothing in your products or other settings changes either way.</span>
       </span>
     </label>
 
@@ -53,7 +53,32 @@
       </span>
     </label>
 
-    <p class="text-[11px] text-gray-500">The banner at the top is your first <a href="{{ route('admin.banners.index') }}" class="underline">hero banner</a>, shown alone without sliding. With a picture it shows the picture; without one it shows its title, text and button beside the first product in your collection.</p>
+  </section>
+
+  {{-- Hero --}}
+  <section class="panel p-4 sm:p-5 flex flex-col gap-4">
+    <div>
+      <h2 class="text-[15px] font-semibold text-gray-900">Top of the page</h2>
+      <p class="text-xs text-gray-500 mt-0.5">The big photo is the first product in your collection. Its colour dots switch the photo when a photo of that product is tagged with the colour (Products → edit → photo colour, e.g. "Black").</p>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-3">
+      <div>
+        <label class="lbl" for="lmHeroBadge">Small label</label>
+        <input id="lmHeroBadge" class="inp" name="hero[badge]" value="{{ old('hero.badge', $c['hero']['badge'] ?? '') }}" maxlength="300">
+      </div>
+      <div>
+        <label class="lbl" for="lmHeroTitle">Headline</label>
+        <input id="lmHeroTitle" class="inp" name="hero[title]" value="{{ old('hero.title', $c['hero']['title'] ?? '') }}" maxlength="300">
+      </div>
+    </div>
+    <div>
+      <label class="lbl" for="lmHeroText">Text</label>
+      <textarea id="lmHeroText" class="inp" rows="2" name="hero[text]" maxlength="600">{{ old('hero.text', $c['hero']['text'] ?? '') }}</textarea>
+    </div>
+    <div class="sm:w-1/2">
+      <label class="lbl" for="lmHeroBtn">Button</label>
+      <input id="lmHeroBtn" class="inp" name="hero[button]" value="{{ old('hero.button', $c['hero']['button'] ?? 'Shop now') }}" maxlength="40">
+    </div>
   </section>
 
   {{-- Collection --}}

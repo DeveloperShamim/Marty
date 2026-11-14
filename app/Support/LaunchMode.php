@@ -30,6 +30,12 @@ class LaunchMode
     public static function defaults(): array
     {
         return [
+            'hero' => [
+                'badge' => 'Handmade in Bangladesh',
+                'title' => 'Genuine leather wallets.',
+                'text' => 'Full-grain leather, finished by hand. Batch 01 is a small first run. Check it at your door and pay cash on delivery.',
+                'button' => 'Shop now',
+            ],
             'collection' => [
                 'label' => 'Batch 01 — Limited Release',
                 'heading' => 'The Initial Collection',

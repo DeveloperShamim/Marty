@@ -31,6 +31,10 @@ class LaunchModeController extends Controller
         $data = $request->validate([
             'launch_mode'            => ['nullable', 'boolean'],
             'show_reviews'           => ['nullable', 'boolean'],
+            'hero.badge'             => $text,
+            'hero.title'             => $text,
+            'hero.text'              => $long,
+            'hero.button'            => ['nullable', 'string', 'max:40'],
             'collection.label'       => $text,
             'collection.heading'     => $text,
             'collection.intro'       => $long,
@@ -60,6 +64,12 @@ class LaunchModeController extends Controller
 
         $config = [
             'show_reviews' => $request->boolean('show_reviews'),
+            'hero' => [
+                'badge' => $clean($data['hero']['badge'] ?? ''),
+                'title' => $clean($data['hero']['title'] ?? ''),
+                'text' => $clean($data['hero']['text'] ?? ''),
+                'button' => $clean($data['hero']['button'] ?? ''),
+            ],
             'collection' => [
                 'label' => $clean($data['collection']['label'] ?? ''),
                 'heading' => $clean($data['collection']['heading'] ?? ''),
