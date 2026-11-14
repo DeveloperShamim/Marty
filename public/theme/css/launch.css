@@ -213,3 +213,21 @@ body.store-wide .lx-wrap { max-width: 1440px; }
 .lx-trust-d { display: block; font-size: 12.5px; line-height: 1.55; color: var(--lx-soft); margin-top: .25rem; }
 
 .lx-price, .lx-cell-price, .lx-num { font-variant-numeric: tabular-nums; }
+
+/* Phone hero: a shorter photo and a tighter block so the headline, colours and Shop now all fit on the
+   first screen of a typical phone (about 390 x 844) */
+@media (max-width: 639px) {
+  .lx-hero { padding: .75rem 0 1.5rem; background: var(--lx-bg); }
+  .lx-hero-grid { gap: 1rem; }
+  .lx-hero-card { aspect-ratio: 5 / 4; border-radius: 1rem; box-shadow: 0 18px 36px -24px rgba(68, 46, 24, .35); }
+  .lx-hero-inner { gap: .7rem; }
+  .lx-hero .lx-eyebrow { font-size: 10.5px; letter-spacing: .12em; }
+  .lx-hero .lx-h1 { font-size: 27px; line-height: 1.15; letter-spacing: -.015em; }
+  .lx-hero .lx-lead { font-size: 14px; line-height: 1.5; }
+  .lx-hero .lx-finish { gap: .35rem; }
+  .lx-hero .lx-swatch { width: 28px; height: 28px; }
+  .lx-hero .lx-swatch-name { font-size: 12.5px; }
+  .lx-hero-cta { padding-top: .15rem; }
+  .lx-hero-cta .lx-btn { padding: .85rem 1rem; font-size: 15px; border-radius: .75rem; }
+  .lx-hero .lx-meta { width: 100%; justify-content: center; font-size: 12.5px; }
+}
