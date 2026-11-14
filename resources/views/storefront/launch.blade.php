@@ -3,8 +3,6 @@
 {{-- Launch mode homepage (Admin → Homepage → Launch mode, App\Support\LaunchMode). The normal homepage is
      storefront/home.blade.php and is left untouched; switching launch mode off shows it again. --}}
 
-@section('body_class', 'lx-home bg-white text-ink antialiased')
-
 @section('content')
 @php
   $L = $launch;

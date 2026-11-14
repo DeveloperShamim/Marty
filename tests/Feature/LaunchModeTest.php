@@ -51,8 +51,7 @@ class LaunchModeTest extends TestCase
             ->assertSeeInOrder(['Classic Bifold', 'Prime Trifold'])
             ->assertDontSee('Secret Wallet')
             ->assertDontSee('Not Picked')
-            ->assertSee('Find Your Carry Profile') // 2 products, so the comparison shows
-            ->assertSee('lx-dark', false);
+            ->assertSee('Find Your Carry Profile'); // 2 products, so the comparison shows
     }
 
     public function test_admin_can_rename_the_batch_pick_products_and_switch_it_off(): void
@@ -63,7 +62,7 @@ class LaunchModeTest extends TestCase
         $this->actingAs($admin)->get(route('admin.launch-mode.index'))->assertOk()->assertSee('Launch mode');
 
         $this->actingAs($admin)->put(route('admin.launch-mode.update'), [
-            'launch_mode' => '1', 'dark' => '0',
+            'launch_mode' => '1',
             'collection' => ['label' => 'Batch 02 — Limited Release', 'heading' => 'Second run', 'intro' => ''],
             'product_ids' => [$a->id, '', ''],
             'compare' => ['on' => '1', 'rows' => [['label' => 'Cards', 'values' => [$a->id => '6–9']]]],
@@ -71,9 +70,8 @@ class LaunchModeTest extends TestCase
         Setting::forgetCache();
 
         $this->assertTrue(LaunchMode::isOn());
-        $this->assertFalse(LaunchMode::isDark());
         $this->assertSame([$a->id], LaunchMode::config()['product_ids']);
-        $this->get('/')->assertSee('Batch 02 — Limited Release')->assertSee('Prime Trifold')->assertDontSee('lx-dark', false);
+        $this->get('/')->assertSee('Batch 02 — Limited Release')->assertSee('Prime Trifold');
 
         $this->actingAs($admin)->put(route('admin.launch-mode.update'), ['launch_mode' => '0'])->assertRedirect();
         Setting::forgetCache();

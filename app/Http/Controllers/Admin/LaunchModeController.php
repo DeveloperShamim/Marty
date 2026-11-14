@@ -30,7 +30,6 @@ class LaunchModeController extends Controller
 
         $data = $request->validate([
             'launch_mode'            => ['nullable', 'boolean'],
-            'dark'                   => ['nullable', 'boolean'],
             'show_reviews'           => ['nullable', 'boolean'],
             'collection.label'       => $text,
             'collection.heading'     => $text,
@@ -60,7 +59,6 @@ class LaunchModeController extends Controller
         $clean = fn ($v) => trim((string) $v);
 
         $config = [
-            'dark' => $request->boolean('dark'),
             'show_reviews' => $request->boolean('show_reviews'),
             'collection' => [
                 'label' => $clean($data['collection']['label'] ?? ''),

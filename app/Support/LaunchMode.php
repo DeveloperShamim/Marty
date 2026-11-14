@@ -27,16 +27,9 @@ class LaunchMode
         return setting('launch_mode', '0') === '1';
     }
 
-    /** The dark leather look applies while launch mode is on and the look is left switched on. */
-    public static function isDark(): bool
-    {
-        return self::isOn() && (bool) (self::config()['dark'] ?? true);
-    }
-
     public static function defaults(): array
     {
         return [
-            'dark' => true,
             'collection' => [
                 'label' => 'Batch 01 — Limited Release',
                 'heading' => 'The Initial Collection',

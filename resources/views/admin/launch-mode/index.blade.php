@@ -42,15 +42,6 @@
       </span>
     </label>
 
-    <label class="flex items-start gap-3 cursor-pointer">
-      <input type="hidden" name="dark" value="0">
-      <input type="checkbox" name="dark" value="1" class="peer sr-only" @checked($c['dark'] ?? true)>
-      <span class="{{ $switch }} mt-0.5"></span>
-      <span class="min-w-0">
-        <span class="block text-[13px] font-medium text-gray-900">Dark leather look</span>
-        <span class="block text-[11px] text-gray-500 mt-0.5">Near-black background with a cognac accent on the homepage, and a dark header, footer and cart. Only while launch mode is on.</span>
-      </span>
-    </label>
 
     <label class="flex items-start gap-3 cursor-pointer">
       <input type="hidden" name="show_reviews" value="0">
