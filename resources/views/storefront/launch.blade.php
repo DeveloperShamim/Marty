@@ -11,11 +11,17 @@
   $num = fn ($i) => str_pad($i + 1, 2, '0', STR_PAD_LEFT);
   $colorsOf = fn ($p) => \App\Support\ProductCardOptions::for($p)['colors'] ?? [];
 
-  // Hero: the first live hero banner alone (no slider)
-  $hb = $heroBanner;
-  $heroTitle = $hb?->title ?: setting('hero_fallback_title') ?: ($lead?->name ?? site_name());
-  $heroText = $hb?->subtitle ?: setting('hero_fallback_subtitle') ?: ($lead?->short_description ? \Illuminate\Support\Str::limit(strip_tags($lead->short_description), 180) : null);
-  $heroBadge = $hb?->badge ?: setting('hero_fallback_badge') ?: ($L['collection']['label'] ?? null);
+  // Hero text comes from Admin → Homepage → Launch mode; the photo is the first collection product
+  $H = $L['hero'] ?? [];
+  $heroTitle = ($H['title'] ?? '') ?: ($lead?->name ?? site_name());
+  $heroText = $H['text'] ?? '';
+  $heroBadge = $H['badge'] ?? '';
+  $heroBtn = ($H['button'] ?? '') ?: 'Shop now';
+  // Colour dots swap the photo: an image tagged with that colour (Admin → Products → photo colour), else the main photo
+  $heroColors = $lead ? collect($colorsOf($lead))->take(5)->map(function ($c) use ($lead) {
+    $img = $lead->images->first(fn ($i) => strtolower(trim((string) $i->color)) === strtolower(trim($c['name'])));
+    return $c + ['image' => $img ? image_url($img->path, $lead->slug) : null];
+  })->values() : collect();
 
   $gridClass = match (true) {
     $count <= 1 => 'lx-grid-1',
@@ -45,70 +51,53 @@
 
 <div class="lx-page">
 
-  {{-- 1. HERO: one banner, no slider --}}
-  @if($hb && $hb->image)
-    <section class="lx-wrap lx-hero-image">
-      <a href="{{ $hb->linkHref() }}" class="lx-hero-pic" aria-label="{{ $hb->title ?: 'Banner' }}">
-        <img src="{{ $hb->imageUrl() }}" alt="{{ $hb->title }}" loading="eager">
-      </a>
-    </section>
-  @else
-    <section class="lx-hero">
-      <div class="lx-wrap lx-hero-grid">
-        <div class="lx-hero-copy">
-          @if($heroBadge)<span class="lx-chip">{{ $heroBadge }}</span>@endif
-          <h1 class="lx-h1">{{ $heroTitle }}</h1>
-          @if($heroText)<p class="lx-lead">{{ $heroText }}</p>@endif
+  {{-- 1. HERO: text on the left, the product photo filling a framed card on the right (on phones: photo first) --}}
+  <section class="lx-hero">
+    <div class="lx-wrap lx-hero-grid">
+    <div class="lx-hero-copy">
+      <div class="lx-hero-inner">
+        @if($heroBadge)<p class="lx-eyebrow">{{ $heroBadge }}</p>@endif
+        <h1 class="lx-h1">{{ $heroTitle }}</h1>
+        @if($heroText)<p class="lx-lead">{{ $heroText }}</p>@endif
 
-          @if($lead && ($leadColors = $colorsOf($lead)))
-            <div class="lx-finish">
-              <span class="lx-mono lx-dim">Colours</span>
-              <span class="lx-dots">
-                @foreach(array_slice($leadColors, 0, 4) as $col)
-                  <span class="lx-dot" title="{{ $col['name'] }}" @if($col['swatch']) style="background: {{ $col['swatch'] }}" @endif></span>
-                @endforeach
-              </span>
-              <span class="lx-dim lx-small">{{ collect($leadColors)->pluck('name')->join(' · ') }}</span>
-            </div>
+        @if($heroColors->isNotEmpty())
+          <div class="lx-finish" data-lx-swatches>
+            @foreach($heroColors as $ci => $col)
+              <button type="button" class="lx-swatch {{ $ci === 0 ? 'is-on' : '' }}" data-name="{{ $col['name'] }}" data-img="{{ $col['image'] }}" title="{{ $col['name'] }}" aria-label="{{ $col['name'] }}" aria-pressed="{{ $ci === 0 ? 'true' : 'false' }}"><span @if($col['swatch']) style="background: {{ $col['swatch'] }}" @endif></span></button>
+            @endforeach
+            <span class="lx-swatch-name" data-lx-swatch-name>{{ $heroColors[0]['name'] }}</span>
+          </div>
+        @endif
+
+        <div class="lx-hero-cta">
+          @if($lead && ! $lead->isOutOfStock())
+            <button type="button" class="add-to-cart lx-btn lx-btn-main" {!! $dataAttrs($lead, true) !!}>{{ $heroBtn }}</button>
+          @elseif($lead)
+            <a href="{{ route('product.show', $lead) }}" class="lx-btn lx-btn-main">{{ $heroBtn }}</a>
           @endif
-
-          <div class="lx-hero-cta">
-            @if($lead && ! $lead->isOutOfStock())
-              <button type="button" class="add-to-cart lx-btn lx-btn-main" {!! $dataAttrs($lead, true) !!}>
-                <span>{{ $hb?->button_text ?: 'Order now' }} — <span class="lx-mono">{{ money($lead->price) }}</span></span>
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0-5 5m5-5H6"/></svg>
-              </button>
-            @elseif($hb && $hb->button_text)
-              <a href="{{ $hb->linkHref() }}" class="lx-btn lx-btn-main">{{ $hb->button_text }}</a>
-            @endif
-            @if($count > 1)
-              <a href="#collection" class="lx-btn lx-btn-ghost">See all {{ $count }}</a>
-            @elseif($lead)
-              <a href="{{ route('product.show', $lead) }}" class="lx-btn lx-btn-ghost">View details</a>
-            @endif
-          </div>
-
-          <div class="lx-meta lx-mono">
-            <span>● Cash on delivery</span>
-            @if($lead && ! $lead->isOutOfStock())<span>● In stock</span>@endif
-          </div>
-        </div>
-
-        <div class="lx-stage">
-          <div class="lx-stage-grid" aria-hidden="true"></div>
-          @if($lead)
-            <a href="{{ route('product.show', $lead) }}" class="lx-stage-img" aria-label="{{ $lead->name }}">
-              <img src="{{ $lead->imageUrl() }}" alt="{{ $lead->name }}" loading="eager">
-            </a>
-            <div class="lx-stage-bar lx-mono">
-              <span class="lx-truncate">{{ $lead->name }}</span>
-              <span class="lx-accent">{{ money($lead->price) }}</span>
-            </div>
+          @if($count > 0)
+            <a href="#collection" class="lx-btn lx-btn-ghost lx-hide-phone">View collection</a>
           @endif
         </div>
+
+        @if($lead)
+          <p class="lx-meta">
+            <span>{{ money($lead->price) }}</span>
+            <span aria-hidden="true">·</span><span>Cash on delivery</span>
+            @unless($lead->isOutOfStock())<span aria-hidden="true">·</span><span>In stock</span>@endunless
+          </p>
+        @endif
       </div>
-    </section>
-  @endif
+    </div>
+    <div class="lx-hero-media">
+      @if($lead)
+        <a href="{{ route('product.show', $lead) }}" class="lx-hero-card" aria-label="{{ $lead->name }}">
+          <img src="{{ $lead->imageUrl() }}" alt="{{ $lead->name }}" loading="eager" data-lx-hero-img data-default="{{ $lead->imageUrl() }}">
+        </a>
+      @endif
+    </div>
+    </div>
+  </section>
 
   {{-- 2. THE COLLECTION --}}
   <section id="collection" class="lx-section">
@@ -133,7 +122,7 @@
             @endphp
             <article class="lx-card">
               <div class="lx-card-top">
-                <span class="lx-mono lx-num">{{ $num($i) }}.</span>
+                <span class="lx-num">{{ $num($i) }}.</span>
                 @if($out)
                   <span class="lx-tag">Sold out</span>
                 @elseif($p->discount_percent > 0)
@@ -158,7 +147,7 @@
                 @endif
               </div>
               <div class="lx-card-foot">
-                <span class="lx-price lx-mono">
+                <span class="lx-price">
                   {{ money($p->price) }}
                   @if($p->on_sale)<s>{{ money($p->regular_price) }}</s>@endif
                 </span>
@@ -182,7 +171,18 @@
   @if(($L['material']['on'] ?? true) && $pillars->isNotEmpty())
     <section id="craftsmanship" class="lx-section lx-alt">
       <div class="lx-wrap lx-split">
-        <div class="lx-macro" data-lx-macro>
+        @php
+          $matMain = ! empty($L['material']['image']) ? image_url($L['material']['image']) : null;
+          $pillarImgs = $pillars->map(fn ($pl) => ! empty($pl['image']) ? image_url($pl['image']) : null);
+          $matFirst = $pillarImgs->first() ?: $matMain ?: $pillarImgs->filter()->first();
+        @endphp
+        @if($matFirst)
+          {{-- Admin pictures: the main one, or the tapped point's own picture --}}
+          <div class="lx-macro lx-macro-photo">
+            <img src="{{ $matFirst }}" alt="{{ $L['material']['heading'] }}" loading="lazy" data-lx-mat-img data-default="{{ $matMain ?: $matFirst }}">
+          </div>
+        @else
+          <div class="lx-macro" data-lx-macro>
           {{-- Leather corner illustration with numbered pins; the pins and the points highlight each other --}}
           <svg viewBox="0 0 400 400" aria-hidden="true">
             <defs>
@@ -201,13 +201,14 @@
             <button type="button" class="lx-pin lx-pin-{{ $pi }} {{ $pi === 0 ? 'is-on' : '' }}" data-lx-pin="{{ $pi }}" aria-label="{{ $pl['title'] }}">{{ $pi + 1 }}</button>
           @endforeach
         </div>
+        @endif
         <div>
           @if($L['material']['label'])<p class="lx-eyebrow">{{ $L['material']['label'] }}</p>@endif
           @if($L['material']['heading'])<h2 class="lx-h2 lx-h2-lg">{{ $L['material']['heading'] }}</h2>@endif
           <div class="lx-pillars">
             @foreach($pillars as $pi => $pl)
-              <button type="button" class="lx-pillar {{ $pi === 0 ? 'is-on' : '' }}" data-lx-pin="{{ $pi }}">
-                <span class="lx-pillar-n lx-mono">{{ $num($pi) }}</span>
+              <button type="button" class="lx-pillar {{ $pi === 0 ? 'is-on' : '' }}" data-lx-pin="{{ $pi }}" data-img="{{ $pillarImgs[$pi] ?? '' }}">
+                <span class="lx-pillar-n">{{ $num($pi) }}</span>
                 <span>
                   <span class="lx-pillar-t">{{ $pl['title'] }}</span>
                   @if($pl['text'])<span class="lx-pillar-d">{{ $pl['text'] }}</span>@endif
@@ -235,9 +236,9 @@
           <table class="lx-table" style="--lx-cols: {{ $count }}">
             <thead>
               <tr>
-                <th class="lx-mono lx-th-spec">Specification</th>
+                <th class="lx-th-spec">Specification</th>
                 @foreach($products as $i => $p)
-                  <th><span class="lx-mono lx-num {{ $i === 0 ? 'lx-accent' : '' }}">{{ $num($i) }}</span><a href="{{ route('product.show', $p) }}">{{ $p->name }}</a></th>
+                  <th><span class="lx-num {{ $i === 0 ? 'lx-accent' : '' }}">{{ $num($i) }}</span><a href="{{ route('product.show', $p) }}">{{ $p->name }}</a></th>
                 @endforeach
               </tr>
             </thead>
@@ -245,7 +246,7 @@
               @php $anyColors = $products->contains(fn ($p) => ! empty($colorsOf($p))); @endphp
               @if($anyColors)
                 <tr>
-                  <td class="lx-mono lx-td-spec">Colours</td>
+                  <td class="lx-td-spec">Colours</td>
                   @foreach($products as $p)
                     <td>{{ collect($colorsOf($p))->pluck('name')->join(', ') ?: '—' }}</td>
                   @endforeach
@@ -253,18 +254,18 @@
               @endif
               @foreach($rows as $row)
                 <tr>
-                  <td class="lx-mono lx-td-spec">{{ $row['label'] }}</td>
+                  <td class="lx-td-spec">{{ $row['label'] }}</td>
                   @foreach($products as $p)
                     <td>{{ $row['values'][$p->id] ?? $row['values'][(string) $p->id] ?? '—' }}</td>
                   @endforeach
                 </tr>
               @endforeach
               <tr class="lx-tr-price">
-                <td class="lx-mono lx-td-spec">Price (BDT)</td>
+                <td class="lx-td-spec">Price (BDT)</td>
                 @foreach($products as $p)
                   <td>
                     <span class="lx-cell-price">
-                      <span class="lx-mono lx-strong">{{ money($p->price) }}</span>
+                      <span class="lx-strong">{{ money($p->price) }}</span>
                       @if($p->isOutOfStock())
                         <span class="lx-small lx-dim">Sold out</span>
                       @else
@@ -321,6 +322,23 @@
 
 @push('scripts')
 <script>
+/* Hero colour dots: pick a colour, show its photo */
+document.addEventListener('click', function (e) {
+  var sw = e.target.closest('[data-lx-swatches] .lx-swatch');
+  if (!sw) return;
+  sw.parentNode.querySelectorAll('.lx-swatch').forEach(function (b) {
+    b.classList.toggle('is-on', b === sw);
+    b.setAttribute('aria-pressed', b === sw ? 'true' : 'false');
+  });
+  var name = sw.parentNode.querySelector('[data-lx-swatch-name]');
+  if (name) name.textContent = sw.getAttribute('data-name');
+  var img = document.querySelector('[data-lx-hero-img]');
+  if (img) {
+    var src = sw.getAttribute('data-img') || img.getAttribute('data-default');
+    if (img.getAttribute('src') !== src) { img.style.opacity = '0'; setTimeout(function () { img.src = src; img.style.opacity = '1'; }, 180); }
+  }
+});
+
 /* Material section: a pin and its point light up together */
 document.addEventListener('click', function (e) {
   var hit = e.target.closest('[data-lx-pin]');
@@ -329,6 +347,12 @@ document.addEventListener('click', function (e) {
   document.querySelectorAll('[data-lx-pin]').forEach(function (el) {
     el.classList.toggle('is-on', el.getAttribute('data-lx-pin') === n);
   });
+  // With admin pictures, show the tapped point's own picture, or the main picture
+  var img = document.querySelector('[data-lx-mat-img]');
+  if (img) {
+    var src = hit.getAttribute('data-img') || img.getAttribute('data-default');
+    if (src && img.getAttribute('src') !== src) { img.style.opacity = '0'; setTimeout(function () { img.src = src; img.style.opacity = '1'; }, 180); }
+  }
 });
 </script>
 @endpush

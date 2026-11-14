@@ -51,7 +51,9 @@ class LaunchModeTest extends TestCase
             ->assertSeeInOrder(['Classic Bifold', 'Prime Trifold'])
             ->assertDontSee('Secret Wallet')
             ->assertDontSee('Not Picked')
-            ->assertSee('Find Your Carry Profile'); // 2 products, so the comparison shows
+            ->assertSee('Find Your Carry Profile') // 2 products, so the comparison shows
+            ->assertSee('Genuine leather wallets.') // default hero headline
+            ->assertSee('View collection');
     }
 
     public function test_admin_can_rename_the_batch_pick_products_and_switch_it_off(): void
@@ -63,6 +65,7 @@ class LaunchModeTest extends TestCase
 
         $this->actingAs($admin)->put(route('admin.launch-mode.update'), [
             'launch_mode' => '1',
+            'hero' => ['badge' => 'New', 'title' => 'Wallets that last', 'text' => 'Short line', 'button' => 'Buy now'],
             'collection' => ['label' => 'Batch 02 — Limited Release', 'heading' => 'Second run', 'intro' => ''],
             'product_ids' => [$a->id, '', ''],
             'compare' => ['on' => '1', 'rows' => [['label' => 'Cards', 'values' => [$a->id => '6–9']]]],
@@ -71,11 +74,37 @@ class LaunchModeTest extends TestCase
 
         $this->assertTrue(LaunchMode::isOn());
         $this->assertSame([$a->id], LaunchMode::config()['product_ids']);
-        $this->get('/')->assertSee('Batch 02 — Limited Release')->assertSee('Prime Trifold');
+        $this->get('/')->assertSee('Batch 02 — Limited Release')->assertSee('Prime Trifold')
+            ->assertSee('Wallets that last')->assertSee('Buy now');
 
         $this->actingAs($admin)->put(route('admin.launch-mode.update'), ['launch_mode' => '0'])->assertRedirect();
         Setting::forgetCache();
         $this->assertFalse(LaunchMode::isOn());
         $this->get('/')->assertDontSee('lx-page', false);
+    }
+
+    public function test_admin_can_upload_and_remove_material_pictures(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $admin = User::factory()->create(['role' => 'admin']);
+        $base = ['launch_mode' => '1', 'material' => ['on' => '1', 'pillars' => [['title' => 'One'], ['title' => 'Two']]]];
+
+        $this->actingAs($admin)->put(route('admin.launch-mode.update'), $base + [
+            'material_image' => \Illuminate\Http\UploadedFile::fake()->image('main.jpg', 600, 600),
+            'pillar_image' => [1 => \Illuminate\Http\UploadedFile::fake()->image('two.jpg', 600, 600)],
+        ])->assertRedirect();
+        Setting::forgetCache();
+        $m = LaunchMode::config()['material'];
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($m['image']);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($m['pillars'][1]['image']);
+        $this->get('/')->assertSee('data-lx-mat-img', false);
+
+        // Saving again without files keeps them; ticking Remove deletes the file
+        $this->actingAs($admin)->put(route('admin.launch-mode.update'), $base + ['material_image_remove' => '1'])->assertRedirect();
+        Setting::forgetCache();
+        $m2 = LaunchMode::config()['material'];
+        $this->assertNull($m2['image']);
+        $this->assertSame($m['pillars'][1]['image'], $m2['pillars'][1]['image']);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertMissing($m['image']);
     }
 }

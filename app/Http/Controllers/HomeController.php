@@ -153,7 +153,6 @@ class HomeController extends Controller
         return view('storefront.launch', [
             'launch'      => $config,
             'products'    => \App\Support\LaunchMode::products(),
-            'heroBanner'  => Banner::live()->placement('hero')->orderBy('position')->orderBy('id')->first(),
             'homeReviews' => ($config['show_reviews'] ?? true)
                 ? ProductReview::approved()->with('product')->latest()->take(6)->get()
                 : collect(),

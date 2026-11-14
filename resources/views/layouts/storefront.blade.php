@@ -20,7 +20,6 @@
   @if(\App\Support\LaunchMode::isOn())
     {{-- Launch mode (Admin → Homepage → Launch mode): its homepage styles --}}
     <link rel="stylesheet" href="{{ asset('theme/css/launch.css') }}?v={{ @filemtime(public_path('theme/css/launch.css')) }}" />
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   @endif
 
   <style>
