@@ -326,3 +326,11 @@ body.store-wide .lx-wrap { max-width: 1440px; }
 #pdAddToCart:disabled, #stickyBarAddToCart:disabled { border-color: #e7e5e4 !important; color: #a8a29e !important; }
 #pdBuyNowText, #pdAddToCartText, #stickyBarBuyNowText, #stickyBarAddToCartText { text-transform: lowercase; }
 #pdBuyNowText::first-letter, #pdAddToCartText::first-letter, #stickyBarBuyNowText::first-letter, #stickyBarAddToCartText::first-letter { text-transform: uppercase; }
+
+/* Collection cards: "add to bag" is a bag icon next to Order now (outlined, so Order now stays the main button).
+   Scoped to .lx-card so it outranks the store-wide filled .add-to-cart style. */
+.lx-card .lx-bag-btn { background: var(--lx-card) !important; color: var(--lx-accent) !important; border: 1px solid color-mix(in srgb, var(--lx-accent) 45%, transparent) !important; padding: 0 !important; width: 2.4rem; min-height: 2.25rem; box-shadow: none !important; }
+.lx-card .lx-bag-btn:hover { background: color-mix(in srgb, var(--lx-accent) 10%, var(--lx-card)) !important; border-color: var(--lx-accent) !important; color: var(--lx-accent-2) !important; }
+.lx-card .lx-bag-btn svg { display: block; }
+@media (min-width: 640px) { .lx-grid-1 .lx-bag-btn, .lx-grid-2 .lx-bag-btn { width: 2.75rem; } }
+@media (max-width: 639px) { .lx-grid-3 .lx-bag-btn, .lx-grid-4 .lx-bag-btn { width: 2.5rem; } }

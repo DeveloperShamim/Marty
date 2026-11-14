@@ -227,7 +227,7 @@
                   <button type="button" class="lx-btn lx-btn-sm lx-btn-off" disabled>Sold out</button>
                 @else
                   <span class="lx-card-btns">
-                    <button type="button" class="add-to-cart lx-btn lx-btn-sm lx-btn-ghost" {!! $dataAttrs($p, false) !!} aria-label="Add {{ $p->name }} to bag">+ Bag</button>
+                    <button type="button" class="add-to-cart lx-btn lx-btn-sm lx-bag-btn" {!! $dataAttrs($p, false) !!} aria-label="Add {{ $p->name }} to bag" title="Add to bag"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12l1 13H5L6 7z"/><path d="M9 7V6a3 3 0 0 1 6 0v1"/><path d="M12 11v5M9.5 13.5h5"/></svg></button>
                     <button type="button" class="add-to-cart lx-btn lx-btn-sm lx-btn-main" {!! $dataAttrs($p, true) !!}>Order now</button>
                   </span>
                 @endif
