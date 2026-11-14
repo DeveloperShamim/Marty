@@ -46,6 +46,7 @@ class StaffAccess
         'news-ticker'     => [self::STORE],
         'header-menu'     => [self::STORE],
         'home-sections'   => [self::STORE],
+        'launch-mode'     => [self::STORE],
         'pages'           => [self::STORE],
         // Admin only
         'staff'           => [],

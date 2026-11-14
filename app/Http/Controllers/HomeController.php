@@ -23,6 +23,11 @@ class HomeController extends Controller
 
     public function index()
     {
+        // Launch mode (Admin → Homepage → Launch mode) has its own small-catalogue homepage
+        if (\App\Support\LaunchMode::isOn()) {
+            return $this->launch();
+        }
+
         $withImages = fn ($q) => $q->published()->with('images', 'category', 'brand', 'variants', 'skus');
 
         // Each main category followed by its sub-categories; a main category's count includes its sub-categories.
@@ -137,6 +142,21 @@ class HomeController extends Controller
             'featuredBrands'         => $featuredBrands,
             'homeReviews'            => $homeReviews,
             'justForYou'             => $justForYou,
+        ]);
+    }
+
+    /** The launch mode homepage: one hero banner, the picked collection, material, comparison and trust sections. */
+    private function launch()
+    {
+        $config = \App\Support\LaunchMode::config();
+
+        return view('storefront.launch', [
+            'launch'      => $config,
+            'products'    => \App\Support\LaunchMode::products(),
+            'heroBanner'  => Banner::live()->placement('hero')->orderBy('position')->orderBy('id')->first(),
+            'homeReviews' => ($config['show_reviews'] ?? true)
+                ? ProductReview::approved()->with('product')->latest()->take(6)->get()
+                : collect(),
         ]);
     }
 
