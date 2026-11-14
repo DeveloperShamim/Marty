@@ -17,11 +17,14 @@
   $heroText = $H['text'] ?? '';
   $heroBadge = $H['badge'] ?? '';
   $heroBtn = ($H['button'] ?? '') ?: 'Shop now';
+  // Rotating card: with 2+ products the photo becomes one product card that cycles through the collection
+  // (Admin → Homepage → Launch mode → Rotating product card). It replaces the hero picture and colour dots.
+  $rotate = ($H['rotate'] ?? true) && $count >= 2;
   // The hero picture uploaded in Launch mode, else the first product's photo
   $heroImg = ! empty($H['image']) ? image_url($H['image']) : $lead?->imageUrl();
   // Colour dots swap the photo: the colour's picture from Launch mode, else a product photo tagged with that
   // colour (Admin → Products → photo colour), else the main hero picture
-  $heroColors = $lead ? collect($colorsOf($lead))->take(5)->map(function ($c) use ($lead, $H) {
+  $heroColors = $lead && ! $rotate ? collect($colorsOf($lead))->take(5)->map(function ($c) use ($lead, $H) {
     $key = mb_strtolower(trim($c['name']));
     if (! empty($H['color_images'][$key])) {
       return $c + ['image' => image_url($H['color_images'][$key])];
@@ -77,17 +80,25 @@
         @endif
 
         <div class="lx-hero-cta">
-          @if($lead && ! $lead->isOutOfStock())
+          @if($rotate)
+            {{-- Each product in the card has its own Buy now, so this one takes the customer to the whole batch --}}
+            <a href="#collection" class="lx-btn lx-btn-main">{{ $heroBtn }}</a>
+          @elseif($lead && ! $lead->isOutOfStock())
             <button type="button" class="add-to-cart lx-btn lx-btn-main" {!! $dataAttrs($lead, true) !!}>{{ $heroBtn }}</button>
           @elseif($lead)
             <a href="{{ route('product.show', $lead) }}" class="lx-btn lx-btn-main">{{ $heroBtn }}</a>
           @endif
-          @if($count > 0)
+          @if($count > 0 && ! $rotate)
             <a href="#collection" class="lx-btn lx-btn-ghost lx-hide-phone">View collection</a>
           @endif
         </div>
 
-        @if($lead)
+        @if($rotate)
+          <p class="lx-meta">
+            <span>{{ $count }} {{ $count === 1 ? 'product' : 'products' }} in this batch</span>
+            <span aria-hidden="true">·</span><span>Cash on delivery</span>
+          </p>
+        @elseif($lead)
           <p class="lx-meta">
             <span>{{ money($lead->price) }}</span>
             <span aria-hidden="true">·</span><span>Cash on delivery</span>
@@ -97,7 +108,49 @@
       </div>
     </div>
     <div class="lx-hero-media">
-      @if($lead)
+      @if($rotate)
+        <div class="lx-rot" data-lx-rot role="region" aria-roledescription="carousel" aria-label="Products in this batch">
+          <div class="lx-rot-track" data-lx-rot-track aria-live="off">
+            @foreach($products as $i => $p)
+              @php $out = $p->isOutOfStock(); @endphp
+              <article class="lx-rot-slide" aria-roledescription="slide" aria-label="{{ $i + 1 }} of {{ $count }}: {{ $p->name }}" @if($i > 0) aria-hidden="true" @endif>
+                <a href="{{ route('product.show', $p) }}" class="lx-rot-img" tabindex="{{ $i === 0 ? '0' : '-1' }}" aria-label="{{ $p->name }}">
+                  <img src="{{ $p->imageUrl() }}" alt="{{ $p->name }}" loading="{{ $i === 0 ? 'eager' : 'lazy' }}" draggable="false">
+                  @if($out)
+                    <span class="lx-tag lx-rot-tag">Sold out</span>
+                  @elseif($p->discount_percent > 0)
+                    <span class="lx-tag lx-tag-accent lx-rot-tag">-{{ $p->discount_percent }}%</span>
+                  @endif
+                </a>
+                <div class="lx-rot-body">
+                  <div class="lx-rot-info">
+                    <a href="{{ route('product.show', $p) }}" class="lx-rot-name" tabindex="{{ $i === 0 ? '0' : '-1' }}">{{ $p->name }}</a>
+                    <span class="lx-price lx-rot-price">{{ money($p->price) }}@if($p->on_sale)<s>{{ money($p->regular_price) }}</s>@endif</span>
+                  </div>
+                  <div class="lx-rot-btns">
+                    <a href="{{ route('product.show', $p) }}" class="lx-btn lx-btn-ghost" tabindex="{{ $i === 0 ? '0' : '-1' }}">View product</a>
+                    @if($out)
+                      <button type="button" class="lx-btn lx-btn-off" disabled>Sold out</button>
+                    @else
+                      <button type="button" class="add-to-cart lx-btn lx-btn-main" tabindex="{{ $i === 0 ? '0' : '-1' }}" {!! $dataAttrs($p, true) !!}>Buy now</button>
+                    @endif
+                  </div>
+                </div>
+              </article>
+            @endforeach
+          </div>
+          {{-- Arrows and dots sit over the square photo --}}
+          <div class="lx-rot-over">
+            <button type="button" class="lx-rot-arrow lx-rot-prev" data-lx-rot-prev aria-label="Previous product"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <button type="button" class="lx-rot-arrow lx-rot-next" data-lx-rot-next aria-label="Next product"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            <div class="lx-rot-dots">
+              @foreach($products as $i => $p)
+                <button type="button" class="lx-rot-dot {{ $i === 0 ? 'is-on' : '' }}" data-lx-rot-dot="{{ $i }}" aria-label="Show {{ $p->name }}" aria-current="{{ $i === 0 ? 'true' : 'false' }}"></button>
+              @endforeach
+            </div>
+          </div>
+        </div>
+      @elseif($lead)
         <a href="{{ route('product.show', $lead) }}" class="lx-hero-card" aria-label="{{ $lead->name }}">
           <img src="{{ $heroImg }}" alt="{{ $lead->name }}" loading="eager" data-lx-hero-img data-default="{{ $heroImg }}">
         </a>
@@ -345,6 +398,62 @@ document.addEventListener('click', function (e) {
     if (img.getAttribute('src') !== src) { img.style.opacity = '0'; setTimeout(function () { img.src = src; img.style.opacity = '1'; }, 180); }
   }
 });
+
+/* Hero product card: swipes on phones (native scroll-snap), changes by itself every 5 seconds, and stops
+   while the pointer is over it, something in it has focus, a finger is on it, or the tab is in the background */
+(function () {
+  var root = document.querySelector('[data-lx-rot]');
+  if (!root) return;
+  var track = root.querySelector('[data-lx-rot-track]');
+  var slides = track.children;
+  var dots = root.querySelectorAll('[data-lx-rot-dot]');
+  var n = slides.length, cur = 0, timer = null, hover = false, focus = false, touchUntil = 0;
+  var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function mark(i) {
+    if (i === cur) return;
+    cur = i;
+    dots.forEach(function (d, k) { d.classList.toggle('is-on', k === i); d.setAttribute('aria-current', k === i ? 'true' : 'false'); });
+    Array.prototype.forEach.call(slides, function (s, k) {
+      if (k === i) s.removeAttribute('aria-hidden'); else s.setAttribute('aria-hidden', 'true');
+      s.querySelectorAll('a, button:not([disabled])').forEach(function (el) { el.tabIndex = k === i ? 0 : -1; });
+    });
+  }
+  function go(i) {
+    i = (i + n) % n;
+    track.scrollTo({ left: i * track.clientWidth, behavior: still ? 'auto' : 'smooth' });
+    mark(i);
+  }
+  var t;
+  track.addEventListener('scroll', function () {
+    clearTimeout(t);
+    t = setTimeout(function () { mark(Math.max(0, Math.min(n - 1, Math.round(track.scrollLeft / track.clientWidth)))); }, 60);
+  }, { passive: true });
+
+  function paused() { return hover || focus || document.hidden || Date.now() < touchUntil; }
+  function start() { if (still) return; clearInterval(timer); timer = setInterval(function () { if (!paused()) go(cur + 1); }, 5000); }
+
+  root.addEventListener('mouseenter', function () { hover = true; });
+  root.addEventListener('mouseleave', function () { hover = false; });
+  // Only keyboard focus pauses it; a mouse click on a dot or arrow shouldn't stop it for good
+  root.addEventListener('focusin', function (e) { focus = e.target.matches(':focus-visible'); });
+  root.addEventListener('focusout', function (e) { if (!root.contains(e.relatedTarget)) focus = false; });
+  root.addEventListener('touchstart', function () { touchUntil = Date.now() + 10000; }, { passive: true });
+  root.addEventListener('click', function (e) {
+    var d = e.target.closest('[data-lx-rot-dot]');
+    if (d) { go(+d.getAttribute('data-lx-rot-dot')); start(); return; }
+    if (e.target.closest('[data-lx-rot-prev]')) { go(cur - 1); start(); return; }
+    if (e.target.closest('[data-lx-rot-next]')) { go(cur + 1); start(); return; }
+    // Buy now opens the colour picker or checkout: keep this product in view meanwhile
+    if (e.target.closest('.add-to-cart')) touchUntil = Date.now() + 15000;
+  });
+  root.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') { go(cur - 1); start(); }
+    if (e.key === 'ArrowRight') { go(cur + 1); start(); }
+  });
+  window.addEventListener('resize', function () { track.scrollLeft = cur * track.clientWidth; });
+  start();
+})();
 
 /* Material section: a pin and its point light up together */
 document.addEventListener('click', function (e) {

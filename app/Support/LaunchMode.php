@@ -37,6 +37,8 @@ class LaunchMode
                 'button' => 'Shop now',
                 'image' => null,
                 'color_images' => [],
+                // With 2 or more products, the photo becomes one product card that rotates through them
+                'rotate' => true,
             ],
             'collection' => [
                 'label' => 'Batch 01 — Limited Release',

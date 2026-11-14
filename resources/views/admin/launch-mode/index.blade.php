@@ -61,6 +61,15 @@
       <h2 class="text-[15px] font-semibold text-gray-900">Top of the page</h2>
       <p class="text-xs text-gray-500 mt-0.5">The big photo is your hero picture below, or else the first product in your collection. Its colour dots switch to that colour's picture.</p>
     </div>
+    <label class="flex items-start gap-3 cursor-pointer rounded-2xl ring-1 ring-gray-200 p-3">
+      <input type="hidden" name="hero[rotate]" value="0">
+      <input type="checkbox" name="hero[rotate]" value="1" class="peer sr-only" @checked($c['hero']['rotate'] ?? true)>
+      <span class="{{ $switch }} mt-0.5"></span>
+      <span class="min-w-0">
+        <span class="block text-[13px] font-medium text-gray-900">Rotating product card</span>
+        <span class="block text-[11px] text-gray-500 mt-0.5">With 2 or more products in your collection, the photo becomes one product card that changes every few seconds: photo, name, price, View product and Buy now. Customers can also swipe it or tap the dots. It replaces the hero picture and colour dots below; with only 1 product, or with this off, they show as before.</span>
+      </span>
+    </label>
     <div class="grid sm:grid-cols-2 gap-3">
       <div>
         <label class="lbl" for="lmHeroBadge">Small label</label>

@@ -53,7 +53,9 @@ class LaunchModeTest extends TestCase
             ->assertDontSee('Not Picked')
             ->assertSee('Find Your Carry Profile') // 2 products, so the comparison shows
             ->assertSee('Genuine leather wallets.') // default hero headline
-            ->assertSee('View collection');
+            ->assertSee('class="lx-rot"', false) // 2 products, so the hero is the rotating product card
+            ->assertSee('Buy now')
+            ->assertSee('View product');
     }
 
     public function test_admin_can_rename_the_batch_pick_products_and_switch_it_off(): void
@@ -133,5 +135,35 @@ class LaunchModeTest extends TestCase
         $this->assertNull($h2['image']);
         $this->assertSame([], $h2['color_images']);
         \Illuminate\Support\Facades\Storage::disk('public')->assertMissing($h['image']);
+    }
+
+    public function test_rotating_card_shows_with_two_products_and_can_be_switched_off(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $a = $this->wallet('Prime Trifold');
+        $b = $this->wallet('Classic Bifold', ['stock_quantity' => 0]);
+
+        // One product: the single photo with its colour dots, no card
+        LaunchMode::save(['product_ids' => [$a->id]], true);
+        Setting::forgetCache();
+        $this->get('/')->assertOk()->assertDontSee('class="lx-rot"', false)->assertSee('class="lx-hero-card"', false);
+
+        // Two products: one slide per product, a dot each, Buy now goes to checkout, sold out can't be bought
+        LaunchMode::save(['product_ids' => [$a->id, $b->id]], true);
+        Setting::forgetCache();
+        $html = $this->get('/')->assertOk()->assertSee('class="lx-rot"', false)->assertDontSee('class="lx-hero-card"', false)->getContent();
+        $this->assertSame(2, substr_count($html, 'class="lx-rot-slide"'));
+        $this->assertSame(2, substr_count($html, 'data-lx-rot-dot="'));
+        $this->assertSame(1, substr_count($html, '>Buy now</button>'));
+        $this->assertStringContainsString('aria-label="2 of 2: Classic Bifold"', $html);
+
+        // The admin switch turns it off and the single photo comes back
+        $this->actingAs($admin)->get(route('admin.launch-mode.index'))->assertSee('Rotating product card');
+        $this->actingAs($admin)->put(route('admin.launch-mode.update'), [
+            'launch_mode' => '1', 'product_ids' => [$a->id, $b->id], 'hero' => ['rotate' => '0'],
+        ])->assertRedirect();
+        Setting::forgetCache();
+        $this->assertFalse(LaunchMode::config()['hero']['rotate']);
+        $this->get('/')->assertDontSee('class="lx-rot"', false)->assertSee('class="lx-hero-card"', false);
     }
 }

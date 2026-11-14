@@ -35,6 +35,7 @@ class LaunchModeController extends Controller
             'hero.title'             => $text,
             'hero.text'              => $long,
             'hero.button'            => ['nullable', 'string', 'max:40'],
+            'hero.rotate'            => ['nullable', 'boolean'],
             'collection.label'       => $text,
             'collection.heading'     => $text,
             'collection.intro'       => $long,
@@ -115,6 +116,7 @@ class LaunchModeController extends Controller
                 'button' => $clean($data['hero']['button'] ?? ''),
                 'image' => $heroImage,
                 'color_images' => $colorImages,
+                'rotate' => $request->boolean('hero.rotate'),
             ],
             'collection' => [
                 'label' => $clean($data['collection']['label'] ?? ''),
