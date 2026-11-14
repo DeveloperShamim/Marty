@@ -73,6 +73,20 @@ php artisan serve
   password printed once), the default settings and categories. No demo data or `password` accounts, unless you set
   `SEED_DEMO=true`.
 
+### New client store
+
+On a fresh copy for a new client, after `php artisan migrate --seed`, run:
+
+```bash
+php artisan store:new --name="Glow Mart" --type=beauty --phone=01811-223344 \
+  --email=hello@glowmart.com --admin-email=owner@glowmart.com
+```
+
+This replaces the demo shop's name, wording, logo, payment numbers, categories, coupons, banners and trust strip with a
+starter pack for that business type, and picks a matching style pack. Types: `fashion`, `beauty`, `electronics`,
+`grocery`, `home`, `general`. With `--admin-email`, it creates an admin and prints the password once. It refuses to run
+on a store that already has products or orders. Then log in to `/admin`: the Dashboard checklist shows what is left.
+
 ### Cron job
 
 Courier status sync, daily backups and cleanup need the scheduler. Add this cron job to run every minute:
@@ -104,6 +118,7 @@ Change these passwords, or don't seed demo data, on a live store.
 
 | Command | What it does |
 |---|---|
+| `php artisan store:new` | Sets up a fresh copy as a new client's blank store (see Install) |
 | `php artisan app:launch-check` | Checks the store is ready to go live |
 | `php artisan app:backup-db` | Saves a gzipped SQL copy in `storage/app/backups` (newest 14 kept); also runs daily |
 | `php artisan couriers:sync` | Pulls the latest delivery status from the couriers; also runs on the schedule |
