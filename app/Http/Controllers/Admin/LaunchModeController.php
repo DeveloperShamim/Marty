@@ -35,6 +35,7 @@ class LaunchModeController extends Controller
             'hero.title'             => $text,
             'hero.text'              => $long,
             'hero.button'            => ['nullable', 'string', 'max:40'],
+            'hero.rotate'            => ['nullable', 'boolean'],
             'collection.label'       => $text,
             'collection.heading'     => $text,
             'collection.intro'       => $long,
@@ -47,6 +48,9 @@ class LaunchModeController extends Controller
             'material.pillars.*.title' => $text,
             'material.pillars.*.text'  => $long,
             'material_image'         => ['nullable', 'image', 'max:4096'],
+            'hero_image'             => ['nullable', 'image', 'max:4096'],
+            'hero_color_image'       => ['nullable', 'array', 'max:8'],
+            'hero_color_image.*'     => ['nullable', 'image', 'max:4096'],
             'pillar_image'           => ['nullable', 'array', 'max:3'],
             'pillar_image.*'         => ['nullable', 'image', 'max:4096'],
             'compare.on'             => ['nullable', 'boolean'],
@@ -82,6 +86,22 @@ class LaunchModeController extends Controller
             return $old;
         };
         $materialImage = $picture($saved['image'] ?? null, 'material_image', 'material_image_remove');
+
+        // Hero pictures: one main picture, and one per colour of the first product (keyed by colour name)
+        $savedHero = LaunchMode::config()['hero'] ?? [];
+        $heroImage = $picture($savedHero['image'] ?? null, 'hero_image', 'hero_image_remove');
+        $colorImages = [];
+        $colorKeys = array_unique(array_merge(array_keys($savedHero['color_images'] ?? []), array_keys($request->file('hero_color_image', []) ?: []), array_keys((array) $request->input('hero_color_image_remove', []))));
+        foreach ($colorKeys as $key) {
+            $key = mb_strtolower(trim((string) $key));
+            if ($key === '') {
+                continue;
+            }
+            $path = $picture($savedHero['color_images'][$key] ?? null, 'hero_color_image.' . $key, 'hero_color_image_remove.' . $key);
+            if ($path) {
+                $colorImages[$key] = $path;
+            }
+        }
         $pillarImages = [];
         foreach (range(0, 2) as $i) {
             $pillarImages[$i] = $picture($saved['pillars'][$i]['image'] ?? null, "pillar_image.$i", "pillar_image_remove.$i");
@@ -94,6 +114,9 @@ class LaunchModeController extends Controller
                 'title' => $clean($data['hero']['title'] ?? ''),
                 'text' => $clean($data['hero']['text'] ?? ''),
                 'button' => $clean($data['hero']['button'] ?? ''),
+                'image' => $heroImage,
+                'color_images' => $colorImages,
+                'rotate' => $request->boolean('hero.rotate'),
             ],
             'collection' => [
                 'label' => $clean($data['collection']['label'] ?? ''),
