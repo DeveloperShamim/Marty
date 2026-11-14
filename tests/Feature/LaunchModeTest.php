@@ -82,4 +82,29 @@ class LaunchModeTest extends TestCase
         $this->assertFalse(LaunchMode::isOn());
         $this->get('/')->assertDontSee('lx-page', false);
     }
+
+    public function test_admin_can_upload_and_remove_material_pictures(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $admin = User::factory()->create(['role' => 'admin']);
+        $base = ['launch_mode' => '1', 'material' => ['on' => '1', 'pillars' => [['title' => 'One'], ['title' => 'Two']]]];
+
+        $this->actingAs($admin)->put(route('admin.launch-mode.update'), $base + [
+            'material_image' => \Illuminate\Http\UploadedFile::fake()->image('main.jpg', 600, 600),
+            'pillar_image' => [1 => \Illuminate\Http\UploadedFile::fake()->image('two.jpg', 600, 600)],
+        ])->assertRedirect();
+        Setting::forgetCache();
+        $m = LaunchMode::config()['material'];
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($m['image']);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($m['pillars'][1]['image']);
+        $this->get('/')->assertSee('data-lx-mat-img', false);
+
+        // Saving again without files keeps them; ticking Remove deletes the file
+        $this->actingAs($admin)->put(route('admin.launch-mode.update'), $base + ['material_image_remove' => '1'])->assertRedirect();
+        Setting::forgetCache();
+        $m2 = LaunchMode::config()['material'];
+        $this->assertNull($m2['image']);
+        $this->assertSame($m['pillars'][1]['image'], $m2['pillars'][1]['image']);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertMissing($m['image']);
+    }
 }

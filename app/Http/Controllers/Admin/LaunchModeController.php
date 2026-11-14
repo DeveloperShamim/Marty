@@ -46,6 +46,9 @@ class LaunchModeController extends Controller
             'material.pillars'       => ['nullable', 'array', 'max:3'],
             'material.pillars.*.title' => $text,
             'material.pillars.*.text'  => $long,
+            'material_image'         => ['nullable', 'image', 'max:4096'],
+            'pillar_image'           => ['nullable', 'array', 'max:3'],
+            'pillar_image.*'         => ['nullable', 'image', 'max:4096'],
             'compare.on'             => ['nullable', 'boolean'],
             'compare.label'          => $text,
             'compare.heading'        => $text,
@@ -61,6 +64,28 @@ class LaunchModeController extends Controller
         ]);
 
         $clean = fn ($v) => trim((string) $v);
+
+        // Pictures for the material section: keep what was saved unless a new one is uploaded or "Remove" is ticked
+        $saved = LaunchMode::config()['material'] ?? [];
+        $picture = function (?string $old, string $fileKey, string $removeKey) use ($request) {
+            if ($request->hasFile($fileKey)) {
+                $this->deletePicture($old);
+
+                return $request->file($fileKey)->store('launch', 'public');
+            }
+            if ($request->boolean($removeKey)) {
+                $this->deletePicture($old);
+
+                return null;
+            }
+
+            return $old;
+        };
+        $materialImage = $picture($saved['image'] ?? null, 'material_image', 'material_image_remove');
+        $pillarImages = [];
+        foreach (range(0, 2) as $i) {
+            $pillarImages[$i] = $picture($saved['pillars'][$i]['image'] ?? null, "pillar_image.$i", "pillar_image_remove.$i");
+        }
 
         $config = [
             'show_reviews' => $request->boolean('show_reviews'),
@@ -81,9 +106,10 @@ class LaunchModeController extends Controller
                 'on' => $request->boolean('material.on'),
                 'label' => $clean($data['material']['label'] ?? ''),
                 'heading' => $clean($data['material']['heading'] ?? ''),
+                'image' => $materialImage,
                 'pillars' => collect($data['material']['pillars'] ?? [])
-                    ->map(fn ($p) => ['title' => $clean($p['title'] ?? ''), 'text' => $clean($p['text'] ?? '')])
-                    ->filter(fn ($p) => $p['title'] !== '' || $p['text'] !== '')->values()->all(),
+                    ->map(fn ($p, $i) => ['title' => $clean($p['title'] ?? ''), 'text' => $clean($p['text'] ?? ''), 'image' => $pillarImages[$i] ?? null])
+                    ->filter(fn ($p) => $p['title'] !== '' || $p['text'] !== '' || $p['image'])->values()->all(),
             ],
             'compare' => [
                 'on' => $request->boolean('compare.on'),
@@ -116,5 +142,13 @@ class LaunchModeController extends Controller
         });
 
         return back()->with('status', $on ? 'Saved. Launch mode is on.' : 'Saved. Launch mode is off, so the normal homepage shows.');
+    }
+
+    /** Delete an uploaded launch picture from storage (pasted links and other folders are left alone). */
+    private function deletePicture(?string $path): void
+    {
+        if ($path && str_starts_with($path, 'launch/')) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+        }
     }
 }

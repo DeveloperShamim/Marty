@@ -16,14 +16,14 @@
   $rows = collect($c['compare']['rows'] ?? []);
   // Always offer at least one empty row to add a new comparison line
   $rowSlots = $rows->count() < \App\Support\LaunchMode::MAX_COMPARE_ROWS ? $rows->push(['label' => '', 'values' => []]) : $rows;
-  $pillars = collect($c['material']['pillars'] ?? [])->pad(3, ['title' => '', 'text' => '']);
+  $pillars = collect($c['material']['pillars'] ?? [])->pad(3, ['title' => '', 'text' => '', 'image' => null]);
   $trustItems = collect($c['trust']['items'] ?? [])->pad(3, ['icon' => 'shield', 'title' => '', 'text' => '']);
   $icons = ['cash' => 'Cash', 'bolt' => 'Fast', 'shield' => 'Warranty', 'truck' => 'Delivery', 'gift' => 'Gift', 'star' => 'Star'];
   $switch = 'relative h-6 w-10 shrink-0 rounded-full bg-gray-200 transition-colors peer-checked:bg-gray-900 after:absolute after:top-0.5 after:left-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-4';
 @endphp
 
 @section('content')
-<form method="POST" action="{{ route('admin.launch-mode.update') }}" class="space-y-4 max-w-4xl" id="lmForm">
+<form method="POST" action="{{ route('admin.launch-mode.update') }}" class="space-y-4 max-w-4xl" id="lmForm" enctype="multipart/form-data">
   @csrf @method('PUT')
 
   @if($errors->any())
@@ -129,7 +129,7 @@
     <label class="flex items-center justify-between gap-3 cursor-pointer">
       <span>
         <span class="block text-[15px] font-semibold text-gray-900">Material section</span>
-        <span class="block text-xs text-gray-500 mt-0.5">Three points about how the wallets are made, beside a leather illustration.</span>
+        <span class="block text-xs text-gray-500 mt-0.5">Three points about how the wallets are made, beside a picture. Without pictures a leather illustration shows.</span>
       </span>
       <input type="hidden" name="material[on]" value="0">
       <input type="checkbox" name="material[on]" value="1" class="peer sr-only" @checked($c['material']['on'] ?? true)>
@@ -145,10 +145,34 @@
         <input class="inp" name="material[heading]" value="{{ $c['material']['heading'] }}" maxlength="300">
       </div>
     </div>
+    @php $matImg = $c['material']['image'] ?? null; @endphp
+    <div class="rounded-2xl ring-1 ring-gray-200 p-3 flex items-center gap-3">
+      <span class="h-16 w-16 shrink-0 rounded-xl bg-gray-100 overflow-hidden grid place-items-center text-[10px] text-gray-400">
+        @if($matImg)<img src="{{ image_url($matImg) }}" alt="" class="h-full w-full object-cover">@else No picture @endif
+      </span>
+      <span class="min-w-0 flex-1">
+        <label class="lbl" for="lmMatImg">Main picture</label>
+        <input id="lmMatImg" type="file" name="material_image" accept="image/*" class="block w-full text-xs text-gray-600">
+        <span class="block text-[11px] text-gray-500 mt-1">Square works best, e.g. a close-up of the leather or stitching. Up to 4 MB.</span>
+        @if($matImg)<label class="mt-1 inline-flex items-center gap-1.5 text-[11px] text-gray-600"><input type="checkbox" name="material_image_remove" value="1"> Remove</label>@endif
+      </span>
+    </div>
     @foreach($pillars->take(3) as $i => $p)
-      <div class="grid sm:grid-cols-[1fr_2fr] gap-2">
-        <input class="inp" name="material[pillars][{{ $i }}][title]" value="{{ $p['title'] }}" placeholder="Point {{ $i + 1 }} title" maxlength="300" aria-label="Point {{ $i + 1 }} title">
-        <input class="inp" name="material[pillars][{{ $i }}][text]" value="{{ $p['text'] }}" placeholder="One or two sentences" maxlength="600" aria-label="Point {{ $i + 1 }} text">
+      <div class="rounded-2xl ring-1 ring-gray-200 p-3 space-y-2">
+        <div class="grid sm:grid-cols-[1fr_2fr] gap-2">
+          <input class="inp" name="material[pillars][{{ $i }}][title]" value="{{ $p['title'] }}" placeholder="Point {{ $i + 1 }} title" maxlength="300" aria-label="Point {{ $i + 1 }} title">
+          <input class="inp" name="material[pillars][{{ $i }}][text]" value="{{ $p['text'] }}" placeholder="One or two sentences" maxlength="600" aria-label="Point {{ $i + 1 }} text">
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="h-10 w-10 shrink-0 rounded-lg bg-gray-100 overflow-hidden">
+            @if(! empty($p['image']))<img src="{{ image_url($p['image']) }}" alt="" class="h-full w-full object-cover">@endif
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block text-[11px] text-gray-500">Picture for point {{ $i + 1 }} (optional): shows when a customer taps this point.</span>
+            <input type="file" name="pillar_image[{{ $i }}]" accept="image/*" class="block w-full text-xs text-gray-600 mt-0.5" aria-label="Picture for point {{ $i + 1 }}">
+            @if(! empty($p['image']))<label class="mt-1 inline-flex items-center gap-1.5 text-[11px] text-gray-600"><input type="checkbox" name="pillar_image_remove[{{ $i }}]" value="1"> Remove</label>@endif
+          </span>
+        </div>
       </div>
     @endforeach
   </section>

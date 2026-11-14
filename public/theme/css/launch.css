@@ -231,3 +231,7 @@ body.store-wide .lx-wrap { max-width: 1440px; }
   .lx-hero-cta .lx-btn { padding: .85rem 1rem; font-size: 15px; border-radius: .75rem; }
   .lx-hero .lx-meta { width: 100%; justify-content: center; font-size: 12.5px; }
 }
+
+/* Material section with admin pictures instead of the illustration */
+.lx-macro-photo { padding: 0; overflow: hidden; background: var(--lx-card-2); box-shadow: 0 30px 60px -32px rgba(68, 46, 24, .35); }
+.lx-macro-photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity .25s ease; }

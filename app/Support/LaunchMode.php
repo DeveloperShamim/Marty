@@ -44,6 +44,7 @@ class LaunchMode
             'product_ids' => [],
             'material' => [
                 'on' => true,
+                'image' => null,
                 'label' => 'Material Architecture',
                 'heading' => 'Built to outlast trends. Engineered for BDT currency.',
                 'pillars' => [

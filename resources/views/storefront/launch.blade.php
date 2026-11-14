@@ -171,7 +171,18 @@
   @if(($L['material']['on'] ?? true) && $pillars->isNotEmpty())
     <section id="craftsmanship" class="lx-section lx-alt">
       <div class="lx-wrap lx-split">
-        <div class="lx-macro" data-lx-macro>
+        @php
+          $matMain = ! empty($L['material']['image']) ? image_url($L['material']['image']) : null;
+          $pillarImgs = $pillars->map(fn ($pl) => ! empty($pl['image']) ? image_url($pl['image']) : null);
+          $matFirst = $pillarImgs->first() ?: $matMain ?: $pillarImgs->filter()->first();
+        @endphp
+        @if($matFirst)
+          {{-- Admin pictures: the main one, or the tapped point's own picture --}}
+          <div class="lx-macro lx-macro-photo">
+            <img src="{{ $matFirst }}" alt="{{ $L['material']['heading'] }}" loading="lazy" data-lx-mat-img data-default="{{ $matMain ?: $matFirst }}">
+          </div>
+        @else
+          <div class="lx-macro" data-lx-macro>
           {{-- Leather corner illustration with numbered pins; the pins and the points highlight each other --}}
           <svg viewBox="0 0 400 400" aria-hidden="true">
             <defs>
@@ -190,12 +201,13 @@
             <button type="button" class="lx-pin lx-pin-{{ $pi }} {{ $pi === 0 ? 'is-on' : '' }}" data-lx-pin="{{ $pi }}" aria-label="{{ $pl['title'] }}">{{ $pi + 1 }}</button>
           @endforeach
         </div>
+        @endif
         <div>
           @if($L['material']['label'])<p class="lx-eyebrow">{{ $L['material']['label'] }}</p>@endif
           @if($L['material']['heading'])<h2 class="lx-h2 lx-h2-lg">{{ $L['material']['heading'] }}</h2>@endif
           <div class="lx-pillars">
             @foreach($pillars as $pi => $pl)
-              <button type="button" class="lx-pillar {{ $pi === 0 ? 'is-on' : '' }}" data-lx-pin="{{ $pi }}">
+              <button type="button" class="lx-pillar {{ $pi === 0 ? 'is-on' : '' }}" data-lx-pin="{{ $pi }}" data-img="{{ $pillarImgs[$pi] ?? '' }}">
                 <span class="lx-pillar-n">{{ $num($pi) }}</span>
                 <span>
                   <span class="lx-pillar-t">{{ $pl['title'] }}</span>
@@ -335,6 +347,12 @@ document.addEventListener('click', function (e) {
   document.querySelectorAll('[data-lx-pin]').forEach(function (el) {
     el.classList.toggle('is-on', el.getAttribute('data-lx-pin') === n);
   });
+  // With admin pictures, show the tapped point's own picture, or the main picture
+  var img = document.querySelector('[data-lx-mat-img]');
+  if (img) {
+    var src = hit.getAttribute('data-img') || img.getAttribute('data-default');
+    if (src && img.getAttribute('src') !== src) { img.style.opacity = '0'; setTimeout(function () { img.src = src; img.style.opacity = '1'; }, 180); }
+  }
 });
 </script>
 @endpush
