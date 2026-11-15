@@ -791,6 +791,12 @@
           <span class="animate-spin text-rose-600"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg></span>
           <span id="descVidUploadStatusText">Uploading video...</span>
         </div>
+
+        {{-- Videos already in the media library --}}
+        <div id="descVidLibrary" class="hidden space-y-2">
+          <div class="text-center text-stone-400 text-xs font-bold">OR PICK FROM MEDIA LIBRARY</div>
+          <div id="descVidLibraryList" class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-56 overflow-y-auto"></div>
+        </div>
       </div>
 
       {{-- Common Video Options --}}
@@ -1374,7 +1380,60 @@
   closeVidBtn?.addEventListener('click', closeVideoModal);
   cancelVidBtn?.addEventListener('click', closeVideoModal);
   vidTabLinkBtn?.addEventListener('click', () => switchVidTab('link'));
-  vidTabDirectBtn?.addEventListener('click', () => switchVidTab('direct'));
+  vidTabDirectBtn?.addEventListener('click', () => { switchVidTab('direct'); loadVideoLibrary(); });
+
+  // Videos already uploaded (here or in the Media Library) can be placed again
+  const vidLibrary = document.getElementById('descVidLibrary');
+  const vidLibraryList = document.getElementById('descVidLibraryList');
+
+  function selectLibraryVideo(url) {
+    uploadedVideoUrl = url;
+    if (vidDirectUrlInput) vidDirectUrlInput.value = url;
+    vidLibraryList?.querySelectorAll('[data-video-url]').forEach((el) => {
+      const on = el.dataset.videoUrl === url;
+      el.classList.toggle('ring-2', on);
+      el.classList.toggle('ring-red-500', on);
+    });
+  }
+
+  // Typing a link by hand replaces an earlier upload or pick
+  vidDirectUrlInput?.addEventListener('input', () => {
+    uploadedVideoUrl = '';
+    vidLibraryList?.querySelectorAll('[data-video-url]').forEach((el) => el.classList.remove('ring-2', 'ring-red-500'));
+  });
+
+  async function loadVideoLibrary() {
+    if (!vidLibrary || !vidLibraryList) return;
+    try {
+      const res = await fetch('{{ route('admin.products.description-videos') }}', { headers: { 'Accept': 'application/json' } });
+      const data = await res.json();
+      const videos = (data && data.videos) || [];
+      vidLibraryList.replaceChildren();
+      videos.forEach((v) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.dataset.videoUrl = v.url;
+        card.title = v.filename;
+        card.className = 'text-left rounded-xl overflow-hidden bg-stone-100 hover:bg-stone-200 transition-colors cursor-pointer';
+        const vid = document.createElement('video');
+        vid.src = v.url + '#t=0.5';
+        vid.preload = 'metadata';
+        vid.muted = true;
+        vid.playsInline = true;
+        vid.className = 'w-full aspect-video object-cover bg-black pointer-events-none';
+        const meta = document.createElement('p');
+        meta.className = 'px-2 py-1 text-[10px] text-stone-600 truncate';
+        meta.textContent = `${v.size} · ${v.uploaded}`;
+        card.append(vid, meta);
+        card.addEventListener('click', () => selectLibraryVideo(v.url));
+        vidLibraryList.append(card);
+      });
+      vidLibrary.classList.toggle('hidden', videos.length === 0);
+    } catch (err) {
+      console.error(err);
+      vidLibrary.classList.add('hidden');
+    }
+  }
 
   // Video Upload
   vidFileInput?.addEventListener('change', async () => {

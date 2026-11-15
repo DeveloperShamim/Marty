@@ -21,4 +21,13 @@ class SafeUpload
 
         return in_array($ext, self::IMAGE_EXTENSIONS, true) ? $ext : null;
     }
+
+    /** mp4 / webm / mov for a real video file, null for anything else. */
+    public static function videoExtension(UploadedFile $file): ?string
+    {
+        $ext = strtolower((string) $file->extension()); // guessed from the content, not the name
+        $ext = match ($ext) { 'm4v' => 'mp4', 'qt' => 'mov', default => $ext };
+
+        return in_array($ext, ['mp4', 'webm', 'mov'], true) ? $ext : null;
+    }
 }

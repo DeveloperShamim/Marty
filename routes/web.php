@@ -239,6 +239,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('products/bulk-status', [AdminProductController::class, 'bulkStatus'])->middleware('area:products')->name('products.bulk-status');
             Route::post('products/bulk-delete', [AdminProductController::class, 'bulkDelete'])->middleware('area:products')->name('products.bulk-delete');
             Route::post('products/upload-description-media', [AdminProductController::class, 'uploadDescriptionMedia'])->middleware('area:products')->name('products.upload-description-media');
+            Route::get('products/description-videos', [AdminProductController::class, 'descriptionVideos'])->middleware('area:products')->name('products.description-videos');
             Route::resource('products', AdminProductController::class)->except('show')->middleware('area:products');
             Route::patch('categories/{category}/toggle-featured', [AdminCategoryController::class, 'toggleFeatured'])->middleware('area:categories')->name('categories.toggle-featured');
             Route::resource('categories', AdminCategoryController::class)->except('show')->middleware('area:categories');
