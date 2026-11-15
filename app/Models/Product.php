@@ -37,7 +37,14 @@ class Product extends Model
 
     public function images(): HasMany
     {
-        return $this->hasMany(ProductImage::class)->orderByDesc('is_primary')->orderBy('position');
+        // Photos only; product videos are rows of the same table and come from videos()
+        return $this->hasMany(ProductImage::class)->onlyImages()->orderByDesc('is_primary')->orderBy('position');
+    }
+
+    /** Videos added under Photos in the admin; they autoplay first in the product page gallery. */
+    public function videos(): HasMany
+    {
+        return $this->hasMany(ProductImage::class)->onlyVideos()->orderBy('position');
     }
 
     public function variants(): HasMany
