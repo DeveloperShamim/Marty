@@ -44,12 +44,16 @@ class MediaController extends Controller
                 if (! in_array(strtolower($file->getExtension()), self::VIDEO_EXTENSIONS, true)) {
                     continue;
                 }
+                $stat = self::statFile($file);
+                if ($stat === null) {
+                    continue;
+                }
                 $videos[] = [
                     'url' => asset($dir . '/' . $file->getFilename()),
                     'path' => $dir . '/' . $file->getFilename(),
                     'filename' => $file->getFilename(),
-                    'size' => self::humanBytes($file->getSize()),
-                    'modified' => $file->getMTime(),
+                    'size' => self::humanBytes($stat['size']),
+                    'modified' => $stat['mtime'],
                 ];
             }
         }
@@ -137,8 +141,12 @@ class MediaController extends Controller
 
                 $relativePath = $this->normalizeRelPath($pathname);
                 $url = asset($relativePath);
-                $sizeBytes = $file->getSize();
-                $lastModified = $file->getMTime();
+                $stat = self::statFile($file);
+                if ($stat === null) {
+                    continue; // deleted a moment ago (see statFile)
+                }
+                $sizeBytes = $stat['size'];
+                $lastModified = $stat['mtime'];
 
                 // Determine usage reference
                 $usedBy = null;
@@ -401,8 +409,8 @@ class MediaController extends Controller
             return back()->withErrors(['image' => 'Only files inside the media library can be deleted.']);
         }
 
-        if (File::exists($absPath)) {
-            File::delete($absPath);
+        if (File::exists($absPath) && ! File::delete($absPath)) {
+            return back()->withErrors(['image' => 'This file is in use right now and could not be deleted. Close any tab playing it and try again.']);
         }
 
         ProductImage::where('path', '/' . $relPath)
@@ -610,6 +618,19 @@ class MediaController extends Controller
         }
 
         return ltrim($cleanPath, '/');
+    }
+
+    /**
+     * Size and modified time, or null when the file can't be read. On Windows a file deleted while
+     * something still has it open (the dev server streaming a video preview) stays in the folder
+     * listing until it is closed, but can no longer be read, so it is left out instead of crashing.
+     */
+    private static function statFile(\SplFileInfo $file): ?array
+    {
+        $size = @filesize($file->getPathname());
+        $mtime = @filemtime($file->getPathname());
+
+        return $size === false || $mtime === false ? null : ['size' => $size, 'mtime' => $mtime];
     }
 
     private function isVideoPath(string $relPath): bool
