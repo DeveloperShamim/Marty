@@ -350,6 +350,35 @@
 
         {{-- Live New Uploads Preview Grid --}}
         <div id="newImagesPreview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"></div>
+
+        {{-- Product video: plays first (muted, looping) in the product page gallery --}}
+        @php $uploadLimit = \App\Support\SafeUpload::serverLimitBytes(); @endphp
+        <div class="pt-4 border-t border-stone-100 space-y-3" id="productVideoBlock" data-upload-limit="{{ $uploadLimit }}" data-upload-limit-label="{{ \App\Support\SafeUpload::humanLimit() }}">
+          <div>
+            <p class="text-[13px] font-medium text-stone-700">Product video</p>
+            <p class="text-xs text-stone-500 mt-0.5">Plays first in the product page gallery, muted and on repeat. MP4, WebM or MOV up to {{ $uploadLimit && $uploadLimit < 52428800 ? \App\Support\SafeUpload::humanLimit() . ' (this server\'s limit)' : '50 MB' }}.</p>
+          </div>
+
+          @if($editing && $product->videos->isNotEmpty())
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              @foreach($product->videos as $vid)
+                <div class="relative group bg-stone-50 border border-stone-200 rounded-xl p-1.5" id="imgcard-{{ $vid->id }}">
+                  <video src="{{ $vid->url() }}#t=0.5" muted playsinline loop preload="metadata" class="w-full aspect-square object-cover rounded-lg bg-black" onmouseenter="this.play()" onmouseleave="this.pause()"></video>
+                  <span class="absolute top-2.5 left-2.5 bg-stone-900/80 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded">Video</span>
+                  <button type="button" onclick="deleteProductImage({{ $product->id }}, {{ $vid->id }}, 'video')" class="absolute top-2.5 right-2.5 bg-rose-600 text-white h-6 w-6 rounded-full text-sm font-bold flex items-center justify-center shadow-md cursor-pointer" title="Delete video" aria-label="Delete video">&times;</button>
+                </div>
+              @endforeach
+            </div>
+          @endif
+
+          <label class="flex items-center gap-3 border-2 border-dashed border-stone-300 hover:border-brand-600 rounded-xl px-4 py-3.5 bg-stone-50 hover:bg-brand-50 transition-colors cursor-pointer">
+            <input id="productVideoInput" name="videos[]" type="file" accept="video/mp4,video/webm,video/quicktime" multiple class="sr-only" />
+            <span class="h-9 w-9 rounded-full bg-white border border-stone-200 text-stone-600 inline-flex items-center justify-center shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect width="15" height="14" x="2" y="5" rx="2"/><path d="m17 10 5-3v10l-5-3"/></svg></span>
+            <span class="text-sm font-medium text-stone-700">Add a video</span>
+          </label>
+          <div id="productVideoPreview" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+          <p id="productVideoError" class="hidden text-xs font-medium text-rose-700"></p>
+        </div>
       </section>
 
       {{-- Card 2: Pricing & General Inventory --}}
@@ -650,7 +679,7 @@
 </form>
 
 @if($editing)
-  @foreach($product->images as $img)
+  @foreach($product->images->concat($product->videos) as $img)
     <form id="delimg{{ $img->id }}" method="POST" action="{{ route('admin.products.images.destroy', [$product, $img]) }}" onsubmit="return confirm('Remove this image?')">@csrf @method('DELETE')</form>
   @endforeach
 @endif
@@ -683,7 +712,7 @@
           <div class="space-y-1.5">
             <div class="w-10 h-10 mx-auto rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-lg">↑</div>
             <p class="text-xs font-bold text-stone-800">Click to choose image or drag &amp; drop</p>
-            <p class="text-[11px] text-stone-400">JPG, PNG, WebP, GIF, SVG (up to 50MB)</p>
+            <p class="text-[11px] text-stone-400">JPG, PNG, WebP, GIF (up to {{ \App\Support\SafeUpload::serverLimitBytes() && \App\Support\SafeUpload::serverLimitBytes() < 52428800 ? \App\Support\SafeUpload::humanLimit() : '50MB' }})</p>
           </div>
         </label>
         <div id="descImgUploadStatus" class="hidden text-xs text-stone-600 flex items-center gap-2 p-2.5 rounded-xl bg-stone-100">
@@ -784,7 +813,7 @@
           <div class="space-y-1">
             <span class="text-gray-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect width="15" height="14" x="2" y="5" rx="2"/><path d="m17 10 5-3v10l-5-3"/></svg></span>
             <p class="text-xs font-bold text-stone-800">Upload MP4 Video File</p>
-            <p class="text-[10px] text-stone-400">MP4, WebM (up to 50MB)</p>
+            <p class="text-[10px] text-stone-400">MP4, WebM (up to {{ \App\Support\SafeUpload::serverLimitBytes() && \App\Support\SafeUpload::serverLimitBytes() < 52428800 ? \App\Support\SafeUpload::humanLimit() : '50MB' }})</p>
           </div>
         </label>
         <div id="descVidUploadStatus" class="hidden text-xs text-stone-600 flex items-center gap-2 p-2.5 rounded-xl bg-stone-100">
@@ -1191,6 +1220,13 @@
   const imgPreview = document.getElementById('descImgPreview');
 
   let activeImgUrl = '';
+  // The smaller of this server's upload limit and the editor's own 50MB cap
+  const descUploadLimit = Math.min({{ \App\Support\SafeUpload::serverLimitBytes() ?: 52428800 }}, 52428800);
+  const descUploadLimitLabel = descUploadLimit < 52428800 ? @json(\App\Support\SafeUpload::humanLimit()) : '50 MB';
+  async function readUploadJson(res) {
+    if (res.status === 413) return { success: false, message: `This file is too large. This server accepts files up to ${descUploadLimitLabel}.` };
+    try { return await res.json(); } catch (e) { return { success: false, message: 'Upload failed. Please try again.' }; }
+  }
 
   function openImageModal() {
     saveSelection();
@@ -1246,6 +1282,11 @@
   imgFileInput?.addEventListener('change', async () => {
     const file = imgFileInput.files && imgFileInput.files[0];
     if (!file) return;
+    if (descUploadLimit && file.size > descUploadLimit) {
+      alert(`This file is too large. This server accepts files up to ${descUploadLimitLabel}. Please pick a smaller one.`);
+      imgFileInput.value = '';
+      return;
+    }
 
     const formData = new FormData();
     formData.append('file', file);
@@ -1264,7 +1305,7 @@
         body: formData,
       });
 
-      const data = await res.json();
+      const data = await readUploadJson(res);
       if (res.ok && data.success && data.url) {
         activeImgUrl = data.url;
         if (imgPreview) imgPreview.src = data.url;
@@ -1439,6 +1480,11 @@
   vidFileInput?.addEventListener('change', async () => {
     const file = vidFileInput.files && vidFileInput.files[0];
     if (!file) return;
+    if (descUploadLimit && file.size > descUploadLimit) {
+      alert(`This file is too large. This server accepts files up to ${descUploadLimitLabel}. Please pick a smaller one.`);
+      vidFileInput.value = '';
+      return;
+    }
 
     const formData = new FormData();
     formData.append('file', file);
@@ -1457,7 +1503,7 @@
         body: formData,
       });
 
-      const data = await res.json();
+      const data = await readUploadJson(res);
       if (res.ok && data.success && data.url) {
         uploadedVideoUrl = data.url;
         if (vidDirectUrlInput) vidDirectUrlInput.value = data.url;
@@ -2056,8 +2102,8 @@
   window.getVariantOptionValues = () => options.flatMap((o) => o.values);
 })();
 
-function deleteProductImage(productId, imageId) {
-  if (!confirm('Remove this image?')) return;
+function deleteProductImage(productId, imageId, kind) {
+  if (!confirm(kind === 'video' ? 'Remove this video?' : 'Remove this image?')) return;
   const card = document.getElementById('imgcard-' + imageId);
   const token = document.querySelector('input[name="_token"]')?.value || '{{ csrf_token() }}';
   const url = '/admin/products/' + productId + '/images/' + imageId;
@@ -2092,6 +2138,44 @@ function deleteProductImage(productId, imageId) {
     else window.location.reload();
   });
 }
+
+// Product video: preview the picked files and stop ones the server would refuse for size
+(function() {
+  const input = document.getElementById('productVideoInput');
+  const block = document.getElementById('productVideoBlock');
+  const preview = document.getElementById('productVideoPreview');
+  const error = document.getElementById('productVideoError');
+  if (!input || !block || !preview) return;
+  const serverLimit = parseInt(block.dataset.uploadLimit || '0', 10);
+  const limit = Math.min(serverLimit || Infinity, 50 * 1024 * 1024);
+  const limitLabel = serverLimit && serverLimit < 50 * 1024 * 1024 ? block.dataset.uploadLimitLabel : '50 MB';
+
+  input.addEventListener('change', () => {
+    preview.replaceChildren();
+    error.classList.add('hidden');
+    const files = Array.from(input.files || []);
+    const tooBig = files.filter((f) => f.size > limit);
+    if (tooBig.length) {
+      error.textContent = `${tooBig.map((f) => f.name).join(', ')} is too large. This server accepts files up to ${limitLabel}. Please pick a smaller video.`;
+      error.classList.remove('hidden');
+      input.value = '';
+      return;
+    }
+    files.forEach((file) => {
+      const card = document.createElement('div');
+      card.className = 'relative bg-stone-50 border border-stone-200 rounded-xl p-1.5';
+      const vid = document.createElement('video');
+      vid.src = URL.createObjectURL(file);
+      vid.muted = true; vid.loop = true; vid.playsInline = true; vid.autoplay = true;
+      vid.className = 'w-full aspect-square object-cover rounded-lg bg-black';
+      const label = document.createElement('p');
+      label.className = 'mt-1 text-[10px] text-stone-500 truncate';
+      label.textContent = `${file.name} · ${(file.size / 1048576).toFixed(1)} MB · saved when you save`;
+      card.append(vid, label);
+      preview.append(card);
+    });
+  });
+})();
 
 // Existing Images Drag & Drop / Button Re-ordering Script
 (function() {

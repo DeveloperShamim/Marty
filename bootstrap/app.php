@@ -44,4 +44,15 @@ return Application::configure(basePath: dirname(__DIR__))
             // AJAX calls (cart, POS, chat, courier scan) need JSON errors, not a redirect to the home page.
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // An upload bigger than PHP's post_max_size arrives empty; say so plainly instead of a bare 413 page.
+        $exceptions->render(function (\Illuminate\Http\Exceptions\PostTooLargeException $e, Request $request) {
+            $message = 'That file is too large for this server (it accepts up to ' . \App\Support\SafeUpload::humanLimit()
+                . '). Use a smaller file, or raise upload_max_filesize and post_max_size in your hosting PHP settings.';
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 413);
+            }
+
+            return response()->view('errors.upload-too-large', ['message' => $message], 413);
+        });
     })->create();
