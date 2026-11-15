@@ -317,6 +317,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             // System Settings
             Route::get('settings', [SettingController::class, 'edit'])->middleware('area:settings')->name('settings.edit');
             Route::put('settings/{section}', [SettingController::class, 'updateSection'])->middleware('area:settings')->name('settings.update-section');
+            Route::post('setup-steps/{step}/skip', [DashboardController::class, 'skipSetupStep'])->middleware('area:settings')->name('setup-steps.skip');
             Route::post('settings/backups', [\App\Http\Controllers\Admin\BackupController::class, 'store'])->middleware('area:settings')->name('backups.store');
             Route::post('settings/backups/upload', [\App\Http\Controllers\Admin\BackupController::class, 'upload'])->middleware('area:settings')->name('backups.upload');
             Route::get('settings/backups/{file}', [\App\Http\Controllers\Admin\BackupController::class, 'download'])->middleware('area:settings')->name('backups.download');

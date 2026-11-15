@@ -300,6 +300,14 @@ class DashboardController extends Controller
         ]);
     }
 
+    /** Skip a "Finish setting up your store" step, or bring it back (skip=0). */
+    public function skipSetupStep(Request $request, string $step)
+    {
+        \App\Support\SetupChecklist::setSkipped($step, $request->boolean('skip', true));
+
+        return redirect()->route('admin.dashboard');
+    }
+
     public function clearCache()
     {
         \Illuminate\Support\Facades\Artisan::call('optimize:clear');
