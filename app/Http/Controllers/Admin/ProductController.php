@@ -403,14 +403,16 @@ class ProductController extends Controller
             'ids.*' => ['exists:products,id'],
         ]);
 
-        $products = Product::with('images')->whereIn('id', $request->input('ids'))->get();
+        $products = Product::with('images', 'videos')->whereIn('id', $request->input('ids'))->get();
 
         $count = 0;
         foreach ($products as $p) {
-            foreach ($p->images as $img) {
+            foreach ($p->images->concat($p->videos) as $img) {
                 $this->deletePublicUpload($img->path);
             }
+            $descriptionHtml = $p->description . ' ' . $p->short_description;
             $p->delete();
+            $this->deleteUnusedDescriptionFiles($descriptionHtml, '');
             $count++;
         }
 
@@ -431,6 +433,7 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        $this->validateVideos($request);
         $data = $this->validateData($request);
         unset($data['spec_labels'], $data['spec_values']);
         if (!empty($data['brand_id'])) {
@@ -446,6 +449,7 @@ class ProductController extends Controller
         $product = Product::create($data);
         $this->syncVariants($product, $request);
         $this->storeImages($product, $request);
+        $this->storeVideos($product, $request);
 
         return redirect()->route('admin.products.edit', $product)->with('status', 'Product created successfully.');
     }
@@ -466,7 +470,9 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
+        $this->validateVideos($request);
         $data = $this->validateData($request, $product);
+        $oldDescriptionHtml = $product->description . ' ' . $product->short_description;
         unset($data['spec_labels'], $data['spec_values']);
         if (!empty($data['brand_id'])) {
             $data['brand'] = Brand::find($data['brand_id'])?->name;
@@ -480,17 +486,21 @@ class ProductController extends Controller
         $product->update($data);
         $this->syncVariants($product, $request);
         $this->storeImages($product, $request);
+        $this->storeVideos($product, $request);
         $this->updateImageColors($product, $request);
+        $this->deleteUnusedDescriptionFiles($oldDescriptionHtml, $product->description . ' ' . $product->short_description);
 
         return redirect()->route('admin.products.edit', $product)->with('status', 'Product updated.');
     }
 
     public function destroy(Product $product)
     {
-        foreach ($product->images as $image) {
+        foreach ($product->images->concat($product->videos) as $image) {
             $this->deletePublicUpload($image->path);
         }
+        $descriptionHtml = $product->description . ' ' . $product->short_description;
         $product->delete();
+        $this->deleteUnusedDescriptionFiles($descriptionHtml, '');
 
         return redirect()->route('admin.products.index')->with('status', 'Product deleted.');
     }
@@ -881,6 +891,72 @@ class ProductController extends Controller
                 'position'   => ++$position,
             ]);
             $hasPrimary = true;
+        }
+    }
+
+    private function validateVideos(Request $request): void
+    {
+        $request->validate([
+            'videos' => ['nullable', 'array', 'max:5'],
+            'videos.*' => ['file', 'max:51200', 'mimes:mp4,mp4s,m4v,webm,mov,qt'],
+        ], [
+            'videos.*.max' => 'Each video can be up to 50 MB.',
+            'videos.*.mimes' => 'Videos must be MP4, WebM or MOV files.',
+            'videos.*.uploaded' => 'The video could not be uploaded. It may be bigger than this server allows (' . \App\Support\SafeUpload::humanLimit() . ').',
+        ]);
+    }
+
+    /** Videos added under Photos: saved next to the photos and shown first, autoplaying, on the product page. */
+    private function storeVideos(Product $product, Request $request): void
+    {
+        if (! $request->hasFile('videos')) {
+            return;
+        }
+
+        $dir = public_path('uploads/products');
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        $position = (int) ProductImage::where('product_id', $product->id)->max('position');
+
+        foreach ($request->file('videos') as $file) {
+            // Extension from the real content, never the uploaded name (see SafeUpload)
+            $ext = \App\Support\SafeUpload::videoExtension($file);
+            if ($ext === null) {
+                continue;
+            }
+            $filename = Str::uuid()->toString() . '.' . $ext;
+            $file->move($dir, $filename);
+
+            ProductImage::create([
+                'product_id' => $product->id,
+                'path'       => 'uploads/products/' . $filename,
+                'alt'        => $product->name . ' — video',
+                'is_primary' => false,
+                'position'   => ++$position,
+            ]);
+        }
+    }
+
+    /**
+     * Files the description editor uploaded that the old description used and the new one doesn't
+     * are deleted, unless another product's description still uses them, so a video removed in the
+     * editor also leaves the Media Library.
+     */
+    private function deleteUnusedDescriptionFiles(string $oldHtml, string $newHtml): void
+    {
+        $pattern = '#uploads/products/description/([A-Za-z0-9][A-Za-z0-9._-]*\.[A-Za-z0-9]+)#';
+        preg_match_all($pattern, $oldHtml, $old);
+        preg_match_all($pattern, $newHtml, $new);
+
+        foreach (array_diff(array_unique($old[1]), $new[1]) as $file) {
+            $ref = 'uploads/products/description/' . $file;
+            $stillUsed = Product::where('description', 'like', '%' . $ref . '%')
+                ->orWhere('short_description', 'like', '%' . $ref . '%')
+                ->exists();
+            if (! $stillUsed && is_file(public_path($ref))) {
+                @unlink(public_path($ref));
+            }
         }
     }
 

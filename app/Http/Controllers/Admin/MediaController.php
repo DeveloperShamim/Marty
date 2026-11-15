@@ -151,7 +151,7 @@ class MediaController extends Controller
                 if (isset($productImages[$relativePath])) {
                     $pImg = $productImages[$relativePath];
                     $usedBy = 'Product: ' . ($pImg->product?->name ?? 'Product #' . $pImg->product_id);
-                    $categoryType = 'products';
+                    $categoryType = $isVideo ? 'videos' : 'products';
                     $altText = $pImg->alt;
                     $colorTag = $pImg->color;
                     $dbImgId = $pImg->id;
