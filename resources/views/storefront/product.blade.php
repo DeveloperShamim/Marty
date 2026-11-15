@@ -113,11 +113,22 @@
    <div class="flex flex-col lg:flex-row gap-6 md:gap-8 lg:gap-12 items-start">
     {{-- Left: Gallery (Horizontal Thumbnails on Mobile/Tablet, Vertical on Desktop). On desktop it stays in view while a longer info column scrolls. --}}
     <div class="flex flex-col-reverse lg:flex-row gap-3 sm:gap-4 lg:gap-2 items-start w-full lg:w-[53%] shrink-0 lg:sticky lg:top-28">
-      @if($product->images->count() > 0)
+      @php
+        // Product videos come first in the gallery and play muted on repeat; photos follow
+        $galleryVideos = $product->videos;
+        $slideCount = $galleryVideos->count() + $product->images->count();
+      @endphp
+      @if($slideCount > 0)
         {{-- p-1 leaves room for the ring around the selected thumbnail. Phones use the dots under the photo instead. --}}
-        <div class="{{ $product->images->count() > 1 ? 'hidden sm:flex' : 'flex' }} lg:flex-col gap-2.5 sm:gap-3 overflow-x-auto lg:overflow-y-auto w-full lg:w-[5.5rem] shrink-0 p-1 max-h-[480px] no-scrollbar">
+        <div class="{{ $slideCount > 1 ? 'hidden sm:flex' : 'flex' }} lg:flex-col gap-2.5 sm:gap-3 overflow-x-auto lg:overflow-y-auto w-full lg:w-[5.5rem] shrink-0 p-1 max-h-[480px] no-scrollbar">
+          @foreach($galleryVideos as $vid)
+            <button type="button" data-video="{{ $vid->url() }}" aria-label="Play video" class="gallery-thumb-btn relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl sm:rounded-2xl {{ $loop->first ? 'opacity-100 ring-2 ring-stone-900 ring-offset-1' : 'opacity-75' }} hover:opacity-100 shrink-0 overflow-hidden transition-all duration-300 focus:outline-none active:outline-none border-0 outline-none cursor-pointer p-0 block bg-stone-900">
+              <video src="{{ $vid->url() }}#t=0.5" muted playsinline preload="metadata" class="w-full h-full object-cover pointer-events-none block"></video>
+              <span class="absolute inset-0 flex items-center justify-center pointer-events-none"><span class="w-6 h-6 rounded-full bg-white/90 text-stone-900 flex items-center justify-center shadow"><svg class="w-3 h-3 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span></span>
+            </button>
+          @endforeach
           @foreach($product->images as $img)
-            <button type="button" data-thumb="{{ $img->url() }}" data-color="{{ strtolower(trim($img->color ?? '')) }}" data-variation-tag="{{ strtolower(trim($img->color ?? '')) }}" data-alt="{{ strtolower(trim($img->alt ?? '')) }}" class="gallery-thumb-btn relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl sm:rounded-2xl {{ $loop->first ? 'opacity-100 ring-2 ring-stone-900 ring-offset-1' : 'opacity-75' }} hover:opacity-100 shrink-0 overflow-hidden transition-all duration-300 focus:outline-none active:outline-none border-0 outline-none cursor-pointer p-0 block bg-transparent">
+            <button type="button" data-thumb="{{ $img->url() }}" data-color="{{ strtolower(trim($img->color ?? '')) }}" data-variation-tag="{{ strtolower(trim($img->color ?? '')) }}" data-alt="{{ strtolower(trim($img->alt ?? '')) }}" class="gallery-thumb-btn relative w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl sm:rounded-2xl {{ $loop->first && $galleryVideos->isEmpty() ? 'opacity-100 ring-2 ring-stone-900 ring-offset-1' : 'opacity-75' }} hover:opacity-100 shrink-0 overflow-hidden transition-all duration-300 focus:outline-none active:outline-none border-0 outline-none cursor-pointer p-0 block bg-transparent">
               <img src="{{ $img->url() }}" loading="lazy" decoding="async" class="w-full h-full object-cover pointer-events-none block" alt="{{ $img->alt }}">
             </button>
           @endforeach
@@ -143,23 +154,23 @@
         </div>
 
         {{-- Mobile & Tablet Image Counter Pill --}}
-        @if($product->images->count() > 1)
+        @if($slideCount > 1)
           <div id="galleryCounterPill" class="hidden sm:block absolute bottom-3.5 left-3.5 z-10 bg-stone-950/60 backdrop-blur-md text-white/95 px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-semibold tracking-wider font-mono pointer-events-none shadow-sm">
-            <span id="galleryCurrentIdx">1</span> / {{ $product->images->count() }}
+            <span id="galleryCurrentIdx">1</span> / {{ $slideCount }}
           </div>
         @endif
 
         {{-- Phones: dots show there are more photos (swipe or tap a dot); they follow the active photo --}}
-        @if($product->images->count() > 1)
+        @if($slideCount > 1)
           <div class="sm:hidden absolute bottom-3 inset-x-0 z-10 flex justify-center gap-1.5" data-gallery-dots>
-            @foreach($product->images as $img)
-              <button type="button" data-dot="{{ $loop->index }}" class="h-1.5 rounded-full transition-all duration-300 shadow-sm {{ $loop->first ? 'w-5 bg-white' : 'w-1.5 bg-white/60' }}" aria-label="Photo {{ $loop->iteration }}"></button>
-            @endforeach
+            @for($i = 0; $i < $slideCount; $i++)
+              <button type="button" data-dot="{{ $i }}" class="h-1.5 rounded-full transition-all duration-300 shadow-sm {{ $i === 0 ? 'w-5 bg-white' : 'w-1.5 bg-white/60' }}" aria-label="Slide {{ $i + 1 }}"></button>
+            @endfor
           </div>
         @endif
 
         {{-- Arrows: desktop and tablet only (on hover); phones swipe or use the dots --}}
-        @if($product->images->count() > 1)
+        @if($slideCount > 1)
           <button type="button" id="pdPrevImg" class="hidden sm:flex absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/85 hover:bg-white backdrop-blur-md shadow-md text-stone-800 items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer border-0" aria-label="Previous Image">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
           </button>
@@ -175,6 +186,11 @@
         </div>
 
         <img id="galleryMain" data-gallery-main src="{{ $product->imageUrl() }}" loading="eager" fetchpriority="high" decoding="async" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 select-none {{ $isOutOfStock ? 'opacity-70 grayscale-[30%]' : '' }}" alt="{{ $product->name }}" />
+        @if($galleryVideos->isNotEmpty())
+          {{-- Shown over the photo while a video slide is active; muted + playsinline so phones autoplay it in place --}}
+          <video id="galleryVideo" src="{{ $galleryVideos->first()->url() }}" poster="{{ $product->imageUrl() }}" autoplay muted loop playsinline preload="auto" disablepictureinpicture
+                 class="absolute inset-0 w-full h-full object-cover bg-stone-100" aria-label="{{ $product->name }} video"></video>
+        @endif
       </div>
     </div>
 
@@ -1009,7 +1025,16 @@
 
     const btn = thumbBtns[currentIndex];
     const src = btn.getAttribute('data-thumb');
-    if (src) mainImg.src = src;
+    const videoSrc = btn.getAttribute('data-video');
+    const galleryVideo = document.getElementById('galleryVideo');
+    if (videoSrc && galleryVideo) {
+      if (galleryVideo.getAttribute('src') !== videoSrc) galleryVideo.setAttribute('src', videoSrc);
+      galleryVideo.classList.remove('hidden');
+      galleryVideo.play().catch(() => {});
+    } else {
+      if (galleryVideo) { galleryVideo.pause(); galleryVideo.classList.add('hidden'); }
+      if (src) mainImg.src = src;
+    }
 
     const counterEl = document.getElementById('galleryCurrentIdx');
     if (counterEl) counterEl.textContent = currentIndex + 1;
@@ -1128,9 +1153,13 @@
 
     function resetZoom(animate) { scale = 1; tx = 0; ty = 0; apply(animate); }
 
-    function show(i) {
+    function show(i, dir) {
       const n = thumbBtns.length;
       lbIndex = (i + n) % n;
+      // The photo viewer skips video slides
+      for (let guard = n; guard > 0 && thumbBtns[lbIndex].hasAttribute('data-video'); guard--) {
+        lbIndex = (lbIndex + (dir || 1) + n) % n;
+      }
       resetZoom(false);
       lightboxImg.src = thumbBtns[lbIndex].getAttribute('data-thumb') || mainImg.src;
       if (lbCount) lbCount.textContent = (lbIndex + 1) + ' / ' + n;
@@ -1161,7 +1190,7 @@
     mainImg.classList.add('cursor-pointer');
     mainImg.addEventListener('click', openViewer);
     if (closeBtn) closeBtn.addEventListener('click', hideModal);
-    if (lbPrev) lbPrev.addEventListener('click', () => show(lbIndex - 1));
+    if (lbPrev) lbPrev.addEventListener('click', () => show(lbIndex - 1, -1));
     if (lbNext) lbNext.addEventListener('click', () => show(lbIndex + 1));
 
     function midpoint() {
@@ -1230,7 +1259,7 @@
       if (d.moved) {
         if (scale > 1.01) return;
         const dx = e.clientX - d.x, dy = e.clientY - d.y;
-        if (many && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) show(lbIndex + (dx < 0 ? 1 : -1));
+        if (many && Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) show(lbIndex + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1);
         else if (dy > 100 && dy > Math.abs(dx)) hideModal();
         else resetZoom(true);
         return;
@@ -1256,7 +1285,7 @@
       if (modal.classList.contains('hidden')) return;
       if (e.key === 'Escape') hideModal();
       else if (e.key === 'ArrowRight' && many) show(lbIndex + 1);
-      else if (e.key === 'ArrowLeft' && many) show(lbIndex - 1);
+      else if (e.key === 'ArrowLeft' && many) show(lbIndex - 1, -1);
     });
   }
 
