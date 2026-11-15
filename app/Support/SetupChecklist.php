@@ -15,10 +15,52 @@ class SetupChecklist
     /** The logo and mark that ship with the code; a store still showing them has not been branded yet. */
     private const SHIPPED_LOGOS = ['uploads/brand/vant-logo.png', 'uploads/brand/vant-mark.png'];
 
+    /** Setting that holds the steps the owner chose to skip, as a JSON list of keys. */
+    public const SKIPPED_SETTING = 'setup_skipped_steps';
+
+    /** @return list<string> keys the owner skipped */
+    public static function skipped(): array
+    {
+        $keys = json_decode((string) setting(self::SKIPPED_SETTING, '[]'), true);
+
+        return is_array($keys) ? array_values(array_filter($keys, 'is_string')) : [];
+    }
+
+    /** Skip a step (true) or bring it back (false). Unknown keys are ignored. */
+    public static function setSkipped(string $key, bool $skip): void
+    {
+        if (! in_array($key, array_column(self::steps(), 'key'), true)) {
+            return;
+        }
+        $keys = array_values(array_diff(self::skipped(), [$key]));
+        if ($skip) {
+            $keys[] = $key;
+        }
+        \App\Models\Setting::put(self::SKIPPED_SETTING, json_encode($keys));
+    }
+
+    /**
+     * Every step, with `skipped` set when the owner skipped a step that is not done yet.
+     * A skipped step counts as finished, so the card can still go away.
+     *
+     * @return list<array{key: string, done: bool, skipped: bool, finished: bool, label: string, hint: string, url: string, action: string}>
+     */
+    public static function items(): array
+    {
+        $skipped = self::skipped();
+
+        return array_map(function ($step) use ($skipped) {
+            $step['skipped'] = ! $step['done'] && in_array($step['key'], $skipped, true);
+            $step['finished'] = $step['done'] || $step['skipped'];
+
+            return $step;
+        }, self::steps());
+    }
+
     /**
      * @return list<array{key: string, done: bool, label: string, hint: string, url: string, action: string}>
      */
-    public static function items(): array
+    private static function steps(): array
     {
         $logo = ltrim((string) setting('logo', ''), '/');
         $phone = preg_replace('/\D/', '', (string) setting('contact_phone', ''));

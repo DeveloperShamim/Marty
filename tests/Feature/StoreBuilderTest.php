@@ -135,6 +135,40 @@ class StoreBuilderTest extends TestCase
         $this->actingAs($orders)->get('/admin')->assertOk()->assertDontSee('Finish setting up your store');
     }
 
+    public function test_owner_can_skip_a_setup_step_and_undo_it(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)->post(route('admin.setup-steps.skip', 'email'), ['skip' => 1])->assertRedirect(route('admin.dashboard'));
+        Setting::forgetCache();
+        $html = $this->actingAs($admin)->get('/admin')->assertOk()->getContent();
+        $this->assertStringContainsString('data-setup-step="email" data-done="0" data-skipped="1"', $html);
+        $this->assertStringContainsString('(1 skipped)', $html);
+
+        // Unknown steps are ignored
+        $this->actingAs($admin)->post(route('admin.setup-steps.skip', 'hacker'), ['skip' => 1])->assertRedirect();
+        Setting::forgetCache();
+        $this->assertSame(['email'], \App\Support\SetupChecklist::skipped());
+
+        // Undo brings it back
+        $this->actingAs($admin)->post(route('admin.setup-steps.skip', 'email'), ['skip' => 0])->assertRedirect();
+        Setting::forgetCache();
+        $this->actingAs($admin)->get('/admin')->assertOk()->assertSee('data-setup-step="email" data-done="0" data-skipped="0"', false);
+
+        // Skipping every step counts as finished, so the card goes away
+        foreach (['brand', 'contact', 'payments', 'products', 'banner', 'courier', 'email'] as $key) {
+            $this->actingAs($admin)->post(route('admin.setup-steps.skip', $key), ['skip' => 1]);
+        }
+        Setting::forgetCache();
+        $this->actingAs($admin)->get('/admin')->assertOk()->assertDontSee('Finish setting up your store');
+
+        // Staff without Settings access cannot skip
+        $staff = User::factory()->create(['role' => 'store_manager']);
+        $this->actingAs($staff)->post(route('admin.setup-steps.skip', 'email'), ['skip' => 0])->assertRedirect();
+        Setting::forgetCache();
+        $this->assertContains('email', \App\Support\SetupChecklist::skipped());
+    }
+
     public function test_cards_badge_is_off_unless_turned_on(): void
     {
         Setting::put('show_cards_in_footer', '0');
