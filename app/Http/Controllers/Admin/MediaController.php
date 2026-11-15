@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use App\Models\Brand;
 use App\Models\Category;
+use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\Setting;
 use Illuminate\Http\Request;
@@ -22,6 +23,40 @@ class MediaController extends Controller
         'brands/logos' => 'branding',
         'brands/banners' => 'branding',
     ];
+
+    private const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+
+    /** Videos the product description editor (or the library's own upload) can save. */
+    public const VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'ogg', 'ogv', 'mkv'];
+
+    /**
+     * Videos in the library, newest first: the ones uploaded from a product description and the
+     * ones uploaded here. The product editor lists them so a video can be used again.
+     */
+    public static function videoFiles(): array
+    {
+        $videos = [];
+        foreach (['uploads/products/description', 'uploads/media'] as $dir) {
+            if (! File::isDirectory(public_path($dir))) {
+                continue;
+            }
+            foreach (File::files(public_path($dir)) as $file) {
+                if (! in_array(strtolower($file->getExtension()), self::VIDEO_EXTENSIONS, true)) {
+                    continue;
+                }
+                $videos[] = [
+                    'url' => asset($dir . '/' . $file->getFilename()),
+                    'path' => $dir . '/' . $file->getFilename(),
+                    'filename' => $file->getFilename(),
+                    'size' => self::humanBytes($file->getSize()),
+                    'modified' => $file->getMTime(),
+                ];
+            }
+        }
+        usort($videos, fn ($a, $b) => $b['modified'] <=> $a['modified']);
+
+        return $videos;
+    }
 
     public function index(Request $request)
     {
@@ -54,12 +89,19 @@ class MediaController extends Controller
             if ($bn->image) $bannerImages[$this->refKey($bn->image)] = "Hero Banner: " . ($bn->title ?: 'Banner #' . $bn->id);
         }
 
+        // Product descriptions that point at uploaded files (images or videos added in the editor)
+        $descriptions = Product::query()
+            ->where(fn ($q) => $q->where('description', 'like', '%uploads/%')->orWhere('short_description', 'like', '%uploads/%'))
+            ->get(['id', 'name', 'description', 'short_description'])
+            ->map(fn ($p) => ['name' => $p->name, 'html' => $p->description . ' ' . $p->short_description]);
+
         $logoPath = $this->refKey(setting('logo'));
         $faviconPath = $this->refKey(setting('favicon'));
 
         // 2. Scan public upload directories
         $directories = [
             public_path('uploads/products') => 'products',
+            public_path('uploads/products/description') => 'products',
             public_path('uploads/media')    => 'media',
             public_path('uploads')          => 'branding',
             public_path('storage')          => 'storage',
@@ -88,7 +130,8 @@ class MediaController extends Controller
 
                 $filename = $file->getFilename();
                 $extension = strtolower($file->getExtension());
-                if (!in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'], true)) {
+                $isVideo = in_array($extension, self::VIDEO_EXTENSIONS, true);
+                if (!$isVideo && !in_array($extension, self::IMAGE_EXTENSIONS, true)) {
                     continue;
                 }
 
@@ -99,7 +142,7 @@ class MediaController extends Controller
 
                 // Determine usage reference
                 $usedBy = null;
-                $categoryType = $defaultCategory;
+                $categoryType = $isVideo ? 'videos' : $defaultCategory;
 
                 $altText = null;
                 $colorTag = null;
@@ -127,11 +170,16 @@ class MediaController extends Controller
                 } elseif ($relativePath === $faviconPath || $filename === 'favicon.png') {
                     $usedBy = 'Site Favicon / App Icon';
                     $categoryType = 'branding';
+                } else {
+                    $inDescription = $descriptions->first(fn ($d) => str_contains($d['html'], $relativePath));
+                    if ($inDescription) {
+                        $usedBy = 'Description: ' . $inDescription['name'];
+                    }
                 }
 
                 // Check resolution dimensions if available
                 $dimensions = null;
-                if ($extension !== 'svg' && @getimagesize($pathname)) {
+                if (!$isVideo && $extension !== 'svg' && @getimagesize($pathname)) {
                     $info = @getimagesize($pathname);
                     if ($info) {
                         $dimensions = $info[0] . ' × ' . $info[1];
@@ -149,6 +197,7 @@ class MediaController extends Controller
                     'size_human' => $this->formatBytes($sizeBytes),
                     'dimensions' => $dimensions,
                     'extension' => strtoupper($extension),
+                    'is_video' => $isVideo,
                     'category' => $categoryType,
                     'used_by' => $usedBy,
                     'is_used' => !empty($usedBy),
@@ -191,6 +240,7 @@ class MediaController extends Controller
             'totalCount' => $totalCount,
             'totalBytesHuman' => $this->formatBytes($totalBytes),
             'unusedCount' => $unusedCount,
+            'videoCount' => count(array_filter($allFiles, fn($f) => $f['is_video'])),
             'currentFilter' => $filterType,
             'currentSearch' => $search,
             'compressionQuality' => (int) setting('media_compression_quality', 80),
@@ -200,17 +250,25 @@ class MediaController extends Controller
     public function upload(Request $request)
     {
         $request->validate([
-            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,webp,gif', 'max:5120'],
+            'image' => ['required', 'file', 'max:51200'],
         ]);
 
         $file = $request->file('image');
         // The extension comes from the file's real content, never the uploaded name: "photo.html" holding
         // a PNG is saved as .png, so an upload can't become a web page or script on the store's domain.
         $ext = \App\Support\SafeUpload::imageExtension($file);
+        $isVideo = false;
         if ($ext === null) {
-            return back()->withErrors(['image' => 'Please upload a JPG, PNG, WebP or GIF image.']);
+            $ext = \App\Support\SafeUpload::videoExtension($file);
+            $isVideo = $ext !== null;
         }
-        $fileName = time() . '_' . (Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) ?: 'image') . '.' . $ext;
+        if ($ext === null) {
+            return back()->withErrors(['image' => 'Please upload a JPG, PNG, WebP or GIF image, or an MP4, WebM or MOV video.']);
+        }
+        if (! $isVideo && $file->getSize() > 5 * 1024 * 1024) {
+            return back()->withErrors(['image' => 'Images can be up to 5MB.']);
+        }
+        $fileName = time() . '_' . (Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) ?: ($isVideo ? 'video' : 'image')) . '.' . $ext;
         $targetDir = public_path('uploads/media');
 
         if (!File::exists($targetDir)) {
@@ -219,7 +277,7 @@ class MediaController extends Controller
 
         $file->move($targetDir, $fileName);
 
-        return back()->with('status', 'Image uploaded successfully to Media Library!');
+        return back()->with('status', ($isVideo ? 'Video' : 'Image') . ' uploaded successfully to Media Library!');
     }
 
     public function saveQuality(Request $request)
@@ -268,6 +326,9 @@ class MediaController extends Controller
 
         if (!$absPath || !File::exists($absPath)) {
             return back()->withErrors(['image' => "Image file not found on disk: {$relPath}"]);
+        }
+        if ($this->isVideoPath($relPath)) {
+            return back()->withErrors(['image' => 'Videos are kept as they are; only images can be optimized.']);
         }
 
         $quality = max(10, min(100, (int) $request->input('quality', setting('media_compression_quality', 80))));
@@ -337,7 +398,7 @@ class MediaController extends Controller
         $relPath = $this->normalizeRelPath($request->input('relative_path'));
         $absPath = $this->mediaAbsPath($relPath);
         if (!$absPath) {
-            return back()->withErrors(['image' => 'Only images inside the media library can be deleted.']);
+            return back()->withErrors(['image' => 'Only files inside the media library can be deleted.']);
         }
 
         if (File::exists($absPath)) {
@@ -358,7 +419,7 @@ class MediaController extends Controller
             Setting::forgetCache();
         }
 
-        return back()->with('status', 'Image deleted successfully from Media Library!');
+        return back()->with('status', ($this->isVideoPath($relPath) ? 'Video' : 'Image') . ' deleted from the Media Library.');
     }
 
     public function bulkDelete(Request $request)
@@ -386,7 +447,7 @@ class MediaController extends Controller
                 ->delete();
         }
 
-        return back()->with('status', "Bulk delete complete! Deleted {$deleted} images.");
+        return back()->with('status', "Bulk delete complete! Deleted {$deleted} file(s).");
     }
 
     private function optimizeFile(string $absPath, int $quality = 80): array
@@ -450,6 +511,15 @@ class MediaController extends Controller
                     Brand::whereIn('banner', $oldRefs)->update(['banner' => $newRef]);
                     Banner::whereIn('image', $oldRefs)->update(['image' => $newRef]);
 
+                    // Images placed in a product description are linked by their URL inside the HTML
+                    Product::query()
+                        ->where(fn ($q) => $q->where('description', 'like', '%' . $oldRel . '%')->orWhere('short_description', 'like', '%' . $oldRel . '%'))
+                        ->get(['id', 'description', 'short_description'])
+                        ->each(fn ($p) => $p->forceFill([
+                            'description' => $p->description === null ? null : str_replace($oldRel, $newRel, $p->description),
+                            'short_description' => $p->short_description === null ? null : str_replace($oldRel, $newRel, $p->short_description),
+                        ])->saveQuietly());
+
                     foreach (['logo', 'favicon'] as $key) {
                         if ($this->refKey(setting($key)) === $oldRel) {
                             Setting::updateOrCreate(['key' => $key], ['value' => $newRef]);
@@ -483,14 +553,14 @@ class MediaController extends Controller
     }
 
     /**
-     * Absolute path of a media file, or null when the path leaves public/uploads or isn't an image
+     * Absolute path of a media file, or null when the path leaves public/uploads or isn't an image or video
      * (so "../.env" or "index.php" can never be optimized or deleted).
      */
     private function mediaAbsPath(string $relPath): ?string
     {
         $inStorage = in_array(dirname($relPath), array_map(fn ($f) => 'storage/' . $f, array_keys(self::STORAGE_FOLDERS)), true);
         if ($relPath === '' || str_contains($relPath, '..') || (!str_starts_with($relPath, 'uploads/') && !$inStorage)
-            || !preg_match('/\.(png|jpe?g|webp|gif|svg|avif)$/i', $relPath)) {
+            || !preg_match('/\.(png|jpe?g|webp|gif|svg|avif|mp4|webm|mov|ogg|ogv|mkv)$/i', $relPath)) {
             return null;
         }
 
@@ -542,7 +612,17 @@ class MediaController extends Controller
         return ltrim($cleanPath, '/');
     }
 
+    private function isVideoPath(string $relPath): bool
+    {
+        return in_array(strtolower(pathinfo($relPath, PATHINFO_EXTENSION)), self::VIDEO_EXTENSIONS, true);
+    }
+
     private function formatBytes($bytes, $precision = 2)
+    {
+        return self::humanBytes($bytes, $precision);
+    }
+
+    private static function humanBytes($bytes, $precision = 2)
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
         $bytes = max($bytes, 0);
