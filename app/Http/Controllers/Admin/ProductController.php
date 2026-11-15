@@ -559,6 +559,19 @@ class ProductController extends Controller
         ]);
     }
 
+    /** Videos already in the media library, so the description editor can place one again. */
+    public function descriptionVideos()
+    {
+        $videos = array_map(fn ($v) => [
+            'url' => $v['url'],
+            'filename' => $v['filename'],
+            'size' => $v['size'],
+            'uploaded' => date('j M Y', $v['modified']),
+        ], \App\Http\Controllers\Admin\MediaController::videoFiles());
+
+        return response()->json(['videos' => $videos]);
+    }
+
     /* ------------------------------------------------------------------ */
     private function validateData(Request $request, ?Product $product = null): array
     {

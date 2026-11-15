@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('title', 'Media library')
-@section('subtitle', 'Upload, inspect and compress the images used across the store.')
+@section('subtitle', 'Upload, inspect and compress the images and videos used across the store.')
 
 @section('page-actions')
   <button type="button" onclick="document.getElementById('compressionControlPanel').classList.toggle('hidden')"
@@ -91,6 +91,7 @@
       'branding' => ['Branding', null],
       'banners' => ['Banners', null],
       'categories' => ['Categories', null],
+      'videos' => ['Videos', $videoCount],
       'unused' => ['Unused', $unusedCount],
     ];
   @endphp
@@ -159,15 +160,22 @@
           </div>
           <span class="absolute top-2 right-2 z-10 text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded-full bg-white/90 text-gray-700">{{ $item['extension'] }}</span>
 
-          <button type="button" onclick="openPreviewModal('{{ $item['url'] }}', '{{ addslashes($item['filename']) }}', '{{ $item['size_human'] }}', '{{ $item['dimensions'] ?? 'N/A' }}', '{{ addslashes($item['used_by'] ?? 'Unused / Not Linked') }}', '{{ addslashes($item['relative_path']) }}', '{{ addslashes($item['alt'] ?? '') }}', '{{ addslashes($item['color'] ?? '') }}')"
-                  class="aspect-square w-full p-2 flex items-center justify-center overflow-hidden cursor-zoom-in" title="Inspect &amp; edit details">
-            <img src="{{ $item['url'] }}" alt="{{ $item['filename'] }}" class="max-h-full max-w-full object-contain" loading="lazy" />
+          <button type="button" onclick="openPreviewModal('{{ $item['url'] }}', '{{ addslashes($item['filename']) }}', '{{ $item['size_human'] }}', '{{ $item['dimensions'] ?? 'N/A' }}', '{{ addslashes($item['used_by'] ?? 'Unused / Not Linked') }}', '{{ addslashes($item['relative_path']) }}', '{{ addslashes($item['alt'] ?? '') }}', '{{ addslashes($item['color'] ?? '') }}', {{ $item['is_video'] ? 'true' : 'false' }})"
+                  class="relative aspect-square w-full p-2 flex items-center justify-center overflow-hidden cursor-zoom-in {{ $item['is_video'] ? 'bg-gray-900' : '' }}" title="Inspect &amp; edit details">
+            @if($item['is_video'])
+              <video src="{{ $item['url'] }}#t=0.5" preload="metadata" muted playsinline class="max-h-full max-w-full object-contain pointer-events-none"></video>
+              <span class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span class="h-10 w-10 rounded-full bg-white/90 text-gray-900 inline-flex items-center justify-center shadow"><svg class="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+              </span>
+            @else
+              <img src="{{ $item['url'] }}" alt="{{ $item['filename'] }}" class="max-h-full max-w-full object-contain" loading="lazy" />
+            @endif
           </button>
 
           <div class="px-2.5 pt-2 pb-2.5 bg-white m-1 mt-0 rounded-xl flex-1 flex flex-col gap-1.5">
             <div class="min-w-0">
               <p class="text-xs font-medium text-gray-900 truncate" title="{{ $item['filename'] }}">{{ $item['filename'] }}</p>
-              <p class="text-[11px] text-gray-500 tabular-nums">{{ $item['size_human'] }} · {{ $item['dimensions'] ?? 'N/A' }}</p>
+              <p class="text-[11px] text-gray-500 tabular-nums">{{ $item['size_human'] }} · {{ $item['is_video'] ? 'Video' : ($item['dimensions'] ?? 'N/A') }}</p>
             </div>
             @if($item['is_used'])
               <span class="self-start max-w-full truncate text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700" title="{{ $item['used_by'] }}">{{ $item['used_by'] }}</span>
@@ -175,13 +183,15 @@
               <span class="self-start text-[11px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">Unused</span>
             @endif
             <div class="mt-auto pt-1 flex items-center gap-1">
-              <button type="button" onclick="copyToClipboard('{{ $item['url'] }}')" title="Copy image URL" aria-label="Copy image URL"
+              <button type="button" onclick="copyToClipboard('{{ $item['url'] }}')" title="Copy {{ $item['is_video'] ? 'video' : 'image' }} URL" aria-label="Copy {{ $item['is_video'] ? 'video' : 'image' }} URL"
                       class="h-7 w-7 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 inline-flex items-center justify-center"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+              @unless($item['is_video'])
               <button type="button" onclick="triggerSingleOptimize('{{ $item['relative_path'] }}')" title="Compress &amp; optimize" aria-label="Compress and optimize"
                       class="h-7 w-7 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 inline-flex items-center justify-center"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></button>
-              <button type="button" onclick="openPreviewModal('{{ $item['url'] }}', '{{ addslashes($item['filename']) }}', '{{ $item['size_human'] }}', '{{ $item['dimensions'] ?? 'N/A' }}', '{{ addslashes($item['used_by'] ?? 'Unused / Not Linked') }}', '{{ addslashes($item['relative_path']) }}', '{{ addslashes($item['alt'] ?? '') }}', '{{ addslashes($item['color'] ?? '') }}')" title="Inspect &amp; edit details" aria-label="Inspect"
+              @endunless
+              <button type="button" onclick="openPreviewModal('{{ $item['url'] }}', '{{ addslashes($item['filename']) }}', '{{ $item['size_human'] }}', '{{ $item['dimensions'] ?? 'N/A' }}', '{{ addslashes($item['used_by'] ?? 'Unused / Not Linked') }}', '{{ addslashes($item['relative_path']) }}', '{{ addslashes($item['alt'] ?? '') }}', '{{ addslashes($item['color'] ?? '') }}', {{ $item['is_video'] ? 'true' : 'false' }})" title="Inspect &amp; edit details" aria-label="Inspect"
                       class="h-7 w-7 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 inline-flex items-center justify-center"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button>
-              <button type="button" onclick="confirmSingleDelete('{{ $item['relative_path'] }}', '{{ $item['filename'] }}')" title="Delete image" aria-label="Delete image"
+              <button type="button" onclick="confirmSingleDelete('{{ $item['relative_path'] }}', '{{ $item['filename'] }}')" title="Delete" aria-label="Delete {{ $item['filename'] }}"
                       class="ml-auto h-7 w-7 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-700 inline-flex items-center justify-center"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
             </div>
           </div>
@@ -189,7 +199,7 @@
       @empty
         <div class="col-span-full py-12 text-center">
           <p class="text-sm font-medium text-gray-700">No media files found</p>
-          <p class="text-xs text-gray-500 mt-1">Try another filter or upload a new image.</p>
+          <p class="text-xs text-gray-500 mt-1">Try another filter or upload a new image or video.</p>
         </div>
       @endforelse
     </div>
@@ -214,15 +224,15 @@
 <div id="uploadModal" class="fixed inset-0 z-50 bg-gray-900/50 flex items-center justify-center p-4 hidden select-none">
   <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-4 sm:p-5 space-y-4">
     <div class="flex items-center justify-between">
-      <h3 class="text-[15px] font-semibold text-gray-900">Upload image</h3>
+      <h3 class="text-[15px] font-semibold text-gray-900">Upload image or video</h3>
       <button type="button" onclick="document.getElementById('uploadModal').classList.add('hidden')" class="h-8 w-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 inline-flex items-center justify-center" aria-label="Close"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
 
     <form method="POST" action="{{ route('admin.media.upload') }}" enctype="multipart/form-data" class="flex flex-col gap-4">
       @csrf
       <div class="border border-dashed border-gray-300 rounded-xl p-5 text-center bg-gray-50">
-        <input type="file" name="image" required accept="image/*" class="w-full text-xs text-gray-500 file:mr-3 file:h-8 file:px-3.5 file:rounded-full file:border-0 file:text-xs file:font-medium file:bg-gray-200 file:text-gray-800 hover:file:bg-gray-300 cursor-pointer" />
-        <p class="text-[11px] text-gray-500 mt-2">PNG, JPG, WebP or SVG up to 5MB.</p>
+        <input type="file" name="image" required accept="image/*,video/mp4,video/webm,video/quicktime" class="w-full text-xs text-gray-500 file:mr-3 file:h-8 file:px-3.5 file:rounded-full file:border-0 file:text-xs file:font-medium file:bg-gray-200 file:text-gray-800 hover:file:bg-gray-300 cursor-pointer" />
+        <p class="text-[11px] text-gray-500 mt-2">PNG, JPG, WebP or GIF up to 5MB, or an MP4, WebM or MOV video up to 50MB.</p>
       </div>
 
       <div class="flex justify-end gap-2">
@@ -238,12 +248,13 @@
   <div class="bg-white w-full max-w-xl rounded-2xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
     <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between gap-3">
       <h3 id="previewTitle" class="text-[15px] font-semibold text-gray-900 truncate">Image details</h3>
-      <button type="button" onclick="document.getElementById('previewModal').classList.add('hidden')" class="h-8 w-8 shrink-0 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 inline-flex items-center justify-center" aria-label="Close"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+      <button type="button" onclick="closePreviewModal()" class="h-8 w-8 shrink-0 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 inline-flex items-center justify-center" aria-label="Close"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
 
     <div class="p-4 overflow-y-auto flex flex-col gap-3">
       <div class="bg-gray-100 rounded-xl p-3 w-full flex items-center justify-center max-h-72">
         <img id="previewImg" src="" alt="Preview" class="max-h-64 max-w-full object-contain" />
+        <video id="previewVideo" controls playsinline preload="metadata" class="hidden max-h-64 max-w-full bg-black"></video>
       </div>
 
       <dl class="w-full grid grid-cols-[auto,1fr] gap-x-4 gap-y-1.5 text-xs bg-gray-50 p-3 rounded-xl">
@@ -256,7 +267,7 @@
       </dl>
 
       {{-- Image Metadata Editor Form --}}
-      <form method="POST" action="{{ route('admin.media.metadata') }}" class="w-full flex flex-col gap-3 text-left">
+      <form id="previewMetaForm" method="POST" action="{{ route('admin.media.metadata') }}" class="w-full flex flex-col gap-3 text-left">
         @csrf
         <input type="hidden" name="relative_path" id="previewMetaRelPath" />
 
@@ -283,7 +294,7 @@
         <button type="button" id="previewOptimizeBtn" class="h-9 px-3.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-[13px] font-medium">Optimize</button>
         <button type="button" id="previewDeleteBtn" class="h-9 px-3.5 rounded-full bg-rose-50 text-rose-700 hover:bg-rose-100 text-[13px] font-medium">Delete</button>
       </div>
-      <button type="button" onclick="document.getElementById('previewModal').classList.add('hidden')" class="h-9 px-3.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-[13px] font-medium">Close</button>
+      <button type="button" onclick="closePreviewModal()" class="h-9 px-3.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-[13px] font-medium">Close</button>
     </div>
   </div>
 </div>
@@ -402,12 +413,26 @@
 
   function copyToClipboard(url) {
     navigator.clipboard.writeText(url).then(() => {
-      alert('Image URL copied to clipboard!\n' + url);
+      alert('URL copied to clipboard!\n' + url);
     });
   }
 
-  function openPreviewModal(url, filename, size, dimensions, usage, relPath, altText, colorTag) {
-    document.getElementById('previewImg').src = url;
+  function closePreviewModal() {
+    const video = document.getElementById('previewVideo');
+    video.pause();
+    document.getElementById('previewModal').classList.add('hidden');
+  }
+
+  function openPreviewModal(url, filename, size, dimensions, usage, relPath, altText, colorTag, isVideo) {
+    const img = document.getElementById('previewImg');
+    const video = document.getElementById('previewVideo');
+    img.classList.toggle('hidden', !!isVideo);
+    video.classList.toggle('hidden', !isVideo);
+    document.getElementById('previewMetaForm').classList.toggle('hidden', !!isVideo);
+    document.getElementById('previewOptimizeBtn').classList.toggle('hidden', !!isVideo);
+    if (isVideo) { img.removeAttribute('src'); video.src = url; } else { video.pause(); video.removeAttribute('src'); img.src = url; }
+    document.getElementById('previewDimensions').previousElementSibling.innerText = isVideo ? 'Type' : 'Dimensions';
+    if (isVideo) dimensions = 'Video';
     document.getElementById('previewTitle').innerText = filename;
     document.getElementById('previewSize').innerText = size;
     document.getElementById('previewDimensions').innerText = dimensions;
