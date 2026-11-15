@@ -69,14 +69,15 @@
   @if(\App\Support\StaffAccess::allows(auth()->user(), 'settings'))
     @php
       $setup = collect(\App\Support\SetupChecklist::items());
-      $setupDone = $setup->where('done', true)->count();
+      $setupDone = $setup->where('finished', true)->count();
+      $setupSkipped = $setup->where('skipped', true)->count();
     @endphp
     @if($setupDone < $setup->count())
       <section class="panel p-4 sm:p-5" data-setup-checklist>
         <div class="flex items-center justify-between gap-3">
           <div class="min-w-0">
             <h2 class="text-[15px] sm:text-base font-semibold text-gray-900">Finish setting up your store</h2>
-            <p class="text-xs text-gray-500 mt-0.5">{{ $setupDone }} of {{ $setup->count() }} done. This card goes away when all steps are done.</p>
+            <p class="text-xs text-gray-500 mt-0.5">{{ $setupDone }} of {{ $setup->count() }} done{{ $setupSkipped ? " ({$setupSkipped} skipped)" : '' }}. Skip any step you don’t need. This card goes away when all steps are done.</p>
           </div>
           <span class="shrink-0 text-xs font-semibold tabular-nums text-gray-700">{{ (int) round($setupDone / $setup->count() * 100) }}%</span>
         </div>
@@ -84,24 +85,43 @@
           <div class="h-full rounded-full" style="width: {{ $setupDone / $setup->count() * 100 }}%; background: var(--brand);"></div>
         </div>
         <ul class="mt-3 divide-y divide-gray-100">
-          @foreach($setup->sortBy('done') as $step)
-            <li class="flex items-center gap-3 py-2.5" data-setup-step="{{ $step['key'] }}" data-done="{{ $step['done'] ? '1' : '0' }}">
+          @foreach($setup->sortBy(fn ($s) => $s['done'] ? 2 : ($s['skipped'] ? 1 : 0)) as $step)
+            <li class="flex items-center gap-3 py-2.5" data-setup-step="{{ $step['key'] }}" data-done="{{ $step['done'] ? '1' : '0' }}" data-skipped="{{ $step['skipped'] ? '1' : '0' }}">
               @if($step['done'])
                 <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full text-white" style="background: var(--brand);" aria-label="Done">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.6" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+                </span>
+              @elseif($step['skipped'])
+                <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gray-100 text-gray-400" aria-label="Skipped">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.6" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
                 </span>
               @else
                 <span class="h-6 w-6 shrink-0 rounded-full border-2 border-gray-300" aria-label="Not done"></span>
               @endif
               <span class="min-w-0 flex-1">
-                <span class="block text-[13px] font-medium {{ $step['done'] ? 'text-gray-400 line-through' : 'text-gray-900' }}">{{ $step['label'] }}</span>
-                @unless($step['done'])
+                <span class="block text-[13px] font-medium {{ $step['done'] ? 'text-gray-400 line-through' : ($step['skipped'] ? 'text-gray-400' : 'text-gray-900') }}">{{ $step['label'] }}</span>
+                @if($step['skipped'])
+                  <span class="block text-[11px] text-gray-400 mt-0.5 leading-snug">Skipped. You can still do it any time.</span>
+                @elseif(! $step['done'])
                   <span class="block text-[11px] text-gray-500 mt-0.5 leading-snug">{{ $step['hint'] }}</span>
-                @endunless
+                @endif
               </span>
-              @unless($step['done'])
-                <a href="{{ $step['url'] }}" class="shrink-0 h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-xs font-medium text-gray-800 inline-flex items-center">{{ $step['action'] }}</a>
-              @endunless
+              @if($step['skipped'])
+                <form method="POST" action="{{ route('admin.setup-steps.skip', $step['key']) }}" class="shrink-0">
+                  @csrf
+                  <input type="hidden" name="skip" value="0">
+                  <button type="submit" class="h-8 px-3 rounded-full text-xs font-medium text-gray-600 hover:bg-gray-100 inline-flex items-center">Undo</button>
+                </form>
+              @elseif(! $step['done'])
+                <div class="shrink-0 flex items-center gap-1">
+                  <form method="POST" action="{{ route('admin.setup-steps.skip', $step['key']) }}">
+                    @csrf
+                    <input type="hidden" name="skip" value="1">
+                    <button type="submit" class="h-8 px-2.5 rounded-full text-xs font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100 inline-flex items-center" title="Hide this step from the checklist">Skip</button>
+                  </form>
+                  <a href="{{ $step['url'] }}" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-xs font-medium text-gray-800 inline-flex items-center">{{ $step['action'] }}</a>
+                </div>
+              @endif
             </li>
           @endforeach
         </ul>
