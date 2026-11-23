@@ -63,6 +63,8 @@ class PageController extends Controller
             'title'           => $page->title,
             'heading'         => $page->title,
             'bodyHtml'        => $page->bodyHtml(),
+            'customAbove'     => $page->customBlocks('above'),
+            'customBelow'     => $page->customBlocks('below'),
             'metaDescription' => $page->meta_description ?: Str::limit(preg_replace('/\s+/', ' ', strip_tags((string) $page->body)), 155),
         ]);
     }

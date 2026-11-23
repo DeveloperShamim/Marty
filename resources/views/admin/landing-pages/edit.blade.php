@@ -299,7 +299,7 @@
         <div class="rounded-xl ring-1 ring-gray-200 p-3 space-y-2">
           <div class="flex flex-wrap items-center gap-2">
             <span class="text-[12px] font-semibold text-gray-700">Block {{ $ci + 1 }}</span>
-            <select name="custom[{{ $ci }}][at]" class="inp !w-auto !h-8 text-xs" @disabled(! $isAdmin) aria-label="Where block {{ $ci + 1 }} goes">
+            <select name="custom[{{ $ci }}][at]" class="h-9 rounded-lg border border-gray-200 bg-white pl-2.5 pr-8 text-[13px] text-gray-800" @disabled(! $isAdmin) aria-label="Where block {{ $ci + 1 }} goes">
               @foreach(\App\Models\LandingPage::CUSTOM_SPOTS as $spot => $label)
                 <option value="{{ $spot }}" @selected(old("custom.$ci.at", $block['at'] ?? 'form') === $spot)>{{ $label }}</option>
               @endforeach
