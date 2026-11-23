@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Size Guide Management')
+@section('title', 'Size guide')
 @section('subtitle', 'Size chart shown next to size options on product pages.')
 
 @section('page-actions')

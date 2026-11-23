@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Analytics')
+@section('title', 'Profit & analytics')
 @section('subtitle', 'Revenue, product cost, profit, order value and courier losses.')
 
 @section('page-actions')

@@ -30,7 +30,7 @@
 @endphp
 
 @php
-    // "Settings" moves into the Support card; everything else stays in the main menu card.
+    // The "Settings" group sits in the bottom card with View store and Log out; everything else stays in the main menu card.
     $support = $nav['Settings'] ?? [];
     unset($nav['Settings']);
     // The open page sits on a light grey box (styled as .sb-on in admin.css), not a dark pill
@@ -51,10 +51,12 @@
     @foreach($nav as $group => $items)
       @php $groupActive = collect($items)->contains(fn ($i) => \App\Support\AdminNav::isOn($i)); @endphp
       <div class="sb-group {{ $loop->first ? '' : 'mt-4' }}" data-group="{{ $group }}" @if($groupActive) data-active @endif>
+        @if($group !== '')
         <button type="button" class="sb-group-toggle w-full flex items-center gap-1.5 h-7 px-3 mb-0.5 text-[13px] font-medium text-gray-500 hover:text-gray-800" aria-expanded="true">
-          <span class="sb-label">{{ $group === '' ? 'Home' : $group }}</span>
+          <span class="sb-label">{{ $group }}</span>
           <svg class="sb-chevron sb-label w-3.5 h-3.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
         </button>
+        @endif
         <div class="sb-items space-y-1">
           @foreach($items as $i)
             @include('admin.partials.sidebar-item', ['i' => $i])
@@ -67,19 +69,19 @@
 
   {{-- Support --}}
   <div class="bg-white rounded-[24px] shadow-panel px-3 py-4">
-    <div class="sb-group" data-group="Support">
-      <p class="h-7 px-3 mb-0.5 flex items-center text-[13px] font-medium text-gray-500">Support</p>
+    <div class="sb-group" data-group="Settings">
+      <p class="h-7 px-3 mb-0.5 flex items-center text-[13px] font-medium text-gray-500">{{ $support ? 'Settings' : 'Account' }}</p>
       <div class="sb-items space-y-1">
         @foreach($support as $i)
           @include('admin.partials.sidebar-item', ['i' => $i])
         @endforeach
-        <a href="{{ route('shop') }}" target="_blank" rel="noopener" class="sb-item group flex items-center gap-3 h-10 px-3 rounded-xl text-[14px] font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors" data-label="View store" data-search="view store shop website support">
+        <a href="{{ route('shop') }}" target="_blank" rel="noopener" class="sb-item group flex items-center gap-3 h-10 px-3 rounded-xl text-[14px] font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors" data-label="View store" data-search="view store shop website">
           <svg class="w-[18px] h-[18px] shrink-0 text-gray-400 group-hover:text-gray-700" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14 21 3"/></svg>
           <span class="sb-label flex-1">View store</span>
         </a>
         <form method="POST" action="{{ route('admin.logout') }}">
           @csrf
-          <button type="submit" class="sb-item group w-full flex items-center gap-3 h-10 px-3 rounded-xl text-[14px] font-medium text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer" data-label="Log out" data-search="log out sign out logout support">
+          <button type="submit" class="sb-item group w-full flex items-center gap-3 h-10 px-3 rounded-xl text-[14px] font-medium text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer" data-label="Log out" data-search="log out sign out logout">
             <svg class="w-[18px] h-[18px] shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
             <span class="sb-label flex-1 text-left">Log out</span>
           </button>
@@ -137,5 +139,28 @@
         if (t) t.setAttribute('aria-expanded', 'false');
       }
     });
+  })();
+
+  {{-- Keep the menu where it was when a link loads the next page, so it doesn't jump back to the top.
+       If the open page's item would still be out of sight (e.g. reached from the dashboard), bring it into view. --}}
+  (function () {
+    var sb = document.getElementById('sidebar');
+    if (!sb) return;
+    var key = function () { return 'admin.sidebar.scroll.' + (window.innerWidth >= 1024 ? 'wide' : 'phone'); };
+    var saved = null;
+    try { saved = sessionStorage.getItem(key()); } catch (e) {}
+    if (saved !== null) sb.scrollTop = parseInt(saved, 10) || 0;
+
+    var current = sb.querySelector('.sb-item[aria-current=page]');
+    if (current) {
+      var box = sb.getBoundingClientRect(), item = current.getBoundingClientRect();
+      if (item.top < box.top || item.bottom > box.bottom) {
+        sb.scrollTop += item.top - box.top - (box.height - item.height) / 2;
+      }
+    }
+
+    var save = function () { try { sessionStorage.setItem(key(), String(Math.round(sb.scrollTop))); } catch (e) {} };
+    sb.addEventListener('click', function (e) { if (e.target.closest('a')) save(); });
+    window.addEventListener('pagehide', save);
   })();
 </script>

@@ -30,7 +30,7 @@ class StaffRoleAccessTest extends TestCase
             'size-guide', 'features', 'banners', 'coupons', 'flash-sale'],
         'order_manager' => ['orders', 'courier-scan', 'pos', 'abandoned-carts', 'customers', 'blacklist', 'reviews'],
         'inventory_manager' => ['dashboard', 'reviews', 'products', 'inventory', 'categories', 'brands', 'variations',
-            'barcodes', 'media', 'size-guide', 'features'],
+            'barcodes', 'media', 'size-guide'],
     ];
 
     public function test_every_role_can_open_exactly_its_pages(): void

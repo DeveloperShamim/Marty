@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Settings')
+@section('title', 'Store settings')
 @section('subtitle', 'Brand, theme colours, homepage, payments and delivery.')
 
 @section('page-actions')
@@ -22,7 +22,7 @@
   <nav class="-mx-3 sm:mx-0 px-3 sm:px-0 overflow-x-auto no-scrollbar" aria-label="Settings sections">
     <div class="inline-flex items-center gap-1 p-1 rounded-full bg-white shadow-panel whitespace-nowrap">
       <button type="button" onclick="switchSettingsTab('brand', this)" data-tab="brand" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-white" style="background: var(--brand-dark);">Brand &amp; theme</button>
-      <button type="button" onclick="switchSettingsTab('homepage', this)" data-tab="homepage" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Homepage &amp; SEO</button>
+      <button type="button" onclick="switchSettingsTab('homepage', this)" data-tab="homepage" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Shop text &amp; SEO</button>
       <button type="button" onclick="switchSettingsTab('payments', this)" data-tab="payments" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Payments &amp; delivery</button>
       <button type="button" onclick="switchSettingsTab('backups', this)" data-tab="backups" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">Backups</button>
       <button type="button" onclick="switchSettingsTab('all', this)" data-tab="all" class="settings-tab-btn h-8 sm:h-9 px-3.5 rounded-full text-[13px] font-medium transition-colors text-gray-600 hover:bg-gray-100">All sections</button>
@@ -400,7 +400,7 @@
     @csrf @method('PUT')
 
     <div class="panel px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-      <p class="text-[13px] text-gray-600">The top headline bar is managed in <span class="font-medium text-gray-900">Marketing → News ticker</span>.</p>
+      <p class="text-[13px] text-gray-600">The top headline bar is managed in <span class="font-medium text-gray-900">Homepage → News ticker</span>.</p>
       <a href="{{ route('admin.news-ticker.index') }}" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-xs font-medium text-gray-800 inline-flex items-center self-start sm:self-auto shrink-0">Open news ticker</a>
     </div>
 
@@ -415,49 +415,14 @@
       </div>
     </section>
 
-    <section class="panel p-4 sm:p-5 space-y-4">
-      <div class="flex items-start justify-between gap-3">
-        <div class="min-w-0">
-          <h2 class="text-[15px] font-semibold text-gray-900">Featured brands section</h2>
-          <p class="text-xs text-gray-500 mt-0.5">Show or hide the brands carousel on the homepage.</p>
-        </div>
-        <a href="{{ route('admin.home-sections.index') }}" class="shrink-0 text-xs text-gray-600 underline hover:text-gray-900">Show or hide in Sections</a>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="lbl">Title</label>
-          <input name="home_featured_brands_title" class="inp text-[13px]" value="{{ $settings['home_featured_brands_title'] ?? 'Featured Brands' }}" placeholder="Featured Brands" />
-        </div>
-        <div>
-          <label class="lbl">Subtitle</label>
-          <input name="home_featured_brands_subtitle" class="inp text-[13px]" value="{{ $settings['home_featured_brands_subtitle'] ?? 'Shop authentic products directly from leading brands' }}" placeholder="Shop authentic products directly from leading brands" />
-        </div>
-      </div>
-    </section>
-
-    <section class="panel p-4 sm:p-5 space-y-4">
-      <div class="flex items-start justify-between gap-3">
-        <div class="min-w-0">
-          <h2 class="text-[15px] font-semibold text-gray-900">Customer feedback section</h2>
-          <p class="text-xs text-gray-500 mt-0.5">Verified customer reviews on the homepage. <a href="{{ route('admin.reviews.index') }}" class="underline hover:text-gray-800">Manage reviews</a></p>
-        </div>
-        <a href="{{ route('admin.home-sections.index') }}" class="shrink-0 text-xs text-gray-600 underline hover:text-gray-900">Show or hide in Sections</a>
-      </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label class="lbl">Title</label>
-          <input name="home_reviews_title" class="inp text-[13px]" value="{{ $settings['home_reviews_title'] ?? 'Customer Feedback' }}" placeholder="Customer Feedback" />
-        </div>
-        <div>
-          <label class="lbl">Subtitle</label>
-          <input name="home_reviews_subtitle" class="inp text-[13px]" value="{{ $settings['home_reviews_subtitle'] ?? 'What our happy customers say about our authentic products and service' }}" placeholder="What our happy customers say about our authentic products and service" />
-        </div>
-      </div>
-    </section>
+    <div class="panel px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <p class="text-[13px] text-gray-600">Homepage section titles (Brands, Customer reviews) are set in <span class="font-medium text-gray-900">Homepage → Sections</span>.</p>
+      <a href="{{ route('admin.home-sections.index') }}" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-xs font-medium text-gray-800 inline-flex items-center self-start sm:self-auto shrink-0">Open sections</a>
+    </div>
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2">
       <div class="{{ $feedback }}"></div>
-      <button type="submit" class="{{ $saveBtn }}" style="background: var(--brand-dark);">Save homepage settings</button>
+      <button type="submit" class="{{ $saveBtn }}" style="background: var(--brand-dark);">Save shop text</button>
     </div>
   </form>
 

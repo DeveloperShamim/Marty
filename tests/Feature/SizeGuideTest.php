@@ -21,7 +21,7 @@ class SizeGuideTest extends TestCase
         $response = $this->actingAs($admin)->get(route('admin.size-guide.index'));
 
         $response->assertOk();
-        $response->assertSee('Size Guide Management');
+        $response->assertSee('Size guide');
     }
 
     public function test_admin_can_update_size_guide_settings(): void

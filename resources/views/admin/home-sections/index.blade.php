@@ -69,6 +69,36 @@
       <button type="submit" class="h-10 px-5 rounded-full text-[13px] font-semibold text-white" style="background: var(--brand-dark);">Save sections</button>
     </div>
   </form>
+
+  {{-- Titles above the Brands and Customer reviews sections (used to live in Store settings). --}}
+  <form method="POST" action="{{ route('admin.home-sections.titles') }}" class="panel p-4 sm:p-5 flex flex-col gap-4" id="hsTitles">
+    @csrf @method('PUT')
+    <div>
+      <h2 class="text-[15px] font-semibold text-gray-900">Section titles</h2>
+      <p class="text-xs text-gray-500 mt-0.5">The heading and line under it for the Brands and Customer reviews sections.</p>
+    </div>
+    @foreach([
+      ['Brands', 'home_featured_brands', 'Featured Brands', 'Shop authentic products directly from leading brands'],
+      ['Customer reviews', 'home_reviews', 'Customer Feedback', 'What our happy customers say about our authentic products and service'],
+    ] as [$name, $prefix, $title, $subtitle])
+      <fieldset class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <legend class="text-[13px] font-medium text-gray-900 mb-2">{{ $name }}</legend>
+        <div>
+          <label class="lbl" for="{{ $prefix }}_title">Title</label>
+          <input id="{{ $prefix }}_title" name="{{ $prefix }}_title" class="inp text-[13px]" maxlength="80" value="{{ old($prefix.'_title', $titles[$prefix.'_title'] ?: $title) }}" placeholder="{{ $title }}">
+          @error($prefix.'_title')<p class="text-xs text-rose-600 mt-1">{{ $message }}</p>@enderror
+        </div>
+        <div>
+          <label class="lbl" for="{{ $prefix }}_subtitle">Subtitle</label>
+          <input id="{{ $prefix }}_subtitle" name="{{ $prefix }}_subtitle" class="inp text-[13px]" maxlength="200" value="{{ old($prefix.'_subtitle', $titles[$prefix.'_subtitle'] ?: $subtitle) }}" placeholder="{{ $subtitle }}">
+          @error($prefix.'_subtitle')<p class="text-xs text-rose-600 mt-1">{{ $message }}</p>@enderror
+        </div>
+      </fieldset>
+    @endforeach
+    <div class="flex justify-end">
+      <button type="submit" class="h-10 px-5 rounded-full text-[13px] font-semibold text-white" style="background: var(--brand-dark);">Save titles</button>
+    </div>
+  </form>
 </div>
 @endsection
 
