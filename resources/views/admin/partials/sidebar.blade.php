@@ -140,4 +140,27 @@
       }
     });
   })();
+
+  {{-- Keep the menu where it was when a link loads the next page, so it doesn't jump back to the top.
+       If the open page's item would still be out of sight (e.g. reached from the dashboard), bring it into view. --}}
+  (function () {
+    var sb = document.getElementById('sidebar');
+    if (!sb) return;
+    var key = function () { return 'admin.sidebar.scroll.' + (window.innerWidth >= 1024 ? 'wide' : 'phone'); };
+    var saved = null;
+    try { saved = sessionStorage.getItem(key()); } catch (e) {}
+    if (saved !== null) sb.scrollTop = parseInt(saved, 10) || 0;
+
+    var current = sb.querySelector('.sb-item[aria-current="page"]');
+    if (current) {
+      var box = sb.getBoundingClientRect(), item = current.getBoundingClientRect();
+      if (item.top < box.top || item.bottom > box.bottom) {
+        sb.scrollTop += item.top - box.top - (box.height - item.height) / 2;
+      }
+    }
+
+    var save = function () { try { sessionStorage.setItem(key(), String(Math.round(sb.scrollTop))); } catch (e) {} };
+    sb.addEventListener('click', function (e) { if (e.target.closest('a')) save(); });
+    window.addEventListener('pagehide', save);
+  })();
 </script>
