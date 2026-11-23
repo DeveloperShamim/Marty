@@ -308,10 +308,18 @@
       <p class="text-[11px] text-gray-500">The photos, price and order form always show.</p>
     </section>
 
+    <section class="{{ $card }}" data-lp-template-picker>
+      <div>
+        <h2 class="{{ $h }}">Template</h2>
+        <p class="text-xs text-gray-500 mt-0.5">Changes the look only; your text and photos stay. Preview opens the page in that template without saving.</p>
+      </div>
+      @include('admin.landing-pages._templates', ['selected' => old('template', $page->template()), 'tryUrl' => $page->url(), 'cols' => 'grid-cols-2'])
+    </section>
+
     <section class="{{ $card }}">
       <h2 class="{{ $h }}">Look and search</h2>
       <div>
-        <label class="lbl" for="lpAccent">Accent colour</label>
+        <label class="lbl" for="lpAccent">Accent colour <span class="font-normal text-gray-500">(each template has its own; change it to override)</span></label>
         <div class="flex items-center gap-2">
           <input type="color" id="lpAccentPick" value="{{ $page->accent() }}" class="h-9 w-12 rounded border border-gray-200">
           <input id="lpAccent" name="accent_color" class="inp" value="{{ old('accent_color', $page->accent_color ?: $page->accent()) }}" maxlength="7">

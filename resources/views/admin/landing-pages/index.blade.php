@@ -5,10 +5,16 @@
 @section('content')
 <div class="space-y-4 max-w-5xl">
   {{-- New page: pick the product, the draft starts with Bangla starter text --}}
-  <form method="POST" action="{{ route('admin.landing-pages.store') }}" class="panel p-4 sm:p-5 flex flex-col sm:flex-row sm:items-end gap-3" data-lp-new>
+  <form method="POST" action="{{ route('admin.landing-pages.store') }}" class="panel p-4 sm:p-5 space-y-4" data-lp-new>
     @csrf
+    <div>
+      <p class="lbl">1. Pick a template</p>
+      @include('admin.landing-pages._templates', ['selected' => old('template', 'classic')])
+      <p class="text-[11px] text-gray-500 mt-1.5">You can switch template later in the editor and preview each one first. Your text and photos stay.</p>
+    </div>
+    <div class="flex flex-col sm:flex-row sm:items-end gap-3">
     <div class="flex-1 min-w-0">
-      <label class="lbl" for="lpNewProduct">New landing page for</label>
+      <label class="lbl" for="lpNewProduct">2. New landing page for</label>
       <select id="lpNewProduct" name="product_id" class="inp" required>
         <option value="">Choose a product…</option>
         @foreach($products as $p)
@@ -21,6 +27,7 @@
       <span class="pill-ico"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
       Create draft
     </button>
+    </div>
   </form>
 
   <div class="grid grid-cols-2 lg:grid-cols-4 gap-3" data-lp-stats>
@@ -63,7 +70,7 @@
                   <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-gray-100 text-gray-600">Draft</span>
                 @endif
               </p>
-              <p class="text-xs text-gray-500 mt-0.5 truncate">/offer/{{ $lp->slug }} · {{ $lp->product?->name ?? 'Product deleted' }} · {{ money($lp->price()) }}</p>
+              <p class="text-xs text-gray-500 mt-0.5 truncate">/offer/{{ $lp->slug }} · {{ \App\Models\LandingPage::TEMPLATES[$lp->template()][0] }} · {{ $lp->product?->name ?? 'Product deleted' }} · {{ money($lp->price()) }}</p>
               <p class="text-xs text-gray-600 mt-0.5">
                 {{ number_format($lp->views) }} views · <a href="{{ route('admin.orders.index', ['landing' => $lp->id]) }}" class="underline">{{ $lp->orders_count }} {{ \Illuminate\Support\Str::plural('order', $lp->orders_count) }}</a> · {{ $lp->conversionRate($lp->orders_count) }}% conversion
               </p>
