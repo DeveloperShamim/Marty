@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Abandoned Cart Recovery')
+@section('title', 'Abandoned carts')
 @section('subtitle', 'Follow up on unfinished checkouts by WhatsApp or email and win back lost sales.')
 
 @if($recoveredCount > 0)

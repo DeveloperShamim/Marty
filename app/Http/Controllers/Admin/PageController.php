@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-/** Store content → Pages: About us, FAQ, Shipping, Returns and any other simple page. */
+/** Online store → Pages & menu: About us, FAQ, Shipping, Returns and any other simple page. */
 class PageController extends Controller
 {
     public function index()
@@ -61,9 +61,21 @@ class PageController extends Controller
             'body'             => ['nullable', 'string', 'max:30000'],
             'meta_description' => ['nullable', 'string', 'max:300'],
             'position'         => ['nullable', 'integer', 'min:0', 'max:999'],
+            'custom'           => ['nullable', 'array', 'max:' . Page::MAX_CUSTOM],
+            'custom.*.html'    => ['nullable', 'string', 'max:20000'],
+            'custom.*.at'      => ['nullable', Rule::in(array_keys(Page::CUSTOM_SPOTS))],
         ], [
             'slug.not_in' => 'That address is already used by the store. Pick another one.',
         ]);
+
+        // Custom HTML runs code in shoppers' browsers (in a sealed frame), so only admins can change it
+        unset($data['custom']);
+        if ($request->user()?->isAdmin()) {
+            $data['custom_html'] = collect($request->input('custom', []))
+                ->filter(fn ($b) => is_array($b) && trim((string) ($b['html'] ?? '')) !== '')
+                ->map(fn ($b) => ['html' => (string) $b['html'], 'at' => $b['at'] ?? 'below'])
+                ->values()->all() ?: null;
+        }
 
         return $data + [
             'is_published'   => $request->boolean('is_published'),

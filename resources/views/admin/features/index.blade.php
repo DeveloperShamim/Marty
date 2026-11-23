@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Trust features')
+@section('title', 'Trust strip')
 @section('subtitle', 'Badges shown in the homepage strip, like free delivery or cash on delivery.')
 
 @section('page-actions')

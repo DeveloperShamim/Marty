@@ -12,6 +12,9 @@ use Illuminate\Validation\Rule;
 /** Homepage → Sections: which homepage sections show, and in what order. */
 class HomeSectionController extends Controller
 {
+    /** Titles shown above the Brands and Customer reviews sections. */
+    private const TITLE_KEYS = ['home_featured_brands_title', 'home_featured_brands_subtitle', 'home_reviews_title', 'home_reviews_subtitle'];
+
     public function index()
     {
         return view('admin.home-sections.index', [
@@ -20,6 +23,7 @@ class HomeSectionController extends Controller
                 'hint' => HomeSections::SECTIONS[$row['key']][1],
                 'fixed' => in_array($row['key'], HomeSections::FIXED, true),
             ]),
+            'titles' => collect(self::TITLE_KEYS)->mapWithKeys(fn ($key) => [$key => (string) setting($key, '')])->all(),
         ]);
     }
 
@@ -47,5 +51,24 @@ class HomeSectionController extends Controller
         ActivityLogger::log('Homepage Sections Updated', 'Changed which homepage sections show and their order.');
 
         return back()->with('status', 'Homepage sections saved.');
+    }
+
+    /** Section titles for the Brands and Customer reviews blocks. */
+    public function updateTitles(Request $request)
+    {
+        $data = $request->validate([
+            'home_featured_brands_title'    => ['nullable', 'string', 'max:80'],
+            'home_featured_brands_subtitle' => ['nullable', 'string', 'max:200'],
+            'home_reviews_title'            => ['nullable', 'string', 'max:80'],
+            'home_reviews_subtitle'         => ['nullable', 'string', 'max:200'],
+        ]);
+
+        foreach (self::TITLE_KEYS as $key) {
+            Setting::put($key, (string) ($data[$key] ?? ''));
+        }
+        Setting::forgetCache();
+        ActivityLogger::log('Homepage Section Titles Updated', 'Changed the Brands and Customer reviews section titles.');
+
+        return back()->with('status', 'Section titles saved.');
     }
 }

@@ -84,12 +84,7 @@
     });
   });
 
-  // Keep the current page visible in a long menu.
-  var current = nav && nav.querySelector('[aria-current="page"]');
-  if (current && nav.scrollHeight > nav.clientHeight) {
-    var top = current.offsetTop - nav.offsetTop;
-    if (top + current.offsetHeight > nav.clientHeight) nav.scrollTop = top - nav.clientHeight / 2;
-  }
+  // Where the menu is scrolled to is kept across pages by the inline script in admin.partials.sidebar.
 
   // Search filters the menu; Enter opens the first match.
   function hits() { return Array.prototype.slice.call(nav.querySelectorAll('.sb-item:not(.hidden)')); }

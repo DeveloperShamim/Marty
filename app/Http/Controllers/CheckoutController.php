@@ -3,25 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Product;
-use App\Models\ProductSku;
 use App\Services\CartService;
 use App\Services\CouponService;
 use App\Services\FreeDelivery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
-use App\Services\FraudDetectionService;
+use App\Services\OrderPlacer;
 
 class CheckoutController extends Controller
 {
     public function __construct(
         private CartService $cart,
         private CouponService $coupons,
-        private FraudDetectionService $fraudService,
+        private OrderPlacer $orders,
     ) {}
 
     public function show()
@@ -206,113 +202,16 @@ class CheckoutController extends Controller
             }
         }
 
-        $isCod = $validated['payment_method'] === 'cod';
-        $ipAddress = (string) $request->ip();
-
-        $fraudAnalysis = $this->fraudService->analyzeOrder($validated, $total, $ipAddress);
-
         try {
-            $order = DB::transaction(function () use ($validated, $items, $subtotal, $discount, $shipping, $tax, $total, $totals, $isCod, $coupon, $ipAddress, $fraudAnalysis) {
-                $order = Order::create([
-                    'order_number'    => \App\Support\OrderNumber::generate(),
-                    'user_id'         => Auth::id(),
-                    'customer_name'   => $validated['customer_name'],
-                    'customer_phone'  => $validated['customer_phone'],
-                    'customer_email'  => $validated['customer_email'] ?? null,
-                    'shipping_address'=> $validated['shipping_address'],
-                    'city'            => (string) ($validated['city'] ?? ''),
-                    'postal_code'     => $validated['postal_code'] ?? null,
-                    'shipping_zone'   => $validated['shipping_zone'],
-                    'coupon_id'       => $coupon?->id,
-                    'coupon_code'     => $coupon?->code,
-                    'subtotal'        => $subtotal,
-                    'discount_amount' => $discount,
-                    'shipping_charge' => $shipping,
-                    'shipping_waived' => $totals['waived'],
-                    'free_delivery_reason' => $totals['reason'],
-                    'tax'             => $tax,
-                    'total'           => $total,
-                    'payment_method'  => $validated['payment_method'],
-                    'payment_sender_number' => $isCod ? null : ($validated['payment_sender_number'] ?? null),
-                    'payment_txn_id'  => $isCod ? null : ($validated['payment_txn_id'] ?? null),
-                    // The customer's delivery note becomes the order's courier & invoice note.
-                    'internal_note'   => filled($validated['delivery_note'] ?? null) ? trim($validated['delivery_note']) : null,
-                    'utm_source'      => session('utm_source'),
-                    'payment_status'  => 'pending',
-                    'status'          => 'pending',
-                    'ip_address'      => $ipAddress,
-                    'fraud_score'     => $fraudAnalysis['score'] ?? 0,
-                    'fraud_flags'     => $fraudAnalysis['flags'] ?? [],
-                ]);
-
-                // Clear utm_source after order is placed
-                session()->forget('utm_source');
-
-                foreach ($items as $item) {
-                    $product = Product::where('id', $item->product_id)->lockForUpdate()->first();
-
-                    $sku = null;
-                    if (! empty($item->sku_id)) {
-                        $sku = ProductSku::where('id', $item->sku_id)
-                            ->where('product_id', $item->product_id)
-                            ->lockForUpdate()
-                            ->first();
-                    } elseif (! empty($item->variant) && $product) {
-                        $sku = ProductSku::where('product_id', $product->id)
-                            ->lockForUpdate()
-                            ->get()
-                            ->first(function ($s) use ($item) {
-                                return $s->matchesVariantString($item->variant);
-                            });
-                    }
-
-                    if (! $sku && $product && $product->skus()->exists()) {
-                        throw new \RuntimeException("The selected option for {$item->name} is no longer available. Please remove it from your cart and choose again.");
-                    }
-
-                    if ($sku) {
-                        $maxAllowed = min(3, (int) $sku->stock_quantity);
-                        if (! $sku->is_active || $item->qty > $maxAllowed) {
-                            throw new \RuntimeException("Cannot order {$item->qty} of {$item->name} ({$sku->attributeLabel()}). Max 3 allowed per variant.");
-                        }
-                        ProductSku::where('id', $sku->id)->decrement('stock_quantity', $item->qty);
-                        if ($product) {
-                            $product->syncTotalStock();
-                        }
-                    } else {
-                        $maxAllowed = min(3, (int) ($product->stock_quantity ?? 0));
-                        if (! $product || $item->qty > $maxAllowed) {
-                            throw new \RuntimeException("Cannot order {$item->qty} of {$item->name}. Max 3 allowed per product.");
-                        }
-                        Product::where('id', $product->id)->decrement('stock_quantity', $item->qty);
-                    }
-
-                    $itemCostPrice = $sku ? $sku->getEffectiveCostPrice() : (float) ($product?->cost_price ?: 0);
-
-                    OrderItem::create([
-                        'order_id'       => $order->id,
-                        'product_id'     => $item->product_id,
-                        'product_sku_id' => $sku?->id,
-                        'product_name'   => $item->name,
-                        'image'          => $item->product->primaryImage()?->path,
-                        'variant'        => $item->variant ?: $sku?->attributeLabel(),
-                        'unit_price'     => $item->price,
-                        'cost_price'     => $itemCostPrice,
-                        'quantity'       => $item->qty,
-                        'line_total'     => $item->line_total,
-                    ]);
-
-                    if ($product) {
-                        $product->syncFlashSaleProgress();
-                    }
-                }
-
-                if ($coupon) {
-                    $coupon->incrementUsage();
-                }
-
-                return $order;
-            });
+            $order = $this->orders->place($validated, $items, [
+                'subtotal' => $subtotal,
+                'discount' => $discount,
+                'shipping' => $shipping,
+                'waived'   => $totals['waived'],
+                'reason'   => $totals['reason'],
+                'tax'      => $tax,
+                'total'    => $total,
+            ], $coupon, $request);
         } catch (\RuntimeException $e) {
             return back()
                 ->withInput()
@@ -321,17 +220,6 @@ class CheckoutController extends Controller
 
         $this->cart->clear();
         $this->coupons->remove();
-        $this->markCartRecoveredOnOrderPlaced($order);
-
-        session(['recent_order' => $order->order_number]);
-
-        // Courier delivery history lookup after the response, so checkout isn't slowed down.
-        \App\Jobs\CheckCustomerCourierHistory::dispatchAfterResponse($order->id);
-
-        // Server-side Purchase (Meta Conversions API, GA4) after the response, when switched on in Integrations
-        if (tracking_meta_capi_ready() || tracking_ga4_server_ready()) {
-            \App\Jobs\SendServerPurchase::dispatchAfterResponse($order->id, \App\Services\ServerTracking::context($request));
-        }
 
         return redirect()->route('order.confirmation', $order->order_number);
     }
@@ -447,31 +335,5 @@ class CheckoutController extends Controller
             $payload['recovery_token'] = \App\Models\AbandonedCart::generateToken();
             \App\Models\AbandonedCart::create($payload);
         }
-    }
-
-    private function markCartRecoveredOnOrderPlaced(Order $order): void
-    {
-        $sessionId = session()->getId();
-        $userId = Auth::id();
-        $phone = trim((string) $order->customer_phone);
-        $email = trim((string) $order->customer_email);
-
-        \App\Models\AbandonedCart::where('status', '!=', 'recovered')
-            ->where(function ($q) use ($sessionId, $userId, $phone, $email) {
-                $q->where('session_id', $sessionId);
-                if ($userId) {
-                    $q->orWhere('user_id', $userId);
-                }
-                if ($phone !== '') {
-                    $q->orWhere('customer_phone', $phone);
-                }
-                if ($email !== '') {
-                    $q->orWhere('customer_email', $email);
-                }
-            })
-            ->update([
-                'status'       => 'recovered',
-                'recovered_at' => now(),
-            ]);
     }
 }

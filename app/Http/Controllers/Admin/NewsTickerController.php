@@ -8,7 +8,7 @@ use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
-/** Marketing → News Ticker: the scrolling headline bar at the top of every storefront page. */
+/** Online store → Homepage → News ticker: the scrolling headline bar at the top of every storefront page. */
 class NewsTickerController extends Controller
 {
     public function index()
