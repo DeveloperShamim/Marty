@@ -151,7 +151,7 @@
     try { saved = sessionStorage.getItem(key()); } catch (e) {}
     if (saved !== null) sb.scrollTop = parseInt(saved, 10) || 0;
 
-    var current = sb.querySelector('.sb-item[aria-current="page"]');
+    var current = sb.querySelector('.sb-item[aria-current=page]');
     if (current) {
       var box = sb.getBoundingClientRect(), item = current.getBoundingClientRect();
       if (item.top < box.top || item.bottom > box.bottom) {
