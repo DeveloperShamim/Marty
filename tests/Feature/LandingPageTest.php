@@ -226,6 +226,40 @@ class LandingPageTest extends TestCase
         $this->actingAs($admin)->get(route('admin.orders.index', ['landing' => $page->id + 1]))->assertOk()->assertDontSee($order->order_number);
     }
 
+    public function test_admin_picks_a_template_and_can_preview_others(): void
+    {
+        $admin = $this->admin();
+        $product = $this->product();
+
+        $this->actingAs($admin)->get(route('admin.landing-pages.index'))->assertOk()
+            ->assertSee('Pick a template')->assertSee('Bold dark')->assertSee('data-lp-template="festive"', false);
+        $this->actingAs($admin)->post(route('admin.landing-pages.store'), ['product_id' => $product->id, 'template' => 'bold'])->assertRedirect();
+        $page = LandingPage::firstOrFail();
+        $this->assertSame('bold', $page->template);
+        $this->assertSame('#facc15', $page->accent());
+        $page->update(['is_published' => true]);
+
+        $html = $this->get($page->url())->assertOk()->getContent();
+        $this->assertStringContainsString('class="lp-t-bold', $html);
+        $this->assertStringContainsString('--lp: #facc15; --lp-on: #111111', $html, 'Dark text on the yellow buttons');
+
+        // Staff try another template without saving; customers can't
+        $this->actingAs($admin)->get(route('admin.landing-pages.edit', $page))->assertOk()->assertSee($page->url() . '?template=split', false);
+        $this->actingAs($admin)->get($page->url() . '?template=split')->assertOk()
+            ->assertSee('class="lp-t-split', false)->assertSee('data-lp-trying', false)->assertSee('--lp: #16a34a', false);
+        $this->assertSame('bold', $page->fresh()->template);
+        auth()->logout();
+        $this->get($page->url() . '?template=split')->assertOk()->assertSee('class="lp-t-bold', false);
+
+        // Switching template brings its colour along, unless a colour of their own was picked
+        $base = ['product_id' => $product->id, 'title' => 'T', 'slug' => $page->slug];
+        $this->actingAs($admin)->put(route('admin.landing-pages.update', $page), $base + ['template' => 'festive', 'accent_color' => '#facc15'])->assertRedirect();
+        $this->assertSame('#b91c1c', $page->fresh()->accent());
+        $this->actingAs($admin)->put(route('admin.landing-pages.update', $page), $base + ['template' => 'minimal', 'accent_color' => '#2563eb'])->assertRedirect();
+        $this->assertSame(['minimal', '#2563eb'], [$page->fresh()->template, $page->fresh()->accent()]);
+        $this->actingAs($admin)->put(route('admin.landing-pages.update', $page), $base + ['template' => 'nope'])->assertSessionHasErrors('template');
+    }
+
     public function test_youtube_links_are_recognised(): void
     {
         $this->assertSame('dQw4w9WgXcQ', LandingPage::youtubeId('https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=1'));

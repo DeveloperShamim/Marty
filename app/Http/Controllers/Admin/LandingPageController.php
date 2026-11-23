@@ -55,13 +55,17 @@ class LandingPageController extends Controller
     /** "New landing page": pick a product; the page starts as a draft filled with Bangla starter text. */
     public function store(Request $request)
     {
-        $data = $request->validate(['product_id' => ['required', 'integer', Rule::exists('products', 'id')]]);
+        $data = $request->validate([
+            'product_id' => ['required', 'integer', Rule::exists('products', 'id')],
+            'template'   => ['nullable', Rule::in(array_keys(LandingPage::TEMPLATES))],
+        ]);
         $product = Product::with('images')->findOrFail($data['product_id']);
 
         $page = LandingPage::create([
             'product_id'    => $product->id,
             'title'         => $product->name,
             'slug'          => LandingPage::uniqueSlug(Str::slug($product->slug ?: $product->name)),
+            'template'      => $data['template'] ?? 'classic',
             'is_published'  => false,
             'regular_price' => $product->regular_price,
             'offer_price'   => $product->price,
@@ -99,6 +103,7 @@ class LandingPageController extends Controller
             'discount_text'   => ['nullable', 'string', 'max:120'],
             'discount_badge'  => ['nullable', 'string', 'max:40'],
             'accent_color'    => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'template'        => ['nullable', Rule::in(array_keys(LandingPage::TEMPLATES))],
             'meta_title'      => ['nullable', 'string', 'max:160'],
             'meta_description'=> ['nullable', 'string', 'max:300'],
             'action'          => ['nullable', Rule::in(['save', 'publish', 'unpublish'])],
@@ -219,15 +224,24 @@ class LandingPageController extends Controller
             default     => $landingPage->is_published,
         };
 
+        // A new template brings its own accent colour, unless the admin picked a colour of their own
+        $template = $v['template'] ?? $landingPage->template();
+        $accent = $v['accent_color'] ?? null;
+        if ($accent !== null && strcasecmp($accent, LandingPage::TEMPLATES[$landingPage->template()][2]) === 0
+            && ($template !== $landingPage->template() || ! $landingPage->accent_color)) {
+            $accent = null;
+        }
+
         $landingPage->update([
             'product_id'       => $v['product_id'],
+            'template'         => $template,
             'title'            => $clean($v['title']),
             'slug'             => $v['slug'],
             'regular_price'    => $v['regular_price'] ?? null,
             'offer_price'      => $v['offer_price'] ?? null,
             'discount_text'    => $clean($v['discount_text'] ?? '') ?: null,
             'discount_badge'   => $clean($v['discount_badge'] ?? '') ?: null,
-            'accent_color'     => $v['accent_color'] ?? null,
+            'accent_color'     => $accent,
             'meta_title'       => $clean($v['meta_title'] ?? '') ?: null,
             'meta_description' => $clean($v['meta_description'] ?? '') ?: null,
             'content'          => $content,
