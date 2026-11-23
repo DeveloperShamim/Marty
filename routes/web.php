@@ -297,6 +297,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Homepage sections: order and show/hide
         Route::get('home-sections', [\App\Http\Controllers\Admin\HomeSectionController::class, 'index'])->middleware('area:home-sections')->name('home-sections.index');
         Route::put('home-sections', [\App\Http\Controllers\Admin\HomeSectionController::class, 'update'])->middleware('area:home-sections')->name('home-sections.update');
+        Route::put('home-sections/titles', [\App\Http\Controllers\Admin\HomeSectionController::class, 'updateTitles'])->middleware('area:home-sections')->name('home-sections.titles');
 
         // Launch mode: small-catalogue homepage (Batch collection, comparison, trust row)
         Route::get('launch-mode', [\App\Http\Controllers\Admin\LaunchModeController::class, 'index'])->middleware('area:launch-mode')->name('launch-mode.index');

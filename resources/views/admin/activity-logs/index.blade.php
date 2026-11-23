@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Activity logs')
+@section('title', 'Audit log')
 @section('subtitle', 'Every action, update, dispatch and login made by your staff.')
 
 @if(auth()->user()->isAdmin())

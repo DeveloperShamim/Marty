@@ -37,9 +37,9 @@ class StaffAccess
         'barcodes'        => [self::STORE, self::STOCK],
         'media'           => [self::STORE, self::STOCK],
         'size-guide'      => [self::STORE, self::STOCK],
-        'features'        => [self::STORE, self::STOCK],
         // Marketing
         'banners'         => [self::STORE],
+        'features'        => [self::STORE],   // Trust strip, a homepage block
         'coupons'         => [self::STORE],
         'landing-pages'   => [self::STORE],
         'flash-sale'      => [self::STORE],

@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Banners')
+@section('title', 'Hero banners')
 @section('subtitle', 'Homepage carousel slides and the promo cards beside them.')
 
 @section('page-actions')

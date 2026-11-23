@@ -3,7 +3,7 @@
 namespace App\Services;
 
 /**
- * Free delivery rules (Admin → Marketing → Free Delivery). Checkout, the admin order page
+ * Free delivery rules (Admin → Marketing → Offers → Free delivery). Checkout, the admin order page
  * and the profit reports all use this, so they always agree.
  *
  * When an order ships free, its shipping_charge is 0 and shipping_waived holds the normal

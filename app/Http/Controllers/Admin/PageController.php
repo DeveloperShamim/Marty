@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-/** Store content → Pages: About us, FAQ, Shipping, Returns and any other simple page. */
+/** Online store → Pages & menu: About us, FAQ, Shipping, Returns and any other simple page. */
 class PageController extends Controller
 {
     public function index()

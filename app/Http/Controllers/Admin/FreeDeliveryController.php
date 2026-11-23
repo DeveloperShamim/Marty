@@ -11,7 +11,7 @@ use App\Services\FreeDelivery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-/** Marketing → Free Delivery: the offer rules, the free-delivery products and what the offer costs. */
+/** Marketing → Offers → Free delivery: the offer rules, the free-delivery products and what the offer costs. */
 class FreeDeliveryController extends Controller
 {
     public function index(Request $request)

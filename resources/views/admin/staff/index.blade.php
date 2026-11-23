@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Staff')
+@section('title', 'Staff & roles')
 @section('subtitle', 'Manage team accounts, roles and access.')
 
 @section('page-actions')

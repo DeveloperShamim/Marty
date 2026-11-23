@@ -97,6 +97,6 @@ class AbandonedCartTest extends TestCase
 
         $response = $this->actingAs($admin)->get(route('admin.abandoned-carts.index'));
         $response->assertStatus(200);
-        $response->assertSee('Abandoned Cart Recovery');
+        $response->assertSee('Abandoned carts');
     }
 }
