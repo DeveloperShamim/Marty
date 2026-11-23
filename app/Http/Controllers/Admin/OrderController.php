@@ -44,6 +44,11 @@ class OrderController extends Controller
             $courier = '';
         }
 
+        // Orders from one landing page (Marketing → Landing pages links here), or from any with "all"
+        if ($landing = $request->input('landing')) {
+            $landing === 'all' ? $query->whereNotNull('landing_page_id') : $query->where('landing_page_id', (int) $landing);
+        }
+
         if ($term = trim((string) $request->input('q'))) {
             $query->where(function ($q) use ($term) {
                 $q->where('order_number', 'like', "%{$term}%")
