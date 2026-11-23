@@ -3,7 +3,7 @@
   $theme = generate_3_color_matching_theme();
   $accent = $page->accent();
   $template = $page->template();
-  $split = $template === 'split';
+  $customBlocks = collect($d['custom'] ?? [])->filter(fn ($b) => is_array($b) && trim($b['html'] ?? '') !== '')->all();
   // Dark text on a light accent (e.g. yellow), white text on a dark one
   [$ar, $ag, $ab] = sscanf($accent, '#%02x%02x%02x');
   $onAccent = (0.299 * $ar + 0.587 * $ag + 0.114 * $ab) > 170 ? '#111111' : '#ffffff';
@@ -80,14 +80,13 @@
     .lp-t-bold .text-gray-500, .lp-t-bold .text-gray-400 { color: #8d8d98; }
     .lp-t-bold .border-gray-100, .lp-t-bold .border-gray-200, .lp-t-bold .border-gray-300, .lp-t-bold .divide-gray-100 > * { border-color: #2a2a33; }
     .lp-t-bold .lp-input { background: #0f0f14; border-color: #2a2a33; color: #fff; }
-    .lp-t-bold h1 { font-size: clamp(30px, 6vw, 50px); line-height: 1.15; font-weight: 800; }
     .lp-t-bold [data-lp-section="ticker"] { background: var(--lp); border: 0; }
     .lp-t-bold [data-lp-section="ticker"] span { color: var(--lp-on); }
     .lp-t-bold [data-lp-cta] { box-shadow: 0 10px 30px -10px var(--lp); }
     .lp-t-bold [data-lp-sticky] { box-shadow: 0 -4px 16px rgba(0,0,0,.5); }
     .lp-t-bold th { color: #fff; }
     .lp-t-bold [data-lp-step] { color: #111; }
-    .lp-t-bold header img { filter: brightness(0) invert(1); }
+    .lp-logo-light img { filter: brightness(0) invert(1); }
     /* Clean minimal */
     .lp-t-minimal .rounded-2xl, .lp-t-minimal .rounded-xl, .lp-t-minimal .rounded-lg, .lp-t-minimal .lp-input { border-radius: 3px; }
     .lp-t-minimal .shadow, .lp-t-minimal .shadow-sm { box-shadow: none; }
@@ -95,6 +94,7 @@
     .lp-t-minimal h1 { font-weight: 600; letter-spacing: -.01em; }
     .lp-t-minimal h2 { font-size: 15px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
     .lp-t-minimal h2::after { content: ''; display: block; width: 32px; height: 2px; margin: 10px auto 0; background: var(--lp); }
+    .lp-t-minimal h2.text-left::after { margin-left: 0; }
     .lp-t-minimal .lp-btn { letter-spacing: .06em; text-transform: uppercase; font-size: 14px; }
     .lp-t-minimal [data-lp-section="ticker"] { background: #111; border: 0; }
     .lp-t-minimal [data-lp-section="ticker"] span { color: #fff; }
@@ -103,22 +103,16 @@
     .lp-t-festive .bg-white { background-color: #fffdf7; }
     .lp-t-festive .bg-gray-50 { background-color: #fdf0d5; }
     .lp-t-festive .border-gray-100, .lp-t-festive .border-gray-200, .lp-t-festive .border-gray-300 { border-color: #ecd49a; }
-    .lp-t-festive h1, .lp-t-festive h2, .lp-t-festive h3, .lp-t-festive .text-gray-900 { color: #3b0a0a; }
+    .lp-t-festive h2, .lp-t-festive h3, .lp-t-festive .text-gray-900 { color: #3b0a0a; }
     .lp-t-festive h2::before, .lp-t-festive h2::after { content: '✦'; color: #c9a227; font-size: .7em; margin: 0 .6em; vertical-align: middle; }
-    .lp-t-festive header { background: radial-gradient(ellipse at top, color-mix(in srgb, var(--lp) 14%, transparent), transparent 70%); border-radius: 0 0 2rem 2rem; padding-bottom: 1.25rem; }
     .lp-t-festive [data-lp-section="ticker"] { background: var(--lp); border: 0; }
     .lp-t-festive [data-lp-section="ticker"] span { color: #fde68a; }
     .lp-t-festive .lp-btn { background: linear-gradient(180deg, color-mix(in srgb, var(--lp) 85%, #fff), var(--lp)); box-shadow: 0 0 0 2px #e7c77a inset; }
-    /* Split hero: photos beside the headline on computers */
-    @media (min-width: 1024px) {
-      .lp-t-split .lp-split { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; max-width: 72rem; margin: 0 auto; padding: 2.5rem 1.5rem 0; }
-      .lp-t-split .lp-split > header { order: 2; text-align: left; max-width: none; padding: 0; margin: 0; }
-      .lp-t-split .lp-split > header > div:first-child { justify-content: flex-start; }
-      .lp-t-split .lp-split > header h1 { font-size: 44px; line-height: 1.15; }
-      .lp-t-split .lp-split > section { order: 1; max-width: none; padding: 0; margin: 0; }
-    }
     .lp-t-split [data-lp-section="ticker"] { background: var(--lp); border: 0; }
     .lp-t-split [data-lp-section="ticker"] span { color: var(--lp-on); }
+    .lp-quick-form { border-color: var(--lp); background: color-mix(in srgb, var(--lp) 4%, #fff); }
+    /* Bold: the festive banner rule must not reach other templates' headers */
+    .lp-t-bold [data-lp-cta] { box-shadow: 0 12px 34px -12px var(--lp); }
   </style>
   @include('partials.tracking-head')
   {{ tailwind_css('store', [
@@ -140,321 +134,12 @@
     </div>
   @endif
 
-  {{-- Top announcement bar --}}
-  @if($page->sectionOn('ticker') && $ticker->isNotEmpty())
-    <div class="overflow-hidden border-b border-gray-100 bg-gray-50 py-2" data-lp-section="ticker">
-      <div class="lp-ticker">
-        @for($copy = 0; $copy < 2; $copy++)
-          <div class="flex shrink-0 items-center" @if($copy) aria-hidden="true" @endif>
-            @for($rep = 0; $rep < 2; $rep++)
-              @foreach($ticker as $line)
-                <span class="px-5 text-[13px] sm:text-sm font-medium text-gray-700 whitespace-nowrap">{{ $line }}</span>
-                <span class="lp-accent text-xs">●</span>
-              @endforeach
-            @endfor
-          </div>
-        @endfor
-      </div>
-    </div>
-  @endif
+  @include('storefront.landing.parts.ticker')
+  @include('storefront.landing.parts.custom', ['at' => 'top'])
 
-  {{-- Hero (the Split template puts it beside the photos on computers) --}}
-  <div class="{{ $split ? 'lp-split' : '' }}">
-  <header class="max-w-3xl mx-auto px-4 pt-6 sm:pt-8 text-center">
-    <div class="flex justify-center">@include('partials.brand', ['size' => 'md'])</div>
-    @if(filled($hero['badge']))
-      <span class="mt-5 inline-block rounded-full border px-4 py-1 text-[13px] sm:text-sm font-semibold lp-accent" style="border-color: var(--lp);">{{ $hero['badge'] }}</span>
-    @endif
-    <h1 class="mt-4 text-[26px] leading-snug sm:text-4xl sm:leading-tight font-bold text-gray-900">
-      {{ $hero['part1'] }}
-      @if(filled($hero['part2']))<span class="lp-accent">{{ $hero['part2'] }}</span>@endif
-      {{ $hero['part3'] }}
-    </h1>
-  </header>
+  {{-- The picked template lays out the sections (resources/views/storefront/landing/{template}.blade.php) --}}
+  @include('storefront.landing.' . $template)
 
-  {{-- Gallery + price --}}
-  <section class="max-w-xl mx-auto px-4 mt-6" data-lp-section="gallery">
-    @if(count($gallery))
-      <div class="relative rounded-2xl border border-gray-200 bg-white overflow-hidden">
-        @if($discountBadge)
-          <span class="absolute left-3 top-3 z-10 rounded-md bg-gray-900 px-2 py-1 text-xs font-bold text-white">{{ $discountBadge }}</span>
-        @endif
-        <div class="aspect-square bg-white">
-          <img id="lpMain" src="{{ $gallery[0] }}" alt="{{ $page->title }}" class="h-full w-full object-contain" fetchpriority="high">
-        </div>
-        @if(count($gallery) > 1)
-          <button type="button" data-lp-step="-1" class="absolute left-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-white/90 shadow flex items-center justify-center" aria-label="আগের ছবি">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
-          </button>
-          <button type="button" data-lp-step="1" class="absolute right-3 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-white/90 shadow flex items-center justify-center" aria-label="পরের ছবি">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-          </button>
-          <div class="flex justify-center gap-2 border-t border-gray-100 p-3">
-            @foreach($gallery as $i => $src)
-              <button type="button" data-lp-thumb="{{ $i }}" class="h-14 w-14 rounded-lg border-2 overflow-hidden {{ $i === 0 ? '' : 'border-transparent' }}" style="{{ $i === 0 ? 'border-color: var(--lp)' : '' }}" aria-label="ছবি {{ $i + 1 }}">
-                <img src="{{ $src }}" alt="" class="h-full w-full object-cover" loading="lazy">
-              </button>
-            @endforeach
-          </div>
-        @endif
-      </div>
-    @endif
-
-    <div class="relative mt-5 grid {{ $compare ? 'grid-cols-2' : 'grid-cols-1' }} rounded-2xl border border-gray-200 bg-white text-center">
-      @if($discountText)
-        <span class="absolute -top-3 right-4 rounded-full bg-rose-600 px-3 py-0.5 text-xs font-bold text-white">{{ $discountText }}</span>
-      @endif
-      @if($compare)
-        <div class="p-4 border-r border-gray-100">
-          <p class="text-xs text-gray-500">রেগুলার প্রাইস</p>
-          <p class="mt-1 text-xl font-bold text-gray-400 line-through">{{ money($compare) }}</p>
-        </div>
-      @endif
-      <div class="p-4">
-        <p class="text-xs text-gray-500">অফার প্রাইস</p>
-        <p class="mt-1 text-2xl font-extrabold lp-accent" data-lp-price>{{ money($price) }}</p>
-      </div>
-    </div>
-    <a href="#order" class="lp-btn mt-4 flex h-12 items-center justify-center gap-2 rounded-xl text-base font-bold shadow-sm" data-lp-cta>
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-      {{ $buttonText }}
-    </a>
-    <p class="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[13px] text-gray-600">
-      <span>✓ ক্যাশ অন ডেলিভারি</span>
-      <span>✓ পণ্য দেখে মূল্য পরিশোধ</span>
-    </p>
-  </section>
-  </div>
-
-  {{-- Video --}}
-  @if($page->sectionOn('video') && $videoId)
-    <section class="mt-12 bg-gray-50 py-10 sm:py-14" data-lp-section="video">
-      <div class="max-w-3xl mx-auto px-4">
-        @if(filled($d['video']['heading'] ?? null))<h2 class="text-center text-xl sm:text-2xl font-bold">{{ $d['video']['heading'] }}</h2>@endif
-        <div class="mt-6 aspect-video overflow-hidden rounded-2xl bg-black shadow">
-          <iframe class="h-full w-full" src="https://www.youtube-nocookie.com/embed/{{ $videoId }}?rel=0" title="{{ $d['video']['heading'] ?: $page->title }}" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        </div>
-      </div>
-    </section>
-  @endif
-
-  {{-- Feature blocks --}}
-  @if($page->sectionOn('features') && $features->isNotEmpty())
-    <section class="py-10 sm:py-14" style="background: color-mix(in srgb, var(--lp) 6%, var(--lp-base));" data-lp-section="features">
-      <div class="max-w-4xl mx-auto px-4">
-        @if(filled($d['features']['heading'] ?? null))<h2 class="text-center text-xl sm:text-2xl font-bold">{{ $d['features']['heading'] }}</h2>@endif
-        <div class="mt-8 space-y-8">
-          @foreach($features as $i => $f)
-            @php($img = $f['image'] ? image_url($f['image'], $f['title'] ?? '') : ($gallery[$i] ?? null))
-            <div class="grid items-center gap-5 sm:grid-cols-2 sm:gap-10">
-              @if($img)
-                <div class="{{ $i % 2 ? 'sm:order-2' : '' }} aspect-square overflow-hidden rounded-2xl bg-white shadow-sm">
-                  <img src="{{ $img }}" alt="{{ $f['title'] }}" class="h-full w-full object-cover" loading="lazy">
-                </div>
-              @endif
-              <div class="{{ $img ? '' : 'sm:col-span-2' }}">
-                <h3 class="text-lg sm:text-xl font-bold">{{ $f['title'] }}</h3>
-                <p class="mt-2 text-[15px] leading-relaxed text-gray-600">{{ $f['text'] }}</p>
-              </div>
-            </div>
-          @endforeach
-        </div>
-      </div>
-    </section>
-  @endif
-
-  {{-- Specifications --}}
-  @if($page->sectionOn('specs') && count($specRows))
-    <section class="py-10 sm:py-14" data-lp-section="specs">
-      <div class="max-w-2xl mx-auto px-4">
-        @if(filled($d['specs']['heading'] ?? null))<h2 class="text-center text-xl sm:text-2xl font-bold">{{ $d['specs']['heading'] }}</h2>@endif
-        <div class="mt-6 overflow-hidden rounded-xl border border-gray-200">
-          <table class="w-full text-[15px]">
-            @foreach($specRows as $row)
-              <tr class="border-b border-gray-100 last:border-0">
-                <th class="w-2/5 bg-gray-50 px-4 py-3 text-left font-semibold align-top">{{ $row['label'] }}</th>
-                <td class="px-4 py-3 text-gray-700">{{ $row['value'] }}</td>
-              </tr>
-            @endforeach
-          </table>
-        </div>
-      </div>
-    </section>
-  @endif
-
-  {{-- Customer review pictures --}}
-  @if($page->sectionOn('reviews') && $reviewImages->isNotEmpty())
-    <section class="bg-gray-50 py-10 sm:py-14" data-lp-section="reviews">
-      <div class="max-w-5xl mx-auto px-4">
-        @if(filled($d['reviews']['heading'] ?? null))<h2 class="text-center text-xl sm:text-2xl font-bold">{{ $d['reviews']['heading'] }}</h2>@endif
-        @if(filled($d['reviews']['subtitle'] ?? null))<p class="mt-1 text-center text-sm text-gray-500">{{ $d['reviews']['subtitle'] }}</p>@endif
-        <div class="mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
-          @foreach($reviewImages as $img)
-            <img src="{{ image_url($img, 'review') }}" alt="কাস্টমার রিভিউ" class="h-72 w-auto shrink-0 snap-center rounded-xl border border-gray-200 bg-white object-contain" loading="lazy">
-          @endforeach
-        </div>
-      </div>
-    </section>
-  @endif
-
-  {{-- FAQ --}}
-  @if($page->sectionOn('faq') && $faqs->isNotEmpty())
-    <section class="py-10 sm:py-14" style="background: color-mix(in srgb, var(--lp) 6%, var(--lp-base));" data-lp-section="faq">
-      <div class="max-w-2xl mx-auto px-4">
-        @if(filled($d['faq']['heading'] ?? null))<h2 class="text-center text-xl sm:text-2xl font-bold">{{ $d['faq']['heading'] }}</h2>@endif
-        @if(filled($d['faq']['subtitle'] ?? null))<p class="mt-1 text-center text-sm text-gray-500">{{ $d['faq']['subtitle'] }}</p>@endif
-        <div class="mt-6 space-y-3">
-          @foreach($faqs as $f)
-            <details class="group rounded-xl border border-gray-200 bg-white px-4 py-3">
-              <summary class="flex cursor-pointer list-none items-center justify-between gap-3 font-semibold">
-                <span>{{ $f['q'] }}</span>
-                <span class="lp-plus lp-accent text-xl leading-none transition-transform">+</span>
-              </summary>
-              <p class="mt-2 text-[15px] leading-relaxed text-gray-600">{{ $f['a'] }}</p>
-            </details>
-          @endforeach
-        </div>
-      </div>
-    </section>
-  @endif
-
-  {{-- Call / WhatsApp --}}
-  @if($page->sectionOn('contact') && (filled($contact['phone'] ?? null) || $wa !== '' || $messengerUrl))
-    <section class="py-10" data-lp-section="contact">
-      <div class="max-w-xl mx-auto px-4">
-        <div class="rounded-2xl border border-gray-200 p-5 text-center">
-          @if(filled($contact['heading'] ?? null))<h2 class="text-lg sm:text-xl font-bold">{{ $contact['heading'] }}</h2>@endif
-          <div class="mt-4 flex flex-wrap justify-center gap-3">
-            @if(filled($contact['phone'] ?? null))
-              <a href="tel:{{ preg_replace('/[^\d+]/', '', $contact['phone']) }}" class="inline-flex h-11 items-center gap-2 rounded-xl border border-gray-300 px-4 font-semibold">📞 {{ $contact['phone'] }}</a>
-            @endif
-            @if($wa !== '')
-              <a href="https://wa.me/{{ $wa }}" target="_blank" rel="noopener" class="inline-flex h-11 items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-4 font-semibold text-emerald-700">WhatsApp</a>
-            @endif
-            @if($messengerUrl)
-              <a href="{{ $messengerUrl }}" target="_blank" rel="noopener" class="inline-flex h-11 items-center gap-2 rounded-xl border border-blue-300 bg-blue-50 px-4 font-semibold text-blue-700">Messenger</a>
-            @endif
-          </div>
-        </div>
-      </div>
-    </section>
-  @endif
-
-  {{-- Order form --}}
-  <section id="order" class="scroll-mt-4 bg-gray-50 py-10 sm:py-14" data-lp-section="form">
-    <div class="max-w-5xl mx-auto px-4">
-      @if(filled($form['heading']))<h2 class="text-center text-xl sm:text-2xl font-bold">{{ $form['heading'] }}</h2>@endif
-      @if(filled($form['subheading']))<p class="mt-1 text-center text-sm text-gray-500">{{ $form['subheading'] }}</p>@endif
-
-      @if($errors->any())
-        <div class="mx-auto mt-5 max-w-xl rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert" data-lp-errors>
-          @foreach($errors->all() as $e)<p>{{ $e }}</p>@endforeach
-        </div>
-      @endif
-
-      <form method="POST" action="{{ route('landing.order', $page->slug) }}" id="lpForm" class="mt-6 grid gap-5 lg:grid-cols-5" novalidate>
-        @csrf
-        <input type="hidden" name="sku_id" id="lpSku" value="{{ old('sku_id') }}">
-        <input type="hidden" name="qty" id="lpQty" value="{{ $oldQty }}">
-
-        <div class="space-y-5 lg:col-span-3">
-          <div class="rounded-2xl border border-gray-200 bg-white p-5">
-            <h3 class="font-bold">{{ $form['delivery_heading'] }}</h3>
-            <div class="mt-4 grid gap-4 sm:grid-cols-2">
-              <label class="block">
-                <span class="text-sm font-medium">আপনার নাম <span class="text-rose-600">*</span></span>
-                <input name="customer_name" value="{{ old('customer_name') }}" class="lp-input mt-1" required maxlength="120" autocomplete="name">
-              </label>
-              <label class="block">
-                <span class="text-sm font-medium">মোবাইল নম্বর <span class="text-rose-600">*</span></span>
-                <input name="customer_phone" value="{{ old('customer_phone') }}" class="lp-input mt-1" required inputmode="tel" placeholder="01XXXXXXXXX" maxlength="16" autocomplete="tel">
-              </label>
-              <label class="block sm:col-span-2">
-                <span class="text-sm font-medium">সম্পূর্ণ ঠিকানা <span class="text-rose-600">*</span></span>
-                <textarea name="shipping_address" rows="2" class="lp-input mt-1" required maxlength="255" placeholder="বাসা, রোড, এলাকা, থানা, জেলা" autocomplete="street-address">{{ old('shipping_address') }}</textarea>
-              </label>
-            </div>
-            <p class="mt-4 text-sm font-medium">ডেলিভারি এলাকা <span class="text-rose-600">*</span></p>
-            <div class="mt-2 grid grid-cols-2 gap-3">
-              <label class="lp-zone flex cursor-pointer items-center gap-2 rounded-xl border border-gray-200 p-3 text-sm">
-                <input type="radio" name="shipping_zone" value="inside_dhaka" @checked($oldZone === 'inside_dhaka') required>
-                <span>ঢাকার ভিতরে <b class="lp-accent">{{ $shipInside > 0 ? money($shipInside) : 'ফ্রি' }}</b></span>
-              </label>
-              <label class="lp-zone flex cursor-pointer items-center gap-2 rounded-xl border border-gray-200 p-3 text-sm">
-                <input type="radio" name="shipping_zone" value="outside_dhaka" @checked($oldZone === 'outside_dhaka')>
-                <span>ঢাকার বাইরে <b class="lp-accent">{{ $shipOutside > 0 ? money($shipOutside) : 'ফ্রি' }}</b></span>
-              </label>
-            </div>
-            <label class="mt-4 block">
-              <span class="text-sm font-medium">অর্ডার নোট (ঐচ্ছিক)</span>
-              <textarea name="delivery_note" rows="2" class="lp-input mt-1" maxlength="500">{{ old('delivery_note') }}</textarea>
-            </label>
-          </div>
-
-          <div class="rounded-2xl border border-gray-200 bg-white p-5">
-            <h3 class="font-bold">পেমেন্ট</h3>
-            <div class="mt-3 flex items-center gap-3 rounded-xl border p-3 text-sm" style="border-color: var(--lp); background: color-mix(in srgb, var(--lp) 6%, var(--lp-base));">
-              <span class="lp-bg h-4 w-4 shrink-0 rounded-full ring-4 ring-white" style="box-shadow: 0 0 0 1px var(--lp);"></span>
-              <span><b>ক্যাশ অন ডেলিভারি</b><br><span class="text-gray-500">পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন</span></span>
-            </div>
-          </div>
-        </div>
-
-        <div class="lg:col-span-2">
-          <div class="rounded-2xl border border-gray-200 bg-white p-5 lg:sticky lg:top-4">
-            <h3 class="font-bold">{{ $form['summary_heading'] }}</h3>
-            <div class="mt-4 flex gap-3">
-              @if(count($gallery))<img src="{{ $gallery[0] }}" alt="" class="h-16 w-16 shrink-0 rounded-lg border border-gray-100 object-cover">@endif
-              <div class="min-w-0 flex-1">
-                <p class="font-semibold leading-snug">{{ $product->name }}</p>
-                <p class="text-sm lp-accent font-bold mt-0.5">{{ money($price) }}</p>
-              </div>
-            </div>
-
-            @if($hasOptions)
-              <div class="mt-4 space-y-3" id="lpOptions">
-                @foreach($groups as $name => $values)
-                  <div>
-                    <p class="text-sm font-medium">{{ $name }} <span class="text-rose-600">*</span></p>
-                    <div class="mt-1.5 flex flex-wrap gap-2">
-                      @foreach($values as $value)
-                        <button type="button" class="lp-opt h-9 min-w-[2.75rem] rounded-lg border border-gray-300 px-3 text-sm font-semibold" data-lp-group="{{ $name }}" data-lp-value="{{ $value }}" aria-pressed="false">{{ $value }}</button>
-                      @endforeach
-                    </div>
-                  </div>
-                @endforeach
-                <p class="hidden text-xs text-rose-600" id="lpOptionNote">এই সাইজ / কালারটি স্টকে নেই।</p>
-              </div>
-            @endif
-
-            <div class="mt-4 flex items-center justify-between">
-              <span class="text-sm font-medium">পরিমাণ</span>
-              <div class="flex items-center rounded-lg border border-gray-300">
-                <button type="button" class="h-9 w-9 text-lg" data-lp-qty="-1" aria-label="কমান">−</button>
-                <span class="w-8 text-center font-semibold" id="lpQtyText">{{ $oldQty }}</span>
-                <button type="button" class="h-9 w-9 text-lg" data-lp-qty="1" aria-label="বাড়ান">+</button>
-              </div>
-            </div>
-
-            <dl class="mt-4 space-y-2 border-t border-gray-100 pt-4 text-sm">
-              <div class="flex justify-between"><dt class="text-gray-600">{{ $form['subtotal_label'] }}</dt><dd class="font-semibold" id="lpSubtotal">{{ money($quotes[$oldQty]['inside_dhaka']['subtotal']) }}</dd></div>
-              <div class="flex justify-between"><dt class="text-gray-600">{{ $form['delivery_label'] }}</dt><dd class="font-semibold" id="lpShipping">{{ $oldZone ? money($quotes[$oldQty][$oldZone]['shipping']) : 'এলাকা বেছে নিন' }}</dd></div>
-              <div class="flex justify-between {{ ($quotes[1]['inside_dhaka']['tax'] ?? 0) > 0 ? '' : 'hidden' }}"><dt class="text-gray-600">ট্যাক্স</dt><dd class="font-semibold" id="lpTax">{{ money($quotes[$oldQty][$oldZone ?: 'inside_dhaka']['tax']) }}</dd></div>
-              <div class="flex justify-between border-t border-gray-100 pt-3 text-base"><dt class="font-bold">{{ $form['total_label'] }}</dt><dd class="font-extrabold" id="lpTotal">{{ money($oldZone ? $quotes[$oldQty][$oldZone]['total'] : $quotes[$oldQty]['inside_dhaka']['subtotal']) }}</dd></div>
-            </dl>
-
-            @if($soldOut)
-              <p class="mt-5 rounded-xl bg-gray-100 py-3 text-center font-bold text-gray-600" data-lp-soldout>দুঃখিত, পণ্যটি এখন স্টকে নেই</p>
-            @else
-              <button type="submit" class="lp-btn mt-5 flex h-12 w-full items-center justify-center rounded-xl text-base font-bold" id="lpSubmit">
-                {{ $form['button'] }}
-              </button>
-            @endif
-          </div>
-        </div>
-      </form>
-    </div>
-  </section>
 
   <footer class="py-6 text-center text-xs text-gray-500">
     © {{ date('Y') }} {{ site_name() }} · <a href="{{ route('home') }}" class="underline">ওয়েবসাইট দেখুন</a>
@@ -472,6 +157,14 @@
   @endif
 
   <script>
+  // Custom HTML frames report their height; only messages from those frames are used
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || typeof d.lpCustomHeight !== 'number') return;
+    document.querySelectorAll('iframe[data-lp-custom]').forEach(function (f) {
+      if (f.contentWindow === e.source) f.style.height = Math.min(6000, Math.max(20, Math.ceil(d.lpCustomHeight))) + 'px';
+    });
+  });
   (function () {
     var quotes = @json($quotes);
     var skus = @json($skus);

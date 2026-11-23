@@ -76,6 +76,12 @@ class LandingPageController extends Controller
         return redirect()->route('admin.landing-pages.edit', $page)->with('status', 'Draft created with starter text. Edit it, then publish.');
     }
 
+    /** Pictures for the editor's media library picker (JSON) */
+    public function media(Request $request)
+    {
+        return response()->json(['images' => LandingPage::libraryImages((string) $request->query('q', ''))]);
+    }
+
     public function edit(LandingPage $landingPage)
     {
         $landingPage->load('product.images');
@@ -93,6 +99,11 @@ class LandingPageController extends Controller
         $request->merge(['slug' => Str::slug((string) $request->input('slug'))]);
         $text = ['nullable', 'string', 'max:200'];
         $long = ['nullable', 'string', 'max:1000'];
+        $library = function ($attr, $value, $fail) {
+            if (filled($value) && ! LandingPage::isLibraryImage($value)) {
+                $fail('That picture is not in the media library any more.');
+            }
+        };
 
         $v = $request->validate([
             'product_id'      => ['required', 'integer', Rule::exists('products', 'id')],
@@ -163,6 +174,21 @@ class LandingPageController extends Controller
             'review_upload.*'         => ['image', 'max:4096'],
             'review_remove'           => ['nullable', 'array'],
             'review_remove.*'         => ['string'],
+            // Pictures picked from the media library
+            'gallery_pick'            => ['nullable', 'array', 'max:' . LandingPage::MAX_GALLERY],
+            'gallery_pick.*'          => [$library],
+            'review_pick'             => ['nullable', 'array', 'max:' . LandingPage::MAX_REVIEW_IMAGES],
+            'review_pick.*'           => [$library],
+            'feature_pick'            => ['nullable', 'array', 'max:3'],
+            'feature_pick.*'          => ['nullable', $library],
+            // Custom HTML blocks (only admins may change them)
+            'custom'                  => ['nullable', 'array', 'max:' . LandingPage::MAX_CUSTOM],
+            'custom.*.html'           => ['nullable', 'string', 'max:20000'],
+            'custom.*.at'             => ['nullable', Rule::in(array_keys(LandingPage::CUSTOM_SPOTS))],
+        ], [
+            'gallery_pick.*'  => 'That picture is not in the media library any more.',
+            'review_pick.*'   => 'That picture is not in the media library any more.',
+            'feature_pick.*'  => 'That picture is not in the media library any more.',
         ]);
 
         $old = $landingPage->data();
@@ -170,11 +196,11 @@ class LandingPageController extends Controller
         $pick = fn (array $src, array $keys) => collect($keys)->mapWithKeys(fn ($k) => [$k => $clean($src[$k] ?? '')])->all();
 
         // Pictures: keep what's saved, drop the ticked ones, add uploads
-        $gallery = $this->pictures($old['gallery'] ?? [], $v['gallery_remove'] ?? [], $request->file('gallery_upload', []), LandingPage::MAX_GALLERY, $landingPage);
+        $gallery = $this->pictures($old['gallery'] ?? [], $v['gallery_remove'] ?? [], $request->file('gallery_upload', []), LandingPage::MAX_GALLERY, $landingPage, $v['gallery_pick'] ?? []);
         if (filled($v['gallery_main'] ?? null) && in_array($v['gallery_main'], $gallery, true)) {
             $gallery = array_values(array_unique([$v['gallery_main'], ...$gallery]));
         }
-        $reviewImages = $this->pictures($old['reviews']['images'] ?? [], $v['review_remove'] ?? [], $request->file('review_upload', []), LandingPage::MAX_REVIEW_IMAGES, $landingPage);
+        $reviewImages = $this->pictures($old['reviews']['images'] ?? [], $v['review_remove'] ?? [], $request->file('review_upload', []), LandingPage::MAX_REVIEW_IMAGES, $landingPage, $v['review_pick'] ?? []);
 
         $features = [];
         for ($i = 0; $i < 3; $i++) {
@@ -182,6 +208,9 @@ class LandingPageController extends Controller
             if ($request->hasFile("feature_image.$i")) {
                 $this->forget($image, $landingPage);
                 $image = $request->file("feature_image.$i")->store(self::DIR, 'public');
+            } elseif (filled($v['feature_pick'][$i] ?? null)) {
+                $this->forget($image, $landingPage);
+                $image = $v['feature_pick'][$i];
             } elseif ($request->boolean("feature_image_remove.$i")) {
                 $this->forget($image, $landingPage);
                 $image = null;
@@ -215,6 +244,11 @@ class LandingPageController extends Controller
                     ->filter(fn ($r) => $r['q'] !== '')->values()->all(),
             ],
             'contact'  => $pick($v['contact'] ?? [], ['heading', 'phone', 'whatsapp', 'messenger']),
+            // Custom HTML: an admin's edit is kept as typed; anyone else keeps what is there
+            'custom'   => $request->user()?->isAdmin()
+                ? collect($v['custom'] ?? [])->map(fn ($b) => ['html' => trim((string) ($b['html'] ?? '')), 'at' => $b['at'] ?? 'form'])
+                    ->filter(fn ($b) => $b['html'] !== '')->values()->all()
+                : ($old['custom'] ?? []),
             'form'     => $pick($v['form'] ?? [], ['heading', 'subheading', 'delivery_heading', 'summary_heading', 'subtotal_label', 'delivery_label', 'total_label', 'button']),
         ];
 
@@ -299,13 +333,18 @@ class LandingPageController extends Controller
     }
 
     /** Saved pictures minus the removed ones, plus new uploads, up to $max. */
-    private function pictures(array $saved, array $remove, array $uploads, int $max, LandingPage $page): array
+    private function pictures(array $saved, array $remove, array $uploads, int $max, LandingPage $page, array $picked = []): array
     {
         $keep = [];
         foreach ($saved as $path) {
             if (in_array($path, $remove, true)) {
                 $this->forget($path, $page);
             } else {
+                $keep[] = $path;
+            }
+        }
+        foreach ($picked as $path) {
+            if (count($keep) < $max && ! in_array($path, $keep, true)) {
                 $keep[] = $path;
             }
         }

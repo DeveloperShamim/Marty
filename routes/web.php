@@ -288,6 +288,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Landing pages: one-product offer pages at /offer/{slug}
         Route::get('landing-pages', [\App\Http\Controllers\Admin\LandingPageController::class, 'index'])->middleware('area:landing-pages')->name('landing-pages.index');
         Route::post('landing-pages', [\App\Http\Controllers\Admin\LandingPageController::class, 'store'])->middleware('area:landing-pages')->name('landing-pages.store');
+        Route::get('landing-pages/media', [\App\Http\Controllers\Admin\LandingPageController::class, 'media'])->middleware('area:landing-pages')->name('landing-pages.media');
         Route::get('landing-pages/{landingPage}/edit', [\App\Http\Controllers\Admin\LandingPageController::class, 'edit'])->middleware('area:landing-pages')->name('landing-pages.edit');
         Route::put('landing-pages/{landingPage}', [\App\Http\Controllers\Admin\LandingPageController::class, 'update'])->middleware('area:landing-pages')->name('landing-pages.update');
         Route::patch('landing-pages/{landingPage}/publish', [\App\Http\Controllers\Admin\LandingPageController::class, 'publish'])->middleware('area:landing-pages')->name('landing-pages.publish');

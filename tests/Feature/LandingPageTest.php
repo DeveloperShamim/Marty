@@ -260,6 +260,100 @@ class LandingPageTest extends TestCase
         $this->actingAs($admin)->put(route('admin.landing-pages.update', $page), $base + ['template' => 'nope'])->assertSessionHasErrors('template');
     }
 
+    public function test_each_template_has_its_own_layout(): void
+    {
+        $page = $this->page($this->product());
+        $marks = [
+            'classic' => 'data-lp-thumb',                        // carousel with thumbnails
+            'bold'    => 'uppercase tracking-wider" style="background: var(--lp)', // dark hero badge
+            'minimal' => 'snap-mandatory -mx-4 px-4 lg:mx-0',     // stacked editorial photos
+            'festive' => 'বিশেষ উৎসব অফার',                       // coupon-style offer box
+            'split'   => 'rounded-3xl border-2 py-6',             // order form beside the photos
+        ];
+        foreach ($marks as $template => $mark) {
+            $page->update(['template' => $template]);
+            $html = $this->get('/offer/oxford')->assertOk()->getContent();
+            $this->assertStringContainsString('id="lpForm"', $html, $template);
+            $this->assertStringContainsString($mark, $html, $template);
+            foreach (array_diff_key($marks, [$template => 1, 'classic' => 1]) as $other => $otherMark) {
+                $this->assertStringNotContainsString($otherMark, $html, "$template shows $other's layout");
+            }
+        }
+
+        // Quick order puts the form above the details; Classic puts it last
+        $page->update(['template' => 'split']);
+        $html = $this->get('/offer/oxford')->getContent();
+        $this->assertLessThan(strpos($html, 'data-lp-section="faq"'), strpos($html, 'id="lpForm"'));
+        $page->update(['template' => 'classic']);
+        $html = $this->get('/offer/oxford')->getContent();
+        $this->assertGreaterThan(strpos($html, 'data-lp-section="faq"'), strpos($html, 'id="lpForm"'));
+    }
+
+    public function test_custom_html_is_admin_only_and_sandboxed(): void
+    {
+        $product = $this->product();
+        $page = $this->page($product);
+        $base = ['product_id' => $product->id, 'title' => 'Oxford offer', 'slug' => 'oxford'];
+        $html = '<div class="promo">Eid timer</div><script>document.cookie</script>';
+
+        $this->actingAs($this->admin())->put(route('admin.landing-pages.update', $page), $base + [
+            'custom' => [['html' => $html, 'at' => 'features'], ['html' => '  ', 'at' => 'top']],
+        ])->assertRedirect();
+        $this->assertSame([['html' => $html, 'at' => 'features']], $page->fresh()->content['custom']);
+
+        $out = $this->get('/offer/oxford')->assertOk()->getContent();
+        $this->assertStringContainsString('sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"', $out);
+        $this->assertStringNotContainsString('allow-same-origin', $out);
+        $this->assertStringContainsString('data-lp-custom-at="features"', $out);
+        $this->assertStringNotContainsString('<script>document.cookie</script>', $out, 'Only inside the escaped srcdoc');
+        $this->assertStringContainsString('&lt;script&gt;document.cookie&lt;/script&gt;', $out);
+        $this->assertLessThan(strpos($out, 'id="lpForm"'), strpos($out, 'data-lp-custom-at="features"'));
+
+        // A store manager can edit the page but not the custom HTML
+        $this->actingAs(User::factory()->create(['role' => 'store_manager']))->put(route('admin.landing-pages.update', $page), $base + [
+            'custom' => [['html' => '<b>changed</b>', 'at' => 'top']],
+        ])->assertRedirect();
+        $this->assertSame($html, $page->fresh()->content['custom'][0]['html']);
+        $this->actingAs(User::factory()->create(['role' => 'store_manager']))->get(route('admin.landing-pages.edit', $page))
+            ->assertOk()->assertSee('Only admins can change these.');
+
+        $this->actingAs($this->admin())->put(route('admin.landing-pages.update', $page), $base + ['custom' => [['html' => 'x', 'at' => 'nowhere']]])
+            ->assertSessionHasErrors('custom.0.at');
+    }
+
+    public function test_pictures_can_be_picked_from_the_media_library(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('products/blue.jpg', 'x');
+        Storage::disk('public')->put('banners/eid.png', 'x');
+        Storage::disk('public')->put('secret/hidden.jpg', 'x');
+        $admin = $this->admin();
+        $product = $this->product();
+        $page = $this->page($product);
+        $base = ['product_id' => $product->id, 'title' => 'Oxford offer', 'slug' => 'oxford'];
+
+        $paths = collect($this->actingAs($admin)->getJson(route('admin.landing-pages.media'))->assertOk()->json('images'))->pluck('path');
+        $this->assertEqualsCanonicalizing(['products/blue.jpg', 'banners/eid.png'], $paths->all());
+        $this->assertSame(['banners/eid.png'], collect($this->actingAs($admin)->getJson(route('admin.landing-pages.media', ['q' => 'eid']))->json('images'))->pluck('path')->all());
+
+        $this->actingAs($admin)->put(route('admin.landing-pages.update', $page), $base + [
+            'gallery_pick' => ['products/blue.jpg'], 'review_pick' => ['banners/eid.png'], 'feature_pick' => [1 => 'banners/eid.png'],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $c = $page->fresh()->content;
+        $this->assertSame(['products/blue.jpg'], $c['gallery']);
+        $this->assertSame(['banners/eid.png'], $c['reviews']['images']);
+        $this->assertSame('banners/eid.png', $c['features']['items'][1]['image']);
+
+        foreach (['secret/hidden.jpg', '../.env', 'products/missing.jpg'] as $bad) {
+            $this->actingAs($admin)->put(route('admin.landing-pages.update', $page), $base + ['gallery_pick' => [$bad]])
+                ->assertSessionHasErrors('gallery_pick.0');
+        }
+
+        // Removing a library picture from the page never deletes it from the library
+        $this->actingAs($admin)->put(route('admin.landing-pages.update', $page), $base + ['gallery_remove' => ['products/blue.jpg']])->assertRedirect();
+        Storage::disk('public')->assertExists('products/blue.jpg');
+    }
+
     public function test_youtube_links_are_recognised(): void
     {
         $this->assertSame('dQw4w9WgXcQ', LandingPage::youtubeId('https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=1'));
