@@ -2,6 +2,11 @@
   /** @var \App\Models\LandingPage $page */
   $theme = generate_3_color_matching_theme();
   $accent = $page->accent();
+  $template = $page->template();
+  $split = $template === 'split';
+  // Dark text on a light accent (e.g. yellow), white text on a dark one
+  [$ar, $ag, $ab] = sscanf($accent, '#%02x%02x%02x');
+  $onAccent = (0.299 * $ar + 0.587 * $ag + 0.114 * $ab) > 170 ? '#111111' : '#ffffff';
   $price = $page->price();
   $compare = $page->comparePrice();
   $savings = $page->savings();
@@ -44,25 +49,76 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="{{ \App\Support\StoreStyle::fontsUrl() }}" rel="stylesheet" />
   <style>
-    :root { {!! \App\Support\StoreStyle::cssVars() !!} --lp: {{ $accent }}; }
+    :root { {!! \App\Support\StoreStyle::cssVars() !!} --lp: {{ $accent }}; --lp-on: {{ $onAccent }}; --lp-base: #fff; }
     body { font-family: 'Hind Siliguri', var(--font-body), sans-serif; }
     h1, h2, h3 { font-family: 'Hind Siliguri', var(--font-display), sans-serif; }
     .lp-accent { color: var(--lp); }
     .lp-bg { background: var(--lp); }
     .lp-ring { box-shadow: 0 0 0 2px var(--lp); }
-    .lp-btn { background: var(--lp); color: #fff; transition: filter .15s, transform .15s; }
+    .lp-btn { background: var(--lp); color: var(--lp-on); transition: filter .15s, transform .15s; }
     .lp-btn:hover { filter: brightness(.95); }
     .lp-btn:active { transform: scale(.98); }
     .lp-ticker { display: flex; width: max-content; animation: lpTicker 30s linear infinite; }
     .lp-ticker:hover { animation-play-state: paused; }
     @keyframes lpTicker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
     @media (prefers-reduced-motion: reduce) { .lp-ticker { animation: none; } }
-    .lp-opt[aria-pressed="true"] { border-color: var(--lp); color: var(--lp); background: color-mix(in srgb, var(--lp) 8%, #fff); }
+    .lp-opt[aria-pressed="true"] { border-color: var(--lp); color: var(--lp); background: color-mix(in srgb, var(--lp) 8%, var(--lp-base)); }
     .lp-opt:disabled { opacity: .4; text-decoration: line-through; cursor: not-allowed; }
-    .lp-zone:has(input:checked) { border-color: var(--lp); background: color-mix(in srgb, var(--lp) 7%, #fff); }
+    .lp-zone:has(input:checked) { border-color: var(--lp); background: color-mix(in srgb, var(--lp) 7%, var(--lp-base)); }
     details[open] .lp-plus { transform: rotate(45deg); }
     .lp-input { width: 100%; border: 1px solid #e5e7eb; border-radius: 10px; padding: .7rem .85rem; font-size: 15px; background: #fff; }
     .lp-input:focus { outline: none; border-color: var(--lp); box-shadow: 0 0 0 3px color-mix(in srgb, var(--lp) 18%, transparent); }
+
+    /* ---- Templates (LandingPage::TEMPLATES): same markup, restyled ---- */
+    /* Bold dark */
+    body.lp-t-bold { --lp-base: #0b0b0f; background: #0b0b0f; color: #f4f4f5; }
+    .lp-t-bold .bg-white { background-color: #17171d; }
+    .lp-t-bold .bg-gray-50 { background-color: #111116; }
+    .lp-t-bold .bg-gray-100 { background-color: #22222b; }
+    .lp-t-bold .text-gray-900, .lp-t-bold h1, .lp-t-bold h2, .lp-t-bold h3 { color: #fff; }
+    .lp-t-bold .text-gray-700, .lp-t-bold .text-gray-600 { color: #c8c8d0; }
+    .lp-t-bold .text-gray-500, .lp-t-bold .text-gray-400 { color: #8d8d98; }
+    .lp-t-bold .border-gray-100, .lp-t-bold .border-gray-200, .lp-t-bold .border-gray-300, .lp-t-bold .divide-gray-100 > * { border-color: #2a2a33; }
+    .lp-t-bold .lp-input { background: #0f0f14; border-color: #2a2a33; color: #fff; }
+    .lp-t-bold h1 { font-size: clamp(30px, 6vw, 50px); line-height: 1.15; font-weight: 800; }
+    .lp-t-bold [data-lp-section="ticker"] { background: var(--lp); border: 0; }
+    .lp-t-bold [data-lp-section="ticker"] span { color: var(--lp-on); }
+    .lp-t-bold [data-lp-cta] { box-shadow: 0 10px 30px -10px var(--lp); }
+    .lp-t-bold [data-lp-sticky] { box-shadow: 0 -4px 16px rgba(0,0,0,.5); }
+    .lp-t-bold th { color: #fff; }
+    .lp-t-bold [data-lp-step] { color: #111; }
+    .lp-t-bold header img { filter: brightness(0) invert(1); }
+    /* Clean minimal */
+    .lp-t-minimal .rounded-2xl, .lp-t-minimal .rounded-xl, .lp-t-minimal .rounded-lg, .lp-t-minimal .lp-input { border-radius: 3px; }
+    .lp-t-minimal .shadow, .lp-t-minimal .shadow-sm { box-shadow: none; }
+    .lp-t-minimal .bg-gray-50 { background-color: #fafaf9; }
+    .lp-t-minimal h1 { font-weight: 600; letter-spacing: -.01em; }
+    .lp-t-minimal h2 { font-size: 15px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    .lp-t-minimal h2::after { content: ''; display: block; width: 32px; height: 2px; margin: 10px auto 0; background: var(--lp); }
+    .lp-t-minimal .lp-btn { letter-spacing: .06em; text-transform: uppercase; font-size: 14px; }
+    .lp-t-minimal [data-lp-section="ticker"] { background: #111; border: 0; }
+    .lp-t-minimal [data-lp-section="ticker"] span { color: #fff; }
+    /* Festive */
+    body.lp-t-festive { --lp-base: #fff8ec; background: #fff8ec; }
+    .lp-t-festive .bg-white { background-color: #fffdf7; }
+    .lp-t-festive .bg-gray-50 { background-color: #fdf0d5; }
+    .lp-t-festive .border-gray-100, .lp-t-festive .border-gray-200, .lp-t-festive .border-gray-300 { border-color: #ecd49a; }
+    .lp-t-festive h1, .lp-t-festive h2, .lp-t-festive h3, .lp-t-festive .text-gray-900 { color: #3b0a0a; }
+    .lp-t-festive h2::before, .lp-t-festive h2::after { content: '✦'; color: #c9a227; font-size: .7em; margin: 0 .6em; vertical-align: middle; }
+    .lp-t-festive header { background: radial-gradient(ellipse at top, color-mix(in srgb, var(--lp) 14%, transparent), transparent 70%); border-radius: 0 0 2rem 2rem; padding-bottom: 1.25rem; }
+    .lp-t-festive [data-lp-section="ticker"] { background: var(--lp); border: 0; }
+    .lp-t-festive [data-lp-section="ticker"] span { color: #fde68a; }
+    .lp-t-festive .lp-btn { background: linear-gradient(180deg, color-mix(in srgb, var(--lp) 85%, #fff), var(--lp)); box-shadow: 0 0 0 2px #e7c77a inset; }
+    /* Split hero: photos beside the headline on computers */
+    @media (min-width: 1024px) {
+      .lp-t-split .lp-split { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; max-width: 72rem; margin: 0 auto; padding: 2.5rem 1.5rem 0; }
+      .lp-t-split .lp-split > header { order: 2; text-align: left; max-width: none; padding: 0; margin: 0; }
+      .lp-t-split .lp-split > header > div:first-child { justify-content: flex-start; }
+      .lp-t-split .lp-split > header h1 { font-size: 44px; line-height: 1.15; }
+      .lp-t-split .lp-split > section { order: 1; max-width: none; padding: 0; margin: 0; }
+    }
+    .lp-t-split [data-lp-section="ticker"] { background: var(--lp); border: 0; }
+    .lp-t-split [data-lp-section="ticker"] span { color: var(--lp-on); }
   </style>
   @include('partials.tracking-head')
   {{ tailwind_css('store', [
@@ -70,9 +126,14 @@
     'border' => $theme['primary_border'], 'dark' => $theme['dark'], 'surface' => $theme['surface'],
   ]) }}
 </head>
-<body class="bg-white text-gray-900 antialiased {{ $page->sectionOn('sticky_bar') ? 'pb-20 sm:pb-0' : '' }}">
+<body class="lp-t-{{ $template }} bg-white text-gray-900 antialiased {{ $page->sectionOn('sticky_bar') ? 'pb-20 sm:pb-0' : '' }}">
   @include('partials.tracking-body')
 
+  @if($trying ?? false)
+    <div class="bg-sky-100 text-sky-900 text-center text-sm font-semibold py-2 px-4" data-lp-trying>
+      Trying the “{{ \App\Models\LandingPage::TEMPLATES[$template][0] }}” template. Nothing is saved; pick it in the editor to use it.
+    </div>
+  @endif
   @if($preview)
     <div class="bg-amber-100 text-amber-900 text-center text-sm font-semibold py-2 px-4" data-lp-preview>
       Draft preview: only staff can see this page. Publish it in Admin → Landing pages.
@@ -97,7 +158,8 @@
     </div>
   @endif
 
-  {{-- Hero --}}
+  {{-- Hero (the Split template puts it beside the photos on computers) --}}
+  <div class="{{ $split ? 'lp-split' : '' }}">
   <header class="max-w-3xl mx-auto px-4 pt-6 sm:pt-8 text-center">
     <div class="flex justify-center">@include('partials.brand', ['size' => 'md'])</div>
     @if(filled($hero['badge']))
@@ -162,6 +224,7 @@
       <span>✓ পণ্য দেখে মূল্য পরিশোধ</span>
     </p>
   </section>
+  </div>
 
   {{-- Video --}}
   @if($page->sectionOn('video') && $videoId)
@@ -177,7 +240,7 @@
 
   {{-- Feature blocks --}}
   @if($page->sectionOn('features') && $features->isNotEmpty())
-    <section class="py-10 sm:py-14" style="background: color-mix(in srgb, var(--lp) 6%, #fff);" data-lp-section="features">
+    <section class="py-10 sm:py-14" style="background: color-mix(in srgb, var(--lp) 6%, var(--lp-base));" data-lp-section="features">
       <div class="max-w-4xl mx-auto px-4">
         @if(filled($d['features']['heading'] ?? null))<h2 class="text-center text-xl sm:text-2xl font-bold">{{ $d['features']['heading'] }}</h2>@endif
         <div class="mt-8 space-y-8">
@@ -236,7 +299,7 @@
 
   {{-- FAQ --}}
   @if($page->sectionOn('faq') && $faqs->isNotEmpty())
-    <section class="py-10 sm:py-14" style="background: color-mix(in srgb, var(--lp) 6%, #fff);" data-lp-section="faq">
+    <section class="py-10 sm:py-14" style="background: color-mix(in srgb, var(--lp) 6%, var(--lp-base));" data-lp-section="faq">
       <div class="max-w-2xl mx-auto px-4">
         @if(filled($d['faq']['heading'] ?? null))<h2 class="text-center text-xl sm:text-2xl font-bold">{{ $d['faq']['heading'] }}</h2>@endif
         @if(filled($d['faq']['subtitle'] ?? null))<p class="mt-1 text-center text-sm text-gray-500">{{ $d['faq']['subtitle'] }}</p>@endif
@@ -330,7 +393,7 @@
 
           <div class="rounded-2xl border border-gray-200 bg-white p-5">
             <h3 class="font-bold">পেমেন্ট</h3>
-            <div class="mt-3 flex items-center gap-3 rounded-xl border p-3 text-sm" style="border-color: var(--lp); background: color-mix(in srgb, var(--lp) 6%, #fff);">
+            <div class="mt-3 flex items-center gap-3 rounded-xl border p-3 text-sm" style="border-color: var(--lp); background: color-mix(in srgb, var(--lp) 6%, var(--lp-base));">
               <span class="lp-bg h-4 w-4 shrink-0 rounded-full ring-4 ring-white" style="box-shadow: 0 0 0 1px var(--lp);"></span>
               <span><b>ক্যাশ অন ডেলিভারি</b><br><span class="text-gray-500">পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন</span></span>
             </div>

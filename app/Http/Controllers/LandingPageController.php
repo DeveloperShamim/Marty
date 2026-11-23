@@ -24,8 +24,18 @@ class LandingPageController extends Controller
             LandingPage::whereKey($page->id)->increment('views');
         }
 
+        // Staff can try another template before switching to it: /offer/slug?template=bold (nothing is saved)
+        $trying = (string) $request->query('template', '');
+        if ($trying !== '' && isset(LandingPage::TEMPLATES[$trying]) && $this->isStaff($request)) {
+            if ($page->template() !== $trying && strcasecmp((string) $page->accent_color, LandingPage::TEMPLATES[$page->template()][2]) === 0) {
+                $page->accent_color = null; // the old template's own colour follows the template
+            }
+            $page->template = $trying;
+        }
+
         return view('storefront.landing', [
             'page'      => $page,
+            'trying'    => $trying !== '' && $page->template === $trying && $this->isStaff($request),
             'd'         => $page->data(),
             'product'   => $product,
             'gallery'   => $page->galleryUrls(),

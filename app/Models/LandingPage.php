@@ -26,6 +26,18 @@ class LandingPage extends Model
         'sticky_bar' => 'Order bar fixed at the bottom on phones',
     ];
 
+    /**
+     * Looks the admin can pick: key => [name, one line on the look, default accent colour, [page, card, text] for the picker swatch].
+     * The page markup is the same for all of them; each template restyles it and some change the layout.
+     */
+    public const TEMPLATES = [
+        'classic' => ['Classic', 'White page, orange accent, everything in one centred column.', '#f48722', ['#ffffff', '#f9fafb', '#111827']],
+        'bold'    => ['Bold dark', 'Dark page with bright yellow buttons. Stands out for gadgets and men’s products.', '#facc15', ['#0b0b0f', '#17171d', '#ffffff']],
+        'minimal' => ['Clean minimal', 'Black and white, sharp corners, small caps headings. Suits fashion and premium items.', '#111111', ['#ffffff', '#f5f5f4', '#111111']],
+        'festive' => ['Festive', 'Warm cream page with deep red and gold. Made for Eid and Puja offers.', '#b91c1c', ['#fff8ec', '#fdecc8', '#3b0a0a']],
+        'split'   => ['Split hero', 'On computers the photos sit beside the headline and price. Green accent.', '#16a34a', ['#ffffff', '#f0fdf4', '#052e16']],
+    ];
+
     public const MAX_GALLERY = 5;
     public const MAX_REVIEW_IMAGES = 8;
     public const MAX_TICKER = 6;
@@ -91,11 +103,18 @@ class LandingPage extends Model
         return $compare ? $compare - $this->price() : 0.0;
     }
 
+    /** The picked template's key, or classic for an unknown one */
+    public function template(): string
+    {
+        return isset(self::TEMPLATES[$this->template]) ? $this->template : 'classic';
+    }
+
+    /** The accent colour set on the page, else the template's own */
     public function accent(): string
     {
         $c = (string) $this->accent_color;
 
-        return preg_match('/^#[0-9a-fA-F]{6}$/', $c) ? $c : '#f48722';
+        return preg_match('/^#[0-9a-fA-F]{6}$/', $c) ? $c : self::TEMPLATES[$this->template()][2];
     }
 
     /** Saved content laid over the defaults, so every key a view reads exists. */
