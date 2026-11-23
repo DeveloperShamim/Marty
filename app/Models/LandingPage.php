@@ -31,12 +31,27 @@ class LandingPage extends Model
      * The page markup is the same for all of them; each template restyles it and some change the layout.
      */
     public const TEMPLATES = [
-        'classic' => ['Classic', 'White page, orange accent, everything in one centred column.', '#f48722', ['#ffffff', '#f9fafb', '#111827']],
-        'bold'    => ['Bold dark', 'Dark page with bright yellow buttons. Stands out for gadgets and men’s products.', '#facc15', ['#0b0b0f', '#17171d', '#ffffff']],
-        'minimal' => ['Clean minimal', 'Black and white, sharp corners, small caps headings. Suits fashion and premium items.', '#111111', ['#ffffff', '#f5f5f4', '#111111']],
-        'festive' => ['Festive', 'Warm cream page with deep red and gold. Made for Eid and Puja offers.', '#b91c1c', ['#fff8ec', '#fdecc8', '#3b0a0a']],
-        'split'   => ['Split hero', 'On computers the photos sit beside the headline and price. Green accent.', '#16a34a', ['#ffffff', '#f0fdf4', '#052e16']],
+        'classic' => ['Classic', 'One centred column: headline, photos, price, then each section in turn. Safe for any product.', '#f48722', ['#ffffff', '#f9fafb', '#111827']],
+        'bold'    => ['Bold dark', 'Dark full-width hero with the photo beside a huge headline, feature cards, a tile grid of details and a review wall.', '#facc15', ['#0b0b0f', '#17171d', '#ffffff']],
+        'minimal' => ['Editorial', 'Magazine style: photos stacked on the left while the story, numbered points and details scroll on the right.', '#111111', ['#ffffff', '#f5f5f4', '#111111']],
+        'festive' => ['Festive', 'Framed festive banner with a big discount seal, a coupon-style offer box and round feature pictures. For Eid and Puja.', '#b91c1c', ['#fff8ec', '#fdecc8', '#3b0a0a']],
+        'split'   => ['Quick order', 'The order form sits right next to the photos at the top, so buyers order without scrolling. Details follow below.', '#16a34a', ['#ffffff', '#f0fdf4', '#052e16']],
     ];
+
+    /** Where a custom HTML block can go: key => label in the editor */
+    public const CUSTOM_SPOTS = [
+        'top'      => 'Very top, under the announcement bar',
+        'hero'     => 'After the headline and photos',
+        'video'    => 'After the video',
+        'features' => 'After the feature blocks',
+        'specs'    => 'After the specifications',
+        'reviews'  => 'After the review pictures',
+        'faq'      => 'After the questions and answers',
+        'contact'  => 'After the call / WhatsApp box',
+        'form'     => 'After the order form (bottom)',
+    ];
+
+    public const MAX_CUSTOM = 3;
 
     public const MAX_GALLERY = 5;
     public const MAX_REVIEW_IMAGES = 8;
@@ -101,6 +116,75 @@ class LandingPage extends Model
         $compare = $this->comparePrice();
 
         return $compare ? $compare - $this->price() : 0.0;
+    }
+
+    /**
+     * A custom HTML block as a full document for a sandboxed iframe (srcdoc): the page font, links opening in a
+     * new tab, and a small script that tells the landing page how tall the content is so the frame fits it.
+     */
+    public static function customDocument(string $html, int $index): string
+    {
+        return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+            . '<base target="_blank">'
+            // The font loads without holding up the block (and its height report) when the font server is slow
+            . '<link rel="stylesheet" media="print" onload="this.media=\'all\'" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap">'
+            . '<style>html,body{margin:0;padding:0}body{font-family:"Hind Siliguri",system-ui,sans-serif;color:#111827}img,video,iframe{max-width:100%;height:auto}</style>'
+            . '</head><body>' . $html
+            . '<script>(function(){function s(){parent.postMessage({lpCustomHeight:Math.ceil(document.body.getBoundingClientRect().height),lpCustom:' . $index . '},"*")}'
+            . 'addEventListener("load",s);if(window.ResizeObserver){new ResizeObserver(s).observe(document.body)}setTimeout(s,50);setTimeout(s,1500)})()</script>'
+            . '</body></html>';
+    }
+
+    /** Folders the editor's "Choose from Media library" lists: public-disk folders, then public/uploads folders */
+    public const LIBRARY_DISK_DIRS = ['landing', 'products', 'banners', 'home', 'categories', 'branding', 'brands/logos', 'brands/banners'];
+    public const LIBRARY_UPLOAD_DIRS = ['uploads/media', 'uploads/products', 'uploads/products/description'];
+    private const IMAGE_EXT = '/\.(jpe?g|png|gif|webp|avif)$/i';
+
+    /**
+     * Pictures in the media library the editor can pick, newest first: path (as saved on the page), url, name.
+     *
+     * @return list<array{path: string, url: string, name: string}>
+     */
+    public static function libraryImages(string $search = '', int $limit = 240): array
+    {
+        $found = [];
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        foreach (self::LIBRARY_DISK_DIRS as $dir) {
+            foreach ($disk->exists($dir) ? $disk->files($dir) : [] as $path) {
+                if (preg_match(self::IMAGE_EXT, $path)) {
+                    $found[$path] = $disk->lastModified($path);
+                }
+            }
+        }
+        foreach (self::LIBRARY_UPLOAD_DIRS as $dir) {
+            foreach (is_dir(public_path($dir)) ? \Illuminate\Support\Facades\File::files(public_path($dir)) : [] as $file) {
+                if (preg_match(self::IMAGE_EXT, $file->getFilename())) {
+                    $found[$dir . '/' . $file->getFilename()] = $file->getMTime();
+                }
+            }
+        }
+        arsort($found);
+        $search = mb_strtolower(trim($search));
+
+        return collect(array_keys($found))
+            ->filter(fn ($p) => $search === '' || str_contains(mb_strtolower($p), $search))
+            ->take($limit)
+            ->map(fn ($p) => ['path' => $p, 'url' => image_url($p), 'name' => basename($p)])
+            ->values()->all();
+    }
+
+    /** A picked library path is a real picture inside the library folders (never outside them) */
+    public static function isLibraryImage(mixed $path): bool
+    {
+        if (! is_string($path) || str_contains($path, '..') || ! preg_match('#^[\w\-./]+$#', $path) || ! preg_match(self::IMAGE_EXT, $path)) {
+            return false;
+        }
+        $dir = dirname($path);
+        if (in_array($dir, self::LIBRARY_UPLOAD_DIRS, true)) {
+            return is_file(public_path($path));
+        }
+
+        return in_array($dir, self::LIBRARY_DISK_DIRS, true) && \Illuminate\Support\Facades\Storage::disk('public')->exists($path);
     }
 
     /** The picked template's key, or classic for an unknown one */

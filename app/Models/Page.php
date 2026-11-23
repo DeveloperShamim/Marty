@@ -12,13 +12,26 @@ class Page extends Model
     /** Slugs the store already uses for its own pages. */
     public const RESERVED = ['contact', 'terms', 'privacy'];
 
-    protected $fillable = ['title', 'slug', 'body', 'meta_description', 'is_published', 'show_in_footer', 'position'];
+    /** Where a custom HTML block can go on the page, and how many blocks a page can have. */
+    public const CUSTOM_SPOTS = ['above' => 'Above the text', 'below' => 'Below the text'];
+    public const MAX_CUSTOM = 3;
+
+    protected $fillable = ['title', 'slug', 'body', 'custom_html', 'meta_description', 'is_published', 'show_in_footer', 'position'];
 
     protected $casts = [
         'is_published' => 'boolean',
         'show_in_footer' => 'boolean',
         'position' => 'integer',
+        'custom_html' => 'array',
     ];
+
+    /** The custom HTML blocks for one spot (above or below the text), skipping empty ones. */
+    public function customBlocks(string $at): array
+    {
+        return collect($this->custom_html ?? [])
+            ->filter(fn ($b) => ($b['at'] ?? '') === $at && trim((string) ($b['html'] ?? '')) !== '')
+            ->all();
+    }
 
     public function getRouteKeyName(): string
     {

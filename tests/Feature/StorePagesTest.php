@@ -63,4 +63,43 @@ class StorePagesTest extends TestCase
         $this->actingAs($admin)->delete(route('admin.pages.destroy', $page))->assertRedirect();
         $this->get('/page/faq')->assertNotFound();
     }
+
+    public function test_admin_adds_custom_html_that_runs_in_a_sealed_frame(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $page = Page::create(['title' => 'Size guide', 'slug' => 'size-guide', 'body' => 'Measure your chest.', 'is_published' => true]);
+        $base = ['title' => 'Size guide', 'slug' => 'size-guide', 'body' => 'Measure your chest.', 'is_published' => '1'];
+        $html = '<table class="sizes"><tr><td>M</td></tr></table><script>document.cookie</script>';
+
+        $this->actingAs($admin)->get(route('admin.pages.edit', $page))->assertOk()->assertSee('Custom HTML')->assertDontSee('Only admins can change these.');
+        $this->actingAs($admin)->put(route('admin.pages.update', $page), $base + [
+            'custom' => [['html' => '<p>Top note</p>', 'at' => 'above'], ['html' => ' ', 'at' => 'below'], ['html' => $html, 'at' => 'below']],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame([['html' => '<p>Top note</p>', 'at' => 'above'], ['html' => $html, 'at' => 'below']], $page->fresh()->custom_html);
+
+        $out = $this->get('/page/size-guide')->assertOk()->getContent();
+        $this->assertSame(2, substr_count($out, 'sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"'));
+        $this->assertStringNotContainsString('allow-same-origin', $out);
+        $this->assertStringNotContainsString('<script>document.cookie</script>', $out, 'Only inside the escaped srcdoc');
+        $this->assertStringContainsString('&lt;script&gt;document.cookie&lt;/script&gt;', $out);
+        $text = strpos($out, 'data-store-page');
+        $this->assertLessThan($text, strpos($out, 'data-page-custom-at="above"'));
+        $this->assertGreaterThan($text, strpos($out, 'data-page-custom-at="below"'));
+
+        // A store manager can edit the page but not its custom HTML
+        $manager = User::factory()->create(['role' => 'store_manager']);
+        $this->actingAs($manager)->get(route('admin.pages.edit', $page))->assertOk()->assertSee('Only admins can change these.');
+        $this->actingAs($manager)->put(route('admin.pages.update', $page), ['body' => 'Updated', 'custom' => [['html' => '<b>hacked</b>', 'at' => 'above']]] + $base)
+            ->assertRedirect();
+        $this->assertSame('Updated', $page->fresh()->body);
+        $this->assertSame($html, $page->fresh()->custom_html[1]['html']);
+
+        $this->actingAs($admin)->put(route('admin.pages.update', $page), $base + ['custom' => [['html' => 'x', 'at' => 'sidebar']]])
+            ->assertSessionHasErrors('custom.0.at');
+
+        // Clearing every block removes the frames
+        $this->actingAs($admin)->put(route('admin.pages.update', $page), $base + ['custom' => [['html' => '', 'at' => 'above']]]);
+        $this->assertNull($page->fresh()->custom_html);
+        $this->assertStringNotContainsString('<iframe', $this->get('/page/size-guide')->getContent());
+    }
 }

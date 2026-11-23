@@ -143,6 +143,10 @@
       @endif
       @if($gallery->count() < \App\Models\LandingPage::MAX_GALLERY)
         <input type="file" name="gallery_upload[]" accept="image/*" multiple class="block text-sm">
+        <div class="flex flex-wrap items-center gap-2" data-lp-picked-wrap>
+          <button type="button" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-xs font-medium cursor-pointer" data-lp-library="gallery_pick[]" data-lp-multi="1" data-lp-max="{{ \App\Models\LandingPage::MAX_GALLERY - $gallery->count() }}">Choose from Media library</button>
+          <span class="flex flex-wrap gap-1.5" data-lp-picked></span>
+        </div>
       @endif
     </section>
 
@@ -172,6 +176,10 @@
               <div class="h-24 w-24 rounded-lg bg-gray-100 flex items-center justify-center text-[11px] text-gray-400">No picture</div>
             @endif
             <input type="file" name="feature_image[{{ $i }}]" accept="image/*" class="block w-24 text-[11px]">
+            <div class="flex flex-wrap items-center gap-2" data-lp-picked-wrap>
+          <button type="button" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-xs font-medium cursor-pointer" data-lp-library="feature_pick[{{ $i }}]" data-lp-multi="0" data-lp-max="1">Media library</button>
+          <span class="flex flex-wrap gap-1.5" data-lp-picked></span>
+        </div>
           </div>
           <div class="space-y-2">
             <input name="features[items][{{ $i }}][title]" class="inp" value="{{ old("features.items.$i.title", $f['title']) }}" maxlength="120" placeholder="Title {{ $i + 1 }}">
@@ -220,6 +228,10 @@
       @endif
       @if($reviewImages->count() < \App\Models\LandingPage::MAX_REVIEW_IMAGES)
         <input type="file" name="review_upload[]" accept="image/*" multiple class="block text-sm">
+        <div class="flex flex-wrap items-center gap-2" data-lp-picked-wrap>
+          <button type="button" class="h-8 px-3 rounded-full bg-gray-100 hover:bg-gray-200 text-xs font-medium cursor-pointer" data-lp-library="review_pick[]" data-lp-multi="1" data-lp-max="{{ \App\Models\LandingPage::MAX_REVIEW_IMAGES - $reviewImages->count() }}">Choose from Media library</button>
+          <span class="flex flex-wrap gap-1.5" data-lp-picked></span>
+        </div>
       @endif
     </section>
 
@@ -267,6 +279,35 @@
           <div><label class="lbl">{{ $label }}</label><input name="form[{{ $key }}]" class="inp" value="{{ old("form.$key", $d['form'][$key]) }}" maxlength="200"></div>
         @endforeach
       </div>
+    </section>
+
+    {{-- 12. Custom HTML --}}
+    @php
+      $isAdmin = auth()->user()?->isAdmin();
+      $customBlocks = collect($d['custom'] ?? [])->pad(\App\Models\LandingPage::MAX_CUSTOM, ['html' => '', 'at' => 'form']);
+    @endphp
+    <section class="{{ $card }}" data-lp-custom-editor>
+      <div>
+        <h2 class="{{ $h }}">12. Custom HTML</h2>
+        <p class="text-xs text-gray-500 mt-0.5">
+          Paste your own HTML (a countdown, an offer banner, an embed) and choose where it goes. Up to {{ \App\Models\LandingPage::MAX_CUSTOM }} blocks.
+          It runs in a sealed frame on the page, so it cannot read your shop, your customers' details or their sign-in. Links open in a new tab.
+          @unless($isAdmin)<b class="text-gray-700">Only admins can change these.</b>@endunless
+        </p>
+      </div>
+      @foreach($customBlocks as $ci => $block)
+        <div class="rounded-xl ring-1 ring-gray-200 p-3 space-y-2">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-[12px] font-semibold text-gray-700">Block {{ $ci + 1 }}</span>
+            <select name="custom[{{ $ci }}][at]" class="h-9 rounded-lg border border-gray-200 bg-white pl-2.5 pr-8 text-[13px] text-gray-800" @disabled(! $isAdmin) aria-label="Where block {{ $ci + 1 }} goes">
+              @foreach(\App\Models\LandingPage::CUSTOM_SPOTS as $spot => $label)
+                <option value="{{ $spot }}" @selected(old("custom.$ci.at", $block['at'] ?? 'form') === $spot)>{{ $label }}</option>
+              @endforeach
+            </select>
+          </div>
+          <textarea name="custom[{{ $ci }}][html]" rows="{{ filled($block['html'] ?? '') ? 6 : 2 }}" class="inp font-mono text-[12px]" maxlength="20000" placeholder="<div style=&quot;text-align:center&quot;>…</div>" spellcheck="false" @disabled(! $isAdmin)>{{ old("custom.$ci.html", $block['html'] ?? '') }}</textarea>
+        </div>
+      @endforeach
     </section>
   </div>
 
@@ -342,7 +383,98 @@
   <button class="text-xs text-rose-700 underline cursor-pointer">Delete this landing page</button>
 </form>
 
+{{-- Media library picker --}}
+<div class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 p-4" id="lpLibrary" role="dialog" aria-modal="true" aria-labelledby="lpLibraryTitle">
+  <div class="w-full max-w-3xl max-h-[85vh] flex flex-col rounded-2xl bg-white shadow-xl">
+    <div class="flex items-center gap-3 border-b border-gray-100 p-4">
+      <h2 id="lpLibraryTitle" class="text-[15px] font-semibold text-gray-900">Media library</h2>
+      <input type="search" class="inp flex-1" placeholder="Search by file name" id="lpLibrarySearch">
+      <button type="button" class="h-8 w-8 rounded-full hover:bg-gray-100 cursor-pointer" data-lp-library-close aria-label="Close">✕</button>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4">
+      <p class="text-sm text-gray-500" id="lpLibraryStatus">Loading…</p>
+      <div class="grid grid-cols-3 sm:grid-cols-5 gap-2.5" id="lpLibraryGrid"></div>
+    </div>
+    <div class="flex items-center justify-between gap-3 border-t border-gray-100 p-4">
+      <p class="text-xs text-gray-500" id="lpLibraryCount"></p>
+      <button type="button" class="pill-btn pill-btn-dark" id="lpLibraryUse">Use selected</button>
+    </div>
+  </div>
+</div>
+
 <script>
+(function () {
+  // Media library picker: picked pictures become hidden inputs (and small previews) next to the button
+  var modal = document.getElementById('lpLibrary'), grid = document.getElementById('lpLibraryGrid');
+  var status = document.getElementById('lpLibraryStatus'), count = document.getElementById('lpLibraryCount');
+  var search = document.getElementById('lpLibrarySearch'), target = null, chosen = [], timer = null;
+  function open(btn) {
+    target = btn; chosen = [];
+    modal.classList.remove('hidden'); modal.classList.add('flex');
+    load(''); search.value = ''; search.focus();
+  }
+  function close() { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+  function max() { return Math.max(1, +target.dataset.lpMax || 1); }
+  function load(q) {
+    status.textContent = 'Loading…'; status.classList.remove('hidden'); grid.innerHTML = '';
+    fetch(@json(route('admin.landing-pages.media')) + '?q=' + encodeURIComponent(q), { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        status.textContent = data.images.length ? '' : 'No pictures found. Upload some in Media Library first.';
+        status.classList.toggle('hidden', !!data.images.length);
+        data.images.forEach(function (img) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'relative aspect-square overflow-hidden rounded-lg ring-1 ring-gray-200 cursor-pointer';
+          b.title = img.name;
+          b.dataset.path = img.path; b.dataset.url = img.url;
+          var i = document.createElement('img'); i.src = img.url; i.alt = img.name; i.loading = 'lazy'; i.className = 'h-full w-full object-cover';
+          b.appendChild(i);
+          b.addEventListener('click', function () { toggle(b); });
+          grid.appendChild(b);
+        });
+        mark();
+      })
+      .catch(function () { status.textContent = 'Could not load the media library.'; });
+  }
+  function toggle(b) {
+    var k = chosen.findIndex(function (c) { return c.path === b.dataset.path; });
+    if (k > -1) chosen.splice(k, 1);
+    else {
+      if (target.dataset.lpMulti !== '1') chosen = [];
+      if (chosen.length >= max()) return;
+      chosen.push({ path: b.dataset.path, url: b.dataset.url });
+    }
+    mark();
+  }
+  function mark() {
+    grid.querySelectorAll('button').forEach(function (b) {
+      var on = chosen.some(function (c) { return c.path === b.dataset.path; });
+      b.classList.toggle('ring-4', on); b.classList.toggle('ring-gray-900', on);
+    });
+    count.textContent = chosen.length + ' of ' + max() + ' picked';
+  }
+  document.getElementById('lpLibraryUse').addEventListener('click', function () {
+    var box = target.parentNode.querySelector('[data-lp-picked]');
+    if (target.dataset.lpMulti !== '1') box.innerHTML = '';
+    chosen.forEach(function (c) {
+      var w = document.createElement('span');
+      w.className = 'relative';
+      w.innerHTML = '<img class="h-10 w-10 rounded-md object-cover ring-1 ring-gray-200" alt="">'
+        + '<input type="hidden"><button type="button" class="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-gray-900 text-[9px] text-white leading-none cursor-pointer" aria-label="Remove">✕</button>';
+      w.querySelector('img').src = c.url;
+      var input = w.querySelector('input'); input.name = target.dataset.lpLibrary; input.value = c.path;
+      w.querySelector('button').addEventListener('click', function () { w.remove(); });
+      box.appendChild(w);
+    });
+    close();
+  });
+  document.querySelectorAll('[data-lp-library]').forEach(function (b) { b.addEventListener('click', function () { open(b); }); });
+  modal.addEventListener('click', function (e) { if (e.target === modal || e.target.closest('[data-lp-library-close]')) close(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.classList.contains('hidden')) close(); });
+  search.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(function () { load(search.value); }, 250); });
+})();
+
 (function () {
   var parts = document.querySelectorAll('[data-lp-head]');
   var preview = document.getElementById('lpHeadPreview');
