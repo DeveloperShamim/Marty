@@ -79,6 +79,10 @@ Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::get('/page/{slug}', [PageController::class, 'show'])->name('page');
 
+// Landing pages (Marketing → Landing pages): one-product offer pages with an order form
+Route::get('/offer/{slug}', [\App\Http\Controllers\LandingPageController::class, 'show'])->name('landing.show');
+Route::post('/offer/{slug}/order', [\App\Http\Controllers\LandingPageController::class, 'order'])->middleware('throttle:checkout')->name('landing.order');
+
 // SEO & Google Search Console
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
@@ -280,6 +284,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
             // Menu bar (the store's top menu)
             // Store pages: About us, FAQ, Shipping, Returns…
         Route::resource('pages', \App\Http\Controllers\Admin\PageController::class)->except('show')->middleware('area:pages');
+
+        // Landing pages: one-product offer pages at /offer/{slug}
+        Route::get('landing-pages', [\App\Http\Controllers\Admin\LandingPageController::class, 'index'])->middleware('area:landing-pages')->name('landing-pages.index');
+        Route::post('landing-pages', [\App\Http\Controllers\Admin\LandingPageController::class, 'store'])->middleware('area:landing-pages')->name('landing-pages.store');
+        Route::get('landing-pages/{landingPage}/edit', [\App\Http\Controllers\Admin\LandingPageController::class, 'edit'])->middleware('area:landing-pages')->name('landing-pages.edit');
+        Route::put('landing-pages/{landingPage}', [\App\Http\Controllers\Admin\LandingPageController::class, 'update'])->middleware('area:landing-pages')->name('landing-pages.update');
+        Route::patch('landing-pages/{landingPage}/publish', [\App\Http\Controllers\Admin\LandingPageController::class, 'publish'])->middleware('area:landing-pages')->name('landing-pages.publish');
+        Route::post('landing-pages/{landingPage}/duplicate', [\App\Http\Controllers\Admin\LandingPageController::class, 'duplicate'])->middleware('area:landing-pages')->name('landing-pages.duplicate');
+        Route::delete('landing-pages/{landingPage}', [\App\Http\Controllers\Admin\LandingPageController::class, 'destroy'])->middleware('area:landing-pages')->name('landing-pages.destroy');
 
         // Homepage sections: order and show/hide
         Route::get('home-sections', [\App\Http\Controllers\Admin\HomeSectionController::class, 'index'])->middleware('area:home-sections')->name('home-sections.index');

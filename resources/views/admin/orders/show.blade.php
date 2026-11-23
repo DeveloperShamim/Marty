@@ -52,6 +52,9 @@
             <span class="inline-flex items-center gap-1.5" title="{{ $order->created_at->diffForHumans() }}"><x-oi name="calendar" class="w-3.5 h-3.5" />{{ $order->created_at->format('d M Y, g:i A') }}</span>
             <span class="inline-flex items-center gap-1.5"><x-oi name="{{ $isCod ? 'cash' : 'card' }}" class="w-3.5 h-3.5" />{{ $order->paymentMethodLabel() }}@unless($isCod && $payText === 'Collect on delivery')<span class="font-medium {{ $payTone }}">· {{ $payText }}</span>@endunless</span>
             <span class="inline-flex items-center gap-1.5" title="Source: {{ $order->utm_source ?? 'Direct' }}"><x-oi name="globe" class="w-3.5 h-3.5" />{{ $order->utm_source ? ucfirst($order->utm_source) : 'Direct' }}</span>
+            @if($order->landing_page_id)
+              <a href="{{ $order->landingPage ? route('admin.landing-pages.edit', $order->landingPage) : '#' }}" class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2 py-0.5 font-medium text-amber-800" data-order-landing>Landing page{{ $order->landingPage ? ': ' . \Illuminate\Support\Str::limit($order->landingPage->title, 30) : '' }}</a>
+            @endif
           </div>
         </div>
         <div class="sm:text-right shrink-0">

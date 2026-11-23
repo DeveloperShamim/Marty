@@ -41,6 +41,7 @@ class StaffAccess
         // Marketing
         'banners'         => [self::STORE],
         'coupons'         => [self::STORE],
+        'landing-pages'   => [self::STORE],
         'flash-sale'      => [self::STORE],
         'free-delivery'   => [self::STORE],
         'news-ticker'     => [self::STORE],

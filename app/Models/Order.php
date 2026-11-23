@@ -51,6 +51,12 @@ class Order extends Model
         return $this->belongsTo(User::class, 'scanned_by');
     }
 
+    /** The landing page (Marketing → Landing pages) this order was placed on, if any. */
+    public function landingPage(): BelongsTo
+    {
+        return $this->belongsTo(LandingPage::class);
+    }
+
     public function coupon(): BelongsTo
     {
         return $this->belongsTo(Coupon::class);
