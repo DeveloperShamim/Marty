@@ -82,6 +82,21 @@
           <input name="image_url" id="imageUrlInput" class="inp" value="{{ old('image_url', (str_starts_with($banner->image ?? '', 'http') || str_starts_with($banner->image ?? '', 'uploads/')) ? $banner->image : '') }}" placeholder="uploads/banners/filename.jpg or https://..." oninput="previewUrlInput(this.value)">
           <p class="text-[11px] text-gray-500 mt-1">A local path like <code class="bg-gray-100 px-1 rounded">uploads/banners/name.jpg</code> or a full https:// link.</p>
         </div>
+
+        <div class="pt-1 border-t border-gray-100" data-mobile-image>
+          <span class="lbl mt-3">Phone picture (optional)</span>
+          @if($banner->image_mobile)
+            <div class="flex items-center gap-3 p-2.5 bg-gray-50 rounded-xl mb-2">
+              <img src="{{ $banner->mobileImageUrl() }}" class="h-14 w-24 rounded-lg object-cover bg-gray-100 shrink-0" alt="Current phone picture">
+              <label class="inline-flex items-center gap-1.5 text-xs text-rose-700 cursor-pointer">
+                <input type="checkbox" name="remove_image_mobile" value="1" class="accent-red-600"> Remove phone picture
+              </label>
+            </div>
+          @endif
+          <input name="image_mobile_file" type="file" accept="image/*" class="w-full text-xs text-gray-500 file:mr-3 file:h-8 file:px-3.5 file:rounded-full file:border-0 file:text-xs file:font-medium file:bg-gray-100 file:text-gray-800 hover:file:bg-gray-200 cursor-pointer rounded-xl border border-gray-200 p-1">
+          <p class="text-[11px] text-gray-500 mt-1">Phones show this instead, so small text stays readable. Use the same shape as the main picture. Left empty, phones show the main picture.</p>
+          @error('image_mobile_file')<p class="text-[11px] text-rose-600 mt-1">{{ $message }}</p>@enderror
+        </div>
       </section>
 
       {{-- When it shows --}}

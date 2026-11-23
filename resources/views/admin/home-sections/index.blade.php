@@ -26,7 +26,7 @@
       </span>
       <span class="min-w-0 flex-1">
         <span class="block text-[13px] font-medium text-gray-900">Hero banner</span>
-        <span class="block text-[11px] text-gray-500">Always at the top. Edit it in <a href="{{ route('admin.banners.index') }}" class="underline">Hero banners</a>.</span>
+        <span class="block text-[11px] text-gray-500">Always at the top. Edit slides, slider settings and the hero video in <a href="{{ route('admin.banners.index') }}" class="underline">Hero banners</a>.</span>
       </span>
     </div>
 
@@ -42,9 +42,14 @@
             </span>
           @endif
           <span class="min-w-0 flex-1">
-            <span class="block text-[13px] font-medium text-gray-900">{{ $s['name'] }}</span>
+            <span class="block text-[13px] font-medium text-gray-900">{{ $s['name'] }}@if($s['block'])<span class="ml-1.5 align-middle px-1.5 py-0.5 rounded-md bg-sky-50 text-sky-700 text-[10px] font-semibold">Your section</span>@endif</span>
             <span class="block text-[11px] text-gray-500 leading-snug">{{ $s['hint'] }}{{ $s['fixed'] ? ' · stays under the banner' : '' }}</span>
           </span>
+          @if($s['edit'])
+            <a href="{{ $s['edit'] }}" class="h-8 w-8 shrink-0 grid place-items-center rounded-full hover:bg-gray-100 text-gray-500" title="{{ $s['editLabel'] }}" aria-label="{{ $s['editLabel'] }}: {{ $s['name'] }}" data-section-edit="{{ $s['key'] }}">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.4 3.6a2 2 0 0 1 2.8 2.8L7 18.6 3 20l1.4-4z"/></svg>
+            </a>
+          @endif
           @unless($s['fixed'])
             <span class="flex items-center gap-1 shrink-0">
               <button type="button" class="hs-up h-8 w-8 grid place-items-center rounded-full hover:bg-gray-100 text-gray-500" aria-label="Move {{ $s['name'] }} up">
@@ -63,6 +68,19 @@
         </li>
       @endforeach
     </ol>
+
+    <div class="rounded-2xl border border-dashed border-gray-300 p-3.5" data-add-section>
+      <p class="text-[13px] font-medium text-gray-900">Add a section</p>
+      <p class="text-[11px] text-gray-500 mt-0.5">It goes to the bottom, switched on. Save your order first if you have moved things.</p>
+      <div class="mt-2.5 grid grid-cols-2 sm:grid-cols-3 gap-2">
+        @foreach($types as $typeKey => [$typeName, $typeHint])
+          <a href="{{ route('admin.home-blocks.create', ['type' => $typeKey]) }}" class="rounded-xl bg-gray-50 hover:bg-gray-100 ring-1 ring-gray-200 px-3 py-2.5" title="{{ $typeHint }}">
+            <span class="block text-[12px] font-semibold text-gray-900">+ {{ $typeName }}</span>
+            <span class="block text-[11px] text-gray-500 leading-snug line-clamp-2">{{ $typeHint }}</span>
+          </a>
+        @endforeach
+      </div>
+    </div>
 
     <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
       <button type="submit" name="reset" value="1" class="h-9 px-3.5 rounded-full text-[13px] font-medium text-gray-600 hover:bg-gray-100" onclick="return confirm('Show every section in the default order?')">Reset to default</button>

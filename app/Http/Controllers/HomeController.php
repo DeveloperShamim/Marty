@@ -121,7 +121,19 @@ class HomeController extends Controller
 
         $justForYou = $this->justForYou($withImages, $shown->merge($newArrivals->take(8)->pluck('id')));
 
+        // The owner's own sections that are switched on (product rows, promo bands…), keyed block_{id}
+        $onKeys = \App\Support\HomeSections::ordered();
+        $homeBlocks = \App\Models\HomeBlock::whereIn('id', array_filter(array_map([\App\Models\HomeBlock::class, 'idFromKey'], $onKeys)))
+            ->get()
+            ->each(function ($b) {
+                if ($b->type === 'products') {
+                    $b->setRelation('rowProducts', $b->products());
+                }
+            })
+            ->keyBy(fn ($b) => $b->key());
+
         return view('storefront.home', [
+            'homeBlocks'             => $homeBlocks,
             'heroBanners'            => $banners('hero')->get(),
             'heroSideBanners'        => $banners('hero_side')->get(),
             'features'               => Feature::where('is_active', true)->orderBy('position')->get(),

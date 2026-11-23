@@ -123,6 +123,41 @@ class Banner extends Model
         return str_starts_with($this->link_url, 'http') ? $this->link_url : url($this->link_url);
     }
 
+    /** How the hero slider behaves, and the optional hero video that takes its place */
+    public static function slider(): array
+    {
+        return [
+            'autoplay' => setting('hero_autoplay', '1') === '1',
+            'delay'    => max(2, min(15, (float) setting('hero_delay', '4.5'))),
+            'arrows'   => setting('hero_arrows', '1') === '1',
+            'dots'     => setting('hero_dots', '1') === '1',
+            'video'    => (string) setting('hero_video_url', ''),
+        ];
+    }
+
+    /** A YouTube link becomes its video id; a direct .mp4 / .webm link stays as it is; anything else is null */
+    public static function heroVideo(?string $url): ?array
+    {
+        $url = trim((string) $url);
+        if ($url === '') {
+            return null;
+        }
+        if ($id = \App\Models\LandingPage::youtubeId($url)) {
+            return ['youtube' => $id];
+        }
+        if (preg_match('#^https?://\S+\.(mp4|webm)(\?\S*)?$#i', $url) || preg_match('#^/?storage/\S+\.(mp4|webm)$#i', $url)) {
+            return ['file' => $url];
+        }
+
+        return null;
+    }
+
+    /** The phone picture when one is set */
+    public function mobileImageUrl(): ?string
+    {
+        return $this->image_mobile ? image_url($this->image_mobile, $this->title ?? 'banner') : null;
+    }
+
     public function imageUrl(): string
     {
         return image_url($this->image, $this->title ?? 'banner');

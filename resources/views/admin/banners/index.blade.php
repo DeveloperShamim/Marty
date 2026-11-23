@@ -66,6 +66,38 @@
     @endforeach
   </div>
 
+  {{-- How the slider plays, and a video that can take its place --}}
+  <form method="POST" action="{{ route('admin.banners.slider-settings') }}" class="panel p-4 sm:p-5 space-y-3.5" data-slider-settings>
+    @csrf @method('PUT')
+    <div>
+      <h2 class="text-[15px] font-semibold text-gray-900">Slider settings</h2>
+      <p class="text-xs text-gray-500 mt-0.5">How the hero carousel plays when it has more than one slide.</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+      @foreach(['hero_autoplay' => ['autoplay', 'Slide by itself'], 'hero_arrows' => ['arrows', 'Show arrows'], 'hero_dots' => ['dots', 'Show dots']] as $field => [$key, $label])
+        <label class="flex items-center gap-2.5 h-10 px-3 rounded-xl ring-1 ring-gray-200 cursor-pointer text-[13px]">
+          <input type="checkbox" name="{{ $field }}" value="1" class="accent-gray-900 h-4 w-4" @checked($slider[$key])> {{ $label }}
+        </label>
+      @endforeach
+    </div>
+    <div class="grid sm:grid-cols-[10rem_1fr] gap-3">
+      <div>
+        <label class="lbl" for="heroDelay">Seconds per slide</label>
+        <input id="heroDelay" type="number" name="hero_delay" min="2" max="15" step="0.5" class="inp" value="{{ old('hero_delay', $slider['delay']) }}">
+        @error('hero_delay')<p class="text-[11px] text-rose-600 mt-1">{{ $message }}</p>@enderror
+      </div>
+      <div>
+        <label class="lbl" for="heroVideo">Hero video (optional)</label>
+        <input id="heroVideo" name="hero_video_url" class="inp" value="{{ old('hero_video_url', $slider['video']) }}" placeholder="YouTube link, or https://…/video.mp4">
+        <p class="text-[11px] text-gray-500 mt-1">When set, the video plays muted on a loop in place of the slides. Clear it to bring the slides back.</p>
+        @error('hero_video_url')<p class="text-[11px] text-rose-600 mt-1">{{ $message }}</p>@enderror
+      </div>
+    </div>
+    <div class="flex justify-end">
+      <button type="submit" class="h-9 px-4 rounded-full text-[13px] font-semibold text-white" style="background: var(--brand-dark);">Save slider settings</button>
+    </div>
+  </form>
+
   @foreach($sections as $s)
     <section class="panel p-4 sm:p-5">
       <div class="flex items-start justify-between gap-3 mb-4">

@@ -15,6 +15,7 @@ class BannerController extends Controller
         return view('admin.banners.index', [
             'banners'    => $banners,
             'placements' => Banner::PLACEMENTS,
+            'slider'     => Banner::slider(),
         ]);
     }
 
@@ -65,6 +66,28 @@ class BannerController extends Controller
         return redirect()->route('admin.banners.index')->with('status', 'Banner updated.');
     }
 
+    public function sliderSettings(Request $request)
+    {
+        $data = $request->validate([
+            'hero_delay'     => ['required', 'numeric', 'min:2', 'max:15'],
+            'hero_video_url' => ['nullable', 'string', 'max:500', function ($attr, $value, $fail) {
+                if (trim((string) $value) !== '' && ! Banner::heroVideo($value)) {
+                    $fail('Paste a YouTube link, or a direct link to an .mp4 or .webm file.');
+                }
+            }],
+        ]);
+
+        \App\Models\Setting::put('hero_autoplay', $request->boolean('hero_autoplay') ? '1' : '0');
+        \App\Models\Setting::put('hero_arrows', $request->boolean('hero_arrows') ? '1' : '0');
+        \App\Models\Setting::put('hero_dots', $request->boolean('hero_dots') ? '1' : '0');
+        \App\Models\Setting::put('hero_delay', (string) round((float) $data['hero_delay'], 1));
+        \App\Models\Setting::put('hero_video_url', trim((string) ($data['hero_video_url'] ?? '')));
+        \App\Models\Setting::forgetCache();
+        \App\Services\ActivityLogger::log('Hero Slider Settings Updated', 'Changed how the homepage slider plays.');
+
+        return back()->with('status', 'Slider settings saved.');
+    }
+
     public function toggle(Banner $banner)
     {
         $banner->update(['is_active' => ! $banner->is_active]);
@@ -74,8 +97,10 @@ class BannerController extends Controller
 
     public function destroy(Banner $banner)
     {
-        if ($banner->image && ! str_starts_with($banner->image, 'http')) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($banner->image);
+        foreach ([$banner->image, $banner->image_mobile] as $path) {
+            if ($path && ! str_starts_with($path, 'http')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($path);
+            }
         }
         $banner->delete();
 
@@ -95,6 +120,7 @@ class BannerController extends Controller
             'position'    => ['nullable', 'integer', 'min:0'],
             'image_file'  => ['nullable', 'image', 'max:4096'],
             'image_url'   => ['nullable', 'string', 'max:255'],
+            'image_mobile_file' => ['nullable', 'image', 'max:4096'],
             'show_on'     => ['nullable', 'in:' . implode(',', array_keys(Banner::DEVICES))],
             'starts_at'   => ['nullable', 'date'],
             'ends_at'     => ['nullable', 'date', 'after:starts_at'],
@@ -118,7 +144,14 @@ class BannerController extends Controller
 
     private function handleImage(Request $request, array &$data, ?Banner $banner = null): void
     {
-        unset($data['image_file'], $data['image_url']);
+        unset($data['image_file'], $data['image_url'], $data['image_mobile_file']);
+
+        // The picture phones see instead (optional)
+        if ($request->boolean('remove_image_mobile')) {
+            $data['image_mobile'] = null;
+        } elseif ($request->hasFile('image_mobile_file')) {
+            $data['image_mobile'] = $request->file('image_mobile_file')->store('banners', 'public');
+        }
 
         if ($request->boolean('remove_image')) {
             $data['image'] = null;

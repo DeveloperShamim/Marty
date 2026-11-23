@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\HomeBlock;
 use App\Models\Setting;
 
 /**
@@ -29,6 +30,22 @@ class HomeSections
     public const FIXED = ['trust'];
 
     /**
+     * Every section key with its name and hint: the built-in ones, then the owner's own sections
+     * (product rows, promo bands…) as "block_{id}".
+     *
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public static function catalog(): array
+    {
+        $list = self::SECTIONS;
+        foreach (HomeBlock::orderBy('id')->get() as $block) {
+            $list[$block->key()] = [$block->label(), $block->typeName() . ' · ' . $block->hint()];
+        }
+
+        return $list;
+    }
+
+    /**
      * The saved list, completed with any section the saved list does not know yet (new sections
      * appear on, at the end), in display order.
      *
@@ -36,19 +53,20 @@ class HomeSections
      */
     public static function all(): array
     {
+        $catalog = self::catalog();
         $saved = json_decode((string) setting('home_sections', ''), true);
         $list = [];
 
         if (is_array($saved)) {
             foreach ($saved as $row) {
                 $key = is_array($row) ? ($row['key'] ?? null) : null;
-                if (is_string($key) && isset(self::SECTIONS[$key]) && ! isset($list[$key])) {
+                if (is_string($key) && isset($catalog[$key]) && ! isset($list[$key])) {
                     $list[$key] = ['key' => $key, 'on' => (bool) ($row['on'] ?? true)];
                 }
             }
         }
 
-        foreach (array_keys(self::SECTIONS) as $key) {
+        foreach (array_keys($catalog) as $key) {
             if (! isset($list[$key])) {
                 // Before this page existed, brands and reviews had their own on/off switches
                 $on = match ($key) {
@@ -95,13 +113,14 @@ class HomeSections
      */
     public static function save(array $order, array $on): void
     {
+        $catalog = self::catalog();
         $rows = [];
         foreach ($order as $key) {
-            if (is_string($key) && isset(self::SECTIONS[$key]) && ! isset($rows[$key])) {
+            if (is_string($key) && isset($catalog[$key]) && ! isset($rows[$key])) {
                 $rows[$key] = ['key' => $key, 'on' => in_array($key, $on, true)];
             }
         }
-        foreach (array_keys(self::SECTIONS) as $key) {
+        foreach (array_keys($catalog) as $key) {
             $rows[$key] ??= ['key' => $key, 'on' => true];
         }
 

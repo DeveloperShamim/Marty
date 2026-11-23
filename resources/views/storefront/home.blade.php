@@ -10,7 +10,10 @@
     $deskCards = $heroSideBanners->filter->showsOnDesktop()->take(2);
     $phoneCards = $heroSideBanners->filter->showsOnPhone()->take(2);
     $sideCards = $heroSideBanners->filter(fn ($c) => $deskCards->contains("id", $c->id) || $phoneCards->contains("id", $c->id));
-    $hasHero = $heroBanners->isNotEmpty() || $sideCards->isNotEmpty() || setting('hero_fallback_title') || setting('hero_fallback_badge');
+    // Slider settings and the optional hero video (Admin → Homepage → Hero banners)
+    $slider = \App\Models\Banner::slider();
+    $heroVideo = \App\Models\Banner::heroVideo($slider['video']);
+    $hasHero = $heroVideo || $heroBanners->isNotEmpty() || $sideCards->isNotEmpty() || setting('hero_fallback_title') || setting('hero_fallback_badge');
     $hero = $mainHero;
     $heroTitle = $hero?->title ?: setting('hero_fallback_title');
     $heroSubtitle = $hero?->subtitle ?: setting('hero_fallback_subtitle');
@@ -35,14 +38,27 @@
         @endphp
 
         <div data-hero-main class="{{ $sliderClasses }} relative rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-center aspect-[15/8] w-full bg-transparent">
-          @if($heroBanners->count() > 1)
+          @if($heroVideo)
+            {{-- Hero video in place of the slides: muted, looping, no controls --}}
+            <div class="relative w-full h-full aspect-[15/8] {{ $slideBox }} overflow-hidden bg-black" data-hero-video>
+              @if(isset($heroVideo['youtube']))
+                <iframe src="https://www.youtube-nocookie.com/embed/{{ $heroVideo['youtube'] }}?autoplay=1&mute=1&loop=1&playlist={{ $heroVideo['youtube'] }}&controls=0&playsinline=1&rel=0&modestbranding=1" title="{{ site_name() }}" class="absolute inset-0 w-full h-full pointer-events-none" allow="autoplay; encrypted-media; picture-in-picture" loading="eager"></iframe>
+              @else
+                <video src="{{ $heroVideo['file'] }}" class="absolute inset-0 w-full h-full object-cover" autoplay muted loop playsinline preload="metadata" @if($mainHero?->image) poster="{{ $mainHero->imageUrl() }}" @endif></video>
+              @endif
+              @if($mainHero)<a href="{{ $mainHero->linkHref() }}" class="absolute inset-0 z-10" aria-label="{{ $mainHero->title ?: 'Shop now' }}"></a>@endif
+            </div>
+          @elseif($heroBanners->count() > 1)
             {{-- Carousel Slider --}}
-            <div id="homeHeroSlider" class="relative w-full h-full aspect-[15/8] {{ $slideBox }} overflow-hidden select-none">
+            <div id="homeHeroSlider" data-autoplay="{{ $slider['autoplay'] ? '1' : '0' }}" data-delay="{{ (int) ($slider['delay'] * 1000) }}" class="relative w-full h-full aspect-[15/8] {{ $slideBox }} overflow-hidden select-none">
               @foreach($heroBanners as $i => $slide)
                 <div data-hero-slide class="absolute inset-0 transition-opacity duration-500 ease-in-out {{ $i === 0 ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none' }}">
                   <a href="{{ $slide->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $slide->title ?: 'Banner Slide' }}">
                     @if($slide->image)
-                      <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->title }}" class="w-full h-full object-cover object-center" loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
+                      <picture>
+                        @if($slide->image_mobile)<source media="(max-width: 639px)" srcset="{{ $slide->mobileImageUrl() }}">@endif
+                        <img src="{{ $slide->imageUrl() }}" alt="{{ $slide->title }}" class="w-full h-full object-cover object-center" loading="{{ $i === 0 ? 'eager' : 'lazy' }}">
+                      </picture>
                     @else
                       <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
                         <div class="max-w-md">
@@ -57,6 +73,7 @@
                 </div>
               @endforeach
 
+              @if($slider['arrows'])
               {{-- Chevron Controls: frosted, fade in on hover (always shown on touch tablets; phones swipe) --}}
               <button type="button" data-hero-arrow-prev class="max-sm:hidden absolute left-3 sm:left-4 [@media(hover:hover)]:translate-x-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/25 hover:bg-black/45 backdrop-blur-md border border-white/25 text-white flex items-center justify-center transition duration-300 active:scale-95 [@media(hover:hover)]:opacity-0 group-hover:opacity-100 group-hover:translate-x-0 focus-visible:opacity-100 focus-visible:translate-x-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70" aria-label="Previous Slide">
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></svg>
@@ -66,6 +83,9 @@
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
               </button>
 
+              @endif
+
+              @if($slider['dots'])
               {{-- Indicator Dots --}}
               {{-- Phones: dots sit bottom-right so they never cover the slide button --}}
               <div class="absolute bottom-2.5 right-3 sm:bottom-4 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-2 bg-black/25 backdrop-blur-[2px] px-2 py-1.5 rounded-full">
@@ -73,12 +93,16 @@
                   <button type="button" data-hero-dot="{{ $di }}" class="hero-slider-dot rounded-full transition-all duration-300 {{ $di === 0 ? 'w-6 sm:w-8 h-1.5 sm:h-2 bg-white' : 'w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/50 hover:bg-white/80' }}" aria-label="Slide {{ $di + 1 }}"></button>
                 @endforeach
               </div>
+              @endif
             </div>
           @elseif($mainHero)
             <div class="relative w-full h-full aspect-[15/8] {{ $slideBox }} overflow-hidden">
               <a href="{{ $mainHero->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $mainHero->title ?: 'Banner' }}">
                 @if($mainHero->image)
-                  <img src="{{ $mainHero->imageUrl() }}" alt="{{ $mainHero->title }}" class="w-full h-full object-cover object-center">
+                  <picture>
+                    @if($mainHero->image_mobile)<source media="(max-width: 639px)" srcset="{{ $mainHero->mobileImageUrl() }}">@endif
+                    <img src="{{ $mainHero->imageUrl() }}" alt="{{ $mainHero->title }}" class="w-full h-full object-cover object-center">
+                  </picture>
                 @else
                   <div class="w-full h-full bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
                     <div class="max-w-md">
@@ -169,7 +193,13 @@
 
     {{-- Sections 3-10 in the owner's order; each one hides itself when it has nothing to show --}}
     @foreach(\App\Support\HomeSections::ordered() as $homeSection)
-      @include('storefront.home.' . $homeSection)
+      @if(str_starts_with($homeSection, 'block_'))
+        @if($homeBlocks->has($homeSection))
+          @include('storefront.home.block', ['block' => $homeBlocks[$homeSection]])
+        @endif
+      @else
+        @include('storefront.home.' . $homeSection)
+      @endif
     @endforeach
 
   </main>
@@ -216,9 +246,12 @@ document.addEventListener('DOMContentLoaded', function () {
       function nextSlide() { showSlide(currentIndex + 1); }
       function prevSlide() { showSlide(currentIndex - 1); }
 
+      // Admin → Hero banners → Slider settings: slide by itself or not, and how long each slide stays
+      const autoPlay = homeHeroSlider.dataset.autoplay !== '0';
+      const slideDelay = Math.max(2000, parseInt(homeHeroSlider.dataset.delay, 10) || 4500);
       function startAutoPlay() {
         stopAutoPlay();
-        slideTimer = setInterval(nextSlide, 4500);
+        if (autoPlay) slideTimer = setInterval(nextSlide, slideDelay);
       }
 
       function stopAutoPlay() {

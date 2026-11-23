@@ -250,6 +250,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::patch('brands/{brand}/toggle-featured', [AdminBrandController::class, 'toggleFeatured'])->middleware('area:brands')->name('brands.toggle-featured');
             Route::resource('brands', AdminBrandController::class)->except('show')->middleware('area:brands');
             Route::patch('banners/{banner}/toggle', [AdminBannerController::class, 'toggle'])->middleware('area:banners')->name('banners.toggle');
+            Route::put('banners/slider-settings', [AdminBannerController::class, 'sliderSettings'])->middleware('area:banners')->name('banners.slider-settings');
             Route::resource('banners', AdminBannerController::class)->except('show')->middleware('area:banners');
             Route::resource('features', AdminFeatureController::class)->except('show')->middleware('area:features');
             Route::resource('coupons', AdminCouponController::class)->except('show')->middleware('area:coupons');
@@ -297,6 +298,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Homepage sections: order and show/hide
         Route::get('home-sections', [\App\Http\Controllers\Admin\HomeSectionController::class, 'index'])->middleware('area:home-sections')->name('home-sections.index');
         Route::put('home-sections', [\App\Http\Controllers\Admin\HomeSectionController::class, 'update'])->middleware('area:home-sections')->name('home-sections.update');
+        // Sections the owner adds: product rows, promo bands, wide banners, card grids, stats rows
+        Route::get('home-blocks/create', [\App\Http\Controllers\Admin\HomeBlockController::class, 'create'])->middleware('area:home-sections')->name('home-blocks.create');
+        Route::post('home-blocks', [\App\Http\Controllers\Admin\HomeBlockController::class, 'store'])->middleware('area:home-sections')->name('home-blocks.store');
+        Route::get('home-blocks/{homeBlock}/edit', [\App\Http\Controllers\Admin\HomeBlockController::class, 'edit'])->middleware('area:home-sections')->name('home-blocks.edit');
+        Route::put('home-blocks/{homeBlock}', [\App\Http\Controllers\Admin\HomeBlockController::class, 'update'])->middleware('area:home-sections')->name('home-blocks.update');
+        Route::delete('home-blocks/{homeBlock}', [\App\Http\Controllers\Admin\HomeBlockController::class, 'destroy'])->middleware('area:home-sections')->name('home-blocks.destroy');
 
         // Launch mode: small-catalogue homepage (Batch collection, comparison, trust row)
         Route::get('launch-mode', [\App\Http\Controllers\Admin\LaunchModeController::class, 'index'])->middleware('area:launch-mode')->name('launch-mode.index');
