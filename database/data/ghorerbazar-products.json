@@ -68,12 +68,27 @@
    "title": "All Natural Honey",
    "cats": [
     "honey"
+   ],
+   "only": [
+    "Honey Nuts 800gm",
+    "Black Seed Honey 500g",
+    "Lychee Flower Honey 500g",
+    "Lychee Flower Honey 1kg",
+    "Mixed Flower Honey with comb 500g",
+    "African Organic Wild Honey 500g"
    ]
   },
   {
    "title": "Premium Dates",
    "cats": [
     "dates"
+   ],
+   "only": [
+    "Ajwa Premium Fresh Dates 1kg",
+    "Ajwa Premium Fresh Dates 1kg (Large)",
+    "Safawi/kalmi Dates (A Grade) 1kg",
+    "Ajwa Premium Fresh Dates 500gm",
+    "Egyptian Medjool Large 1kg"
    ]
   },
   {
@@ -85,22 +100,24 @@
     "rice"
    ],
    "only": [
-    "Deshi Mustard Oil 5 liter",
-    "Gawa Ghee 1kg",
     "Kala Bhuna Masala-500gm",
     "Mashkalai Dal 1 Kg",
     "Cumin (Jira) Powder 500gm",
-    "Kala Bhuna Masala-250gm",
     "Masoor Dal 1 Kg",
-    "Shahi Masala Combo",
-    "Lal Chal 5 kg",
-    "Panch Foron 50g"
+    "Shahi Masala Combo"
    ]
   },
   {
    "title": "Organic Certified",
    "cats": [
     "organic"
+   ],
+   "only": [
+    "Ashwagandha Powder 100g (USDA Organic Certified)",
+    "Organic Extra Virgin Coconut Oil 500ml",
+    "Glarvest Organic Extra Virgin Olive Oil 1000ml",
+    "Ceylon Organic Coconut Milk (C) 400ml",
+    "Ceylon Organic Coconut Vinegar 500ml"
    ]
   }
  ],
