@@ -19,7 +19,7 @@ class HomeController extends Controller
     /** A category row slides through up to 8 products; it is topped up to 4 with already-shown ones if short. */
     public const HOME_ROW_SIZE = 8;
     public const HOME_ROW_MIN = 4;
-    public const JUST_FOR_YOU = 12;
+    public const JUST_FOR_YOU = 15;
 
     public function index()
     {
@@ -118,6 +118,33 @@ class HomeController extends Controller
             })
             ->filter(fn (Category $cat) => $cat->products->isNotEmpty())
             ->values();
+
+        // A store can name its own homepage rows instead (setting "home_category_rows": a JSON list of
+        // {title, cats: [category slugs], only: [product slugs]}). Each row may pull from several categories,
+        // in the order given, and may show products that appear elsewhere on the page.
+        $customRows = json_decode((string) setting('home_category_rows', ''), true);
+        if (is_array($customRows) && $customRows) {
+            $featuredHomeCategories = collect($customRows)->map(function ($row) use ($withImages) {
+                $cats = Category::where('is_active', true)->whereIn('slug', (array) ($row['cats'] ?? []))->get()
+                    ->sortBy(fn ($c) => array_search($c->slug, (array) $row['cats']))->values();
+                if ($cats->isEmpty()) {
+                    return null;
+                }
+                $only = array_values(array_filter((array) ($row['only'] ?? [])));
+                $products = Product::query()->tap($withImages)
+                    ->whereIn('category_id', $cats->flatMap(fn ($c) => $c->familyIds())->all())
+                    ->when($only, fn ($q) => $q->whereIn('slug', $only))
+                    ->latest()->take(16)->get();
+                if ($only) {
+                    $products = $products->sortBy(fn ($p) => array_search($p->slug, $only))->values();
+                }
+                $head = clone $cats->first();
+                $head->name = trim((string) ($row['title'] ?? '')) ?: $head->name;
+                $head->setRelation('products', $products->take(self::HOME_ROW_SIZE + 2)->values());
+
+                return $head;
+            })->filter(fn ($c) => $c && $c->products->isNotEmpty())->values();
+        }
 
         $justForYou = $this->justForYou($withImages, $shown->merge($newArrivals->take(8)->pluck('id')));
 

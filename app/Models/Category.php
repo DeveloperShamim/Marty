@@ -57,6 +57,8 @@ class Category extends Model
         $ids = $all->pluck('id')->all();
         $isChild = fn (Category $c) => $c->parent_id !== null && in_array($c->parent_id, $ids, true);
         $children = $all->filter($isChild)->groupBy('parent_id');
+        // Biggest first by default; a store can keep its own order instead (setting category_sort = "position")
+        $order = setting('category_sort') === 'position' ? [['position', 'asc']] : [['products_count', 'desc'], ['position', 'asc']];
 
         return $all->reject($isChild)
             ->each(function (Category $c) use ($children) {
@@ -64,7 +66,7 @@ class Category extends Model
                 $c->setRelation('children', $kids);
                 $c->products_count = (int) $c->products_count + (int) $kids->sum('products_count');
             })
-            ->sortBy([['products_count', 'desc'], ['position', 'asc']])
+            ->sortBy($order)
             ->values();
     }
 

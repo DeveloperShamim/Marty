@@ -343,10 +343,32 @@
           </div>
         </div>
 
-        @if($whatsapp)
-          <a href="https://wa.me/{{ $whatsapp }}?text={{ urlencode('Hi, I want to inquire about: '.$product->name.' - '.url()->current()) }}" target="_blank" rel="noopener" class="w-full h-10 sm:h-11 bg-white hover:bg-emerald-50 border-2 border-emerald-500 text-emerald-700 font-semibold rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm" data-pdp-whatsapp>
-            <svg class="w-4 h-4 text-emerald-600 fill-current shrink-0" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-1.147 4.19 4.18-1.096z"/></svg>
-            <span>Order or Inquire on WhatsApp</span>
+        {{-- As on ghorerbazar.com: Order On WhatsApp (green) and Call For Order (blue) side by side, then the brand --}}
+        @php $pdpCall = trim((string) (setting('order_hotline') ?: setting('contact_phone', ''))); @endphp
+        @if($whatsapp || $pdpCall !== '')
+          <div class="grid {{ $whatsapp && $pdpCall !== '' ? 'grid-cols-2' : 'grid-cols-1' }} gap-2.5 sm:gap-3">
+            @if($whatsapp)
+              <a href="https://wa.me/{{ $whatsapp }}?text={{ urlencode('Hi, I want to order: '.$product->name.' - '.url()->current()) }}" target="_blank" rel="noopener" class="gb-pdp-wa" data-pdp-whatsapp>
+                <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-1.147 4.19 4.18-1.096z"/></svg>
+                <span>Order On WhatsApp</span>
+              </a>
+            @endif
+            @if($pdpCall !== '')
+              <a href="tel:{{ preg_replace('/[^0-9+]/', '', $pdpCall) }}" class="gb-pdp-call" data-pdp-call>
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>
+                <span>Call For Order</span>
+              </a>
+            @endif
+          </div>
+        @endif
+        @if(! empty($brandObj))
+          <a href="{{ route('shop.brand', $brandObj) }}" class="gb-pdp-brand" data-pdp-brand>
+            <span class="font-semibold text-stone-800">Brand:</span>
+            @if($brandObj->logo)
+              <img src="{{ $brandObj->logoUrl() }}" alt="{{ $brandObj->name }}" class="h-6 w-auto max-w-[110px] object-contain" />
+            @else
+              <span>{{ $brandObj->name }}</span>
+            @endif
           </a>
         @endif
       </div>

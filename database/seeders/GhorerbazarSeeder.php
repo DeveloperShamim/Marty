@@ -12,6 +12,8 @@ use App\Models\ProductSku;
 use App\Models\ProductVariant;
 use App\Models\Setting;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 /**
@@ -20,42 +22,50 @@ use Illuminate\Support\Str;
  *   php artisan db:seed --class=GhorerbazarSeeder
  *
  * Replaces the catalogue (categories, brands, products, hero banners); orders, customers and staff are not touched.
- * The product list lives in database/data/ghorerbazar-products.json. Pictures are drawn placeholders in
- * public/uploads/ghorerbazar/ until the real product photos are uploaded in Admin → Products.
+ * The catalogue in database/data/ghorerbazar-products.json is copied from ghorerbazar.com: product names, prices,
+ * old prices, labels, categories, brands, banners and the photo of each. Photos are downloaded from the Ghorer Bazar
+ * CDN into public/uploads/ghorerbazar/cdn/ (once; a copy already there is reused). When the server cannot reach the
+ * CDN, the picture links straight to it instead.
  */
 class GhorerbazarSeeder extends Seeder
 {
     private const IMG = 'uploads/ghorerbazar';
 
+    private string $cdn = 'https://cdn.ghorerbazar.com';
+
+    /** Set to false after the first failed download, so an offline server doesn't wait on every picture. */
+    private bool $cdnReachable = true;
+
     public function run(): void
     {
         $data = json_decode(file_get_contents(database_path('data/ghorerbazar-products.json')), true);
+        $this->cdn = rtrim($data['cdn'] ?? $this->cdn, '/');
 
-        $this->seedSettings();
+        $this->seedSettings($data);
         $categories = $this->seedCategories($data['categories']);
         $brands = $this->seedBrands($data['brands']);
         $this->seedProducts($data['products'], $categories, $brands);
-        $this->seedBanners();
-        $this->seedHeaderMenu();
+        $this->seedBanners($data['banners']);
+        $this->seedHeaderMenu($categories);
         Setting::forgetCache();
     }
 
-    private function seedSettings(): void
+    private function seedSettings(array $data): void
     {
         $settings = [
             'site_name'                  => 'Ghorer Bazar',
             'tagline'                    => 'Safe food, delivered home',
-            'logo'                       => self::IMG . '/logo.svg',
+            'logo'                       => $this->picture($data['logo'] ?? '', self::IMG . '/logo.svg'),
             'favicon'                    => self::IMG . '/favicon.svg',
-            'footer_text'                => 'Ghorer Bazar brings pure, safe and natural food to your door: honey, ghee, oil, dates, spices, nuts and more, with cash on delivery all over Bangladesh.',
+            'footer_text'                => 'Ghorer Bazar is an e-commerce platform dedicated to providing safe and reliable food to every home.',
             'order_number_prefix'        => 'GB',
             'search_placeholder'         => 'Search in...',
             // Brand colours: orange, the deep green menu bar, and the warm off-white page
-            'theme_primary_color'        => '#F68822',
-            'theme_dark_color'           => '#051F20',
-            'theme_surface_color'        => '#FAF9F5',
+            'theme_primary_color'        => '#F48721',
+            'theme_dark_color'           => '#041F1E',
+            'theme_surface_color'        => '#F9F8F6',
             'header_menu_style'          => 'dark',
-            'theme_font'                 => 'hind', // Hind Siliguri, as on ghorerbazar.com
+            'theme_font'                 => 'open-sans', // Open Sans, as on ghorerbazar.com
             // No scrolling ticker above the header
             'header_promo_text'          => '',
             'home_categories_title'      => 'Featured Categories',
@@ -71,6 +81,18 @@ class GhorerbazarSeeder extends Seeder
             'default_meta_title'         => 'Ghorer Bazar — Pure Honey, Ghee, Oil, Dates & Organic Food in Bangladesh',
             'default_meta_description'   => 'Order pure honey, gawa ghee, mustard oil, dates, spices, nuts and organic food from Ghorer Bazar. Cash on delivery all over Bangladesh.',
             'default_meta_keywords'      => 'Ghorer Bazar, honey, gawa ghee, mustard oil, dates, organic food Bangladesh',
+            // Their footer and contact details
+            'contact_phone'              => '+8809642922922',
+            'contact_email'              => 'contact@ghorerbazar.com',
+            'contact_address'            => 'Rampura, Dhaka, Bangladesh',
+            'whatsapp_number'            => '8809642922922',
+            'footer_copyright'           => 'Copyright © ' . date('Y') . ' GhorerBazar',
+            'category_sort'              => 'position', // categories in ghorerbazar.com's order, not by size
+            'home_category_rows'         => json_encode(array_map(fn ($row) => [
+                'title' => $row['title'],
+                'cats'  => $row['cats'],
+                'only'  => array_map(fn ($name) => Str::slug($name), $row['only'] ?? []),
+            ], $data['home_rows'] ?? [])),
             'contact_title'              => 'Customer Support',
             'contact_intro'              => 'Need help choosing honey, ghee, oil or dates, or tracking an order? Call or WhatsApp the Ghorer Bazar team.',
             'pdp_quality_badge'          => '100% natural',
@@ -84,7 +106,7 @@ class GhorerbazarSeeder extends Seeder
                 ['key' => 'category_rows', 'on' => true],
                 ['key' => 'curated', 'on' => false],
                 ['key' => 'reviews', 'on' => false],
-                ['key' => 'just_for_you', 'on' => false],
+                ['key' => 'just_for_you', 'on' => true],
                 ['key' => 'coupons', 'on' => false],
             ]),
         ];
@@ -106,17 +128,19 @@ class GhorerbazarSeeder extends Seeder
         Category::query()->delete();
 
         $out = [];
+        $featured = collect(json_decode((string) Setting::where('key', 'home_category_rows')->value('value'), true) ?: [])
+            ->pluck('cats')->flatten()->unique()->all();
         foreach ($rows as $i => $c) {
             $out[$c['slug']] = Category::create([
                 'name'             => $c['name'],
                 'slug'             => $c['slug'],
                 'icon'             => null,
-                'image'            => self::IMG . "/categories/{$c['slug']}.svg",
+                'image'            => $this->picture($c['image'] ?? '', self::IMG . "/categories/{$c['slug']}.svg"),
                 'description'      => $c['desc'],
                 'position'         => $i,
                 'is_active'        => true,
                 // "Featured on home": one product row each on the homepage
-                'is_featured'      => (bool) $c['featured'],
+                'is_featured'      => in_array($c['slug'], $featured, true),
                 'meta_title'       => "{$c['name']} — Ghorer Bazar",
                 'meta_description' => "Buy {$c['name']} online from Ghorer Bazar. {$c['desc']} Cash on delivery all over Bangladesh.",
             ]);
@@ -134,7 +158,7 @@ class GhorerbazarSeeder extends Seeder
             $out[$b['slug']] = Brand::create([
                 'name'        => $b['name'],
                 'slug'        => $b['slug'],
-                'logo'        => self::IMG . "/brands/{$b['slug']}.svg",
+                'logo'        => $this->picture($b['logo'] ?? '', self::IMG . "/brands/{$b['slug']}.svg"),
                 'description' => "{$b['name']} products at Ghorer Bazar.",
                 'position'    => $i,
                 'is_active'   => true,
@@ -147,11 +171,13 @@ class GhorerbazarSeeder extends Seeder
 
     private function seedProducts(array $rows, array $categories, array $brands): void
     {
-        foreach (array_reverse($rows) as $i => $p) {
+        $count = count($rows);
+        foreach ($rows as $i => $p) {
             $slug = Str::slug($p['name']);
             $category = $categories[$p['cat']];
             $brand = $brands[$p['brand']];
             $old = $p['old'] ?? null;
+            $label = $p['label'] ?? '';
 
             $product = Product::create([
                 'category_id'       => $category->id,
@@ -161,7 +187,7 @@ class GhorerbazarSeeder extends Seeder
                 'slug'              => $slug,
                 'sku'               => 'GB-' . strtoupper(Str::substr(md5($slug), 0, 6)),
                 'short_description' => "{$p['name']}: pure, natural and quality checked by Ghorer Bazar.",
-                'description'       => "{$p['name']} from Ghorer Bazar. {$category->description} Every batch is checked before it is packed. Order with cash on delivery anywhere in Bangladesh.",
+                'description'       => "<p>{$p['name']} from Ghorer Bazar. {$category->description}</p><p>Every batch is checked before it is packed. Order with cash on delivery anywhere in Bangladesh.</p>",
                 'regular_price'     => $old ?: $p['price'],
                 'sale_price'        => $old ? $p['price'] : null,
                 'cost_price'        => round($p['price'] * 0.7, 2),
@@ -169,21 +195,21 @@ class GhorerbazarSeeder extends Seeder
                 'stock_quantity'    => 60,
                 'unit'              => 'Piece',
                 'is_published'      => true,
-                'is_featured'       => (bool) $p['top'],      // Top Selling Products
-                'is_new_arrival'    => false,
-                'is_best_seller'    => (bool) $p['top'],
+                'is_featured'       => (bool) ($p['top'] ?? false),      // Top Selling Products
+                'is_new_arrival'    => $label === 'New Arrival',
+                'is_best_seller'    => $label === 'Best Selling' || ! empty($p['top']),
                 'is_flash_sale'     => false,
                 'rating'            => 4.8,
                 'reviews_count'     => 0,
                 'meta_title'        => "Buy {$p['name']} Online — Ghorer Bazar",
                 'meta_description'  => "Order {$p['name']} from Ghorer Bazar with cash on delivery all over Bangladesh.",
             ]);
-            // Keep the JSON order on "latest first" lists (rows are created in reverse with rising timestamps)
-            $product->forceFill(['created_at' => now()->subMinutes(count($rows) - $i), 'updated_at' => now()])->saveQuietly();
+            // "Latest first" lists keep the JSON order: the first row is the newest
+            $product->forceFill(['created_at' => now()->subMinutes($i + 1), 'updated_at' => now()])->saveQuietly();
 
             ProductImage::create([
                 'product_id' => $product->id,
-                'path'       => self::IMG . "/products/{$slug}.svg",
+                'path'       => $this->picture('productImages/' . $p['img'], self::IMG . "/products/{$slug}.svg"),
                 'alt'        => $p['name'],
                 'is_primary' => true,
                 'position'   => 0,
@@ -191,25 +217,52 @@ class GhorerbazarSeeder extends Seeder
         }
     }
 
-    private function seedBanners(): void
+    /**
+     * A picture from the Ghorer Bazar CDN: the local copy in public/uploads/ghorerbazar/cdn/ (downloaded now if missing),
+     * or the CDN link itself when it can't be downloaded. $fallback is used when there is no CDN path at all.
+     */
+    private function picture(string $cdnPath, string $fallback): string
+    {
+        $cdnPath = ltrim($cdnPath, '/');
+        if ($cdnPath === '') {
+            return $fallback;
+        }
+        $local = self::IMG . '/cdn/' . str_replace('/', '-', $cdnPath);
+        if (is_file(public_path($local))) {
+            return $local;
+        }
+        $url = $this->cdn . '/' . str_replace(' ', '%20', $cdnPath);
+        if ($this->cdnReachable && ! app()->runningUnitTests()) {
+            try {
+                $res = Http::timeout(15)->connectTimeout(5)->get($url);
+                if ($res->successful() && str_starts_with((string) $res->header('Content-Type'), 'image/')) {
+                    File::ensureDirectoryExists(dirname(public_path($local)));
+                    File::put(public_path($local), $res->body());
+
+                    return $local;
+                }
+            } catch (\Throwable) {
+                // fall through to the link
+            }
+            $this->cdnReachable = false;
+        }
+
+        return $url;
+    }
+
+    private function seedBanners(array $rows): void
     {
         Banner::query()->delete();
-        $rows = [
-            ['hero', 'hero-1', 'Nourishing Better Lives', '/shop'],
-            ['hero', 'hero-2', 'Sundarban Honey', '/category/honey'],
-            ['hero', 'hero-3', 'Premium Dates', '/category/dates'],
-            ['hero_side', 'side-honey', 'African Organic Wild Honey', '/product/african-organic-wild-honey-1kg'],
-        ];
-        foreach ($rows as $i => [$placement, $file, $title, $link]) {
+        foreach ($rows as $i => $b) {
             Banner::create([
-                'title'     => $title,
-                'image'     => self::IMG . "/banners/{$file}.svg",
-                'link_url'  => $link,
-                'placement' => $placement,
+                'title'     => $b['title'],
+                'image'     => $this->picture($b['image'], self::IMG . '/banners/hero-1.svg'),
+                'link_url'  => $b['link'],
+                'placement' => $b['placement'],
                 'position'  => $i,
                 'is_active' => true,
                 // The side card stands beside the slider on desktop; phones show the slider alone
-                'show_on'   => $placement === 'hero_side' ? 'desktop' : 'both',
+                'show_on'   => $b['placement'] === 'hero_side' ? 'desktop' : 'both',
             ]);
         }
 
@@ -217,11 +270,16 @@ class GhorerbazarSeeder extends Seeder
         Feature::where('title', 'Genuine Leather')->update(['title' => '100% Natural', 'subtitle' => 'Pure, quality-checked food']);
     }
 
-    private function seedHeaderMenu(): void
+    /** Their menu bar: Offer Zone, then the categories in the order ghorerbazar.com lists them. */
+    private function seedHeaderMenu(array $categories): void
     {
-        Setting::updateOrCreate(['key' => 'header_menu'], ['value' => json_encode([
-            ['type' => 'link', 'label' => 'Offer Zone', 'url' => '/shop?on_sale=1'],
-            ['type' => 'categories'],
-        ])]);
+        $order = ['honey', 'oil-ghee', 'dates', 'spices', 'nuts-seeds', 'beverage', 'rice', 'flours-lentils', 'organic', 'functional-food'];
+        $items = [['type' => 'link', 'label' => 'Offer Zone', 'url' => '/shop?on_sale=1']];
+        foreach ($order as $slug) {
+            if (isset($categories[$slug])) {
+                $items[] = ['type' => 'category', 'ref' => $categories[$slug]->id] + ($slug === 'organic' ? ['label' => 'Certified'] : []);
+            }
+        }
+        Setting::updateOrCreate(['key' => 'header_menu'], ['value' => json_encode($items)]);
     }
 }

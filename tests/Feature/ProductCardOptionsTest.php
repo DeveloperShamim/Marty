@@ -56,33 +56,34 @@ class ProductCardOptionsTest extends TestCase
         $this->assertStringContainsString('From</span>', $html);
         $this->assertStringContainsString('Order now', $html);
         $this->assertStringNotContainsString('View Details', $html, 'The photo and name open the product page');
-        $this->assertStringContainsString('data-order-now="true"', $html);
     }
 
-    public function test_card_has_add_to_cart_and_buy_now_like_ghorer_bazar(): void
+    public function test_card_has_one_add_to_cart_button_like_ghorer_bazar(): void
     {
         $this->product('Derby', array_map(fn ($s) => [['Size' => (string) $s], null, 2], range(39, 44)));
         $html = $this->get(route('shop'))->assertOk()->getContent();
         $card = substr($html, strpos($html, '<article class="fk-card'));
         $card = substr($card, 0, strpos($card, '</article>'));
 
-        $this->assertSame(2, substr_count($card, '<button'), 'Add To Cart (outlined) and Buy now (solid)');
+        $this->assertSame(1, substr_count($card, '<button'), 'One full-width Add To Cart, as on ghorerbazar.com');
         $this->assertMatchesRegularExpression('/data-add-cart class="gb-btn gb-btn-outline"/', $card);
-        $this->assertStringContainsString('>Buy now</span>', $card);
-        $this->assertStringContainsString('data-order-now="true"', $card, 'Buy now goes straight to checkout');
-        $this->assertStringContainsString('data-has-variants="true"', $card, 'Either button opens the option picker for a product with options');
+        $this->assertStringNotContainsString('>Buy now</span>', $card, 'Buy now is on the wide Top Selling cards only');
+        $this->assertStringContainsString('data-has-variants="true"', $card, 'Add To Cart opens the option picker for a product with options');
         $this->assertStringNotContainsString('uppercase tracking', $card, 'No brand label above the name');
     }
 
-    public function test_simple_product_card_adds_to_cart_or_buys_now(): void
+    public function test_simple_product_card_adds_to_cart_and_wide_card_buys_now(): void
     {
         $cat = Category::firstOrCreate(['slug' => 'leather'], ['name' => 'Leather', 'is_active' => true]);
         $pad = Product::create(['category_id' => $cat->id, 'name' => 'Mouse Pad', 'slug' => 'mouse-pad',
             'regular_price' => 650, 'stock_quantity' => 10, 'is_published' => true]);
 
         $html = $this->get(route('shop'))->assertOk()->getContent();
-        $this->assertStringContainsString('>Buy now</span>', $html);
         $this->assertStringContainsString('data-add-cart', $html);
+
+        $wide = view('storefront.partials.product-card', ['product' => $pad->fresh(), 'wide' => true])->render();
+        $this->assertStringContainsString('>Buy now</span>', $wide);
+        $this->assertStringContainsString('data-order-now="true"', $wide, 'Buy now goes straight to checkout');
         $this->assertStringContainsString('data-has-variants="false"', $html);
 
         $this->postJson(route('cart.add'), ['product_id' => $pad->id, 'qty' => 1])->assertOk()

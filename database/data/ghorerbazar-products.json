@@ -1,54 +1,1112 @@
 {
-  "categories": [
-    {"slug":"honey","name":"Honey","icon":"honey","featured":true,"desc":"Pure, natural honey from the Sundarbans, mustard and litchi fields, plus imported organic honey."},
-    {"slug":"oil-ghee","name":"Oil & Ghee","icon":"ghee","featured":true,"desc":"Gawa ghee, cold-pressed deshi mustard oil, coconut oil and black seed oil."},
-    {"slug":"dates","name":"Dates","icon":"dates","featured":true,"desc":"Ajwa, Medjool, Mabroom, Sukkari and Kalmi dates."},
-    {"slug":"spices","name":"Spices","icon":"spices","featured":false,"desc":"Freshly ground turmeric, chili, cumin and garam masala."},
-    {"slug":"nuts-seeds","name":"Nuts & Seeds","icon":"nuts","featured":true,"desc":"Cashews, almonds, mixed nuts, chia and pumpkin seeds."},
-    {"slug":"beverage","name":"Beverage","icon":"beverage","featured":false,"desc":"Green tea, moringa and healthy drinks."},
-    {"slug":"rice","name":"Rice","icon":"rice","featured":false,"desc":"Aromatic Kalijira and Chinigura rice."},
-    {"slug":"flours-lentils","name":"Flours & Lentils","icon":"flour","featured":false,"desc":"Lal atta, deshi masoor dal and more."},
-    {"slug":"pickle","name":"Pickle","icon":"pickle","featured":false,"desc":"Homemade mango, olive and garlic pickles."}
-  ],
-  "brands": [
-    {"slug":"ghorer-bazar","name":"Ghorer Bazar","color":"#F68822"},
-    {"slug":"glarvest","name":"Glarvest","color":"#2E7D32"}
-  ],
-  "products": [
-    {"cat":"honey","name":"African Organic Wild Honey 1kg","price":2500,"old":null,"shape":"bottle","color":"#5A2E0C","label":"WILD HONEY","w":"1kg","top":true,"brand":"ghorer-bazar"},
-    {"cat":"honey","name":"Sundarban Honey 1kg","price":2300,"old":2500,"shape":"jar","color":"#C97A12","label":"SUNDARBAN HONEY","w":"1kg","top":true,"brand":"ghorer-bazar"},
-    {"cat":"honey","name":"Black Seed Honey 1kg","price":1600,"old":null,"shape":"jar","color":"#6B3410","label":"BLACK SEED HONEY","w":"1kg","top":false,"brand":"ghorer-bazar"},
-    {"cat":"honey","name":"Black Seed Honey 500g","price":800,"old":null,"shape":"jar","color":"#6B3410","label":"BLACK SEED HONEY","w":"500g","top":false,"brand":"ghorer-bazar"},
-    {"cat":"honey","name":"Mustard Flower Honey 1kg","price":950,"old":1100,"shape":"jar","color":"#E2A93B","label":"MUSTARD HONEY","w":"1kg","top":false,"brand":"ghorer-bazar"},
-    {"cat":"honey","name":"Litchi Flower Honey 1kg","price":1050,"old":1200,"shape":"jar","color":"#D98E1F","label":"LITCHI HONEY","w":"1kg","top":false,"brand":"ghorer-bazar"},
-    {"cat":"oil-ghee","name":"Gawa Ghee 1kg","price":1890,"old":1990,"shape":"jar","color":"#F2C14E","label":"GAWA GHEE","w":"1kg","top":true,"brand":"ghorer-bazar"},
-    {"cat":"oil-ghee","name":"Gawa Ghee 500g","price":950,"old":null,"shape":"jar","color":"#F2C14E","label":"GAWA GHEE","w":"500g","top":false,"brand":"ghorer-bazar"},
-    {"cat":"oil-ghee","name":"Deshi Mustard Oil 5 Litre","price":1650,"old":1800,"shape":"bottle","color":"#D9A21B","label":"MUSTARD OIL","w":"5L","top":true,"brand":"ghorer-bazar"},
-    {"cat":"oil-ghee","name":"Deshi Mustard Oil 1 Litre","price":340,"old":null,"shape":"bottle","color":"#D9A21B","label":"MUSTARD OIL","w":"1L","top":false,"brand":"ghorer-bazar"},
-    {"cat":"oil-ghee","name":"Virgin Coconut Oil 500ml","price":850,"old":950,"shape":"bottle","color":"#F4F1E6","label":"COCONUT OIL","w":"500ml","top":false,"brand":"glarvest"},
-    {"cat":"oil-ghee","name":"Black Seed Oil 250ml","price":450,"old":null,"shape":"bottle","color":"#3A2A12","label":"BLACK SEED OIL","w":"250ml","top":false,"brand":"ghorer-bazar"},
-    {"cat":"dates","name":"Ajwa Dates 1kg","price":1800,"old":2200,"shape":"pouch","color":"#3B1F12","label":"AJWA DATES","w":"1kg","top":true,"brand":"ghorer-bazar"},
-    {"cat":"dates","name":"Medjool Dates Large 1kg","price":2400,"old":2600,"shape":"pouch","color":"#6E3A1E","label":"MEDJOOL DATES","w":"1kg","top":false,"brand":"ghorer-bazar"},
-    {"cat":"dates","name":"Mabroom Dates 1kg","price":1700,"old":null,"shape":"pouch","color":"#5A2A14","label":"MABROOM DATES","w":"1kg","top":false,"brand":"ghorer-bazar"},
-    {"cat":"dates","name":"Sukkari Dates 1kg","price":1200,"old":1350,"shape":"pouch","color":"#A8692C","label":"SUKKARI DATES","w":"1kg","top":false,"brand":"ghorer-bazar"},
-    {"cat":"dates","name":"Kalmi Dates 1kg","price":1500,"old":null,"shape":"pouch","color":"#4A2414","label":"KALMI DATES","w":"1kg","top":false,"brand":"ghorer-bazar"},
-    {"cat":"spices","name":"Turmeric Powder 500g","price":320,"old":null,"shape":"pouch","color":"#E8A317","label":"TURMERIC","w":"500g","top":false,"brand":"ghorer-bazar"},
-    {"cat":"spices","name":"Chili Powder 500g","price":380,"old":420,"shape":"pouch","color":"#B8261C","label":"CHILI POWDER","w":"500g","top":false,"brand":"ghorer-bazar"},
-    {"cat":"spices","name":"Garam Masala 200g","price":280,"old":null,"shape":"pouch","color":"#7A4A26","label":"GARAM MASALA","w":"200g","top":false,"brand":"ghorer-bazar"},
-    {"cat":"spices","name":"Cumin Powder 200g","price":260,"old":null,"shape":"pouch","color":"#8C6A3A","label":"CUMIN","w":"200g","top":false,"brand":"ghorer-bazar"},
-    {"cat":"nuts-seeds","name":"Premium Mixed Nuts 500g","price":1150,"old":1300,"shape":"pouch","color":"#C49A5A","label":"MIXED NUTS","w":"500g","top":true,"brand":"ghorer-bazar"},
-    {"cat":"nuts-seeds","name":"Cashew Nuts 500g","price":850,"old":null,"shape":"pouch","color":"#E9D3A6","label":"CASHEW NUTS","w":"500g","top":false,"brand":"ghorer-bazar"},
-    {"cat":"nuts-seeds","name":"Almonds 500g","price":780,"old":850,"shape":"pouch","color":"#A0663A","label":"ALMONDS","w":"500g","top":false,"brand":"ghorer-bazar"},
-    {"cat":"nuts-seeds","name":"Organic Chia Seeds 500g","price":450,"old":550,"shape":"pouch","color":"#5E5E5E","label":"CHIA SEEDS","w":"500g","top":false,"brand":"glarvest"},
-    {"cat":"nuts-seeds","name":"Pumpkin Seeds 250g","price":420,"old":null,"shape":"pouch","color":"#4F7A3A","label":"PUMPKIN SEEDS","w":"250g","top":false,"brand":"glarvest"},
-    {"cat":"beverage","name":"Premium Green Tea 100g","price":290,"old":null,"shape":"pouch","color":"#5C8A3A","label":"GREEN TEA","w":"100g","top":false,"brand":"glarvest"},
-    {"cat":"beverage","name":"Moringa Powder 200g","price":350,"old":400,"shape":"pouch","color":"#3F6B2A","label":"MORINGA","w":"200g","top":false,"brand":"glarvest"},
-    {"cat":"rice","name":"Kalijira Rice 5kg","price":900,"old":null,"shape":"pouch","color":"#F3EBD6","label":"KALIJIRA RICE","w":"5kg","top":false,"brand":"ghorer-bazar"},
-    {"cat":"rice","name":"Chinigura Rice 5kg","price":750,"old":800,"shape":"pouch","color":"#F1E6C8","label":"CHINIGURA RICE","w":"5kg","top":false,"brand":"ghorer-bazar"},
-    {"cat":"flours-lentils","name":"Lal Atta (Red Flour) 2kg","price":220,"old":null,"shape":"pouch","color":"#B58A5E","label":"LAL ATTA","w":"2kg","top":false,"brand":"ghorer-bazar"},
-    {"cat":"flours-lentils","name":"Deshi Masoor Dal 1kg","price":160,"old":null,"shape":"pouch","color":"#D9773A","label":"MASOOR DAL","w":"1kg","top":false,"brand":"ghorer-bazar"},
-    {"cat":"pickle","name":"Mango Pickle 400g","price":350,"old":null,"shape":"jar","color":"#C9791E","label":"MANGO PICKLE","w":"400g","top":false,"brand":"ghorer-bazar"},
-    {"cat":"pickle","name":"Olive Pickle 400g","price":380,"old":null,"shape":"jar","color":"#6B5A1E","label":"OLIVE PICKLE","w":"400g","top":false,"brand":"ghorer-bazar"},
-    {"cat":"pickle","name":"Garlic Pickle 400g","price":400,"old":450,"shape":"jar","color":"#B88A3A","label":"GARLIC PICKLE","w":"400g","top":false,"brand":"ghorer-bazar"}
-  ]
+ "cdn": "https://cdn.ghorerbazar.com",
+ "logo": "company_logo/qJaKf1768887846.png",
+ "categories": [
+  {
+   "slug": "oil-ghee",
+   "name": "Oil & Ghee",
+   "image": "category_images/Zf99g1774766372.png",
+   "desc": "Pure mustard oil, gawa ghee, coconut and black seed oil."
+  },
+  {
+   "slug": "organic",
+   "name": "Organic",
+   "image": "category_images/HJOrw1774766749.png",
+   "desc": "Certified organic oils, vinegars, coconut products and superfoods."
+  },
+  {
+   "slug": "honey",
+   "name": "Honey",
+   "image": "category_images/KbWCe1774766391.png",
+   "desc": "Sundarban, black seed, lychee flower and wild honey."
+  },
+  {
+   "slug": "dates",
+   "name": "Dates",
+   "image": "category_images/wgCR01774766402.png",
+   "desc": "Ajwa, Safawi, Medjool and Sukkari dates."
+  },
+  {
+   "slug": "spices",
+   "name": "Spices",
+   "image": "category_images/hXyU71774766413.png",
+   "desc": "Kala bhuna, shahi masala, cumin, turmeric and whole spices."
+  },
+  {
+   "slug": "nuts-seeds",
+   "name": "Nuts & Seeds",
+   "image": "category_images/5u39t1774766425.png",
+   "desc": "Cashews, almonds, walnuts, pistachios and seeds."
+  },
+  {
+   "slug": "beverage",
+   "name": "Beverage",
+   "image": "category_images/AZG2N1774766442.png",
+   "desc": "Tea, green tea, matcha and coffee."
+  },
+  {
+   "slug": "rice",
+   "name": "Rice",
+   "image": "category_images/Emr6I1774766667.png",
+   "desc": "Lal chal, chinigura, basmati, black rice and quinoa."
+  },
+  {
+   "slug": "flours-lentils",
+   "name": "Flours & Lentils",
+   "image": "category_images/Lo11M1774766468.png",
+   "desc": "Atta, rice flour, dal, chola and lachcha semai."
+  },
+  {
+   "slug": "functional-food",
+   "name": "Functional Food",
+   "image": "category_images/JxBh61774766494.png",
+   "desc": "Moringa, black garlic and everyday wellness foods."
+  }
+ ],
+ "home_rows": [
+  {
+   "title": "All Natural Honey",
+   "cats": [
+    "honey"
+   ]
+  },
+  {
+   "title": "Premium Dates",
+   "cats": [
+    "dates"
+   ]
+  },
+  {
+   "title": "Cooking Essentials",
+   "cats": [
+    "oil-ghee",
+    "spices",
+    "flours-lentils",
+    "rice"
+   ],
+   "only": [
+    "Deshi Mustard Oil 5 liter",
+    "Gawa Ghee 1kg",
+    "Kala Bhuna Masala-500gm",
+    "Mashkalai Dal 1 Kg",
+    "Cumin (Jira) Powder 500gm",
+    "Kala Bhuna Masala-250gm",
+    "Masoor Dal 1 Kg",
+    "Shahi Masala Combo",
+    "Lal Chal 5 kg",
+    "Panch Foron 50g"
+   ]
+  },
+  {
+   "title": "Organic Certified",
+   "cats": [
+    "organic"
+   ]
+  }
+ ],
+ "brands": [
+  {
+   "slug": "ghorer-bazar",
+   "name": "Ghorer Bazar",
+   "logo": "brand_images/7hNKq1768887947.png"
+  },
+  {
+   "slug": "glarvest",
+   "name": "Glarvest",
+   "logo": "brand_images/RNTIU1763611802.png"
+  },
+  {
+   "slug": "khejuri",
+   "name": "Khejuri",
+   "logo": "brand_images/8Gpl21757919440.png"
+  },
+  {
+   "slug": "shosti-food",
+   "name": "Shosti Food",
+   "logo": "brand_images/8matO1757919401.png"
+  },
+  {
+   "slug": "honeyraj",
+   "name": "Honeyraj",
+   "logo": "brand_images/lCfRt1759553456.png"
+  }
+ ],
+ "banners": [
+  {
+   "placement": "hero",
+   "image": "banner/mM4zY1791177103-light-1000x400.jpg",
+   "title": "Organic Beetroot Powder",
+   "link": "/category/organic"
+  },
+  {
+   "placement": "hero",
+   "image": "banner/v4WL81794205199-dark-1000x400.png",
+   "title": "Black Seed Honey",
+   "link": "/product/black-seed-honey-1kg"
+  },
+  {
+   "placement": "hero",
+   "image": "banner/y7Wvj1794204237-light-1000x400.png",
+   "title": "Honey Special Combo",
+   "link": "/category/honey"
+  },
+  {
+   "placement": "hero_side",
+   "image": "banner/CMSdo1791180033-light-500x279.jpg",
+   "title": "Honey Combo Pack",
+   "link": "/category/honey"
+  }
+ ],
+ "products": [
+  {
+   "cat": "honey",
+   "name": "Honey Nuts 800gm",
+   "price": 1700,
+   "old": null,
+   "img": "4BTRl1767443347.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": "Best Selling"
+  },
+  {
+   "cat": "honey",
+   "name": "Sundarban Honey 1kg",
+   "price": 2300,
+   "old": 2500,
+   "img": "nWkrb1793514099-light-1000x1000.jpg",
+   "brand": "honeyraj",
+   "top": true,
+   "label": ""
+  },
+  {
+   "cat": "honey",
+   "name": "Black Seed Honey 500g",
+   "price": 800,
+   "old": null,
+   "img": "UaiPN1793514068-light-1000x1000.jpg",
+   "brand": "honeyraj",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "honey",
+   "name": "Lychee Flower Honey 500g",
+   "price": 700,
+   "old": null,
+   "img": "TtgOl1767418640.jpg",
+   "brand": "honeyraj",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "honey",
+   "name": "Lychee Flower Honey 1kg",
+   "price": 1300,
+   "old": 1400,
+   "img": "nlewP1793514187-light-1000x1000.jpg",
+   "brand": "honeyraj",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "honey",
+   "name": "Mixed Flower Honey with comb 500g",
+   "price": 1000,
+   "old": null,
+   "img": "0ldaX1767531519.jpg",
+   "brand": "honeyraj",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "honey",
+   "name": "Sundarban Honey 15g X 24 pcs (BOX)",
+   "price": 768,
+   "old": null,
+   "img": "xtAP01776075952.png",
+   "brand": "honeyraj",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "honey",
+   "name": "Lychee Flower Honey 15g X 24 pcs (BOX)",
+   "price": 432,
+   "old": null,
+   "img": "UxodJ1776075897.png",
+   "brand": "honeyraj",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "honey",
+   "name": "Sundarban Honey 8g X 24 pcs (BOX)",
+   "price": 432,
+   "old": null,
+   "img": "omV471776075964.png",
+   "brand": "honeyraj",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "honey",
+   "name": "African Organic Wild Honey 500g",
+   "price": 1250,
+   "old": null,
+   "img": "g7Qx11775107164.jpg",
+   "brand": "honeyraj",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "dates",
+   "name": "Ajwa Premium Fresh Dates 1kg",
+   "price": 2200,
+   "old": null,
+   "img": "TY03p1782300772.webp",
+   "brand": "khejuri",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "dates",
+   "name": "Ajwa Premium Fresh Dates 1kg (Large)",
+   "price": 2500,
+   "old": null,
+   "img": "brZpn1776762573.webp",
+   "brand": "khejuri",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "dates",
+   "name": "Safawi/kalmi Dates (A Grade) 1kg",
+   "price": 1300,
+   "old": null,
+   "img": "IyJYh1776762485.jpg",
+   "brand": "khejuri",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "dates",
+   "name": "Ajwa Premium Fresh Dates 500gm",
+   "price": 1100,
+   "old": null,
+   "img": "EESft1782301652.webp",
+   "brand": "khejuri",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "dates",
+   "name": "Egyptian Medjool Large 1kg",
+   "price": 2200,
+   "old": null,
+   "img": "NbzU81795236605-light-1000x1000.jpg",
+   "brand": "khejuri",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "dates",
+   "name": "Safawi/kalmi (A Grade) 500g",
+   "price": 700,
+   "old": null,
+   "img": "lLEg51774852853.jpeg",
+   "brand": "khejuri",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "dates",
+   "name": "Ajwa Premium Fresh Dates 500g (Large)",
+   "price": 1250,
+   "old": null,
+   "img": "3VEFg1771303741.webp",
+   "brand": "khejuri",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "dates",
+   "name": "Sukkari Mufattal (Mixed Size) Dates 1kg",
+   "price": 1500,
+   "old": null,
+   "img": "VpK6Q1776762386.jpg",
+   "brand": "khejuri",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "dates",
+   "name": "Sukkari Mufattal (Mixed Size) Dates 3kg",
+   "price": 4500,
+   "old": null,
+   "img": "sp98i1767589849.jpg",
+   "brand": "khejuri",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "dates",
+   "name": "Sukkari Mufattal (Mixed Size) Dates 500g",
+   "price": 750,
+   "old": null,
+   "img": "YSUQA1771319920.png",
+   "brand": "khejuri",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "oil-ghee",
+   "name": "Gawa Ghee 1kg",
+   "price": 1890,
+   "old": 1990,
+   "img": "YPsni1793513651-light-1000x1000.jpg",
+   "brand": "shosti-food",
+   "top": true,
+   "label": "Best Selling"
+  },
+  {
+   "cat": "oil-ghee",
+   "name": "Deshi Mustard Oil 5 liter",
+   "price": 1700,
+   "old": 1800,
+   "img": "vkVdH1767248022.jpg",
+   "brand": "shosti-food",
+   "top": true,
+   "label": "Best Selling"
+  },
+  {
+   "cat": "spices",
+   "name": "Kala Bhuna Masala-500gm",
+   "price": 1500,
+   "old": null,
+   "img": "5e9Vi1787487618-light-1000x1000.jpg",
+   "brand": "shosti-food",
+   "top": false,
+   "label": "Offered Items"
+  },
+  {
+   "cat": "flours-lentils",
+   "name": "Mashkalai Dal 1 Kg",
+   "price": 300,
+   "old": null,
+   "img": "unBAY1767438328.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "spices",
+   "name": "Cumin (Jira) Powder 500gm",
+   "price": 880,
+   "old": null,
+   "img": "kGxNK1787487507-light-1000x1000.jpg",
+   "brand": "shosti-food",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "spices",
+   "name": "Kala Bhuna Masala-250gm",
+   "price": 750,
+   "old": null,
+   "img": "ABLDV1787487602-light-1000x1000.jpg",
+   "brand": "shosti-food",
+   "top": false,
+   "label": "Offered Items"
+  },
+  {
+   "cat": "flours-lentils",
+   "name": "Masoor Dal 1 Kg",
+   "price": 170,
+   "old": null,
+   "img": "52i8w1789300726-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "spices",
+   "name": "Shahi Masala Combo",
+   "price": 1600,
+   "old": 1700,
+   "img": "O89WG1793514026-light-1000x1000.jpg",
+   "brand": "shosti-food",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "rice",
+   "name": "Lal Chal 5 kg",
+   "price": 675,
+   "old": null,
+   "img": "DA91S1777297562.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "spices",
+   "name": "Panch Foron 50g",
+   "price": 30,
+   "old": null,
+   "img": "fn9f51778742184.png",
+   "brand": "shosti-food",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "organic",
+   "name": "Ashwagandha Powder 100g (USDA Organic Certified)",
+   "price": 600,
+   "old": null,
+   "img": "rubc61777091900.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "organic",
+   "name": "Organic Extra Virgin Coconut Oil 500ml",
+   "price": 1260,
+   "old": null,
+   "img": "tPCCx1789400058-light-2000x2000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "organic",
+   "name": "Glarvest Organic Extra Virgin Olive Oil 1000ml",
+   "price": 2700,
+   "old": null,
+   "img": "BZHUx1788773094-light-2000x2000.png",
+   "brand": "glarvest",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "organic",
+   "name": "Ceylon Organic Coconut Milk (C) 400ml",
+   "price": 350,
+   "old": null,
+   "img": "exdEw1789194925-light-1024x1024.jpeg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "organic",
+   "name": "Ceylon Organic Coconut Vinegar 500ml",
+   "price": 1065,
+   "old": null,
+   "img": "GHKMJ1772862114.png",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "organic",
+   "name": "Ceylon Organic Coconut Sugar (Sl) 200g",
+   "price": 650,
+   "old": null,
+   "img": "yEQlL1767517342.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "organic",
+   "name": "Discovery Organic Apple Cider Vinegar 250ml",
+   "price": 520,
+   "old": null,
+   "img": "TTSB61772525925.png",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "organic",
+   "name": "Karkuma Organic Apple Cider Vinegar (480ml)",
+   "price": 900,
+   "old": null,
+   "img": "nzvWc1767505402.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "organic",
+   "name": "Discovery Organic Apple Cider Vinegar 1 litter",
+   "price": 1395,
+   "old": null,
+   "img": "NNucf1767440969.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "nuts-seeds",
+   "name": "Cashew Nuts Medium Size 1kg",
+   "price": 2000,
+   "old": null,
+   "img": "xmShY1767096349.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "nuts-seeds",
+   "name": "Almond 1kg",
+   "price": 1600,
+   "old": null,
+   "img": "IvsiP1767095664.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "organic",
+   "name": "Glarvest Organic Extra Virgin Olive Oil 500 ml",
+   "price": 1400,
+   "old": null,
+   "img": "Nl9C61789057275-light-1000x1000.jpg",
+   "brand": "glarvest",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "oil-ghee",
+   "name": "Virgin Coconut Oil 500ml",
+   "price": 850,
+   "old": null,
+   "img": "jGgvE1792932433-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "oil-ghee",
+   "name": "Black Cumin Seed Oil 1ltr",
+   "price": 2500,
+   "old": null,
+   "img": "vmmy51787487677-light-1000x1000.jpg",
+   "brand": "shosti-food",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "oil-ghee",
+   "name": "Applied Nutrition MCT Oil 490 ml",
+   "price": 4650,
+   "old": null,
+   "img": "aL4qh1789194707-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": "New Arrival"
+  },
+  {
+   "cat": "oil-ghee",
+   "name": "Virgin Coconut Oil 1L",
+   "price": 1700,
+   "old": null,
+   "img": "NZ9sN1792469123-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "oil-ghee",
+   "name": "Gawa Ghee 500gm",
+   "price": 950,
+   "old": 1000,
+   "img": "u7PCK1790829036-light-1000x1000.jpg",
+   "brand": "shosti-food",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "oil-ghee",
+   "name": "Gawa Ghee 200gm",
+   "price": 400,
+   "old": null,
+   "img": "CMAut1782635823.jpg",
+   "brand": "shosti-food",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "oil-ghee",
+   "name": "Deshi Mustard Oil 2 liter",
+   "price": 720,
+   "old": null,
+   "img": "oPG2r1794290851-light-1000x1000.jpg",
+   "brand": "shosti-food",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "oil-ghee",
+   "name": "Black Cumin Seed Oil 500ml",
+   "price": 1250,
+   "old": null,
+   "img": "A6IGM1787487702-light-1000x1000.jpg",
+   "brand": "shosti-food",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "organic",
+   "name": "Organic Extra Virgin Coconut Oil 1ltr",
+   "price": 2080,
+   "old": null,
+   "img": "AsZsn1790246426-light-2000x2000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "oil-ghee",
+   "name": "Deshi Mustard Oil 1 liter",
+   "price": 360,
+   "old": 380,
+   "img": "ETt5J1767248095.jpg",
+   "brand": "shosti-food",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "oil-ghee",
+   "name": "Gawa Ghee 250gm",
+   "price": 500,
+   "old": null,
+   "img": "IMBO01782635854.jpg",
+   "brand": "shosti-food",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "spices",
+   "name": "Shahi Masala 500gm",
+   "price": 1500,
+   "old": null,
+   "img": "BkJWy1787487812-light-1000x1000.jpg",
+   "brand": "shosti-food",
+   "top": false,
+   "label": "Offered Items"
+  },
+  {
+   "cat": "spices",
+   "name": "Black Cardamom 200g",
+   "price": 700,
+   "old": null,
+   "img": "MiZu11767260879.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "spices",
+   "name": "White Pepper 200g",
+   "price": 700,
+   "old": null,
+   "img": "KC6on1767260635.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "spices",
+   "name": "Shahi Masala 100g",
+   "price": 300,
+   "old": null,
+   "img": "agItn1778758616.png",
+   "brand": "shosti-food",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "spices",
+   "name": "Cinnamon 200g",
+   "price": 400,
+   "old": null,
+   "img": "hoWOa1790395895-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "spices",
+   "name": "Chaat Masala 100g",
+   "price": 160,
+   "old": null,
+   "img": "fOcTg1778742108.png",
+   "brand": "shosti-food",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "spices",
+   "name": "Turmeric (Holud) Powder 250g",
+   "price": 165,
+   "old": null,
+   "img": "bMyks1787487419-light-1000x1000.jpg",
+   "brand": "shosti-food",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "spices",
+   "name": "Cardamom 100g",
+   "price": 750,
+   "old": null,
+   "img": "bkc581767261015.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "spices",
+   "name": "Fish Curry Masala 100g",
+   "price": 80,
+   "old": null,
+   "img": "5G74w1778742057.png",
+   "brand": "shosti-food",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "nuts-seeds",
+   "name": "Walnut 250gm",
+   "price": 500,
+   "old": null,
+   "img": "NEMPX1789300520-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "nuts-seeds",
+   "name": "Walnut 1kg",
+   "price": 1800,
+   "old": null,
+   "img": "7ruzF1767591190.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "nuts-seeds",
+   "name": "Pistachio 250g",
+   "price": 1350,
+   "old": null,
+   "img": "X8nZd1767250549.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "nuts-seeds",
+   "name": "Almond 250g",
+   "price": 430,
+   "old": null,
+   "img": "tdtHB1767096113.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "nuts-seeds",
+   "name": "Cashew Nuts Medium Size 500gm",
+   "price": 1000,
+   "old": null,
+   "img": "6e55t1767441512.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "nuts-seeds",
+   "name": "Almond 500gm",
+   "price": 800,
+   "old": null,
+   "img": "T6QIT1767095834.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "nuts-seeds",
+   "name": "Black Cumin (Kalojira) 1kg",
+   "price": 1000,
+   "old": null,
+   "img": "c6TnJ1787487752-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "beverage",
+   "name": "MacCoffee Gold 45 gm",
+   "price": 490,
+   "old": null,
+   "img": "HPPji1790144325-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "beverage",
+   "name": "MacCoffee Original 45 gm",
+   "price": 350,
+   "old": null,
+   "img": "DxPrX1790142033-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "beverage",
+   "name": "Glarvest Organic Longjing Green Tea 100gm",
+   "price": 1400,
+   "old": null,
+   "img": "75cWe1789273558-light-1024x1024.png",
+   "brand": "glarvest",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "beverage",
+   "name": "Glarvest Organic Matcha Green Tea 100gm",
+   "price": 1500,
+   "old": null,
+   "img": "lUcpq1771491205.webp",
+   "brand": "glarvest",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "beverage",
+   "name": "Tea Gold 500g",
+   "price": 300,
+   "old": null,
+   "img": "tV1Cl1788871035-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "beverage",
+   "name": "Tea Gold 1kg",
+   "price": 600,
+   "old": null,
+   "img": "xmg1r1788871060-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "beverage",
+   "name": "Maccoffee Gold 90gm",
+   "price": 850,
+   "old": null,
+   "img": "6dYHv1790232171-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "beverage",
+   "name": "Maccoffee Original 90gm",
+   "price": 675,
+   "old": null,
+   "img": "TWv7T1790232323-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "rice",
+   "name": "Glarvest Black Rice 1 Kg",
+   "price": 1000,
+   "old": null,
+   "img": "HpOCx1785759353-light-1000x1000.jpg",
+   "brand": "glarvest",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "rice",
+   "name": "Glarvest Organic Tri-color Quinoa 1 Kg",
+   "price": 1500,
+   "old": null,
+   "img": "G6zOl1785759134-light-1000x1000.jpg",
+   "brand": "glarvest",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "rice",
+   "name": "Lal Chal 1 kg",
+   "price": 135,
+   "old": null,
+   "img": "iXg411779701719.jpeg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "rice",
+   "name": "Chinigura Aromatic Rice 1kg",
+   "price": 230,
+   "old": null,
+   "img": "jLTxG1790595379-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "rice",
+   "name": "Lal Chal 10kg",
+   "price": 1350,
+   "old": null,
+   "img": "Xz5mr1767441942.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "rice",
+   "name": "Rataboro Rice 1kg",
+   "price": 175,
+   "old": null,
+   "img": "g7qzE1767438406.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "rice",
+   "name": "Mehran Extra Long Basmati Rice 1kg",
+   "price": 595,
+   "old": null,
+   "img": "6H2bj1791717253-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": "New Arrival"
+  },
+  {
+   "cat": "flours-lentils",
+   "name": "Rice Flour (Chaler Gura) 2kg",
+   "price": 200,
+   "old": null,
+   "img": "XA6LK1767439665.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "flours-lentils",
+   "name": "Laal Atta 2kg",
+   "price": 200,
+   "old": null,
+   "img": "tFQxp1767439453.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "flours-lentils",
+   "name": "Lachcha Semai 500gm",
+   "price": 750,
+   "old": null,
+   "img": "JVPGO1788250857-light-1000x1000.jpeg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "flours-lentils",
+   "name": "Lachcha Semai 1kg",
+   "price": 1500,
+   "old": null,
+   "img": "e2WUs1788250863-light-1000x1000.jpeg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": "Best Selling"
+  },
+  {
+   "cat": "flours-lentils",
+   "name": "Kabuli Chola 1kg",
+   "price": 380,
+   "old": null,
+   "img": "loiXh1787487548-light-1000x1000.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": "New Arrival"
+  },
+  {
+   "cat": "functional-food",
+   "name": "Moringa Powder 500gm",
+   "price": 900,
+   "old": null,
+   "img": "weti11767439804.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "functional-food",
+   "name": "Karkuma Veg Spread 400g",
+   "price": 1150,
+   "old": null,
+   "img": "Y7OOx1773562125.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "functional-food",
+   "name": "Karkuma Bio Comfort (30 Capsule)",
+   "price": 1500,
+   "old": null,
+   "img": "G10dN1773562212.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "functional-food",
+   "name": "Black Garlic 500gm",
+   "price": 1500,
+   "old": null,
+   "img": "Dw3b71767608178.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": "New Arrival"
+  },
+  {
+   "cat": "organic",
+   "name": "Bragg Organic Apple Cider Vinegar - Raw & Unfiltered 473 ML",
+   "price": 820,
+   "old": null,
+   "img": "n7Unk1771393111.jpg",
+   "brand": "ghorer-bazar",
+   "top": false,
+   "label": ""
+  },
+  {
+   "cat": "honey",
+   "name": "Black Seed Honey 1kg",
+   "price": 1600,
+   "old": null,
+   "img": "UaiPN1793514068-light-1000x1000.jpg",
+   "brand": "honeyraj",
+   "top": true,
+   "label": ""
+  }
+ ]
 }

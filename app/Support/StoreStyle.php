@@ -17,6 +17,7 @@ class StoreStyle
         'nunito'   => ['Soft (Nunito)', 'Nunito', 'Nunito', ['Nunito:wght@400;500;600;700;800']],
         'oswald'   => ['Bold (Oswald headings)', 'Oswald', 'Inter', ['Oswald:wght@500;600;700', 'Inter:wght@400;500;600;700;800']],
         'hind'     => ['Bangla-friendly (Hind Siliguri)', 'Hind Siliguri', 'Hind Siliguri', []],
+        'open-sans' => ['Friendly (Open Sans)', 'Open Sans', 'Open Sans', ['Open+Sans:wght@400;500;600;700']],
         'playfair' => ['Elegant (Playfair headings)', 'Playfair Display', 'Inter', ['Playfair+Display:wght@500;600;700;800', 'Inter:wght@400;500;600;700;800']],
     ];
 
