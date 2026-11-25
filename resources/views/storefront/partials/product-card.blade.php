@@ -28,6 +28,8 @@
   <a href="{{ route('product.show', $product) }}" class="gb-card-media">
     @if($isOutOfStock)
       <span class="gb-badge-out">Sold out</span>
+    @elseif($product->is_best_seller)
+      <span class="gb-ribbon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22c4 0 7-2.7 7-7 0-3.5-2.2-5.6-3.6-7.4-.4 1.7-1.4 3-2.9 3.4.4-3.3-1-6.3-3.5-8-.2 3-2.1 4.9-3.6 6.7C4.1 11.2 5 13 5 15c0 4.3 3 7 7 7Z"/><path d="M12 22c-1.7 0-3-1.2-3-3 0-1.6 1.2-2.7 2-3.6.4 1 1.2 1.6 2 1.8.8.4 2 1.2 2 2.8 0 1.2-1.3 2-3 2Z"/></svg>Best Selling</span>
     @elseif($discount > 0)
       <span class="gb-badge-off">-{{ $discount }}%</span>
     @endif
@@ -51,6 +53,9 @@
       @endif
       @if($product->on_sale && ! $opts['fromPrice'])
         <span class="gb-price-was fk-price-was">{{ money($product->regular_price) }}</span>
+        @if($product->regular_price > $product->price)
+          <span class="gb-save">Save {{ money($product->regular_price - $product->price) }}</span>
+        @endif
       @endif
     </div>
 

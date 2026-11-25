@@ -69,7 +69,6 @@ body.gb-store { background-color: var(--brand-surface, #FAF9F5); color: #1f2421;
 .gb-btn-solid:hover { background: var(--brand-hover) !important; border-color: var(--brand-hover) !important; }
 .gb-btn-sold { grid-column: 1 / -1; background: #f1f1f1; color: #777; cursor: not-allowed; }
 .gb-btn:active { transform: scale(.98); }
-@media (max-width: 380px) { .gb-btn .gb-btn-icon { display: none; } }
 @media (min-width: 640px) {
   .gb-card-body { padding: 14px 16px 16px; }
   .gb-card-title { font-size: 15px; }
@@ -77,15 +76,13 @@ body.gb-store { background-color: var(--brand-surface, #FAF9F5); color: #1f2421;
   .gb-btn { height: 36px; font-size: 13px; }
 }
 
-/* Wide card (Top Selling Products): picture on the left, details on the right */
-.gb-card-wide { flex-direction: row; align-items: stretch; }
-.gb-card-wide .gb-card-media { width: 40%; flex-shrink: 0; aspect-ratio: 1; }
-.gb-card-wide .gb-card-body { justify-content: center; padding: 14px 14px 14px 6px; }
-.gb-card-wide .gb-card-title { min-height: 0; font-size: 14px; }
-.gb-card-wide .gb-actions { margin-top: 0; max-width: 300px; }
-@media (min-width: 640px) {
-  .gb-card-wide .gb-card-body { padding: 20px 22px 20px 8px; }
-  .gb-card-wide .gb-card-title { font-size: 16px; }
+/* Wide card (Top Selling Products, tablets up): picture on the left, details on the right. Phones get the upright card. */
+@media (min-width: 768px) {
+  .gb-card-wide { flex-direction: row; align-items: stretch; }
+  .gb-card-wide .gb-card-media { width: 40%; flex-shrink: 0; aspect-ratio: 1; }
+  .gb-card-wide .gb-card-body { justify-content: center; padding: 20px 22px 20px 8px; }
+  .gb-card-wide .gb-card-title { min-height: 0; font-size: 16px; }
+  .gb-card-wide .gb-actions { margin-top: 0; max-width: 300px; }
 }
 
 /* ---------- Brands ---------- */
@@ -94,8 +91,7 @@ body.gb-store { background-color: var(--brand-surface, #FAF9F5); color: #1f2421;
 .gb-brand:hover { border-color: var(--brand-primary); box-shadow: 0 6px 18px -10px rgba(0,0,0,.25); }
 
 /* ---------- Floating quick cart: always shown, like the store's side cart ---------- */
-[data-quick-cart].qc-empty { display: none !important; }
-@media (min-width: 640px) { [data-quick-cart].qc-empty { display: flex !important; } }
+[data-quick-cart].qc-empty { display: flex !important; }
 [data-quick-cart] { border-radius: 8px 0 0 8px !important; border-color: var(--brand-primary) !important; }
 
 /* Slider dots (brands) */
@@ -107,14 +103,42 @@ body.gb-store { background-color: var(--brand-surface, #FAF9F5); color: #1f2421;
 /* ---------- Homepage banner: wide 5:2 slider; on desktop the side card fills the slider's height ---------- */
 .gb-hero-ratio { aspect-ratio: 5 / 2; }
 
-/* Phones: the two buttons stack in the narrow grid cards so neither label is cut */
-@media (max-width: 639px) {
-  .gb-card:not(.gb-card-wide) .gb-actions { grid-template-columns: 1fr; gap: 6px; }
-  .gb-card:not(.gb-card-wide) .gb-price { margin: 6px 0 10px; }
-  .gb-card-wide .gb-btn .gb-btn-icon { display: none; }
 }
 .gb-badge-flash { background: var(--brand-dark, #051F20); }
 
 /* Product page: Order now in the store orange, like the cards' Buy now */
 #pdBuyNow:not(:disabled), #stickyBarBuyNow:not(:disabled) { background-color: var(--brand-primary) !important; }
 #pdBuyNow:not(:disabled):hover, #stickyBarBuyNow:not(:disabled):hover { background-color: var(--brand-hover) !important; }
+
+/* ---------- Ghorer Bazar extras: Best Selling ribbon, Save pill ---------- */
+.gb-ribbon { position: absolute; top: 0; right: 0; z-index: 2; display: inline-flex; align-items: center; gap: 4px; background: #EF4130; color: #fff; font-size: 12px; font-weight: 500; line-height: 1; padding: 6px 9px 6px 8px; border-radius: 0 0 0 8px; }
+.gb-ribbon svg { width: 13px; height: 13px; }
+.gb-save { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; background: #B7E36B; color: #1E3A0F; font-size: 11px; font-weight: 600; white-space: nowrap; }
+@media (min-width: 640px) { .gb-ribbon { font-size: 13px; padding: 7px 11px 7px 9px; } .gb-save { height: 22px; font-size: 12px; } }
+
+/* ---------- Phones, as on ghorerbazar.com's phone site ---------- */
+@media (max-width: 639px) {
+  .gb-heading-center h2 { font-size: 24px; font-weight: 500; }
+  .gb-heading-center h2::after { display: none; }
+  .gb-heading-center { margin-bottom: 16px; }
+  .gb-cat-tile { border-radius: 22px; border: 0; box-shadow: none; padding: 12%; }
+  .gb-cat-name { font-size: 15px; font-weight: 400; margin-top: 10px; }
+  .gb-arrow { width: 32px; height: 32px; top: calc(50% - 30px); }
+  .gb-arrow-prev { left: -12px; }
+  .gb-arrow-next { right: -12px; }
+  .gb-card { border-radius: 10px; border: 0; }
+  .gb-card-body { padding: 10px 12px 12px; }
+  .gb-card-title { font-size: 15px; font-weight: 400; min-height: 0; -webkit-line-clamp: 2; }
+  .gb-price { gap: 2px 6px; margin: 6px 0 12px; }
+  .gb-price-now { font-size: 16px; font-weight: 600; }
+  .gb-price-was { font-size: 14px; }
+  /* One button on phones: Add To Cart across the card (Buy now stays on the product page) */
+  .gb-actions { grid-template-columns: 1fr; }
+  .gb-btn-solid { display: none !important; }
+  .gb-btn { height: 38px; font-size: 15px; border-radius: 6px; }
+  .gb-btn .gb-btn-icon { width: 17px; height: 17px; }
+  .gb-badge-off { top: 8px; right: 8px; }
+  /* Side cart tab: orange top with the bag and item count, white bottom with the total */
+  [data-quick-cart] { min-width: 64px !important; }
+}
+[data-quick-cart] .cart-count-text { font-weight: 500 !important; }

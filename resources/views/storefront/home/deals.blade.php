@@ -25,13 +25,13 @@
     </div>
   </section>
 @elseif($ourPicks->isNotEmpty())
-  {{-- Top Selling Products: wide cards, picture on the left; one per row on phones, two from tablets up --}}
+  {{-- Top Selling Products --}}
   <section class="mt-8 sm:mt-12" data-reveal data-our-picks>
     <x-home-heading :title="setting('home_picks_title', 'Top Selling Products')" centered />
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+    {{-- Two per row everywhere: upright cards on phones, wide cards (picture on the left) from tablets up --}}
+    <div class="grid grid-cols-2 gap-3 sm:gap-4">
       @foreach($ourPicks->take(6) as $product)
-        {{-- Phones show the first 4 --}}
-        <div class="{{ $loop->index >= 4 ? 'max-sm:hidden' : '' }} grid min-w-0">
+        <div class="grid min-w-0">
           @include('storefront.partials.product-card', ['product' => $product, 'wide' => true])
         </div>
       @endforeach

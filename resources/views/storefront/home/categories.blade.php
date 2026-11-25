@@ -5,7 +5,7 @@
     <x-home-heading :title="setting('home_categories_title', 'Featured Categories')" centered />
 
     <div class="relative">
-      <button type="button" id="catPrev" class="gb-arrow gb-arrow-prev max-sm:hidden" aria-label="Previous categories">
+      <button type="button" id="catPrev" class="gb-arrow gb-arrow-prev" aria-label="Previous categories">
         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
       </button>
       <div class="swiper categoriesSwiper !py-2 !px-0.5 -mx-0.5">
@@ -28,7 +28,7 @@
           @endforeach
         </div>
       </div>
-      <button type="button" id="catNext" class="gb-arrow gb-arrow-next max-sm:hidden" aria-label="Next categories">
+      <button type="button" id="catNext" class="gb-arrow gb-arrow-next" aria-label="Next categories">
         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
       </button>
     </div>

@@ -1815,6 +1815,7 @@
     const bump = (el) => { if (!el) return; el.classList.remove("tabbar-bump"); void el.offsetWidth; el.classList.add("tabbar-bump"); };
     tabs.forEach((tab) => tab.addEventListener("click", () => {
       if (tab.hasAttribute("data-open-cart")) { bump(tab.querySelector("svg")); return; }
+      if (tab.hasAttribute("data-open-menu") || tab.hasAttribute("data-toggle-search")) return; // opens a panel, not a page
       tabs.forEach((t) => { const on = t === tab; t.classList.toggle("is-on", on); on ? t.setAttribute("aria-current", "page") : t.removeAttribute("aria-current"); });
     }));
   })();

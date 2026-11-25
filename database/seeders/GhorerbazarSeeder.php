@@ -55,7 +55,7 @@ class GhorerbazarSeeder extends Seeder
             'theme_dark_color'           => '#051F20',
             'theme_surface_color'        => '#FAF9F5',
             'header_menu_style'          => 'dark',
-            'theme_font'                 => 'poppins',
+            'theme_font'                 => 'hind', // Hind Siliguri, as on ghorerbazar.com
             // No scrolling ticker above the header
             'header_promo_text'          => '',
             'home_categories_title'      => 'Featured Categories',

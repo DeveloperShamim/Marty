@@ -4,7 +4,7 @@
 > grey search, dark category menu bar, wide banner with a side card, Featured Categories tiles, Top Selling Products,
 > Our Brands and one row per category, and product cards with **Add To Cart** and **Buy now**. The admin panel is unchanged.
 > Load the Ghorer Bazar brand, settings, categories, brands, products and banners on any install with
-> `php artisan db:seed --class=GhorerbazarSeeder --force` (it replaces the catalogue; orders and customers stay).
+> `php artisan db:seed --class=GhorerbazarSeeder --force` (it replaces the catalogue; orders and customers stay). Run it once after `migrate --seed` on a new install.
 > Product list: `database/data/ghorerbazar-products.json`. Pictures in `public/uploads/ghorerbazar/` are drawn
 > placeholders; upload the real photos in Admin → Products.
 

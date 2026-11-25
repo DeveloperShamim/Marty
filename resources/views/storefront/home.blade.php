@@ -287,9 +287,9 @@ document.addEventListener('DOMContentLoaded', function () {
   /* ---------------- 3. Categories Swiper (moves only by arrows or swipe; the hero is the one thing that slides by itself) ---------------- */
   if (typeof Swiper !== 'undefined' && document.querySelector('.categoriesSwiper')) {
     new Swiper('.categoriesSwiper', {
-      slidesPerView: 3.25,
+      slidesPerView: 3,
       centerInsufficientSlides: true,
-      spaceBetween: 8,
+      spaceBetween: 12,
       rewind: true,
       speed: 600,
       watchSlidesProgress: true,
@@ -298,8 +298,7 @@ document.addEventListener('DOMContentLoaded', function () {
         prevEl: '#catPrev',
       },
       breakpoints: {
-        380: { slidesPerView: 3.4, spaceBetween: 8 },
-        480: { slidesPerView: 4.2, spaceBetween: 10 },
+        480: { slidesPerView: 4, spaceBetween: 12 },
         640: { slidesPerView: 5, spaceBetween: 12 },
         768: { slidesPerView: 6, spaceBetween: 14 },
         1024: { slidesPerView: 6, spaceBetween: 22 },
