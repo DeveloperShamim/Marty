@@ -59,36 +59,34 @@ class ProductCardOptionsTest extends TestCase
         $this->assertStringContainsString('data-order-now="true"', $html);
     }
 
-    public function test_card_is_short_one_order_now_button_and_options_beside_the_price(): void
+    public function test_card_has_add_to_cart_and_buy_now_like_ghorer_bazar(): void
     {
         $this->product('Derby', array_map(fn ($s) => [['Size' => (string) $s], null, 2], range(39, 44)));
         $html = $this->get(route('shop'))->assertOk()->getContent();
         $card = substr($html, strpos($html, '<article class="fk-card'));
         $card = substr($card, 0, strpos($card, '</article>'));
 
-        $this->assertSame(1, substr_count($card, '<button'), 'One button: Order now (the picker has Add to cart)');
-        $this->assertStringNotContainsString('fk-icon-only', $card);
+        $this->assertSame(2, substr_count($card, '<button'), 'Add To Cart (outlined) and Buy now (solid)');
+        $this->assertMatchesRegularExpression('/data-add-cart class="gb-btn gb-btn-outline"/', $card);
+        $this->assertStringContainsString('>Buy now</span>', $card);
+        $this->assertStringContainsString('data-order-now="true"', $card, 'Buy now goes straight to checkout');
+        $this->assertStringContainsString('data-has-variants="true"', $card, 'Either button opens the option picker for a product with options');
         $this->assertStringNotContainsString('uppercase tracking', $card, 'No brand label above the name');
-        $this->assertMatchesRegularExpression('/fk-card-price.*?<\/div>\s*<span[^>]*data-card-options[^>]*>39–44</s', $card, 'Sizes sit on the price line');
     }
 
-    public function test_simple_product_card_has_order_now_and_a_bag_that_shows_a_tick_when_in_cart(): void
+    public function test_simple_product_card_adds_to_cart_or_buys_now(): void
     {
         $cat = Category::firstOrCreate(['slug' => 'leather'], ['name' => 'Leather', 'is_active' => true]);
         $pad = Product::create(['category_id' => $cat->id, 'name' => 'Mouse Pad', 'slug' => 'mouse-pad',
             'regular_price' => 650, 'stock_quantity' => 10, 'is_published' => true]);
 
         $html = $this->get(route('shop'))->assertOk()->getContent();
-        $this->assertStringContainsString('>Order now</span>', $html);
-        $this->assertStringContainsString('data-cart-toggle', $html);
-        $this->assertStringNotContainsString('is-in-cart', $html);
+        $this->assertStringContainsString('>Buy now</span>', $html);
+        $this->assertStringContainsString('data-add-cart', $html);
+        $this->assertStringContainsString('data-has-variants="false"', $html);
 
         $this->postJson(route('cart.add'), ['product_id' => $pad->id, 'qty' => 1])->assertOk()
             ->assertJsonPath('cart.inCart.' . $pad->id, $pad->id . '||');
-
-        $html = $this->get(route('shop'))->assertOk()->getContent();
-        $this->assertStringContainsString('is-in-cart', $html);
-        $this->assertStringContainsString('data-cart-key="' . $pad->id . '||"', $html);
 
         $this->postJson(route('cart.remove'), ['key' => $pad->id . '||'])->assertOk()
             ->assertJsonMissingPath('cart.inCart.' . $pad->id);

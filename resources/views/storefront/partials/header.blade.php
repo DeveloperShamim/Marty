@@ -99,13 +99,12 @@
         @include('partials.brand', ['compactMobile' => true, 'logoClass' => 'max-[429px]:max-w-[112px] max-[389px]:max-w-[88px] max-[359px]:max-w-[80px] max-[429px]:h-7'])
       </div>
 
-      {{-- Modern Search Bar --}}
-      <form action="{{ route('shop') }}" method="GET" class="hidden md:flex flex-1 max-w-md lg:max-w-lg mx-auto px-2 lg:px-4">
-        <div class="flex items-center w-full rounded-lg border border-brand-600 bg-stone-50 focus-within:bg-white focus-within:ring-2 focus-within:ring-brand-500/15 transition-all duration-200 p-[3px] pl-3.5">
-          <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ setting('search_placeholder', 'Type your product...') }}" class="flex-1 min-w-0 text-[13px] font-medium bg-transparent focus:outline-none text-stone-800 placeholder:text-stone-400" autocomplete="off" />
-          <button type="submit" class="h-8 px-3.5 rounded-md bg-brand-600 hover:bg-brand-700 text-white text-[13px] font-semibold flex items-center justify-center gap-1.5 transition-colors active:scale-95 shrink-0 cursor-pointer">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-            <span>Search</span>
+      {{-- Search: a soft grey field with the search icon at its end --}}
+      <form action="{{ route('shop') }}" method="GET" class="hidden md:flex flex-1 max-w-md lg:max-w-[500px] mx-auto px-2 lg:px-4">
+        <div class="gb-search">
+          <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ setting('search_placeholder', 'Search in...') }}" autocomplete="off" />
+          <button type="submit" aria-label="Search">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
           </button>
         </div>
       </form>
@@ -336,13 +335,12 @@
   </div>
 
   {{-- Mobile Search Dropdown Panel --}}
-  <div id="mobileSearchPanel" class="hidden bg-white/95 backdrop-blur-md border-b border-stone-200/80 px-3.5 py-2.5 shadow-md md:hidden transition-all">
-    <form action="{{ route('shop') }}" method="GET" class="max-w-7xl mx-auto flex items-center gap-2">
-      <div class="flex items-center flex-1 rounded-lg border border-brand-600 bg-stone-50 focus-within:bg-white focus-within:ring-2 focus-within:ring-brand-500/15 p-[3px] pl-3 transition-all">
-        <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ setting('search_placeholder', 'Type your product...') }}" class="flex-1 min-w-0 text-base sm:text-sm font-medium bg-transparent focus:outline-none text-stone-800 placeholder:text-stone-400" data-mobile-search-input autocomplete="off" />
-        <button type="submit" class="h-8 px-3 rounded-md bg-brand-600 hover:bg-brand-700 text-white text-[13px] font-semibold flex items-center justify-center gap-1.5 transition-colors active:scale-95 shrink-0 cursor-pointer">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <span>Search</span>
+  <div id="mobileSearchPanel" class="hidden bg-white border-b border-stone-200/80 px-3.5 py-2.5 shadow-md md:hidden transition-all">
+    <form action="{{ route('shop') }}" method="GET" class="max-w-7xl mx-auto">
+      <div class="gb-search">
+        <input type="search" name="q" value="{{ request('q') }}" placeholder="{{ setting('search_placeholder', 'Search in...') }}" data-mobile-search-input autocomplete="off" />
+        <button type="submit" aria-label="Search">
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         </button>
       </div>
     </form>

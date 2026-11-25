@@ -295,6 +295,8 @@
   </style>
 
   <link rel="stylesheet" href="{{ asset('theme/css/style.css') . '?v=' . (file_exists(public_path('theme/css/style.css')) ? filemtime(public_path('theme/css/style.css')) : '1') }}" />
+  {{-- Ghorer Bazar look: header, product cards, homepage sections --}}
+  <link rel="stylesheet" href="{{ asset('theme/css/ghorer.css') . '?v=' . (file_exists(public_path('theme/css/ghorer.css')) ? filemtime(public_path('theme/css/ghorer.css')) : '1') }}" />
   <link rel="icon" href="{{ favicon_url() }}" />
   <link rel="apple-touch-icon" href="{{ favicon_url() }}" />
 
@@ -317,7 +319,7 @@
   ]) }}
 </head>
 
-<body class="@yield('body_class', 'bg-white text-ink antialiased'){{ \App\Support\StoreStyle::isWide() && ! request()->routeIs('checkout.*') ? ' store-wide' : '' }}">
+<body class="gb-store @yield('body_class', 'text-ink antialiased'){{ \App\Support\StoreStyle::isWide() && ! request()->routeIs('checkout.*') ? ' store-wide' : '' }}">
   @include('partials.tracking-body')
 
   @hasSection('checkout_header')

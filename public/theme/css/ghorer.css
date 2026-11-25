@@ -1,0 +1,120 @@
+/* Ghorer Bazar storefront look (layout, header, product cards, homepage sections).
+   Colours come from Admin → Settings → Brand & theme: --brand-primary (orange), --brand-dark (menu bar green),
+   --brand-surface (warm off-white page). */
+
+body.gb-store { background-color: var(--brand-surface, #FAF9F5); color: #1f2421; }
+
+/* ---------- Header ---------- */
+.gb-search { display: flex; align-items: center; width: 100%; height: 42px; border-radius: 8px; background: #F3F3F3; border: 1px solid transparent; padding: 0 4px 0 16px; transition: border-color .2s, background-color .2s; }
+.gb-search:focus-within { background: #fff; border-color: var(--brand-primary); }
+.gb-search input { flex: 1; min-width: 0; background: transparent; border: 0; outline: none; font-size: 14px; color: #222; }
+.gb-search input::placeholder { color: #8a8a8a; }
+.gb-search button { width: 36px; height: 36px; display: grid; place-items: center; color: #333; border-radius: 6px; cursor: pointer; }
+.gb-search button:hover { color: var(--brand-primary); }
+.site-header .cart-count { background: var(--brand-primary) !important; }
+
+/* Dark menu bar: plain white links, no pills */
+.nav-dark .h-11 { height: 48px; }
+.nav-dark [data-nav-cat] > a, .nav-dark [data-menu-item] > a, .nav-dark [data-nav-more-btn] { font-weight: 500 !important; font-size: 14px; padding-left: 10px; padding-right: 10px; border-radius: 0; }
+.nav-dark [data-nav-cat] > a:hover, .nav-dark [data-menu-item] > a:hover, .nav-dark [data-nav-more-btn]:hover { background: transparent !important; color: var(--brand-primary) !important; }
+
+/* ---------- Section headings ---------- */
+.gb-heading-center { text-align: center; margin-bottom: 22px; }
+.gb-heading-center h2 { font-size: 22px; font-weight: 600; color: #1f2421; line-height: 1.25; }
+.gb-heading-center h2::after { content: ""; display: block; width: 56px; height: 3px; border-radius: 3px; margin: 10px auto 0; background: var(--brand-primary); }
+.gb-heading-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 12px; margin-bottom: 16px; border-bottom: 1px solid #E8E4DC; }
+.gb-heading-row h2 { font-size: 20px; font-weight: 600; color: #1f2421; line-height: 1.25; min-width: 0; }
+.gb-view-all { flex-shrink: 0; display: inline-flex; align-items: center; height: 34px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--brand-primary); color: var(--brand-primary); font-size: 13px; font-weight: 500; background: transparent; white-space: nowrap; transition: background-color .2s, color .2s; }
+.gb-view-all:hover { background: var(--brand-primary); color: #fff; }
+@media (min-width: 640px) {
+  .gb-heading-center h2 { font-size: 26px; }
+  .gb-heading-row h2 { font-size: 24px; }
+}
+
+/* ---------- Featured categories ---------- */
+.gb-cat { display: block; text-align: center; }
+.gb-cat-tile { aspect-ratio: 1; border-radius: 10px; background: #fff; display: grid; place-items: center; padding: 14%; box-shadow: 0 1px 3px rgba(16, 24, 16, .06); border: 1px solid #F0ECE4; transition: box-shadow .25s, transform .25s, border-color .25s; }
+.gb-cat-tile img { width: 100%; height: 100%; object-fit: contain; }
+.gb-cat:hover .gb-cat-tile { border-color: var(--brand-primary); box-shadow: 0 6px 18px -8px rgba(0, 0, 0, .2); transform: translateY(-2px); }
+.gb-cat-name { display: block; margin-top: 10px; font-size: 13px; font-weight: 500; color: #2b2f2c; line-height: 1.3; }
+.gb-cat:hover .gb-cat-name { color: var(--brand-primary); }
+@media (min-width: 640px) { .gb-cat-name { font-size: 15px; } }
+.gb-arrow { position: absolute; top: calc(50% - 14px); z-index: 10; width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; color: #fff; background: var(--brand-primary); box-shadow: 0 4px 10px -3px rgba(0,0,0,.3); cursor: pointer; transition: background-color .2s, opacity .2s; }
+.gb-arrow:hover { background: var(--brand-hover); }
+.gb-arrow.swiper-button-disabled { opacity: .35; }
+.gb-arrow-prev { left: -14px; }
+.gb-arrow-next { right: -14px; }
+
+/* ---------- Product card ---------- */
+.gb-card { position: relative; display: flex; flex-direction: column; background: #fff; border-radius: 8px; border: 1px solid #EEEAE3; overflow: hidden; transition: box-shadow .25s, border-color .25s; height: 100%; }
+.gb-card:hover { box-shadow: 0 10px 28px -14px rgba(0, 0, 0, .28); border-color: #E2DBCF; }
+.gb-card-media { position: relative; display: block; aspect-ratio: 1; background: #fff; overflow: hidden; }
+.gb-card-media img { width: 100%; height: 100%; object-fit: contain; transition: transform .45s ease; }
+.gb-card:hover .gb-card-media img { transform: scale(1.04); }
+.gb-badge-off { position: absolute; top: 10px; right: 10px; z-index: 2; background: #E5202E; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: 4px; line-height: 1.2; }
+.gb-badge-out { position: absolute; top: 10px; right: 10px; z-index: 2; background: #444; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 7px; border-radius: 4px; }
+.gb-badge-free { position: absolute; top: 10px; left: 10px; z-index: 2; background: #1F8A4C; color: #fff; font-size: 10px; font-weight: 700; padding: 3px 7px; border-radius: 4px; text-transform: uppercase; }
+.gb-card-body { display: flex; flex-direction: column; flex: 1; padding: 10px 12px 12px; }
+.gb-card-title { font-size: 13px; font-weight: 400; color: #222; line-height: 1.4; min-height: 2.8em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.gb-card-title:hover { color: var(--brand-primary); }
+.gb-price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 8px; margin: 8px 0 12px; }
+.gb-price-now { color: var(--brand-primary); font-size: 16px; font-weight: 700; white-space: nowrap; }
+.gb-price-was { color: #9a9a9a; font-size: 13px; text-decoration: line-through; white-space: nowrap; }
+.gb-actions { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.gb-btn { height: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; border-radius: 4px; font-size: 12px; font-weight: 500; white-space: nowrap; cursor: pointer; user-select: none; transition: background-color .2s, color .2s, border-color .2s; touch-action: manipulation; padding: 0 4px; }
+.gb-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+.gb-btn-outline { border: 1px solid var(--brand-primary); color: var(--brand-primary); background: #fff; }
+.gb-btn-outline:hover { background: var(--brand-soft-bg); }
+.gb-btn-solid { border: 1px solid var(--brand-primary); color: #fff !important; background: var(--brand-primary) !important; border-radius: 4px !important; box-shadow: none !important; }
+.gb-btn-solid:hover { background: var(--brand-hover) !important; border-color: var(--brand-hover) !important; }
+.gb-btn-sold { grid-column: 1 / -1; background: #f1f1f1; color: #777; cursor: not-allowed; }
+.gb-btn:active { transform: scale(.98); }
+@media (max-width: 380px) { .gb-btn .gb-btn-icon { display: none; } }
+@media (min-width: 640px) {
+  .gb-card-body { padding: 14px 16px 16px; }
+  .gb-card-title { font-size: 15px; }
+  .gb-price-now { font-size: 18px; }
+  .gb-btn { height: 36px; font-size: 13px; }
+}
+
+/* Wide card (Top Selling Products): picture on the left, details on the right */
+.gb-card-wide { flex-direction: row; align-items: stretch; }
+.gb-card-wide .gb-card-media { width: 40%; flex-shrink: 0; aspect-ratio: 1; }
+.gb-card-wide .gb-card-body { justify-content: center; padding: 14px 14px 14px 6px; }
+.gb-card-wide .gb-card-title { min-height: 0; font-size: 14px; }
+.gb-card-wide .gb-actions { margin-top: 0; max-width: 300px; }
+@media (min-width: 640px) {
+  .gb-card-wide .gb-card-body { padding: 20px 22px 20px 8px; }
+  .gb-card-wide .gb-card-title { font-size: 16px; }
+}
+
+/* ---------- Brands ---------- */
+.gb-brand { display: grid; place-items: center; aspect-ratio: 2 / 1; background: #fff; border-radius: 8px; border: 1px solid #EEEAE3; padding: 12%; transition: border-color .2s, box-shadow .2s; }
+.gb-brand img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.gb-brand:hover { border-color: var(--brand-primary); box-shadow: 0 6px 18px -10px rgba(0,0,0,.25); }
+
+/* ---------- Floating quick cart: always shown, like the store's side cart ---------- */
+[data-quick-cart].qc-empty { display: none !important; }
+@media (min-width: 640px) { [data-quick-cart].qc-empty { display: flex !important; } }
+[data-quick-cart] { border-radius: 8px 0 0 8px !important; border-color: var(--brand-primary) !important; }
+
+/* Slider dots (brands) */
+.gb-dots { display: flex; justify-content: center; gap: 6px; margin-top: 14px; position: static !important; }
+.gb-dots .swiper-pagination-bullet { width: 8px; height: 8px; margin: 0 !important; background: #cfcac0; opacity: 1; border-radius: 99px; transition: width .25s, background-color .25s; }
+.gb-dots .swiper-pagination-bullet-active { width: 20px; background: var(--brand-primary); }
+.gb-dots.swiper-pagination-lock { display: none; }
+
+/* ---------- Homepage banner: wide 5:2 slider; on desktop the side card fills the slider's height ---------- */
+.gb-hero-ratio { aspect-ratio: 5 / 2; }
+
+/* Phones: the two buttons stack in the narrow grid cards so neither label is cut */
+@media (max-width: 639px) {
+  .gb-card:not(.gb-card-wide) .gb-actions { grid-template-columns: 1fr; gap: 6px; }
+  .gb-card:not(.gb-card-wide) .gb-price { margin: 6px 0 10px; }
+  .gb-card-wide .gb-btn .gb-btn-icon { display: none; }
+}
+.gb-badge-flash { background: var(--brand-dark, #051F20); }
+
+/* Product page: Order now in the store orange, like the cards' Buy now */
+#pdBuyNow:not(:disabled), #stickyBarBuyNow:not(:disabled) { background-color: var(--brand-primary) !important; }
+#pdBuyNow:not(:disabled):hover, #stickyBarBuyNow:not(:disabled):hover { background-color: var(--brand-hover) !important; }

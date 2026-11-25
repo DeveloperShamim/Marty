@@ -41,6 +41,8 @@ class DatabaseSeeder extends Seeder
         $this->call(BannerSeeder::class);
         $this->seedPages();
         $this->seedStaffActivityLogs();
+        // This branch is the Ghorer Bazar store: its brand, homepage layout and catalogue
+        $this->call(GhorerbazarSeeder::class);
     }
 
     /** Starter pages (Admin → Pages) every shop needs; plain wording the owner edits. Only into an empty table. */

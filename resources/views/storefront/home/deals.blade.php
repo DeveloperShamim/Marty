@@ -13,7 +13,7 @@
             </div>
           @endif
         </div>
-    <x-home-heading :title="setting('home_hot_deal_title', 'Special Flash Discounts')" />
+    <x-home-heading :title="setting('home_hot_deal_title', 'Special Flash Discounts')" :href="route('shop', ['flash' => 1])" />
 
     <div class="pgrid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
       @foreach($flashProducts->take(8) as $product)
@@ -23,19 +23,18 @@
         </div>
       @endforeach
     </div>
-    @include('storefront.partials.see-all', ['href' => route('shop', ['flash' => 1]), 'label' => 'deals'])
   </section>
 @elseif($ourPicks->isNotEmpty())
-  <section class="mt-10 sm:mt-14" data-reveal data-our-picks>
-    <x-home-heading :title="setting('home_picks_title', 'Top Selling Products')" />
-    <div class="pgrid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
-      @foreach($ourPicks as $product)
+  {{-- Top Selling Products: wide cards, picture on the left; one per row on phones, two from tablets up --}}
+  <section class="mt-8 sm:mt-12" data-reveal data-our-picks>
+    <x-home-heading :title="setting('home_picks_title', 'Top Selling Products')" centered />
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+      @foreach($ourPicks->take(6) as $product)
         {{-- Phones show the first 4 --}}
         <div class="{{ $loop->index >= 4 ? 'max-sm:hidden' : '' }} grid min-w-0">
-          @include('storefront.partials.product-card', ['product' => $product])
+          @include('storefront.partials.product-card', ['product' => $product, 'wide' => true])
         </div>
       @endforeach
     </div>
-    @include('storefront.partials.see-all', ['href' => route('shop', ['featured' => 1]), 'label' => 'top selling'])
   </section>
 @endif

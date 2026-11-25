@@ -25,6 +25,10 @@ class Brand extends Model
             if (str_starts_with($this->logo, 'http://') || str_starts_with($this->logo, 'https://')) {
                 return $this->logo;
             }
+            // Files shipped in public/uploads (e.g. the starter brand logos) are served as they are
+            if (str_starts_with($this->logo, 'uploads/') || str_starts_with($this->logo, '/uploads/')) {
+                return asset(ltrim($this->logo, '/'));
+            }
             return asset('storage/' . $this->logo);
         }
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=4f46e5&background=e0e7ff&bold=true';

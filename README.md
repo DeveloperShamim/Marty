@@ -1,5 +1,13 @@
 # Vant Bangladesh — Laravel E-Commerce Store
 
+> **`ghorerbazar` branch:** the storefront follows the Ghorer Bazar design (ghorerbazar.com): orange and deep-green theme,
+> grey search, dark category menu bar, wide banner with a side card, Featured Categories tiles, Top Selling Products,
+> Our Brands and one row per category, and product cards with **Add To Cart** and **Buy now**. The admin panel is unchanged.
+> Load the Ghorer Bazar brand, settings, categories, brands, products and banners on any install with
+> `php artisan db:seed --class=GhorerbazarSeeder --force` (it replaces the catalogue; orders and customers stay).
+> Product list: `database/data/ghorerbazar-products.json`. Pictures in `public/uploads/ghorerbazar/` are drawn
+> placeholders; upload the real photos in Admin → Products.
+
 A ready-to-launch Laravel online shop with a full admin panel, built for Bangladeshi stores that sell on Facebook and
 ship cash on delivery. The demo data is set up as **Vant Bangladesh**, a leather goods shop, and every part of the
 look (name, logo, colours, fonts, homepage, menus, pages) can be changed from the admin panel.

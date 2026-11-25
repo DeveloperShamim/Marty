@@ -34,10 +34,10 @@
           $slideBox = $heroWide ? 'lg:aspect-auto' : '';
         @endphp
 
-        <div data-hero-main class="{{ $sliderClasses }} relative rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-center aspect-[15/8] w-full bg-transparent">
+        <div data-hero-main class="{{ $sliderClasses }} relative rounded-xl sm:rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group flex flex-col justify-center gb-hero-ratio w-full bg-transparent">
           @if($heroBanners->count() > 1)
             {{-- Carousel Slider --}}
-            <div id="homeHeroSlider" class="relative w-full h-full aspect-[15/8] {{ $slideBox }} overflow-hidden select-none">
+            <div id="homeHeroSlider" class="relative w-full h-full gb-hero-ratio {{ $slideBox }} overflow-hidden select-none">
               @foreach($heroBanners as $i => $slide)
                 <div data-hero-slide class="absolute inset-0 transition-opacity duration-500 ease-in-out {{ $i === 0 ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none' }}">
                   <a href="{{ $slide->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $slide->title ?: 'Banner Slide' }}">
@@ -75,7 +75,7 @@
               </div>
             </div>
           @elseif($mainHero)
-            <div class="relative w-full h-full aspect-[15/8] {{ $slideBox }} overflow-hidden">
+            <div class="relative w-full h-full gb-hero-ratio {{ $slideBox }} overflow-hidden">
               <a href="{{ $mainHero->linkHref() }}" class="block w-full h-full relative" aria-label="{{ $mainHero->title ?: 'Banner' }}">
                 @if($mainHero->image)
                   <img src="{{ $mainHero->imageUrl() }}" alt="{{ $mainHero->title }}" class="w-full h-full object-cover object-center">
@@ -92,7 +92,7 @@
               </a>
             </div>
           @else
-            <div class="relative w-full h-full aspect-[15/8] {{ $slideBox }} overflow-hidden bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
+            <div class="relative w-full h-full gb-hero-ratio {{ $slideBox }} overflow-hidden bg-gradient-to-tr from-stone-950 via-neutral-900 to-brand-600 flex items-center py-5 px-5 sm:py-12 sm:px-20 text-white">
               <div class="max-w-md">
                 @if($heroBadge)<span class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-brand-500 text-white inline-block mb-2">{{ $heroBadge }}</span>@endif
                 <h2 class="text-xl sm:text-4xl font-extrabold leading-tight">{{ $heroTitle ?: site_name() }}</h2>
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function () {
         480: { slidesPerView: 4.2, spaceBetween: 10 },
         640: { slidesPerView: 5, spaceBetween: 12 },
         768: { slidesPerView: 6, spaceBetween: 14 },
-        1024: { slidesPerView: 7, spaceBetween: 16 },
+        1024: { slidesPerView: 6, spaceBetween: 22 },
 @if(\App\Support\StoreStyle::isWide())
         1280: { slidesPerView: 8, spaceBetween: 16 }, // Wide page width: one more category in the row
 @endif
@@ -313,21 +313,15 @@ document.addEventListener('DOMContentLoaded', function () {
   /* ---------------- 4. Brands Swiper ---------------- */
   if (typeof Swiper !== 'undefined' && document.querySelector('.brandsSwiper')) {
     new Swiper('.brandsSwiper', {
-      slidesPerView: 3.25,
-      spaceBetween: 8,
+      slidesPerView: 2.3,
+      spaceBetween: 10,
       rewind: true,
       speed: 600,
       watchSlidesProgress: true,
-      navigation: {
-        nextEl: '#brandNext',
-        prevEl: '#brandPrev',
-      },
+      pagination: { el: '.brandsPagination', clickable: true },
       breakpoints: {
-        380: { slidesPerView: 3.4, spaceBetween: 8 },
-        480: { slidesPerView: 4.2, spaceBetween: 10 },
-        640: { slidesPerView: 5.2, spaceBetween: 12 },
-        768: { slidesPerView: 6, spaceBetween: 14 },
-        1024: { slidesPerView: 7, spaceBetween: 16 },
+        640: { slidesPerView: 3, spaceBetween: 14 },
+        1024: { slidesPerView: 4, spaceBetween: 16 },
       },
     });
   }
