@@ -118,7 +118,7 @@ body.gb-store { background-color: var(--brand-surface, #FAF9F5); color: #1f2421;
 
 /* ---------- Phones, as on ghorerbazar.com's phone site ---------- */
 @media (max-width: 639px) {
-  .gb-heading-center h2 { font-size: 24px; font-weight: 500; }
+  .gb-heading-center h2 { font-size: 21px; font-weight: 500; }
   .gb-heading-center h2::after { display: none; }
   .gb-heading-center { margin-bottom: 16px; }
   .gb-cat-tile { border-radius: 22px; border: 0; box-shadow: none; padding: 12%; }
@@ -128,17 +128,30 @@ body.gb-store { background-color: var(--brand-surface, #FAF9F5); color: #1f2421;
   .gb-arrow-next { right: -12px; }
   .gb-card { border-radius: 10px; border: 0; }
   .gb-card-body { padding: 10px 12px 12px; }
-  .gb-card-title { font-size: 15px; font-weight: 400; min-height: 0; -webkit-line-clamp: 2; }
+  .gb-card-title { font-size: 14px; font-weight: 500; min-height: 0; -webkit-line-clamp: 2; }
   .gb-price { gap: 2px 6px; margin: 6px 0 12px; }
   .gb-price-now { font-size: 16px; font-weight: 600; }
   .gb-price-was { font-size: 14px; }
   /* One button on phones: Add To Cart across the card (Buy now stays on the product page) */
   .gb-actions { grid-template-columns: 1fr; }
   .gb-btn-solid { display: none !important; }
-  .gb-btn { height: 38px; font-size: 15px; border-radius: 6px; }
+  .gb-btn { height: 36px; font-size: 14px; border-radius: 6px; }
   .gb-btn .gb-btn-icon { width: 17px; height: 17px; }
   .gb-badge-off { top: 8px; right: 8px; }
   /* Side cart tab: orange top with the bag and item count, white bottom with the total */
   [data-quick-cart] { min-width: 64px !important; }
 }
 [data-quick-cart] .cart-count-text { font-weight: 500 !important; }
+
+/* ---------- Product page ---------- */
+#pdPrice { color: var(--brand-primary) !important; font-weight: 700 !important; }
+#pdDiscountBadge { background: #B7E36B !important; color: #1E3A0F !important; border-color: transparent !important; font-weight: 600 !important; }
+#pdImageDiscountBadge { background: #E5202E !important; backdrop-filter: none !important; border-radius: 4px !important; }
+#pdAddToCart, #pdBuyNow, #stickyBarAddToCart, #stickyBarBuyNow { text-transform: none !important; letter-spacing: 0 !important; font-weight: 600 !important; font-size: 15px !important; border-radius: 6px !important; }
+#pdAddToCart:not(:disabled), #stickyBarAddToCart:not(:disabled) { border-width: 1px !important; border-color: var(--brand-primary) !important; color: var(--brand-primary) !important; }
+.buy-now-cta-effect { animation: none !important; }
+.buy-now-cta-effect::after { display: none !important; }
+#pdTitle, h1 { font-weight: 600; }
+
+/* ---------- Shop / category pages ---------- */
+.gb-store .shop-grid { gap: 14px; }

@@ -244,9 +244,9 @@
       @endif
       <div class="lg:bg-white lg:rounded-md lg:border lg:border-gray-100 px-0.5 lg:px-4 py-0 lg:py-3 mb-3 lg:mb-4 flex items-center justify-between gap-3 max-lg:order-first">
         <div class="min-w-0">
-          <h1 class="text-base sm:text-lg font-extrabold text-accent-500 truncate">
+          <h1 class="text-lg sm:text-xl font-semibold text-stone-900 truncate">
             @if($activeCategory)
-              Category: {{ $activeCategory->name }}
+              {{ $activeCategory->name }}
             @elseif($q)
               Search: {{ $q }}
             @elseif(request('best_seller') || request('filter') === 'best_seller')

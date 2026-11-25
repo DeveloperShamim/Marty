@@ -333,12 +333,12 @@
             {{-- Add to Cart: outlined, so the solid Order Now beside it is the main action --}}
             <button type="button" id="pdAddToCart" data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" class="flex-1 h-11 sm:h-12 bg-white hover:bg-brand-50 border-2 border-brand-600 disabled:border-stone-200 active:scale-[0.98] text-brand-700 font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider cursor-pointer select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
               <svg class="w-4 h-4 shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-              <span id="pdAddToCartText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : setting('default_cta_text', 'ADD TO CART') }}</span>
+              <span id="pdAddToCartText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'Out of Stock' : setting('default_cta_text', 'Add To Cart') }}</span>
             </button>
 
             {{-- Buy Now (Solid Black with Eye-Catching Motion) --}}
             <button type="button" id="pdBuyNow" data-buy-now data-product-id="{{ $product->id }}" data-title="{{ $product->name }}" data-checkout-url="{{ route('checkout.show') }}" class="buy-now-cta-effect flex-1 h-11 sm:h-12 bg-stone-950 hover:bg-black text-white font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 text-xs sm:text-sm uppercase tracking-wider cursor-pointer select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" @disabled($isOutOfStock)>
-              <span id="pdBuyNowText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : 'ORDER NOW' }}</span>
+              <span id="pdBuyNowText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'Out of Stock' : 'Buy Now' }}</span>
             </button>
           </div>
         </div>
@@ -999,12 +999,12 @@
       {{-- Add to Cart (Brand Orange Floating Pill Button) --}}
       <button type="button" id="stickyBarAddToCart" class="h-12 bg-white hover:bg-brand-50 active:scale-[0.98] text-brand-700 font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer border-2 border-brand-600 disabled:border-stone-200 select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none rounded-xl" @disabled($isOutOfStock)>
         <svg class="w-4 h-4 shrink-0 relative z-10 pointer-events-auto" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-        <span id="stickyBarAddToCartText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : 'ADD TO CART' }}</span>
+        <span id="stickyBarAddToCartText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'Out of Stock' : 'Add To Cart' }}</span>
       </button>
 
       {{-- Buy Now (Solid Black Floating Pill Button) --}}
       <button type="button" id="stickyBarBuyNow" class="buy-now-cta-effect h-12 bg-stone-950 hover:bg-black active:scale-[0.98] text-white font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-white/10 select-none touch-manipulation disabled:bg-stone-200 disabled:text-stone-400 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none rounded-xl" @disabled($isOutOfStock)>
-        <span id="stickyBarBuyNowText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'OUT OF STOCK' : 'ORDER NOW' }}</span>
+        <span id="stickyBarBuyNowText" class="relative z-10 pointer-events-auto select-none">{{ $isOutOfStock ? 'Out of Stock' : 'Buy Now' }}</span>
       </button>
     </div>
   </div>
@@ -1559,15 +1559,15 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
     }
   }
 
-  const pdpDefaultCta = {!! json_encode((string) setting('default_cta_text', 'ADD TO CART'), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!};
+  const pdpDefaultCta = {!! json_encode((string) setting('default_cta_text', 'Add To Cart'), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) !!};
   if (addBtn) {
     addBtn.disabled = !isAvailable;
-    if (btnText) btnText.textContent = isAvailable ? pdpDefaultCta : 'OUT OF STOCK';
+    if (btnText) btnText.textContent = isAvailable ? pdpDefaultCta : 'Out of Stock';
   }
   if (buyBtn) {
     buyBtn.disabled = !isAvailable;
     const buyBtnText = document.getElementById('pdBuyNowText') || buyBtn.querySelector('span');
-    if (buyBtnText) buyBtnText.textContent = isAvailable ? 'ORDER NOW' : 'OUT OF STOCK';
+    if (buyBtnText) buyBtnText.textContent = isAvailable ? 'Buy Now' : 'Out of Stock';
   }
 
   const stickyAddBtn = document.getElementById('stickyBarAddToCart');
@@ -1575,12 +1575,12 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
   if (stickyAddBtn) {
     stickyAddBtn.disabled = !isAvailable;
     const sAddText = document.getElementById('stickyBarAddToCartText') || stickyAddBtn.querySelector('span');
-    if (sAddText) sAddText.textContent = isAvailable ? 'ADD TO CART' : 'OUT OF STOCK';
+    if (sAddText) sAddText.textContent = isAvailable ? 'Add To Cart' : 'Out of Stock';
   }
   if (stickyBuyBtn) {
     stickyBuyBtn.disabled = !isAvailable;
     const sBuyText = document.getElementById('stickyBarBuyNowText') || stickyBuyBtn.querySelector('span');
-    if (sBuyText) sBuyText.textContent = isAvailable ? 'ORDER NOW' : 'OUT OF STOCK';
+    if (sBuyText) sBuyText.textContent = isAvailable ? 'Buy Now' : 'Out of Stock';
   }
 }
 

@@ -71,6 +71,8 @@ class GhorerbazarSeeder extends Seeder
             'default_meta_title'         => 'Ghorer Bazar — Pure Honey, Ghee, Oil, Dates & Organic Food in Bangladesh',
             'default_meta_description'   => 'Order pure honey, gawa ghee, mustard oil, dates, spices, nuts and organic food from Ghorer Bazar. Cash on delivery all over Bangladesh.',
             'default_meta_keywords'      => 'Ghorer Bazar, honey, gawa ghee, mustard oil, dates, organic food Bangladesh',
+            'contact_title'              => 'Customer Support',
+            'contact_intro'              => 'Need help choosing honey, ghee, oil or dates, or tracking an order? Call or WhatsApp the Ghorer Bazar team.',
             'pdp_quality_badge'          => '100% natural',
             'pdp_authentic_label'        => 'Quality checked',
             // Homepage, as on ghorerbazar.com: banner, categories, top selling, brands, then one row per category
