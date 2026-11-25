@@ -196,15 +196,18 @@ class HomeController extends Controller
         $cartIds = app(\App\Services\CartService::class)->productIds();
         $categoryIds = $cartIds->isEmpty() ? collect() : Product::whereIn('id', $cartIds)->pluck('category_id')->filter()->unique();
         $base = fn () => Product::query()->tap($withImages)->where('stock_quantity', '>', 0)->whereNotIn('id', $cartIds)->inRandomOrder();
+        // How many to show: JUST_FOR_YOU unless the store sets its own (setting home_just_for_you_count, 4–60)
+        $size = (int) setting('home_just_for_you_count', 0);
+        $size = $size >= 4 ? min($size, 60) : self::JUST_FOR_YOU;
 
         $picks = $categoryIds->isEmpty() ? collect()
-            : $base()->whereNotIn('id', $onPage)->whereIn('category_id', $categoryIds)->take(self::JUST_FOR_YOU)->get();
+            : $base()->whereNotIn('id', $onPage)->whereIn('category_id', $categoryIds)->take($size)->get();
         foreach ([$onPage, collect()] as $skip) {
-            if ($picks->count() >= self::JUST_FOR_YOU) {
+            if ($picks->count() >= $size) {
                 break;
             }
             $picks = $picks->concat($base()->whereNotIn('id', $skip->merge($picks->pluck('id')))
-                ->take(self::JUST_FOR_YOU - $picks->count())->get());
+                ->take($size - $picks->count())->get());
         }
 
         return $picks->values();

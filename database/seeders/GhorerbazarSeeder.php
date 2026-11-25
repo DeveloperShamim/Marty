@@ -87,6 +87,7 @@ class GhorerbazarSeeder extends Seeder
             'contact_address'            => 'Rampura, Dhaka, Bangladesh',
             'whatsapp_number'            => '8809642922922',
             'footer_copyright'           => 'Copyright © ' . date('Y') . ' GhorerBazar',
+            'home_just_for_you_count'    => '25', // Just For You: 25 products, 5 rows of 5
             'category_sort'              => 'position', // categories in ghorerbazar.com's order, not by size
             'home_category_rows'         => json_encode(array_map(fn ($row) => [
                 'title' => $row['title'],

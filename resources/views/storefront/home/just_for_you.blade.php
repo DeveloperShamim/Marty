@@ -6,7 +6,7 @@
     <div class="pgrid gb-grid5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
       @foreach($justForYou as $product)
         {{-- Phones show 8 --}}
-        <div class="grid min-w-0 {{ $loop->index >= 8 ? 'max-md:hidden' : '' }}">
+        <div class="grid min-w-0 {{ $loop->index >= 10 ? 'max-md:hidden' : '' }}">
           @include('storefront.partials.product-card', ['product' => $product])
         </div>
       @endforeach
