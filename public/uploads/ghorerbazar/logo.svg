@@ -1,1 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 60" width="190" height="60"><rect x="4" y="6" width="48" height="48" rx="10" fill="none"/><path d="M6 28 L28 8 L50 28 V54 H6 Z" fill="#fff" stroke="#F68822" stroke-width="5" stroke-linejoin="round"/><path d="M28 49 C17 40 19 28 30 24 C37 32 37 42 28 49 Z" fill="#3E8E41"/><path d="M28 49 C28 40 29 33 30 26" stroke="#fff" stroke-width="2" fill="none"/><circle cx="44" cy="10" r="5" fill="#F68822"/><text x="44" y="13" text-anchor="middle" font-family="Arial" font-size="7" font-weight="700" fill="#fff">R</text><text x="60" y="28" font-family="'Poppins','Segoe UI',Arial,sans-serif" font-size="21" font-weight="800" fill="#F68822" letter-spacing=".5">GHORER</text><text x="60" y="52" font-family="'Poppins','Segoe UI',Arial,sans-serif" font-size="21" font-weight="800" fill="#F68822" letter-spacing=".5">BAZAR</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 156 64" width="156" height="64">
+  <!-- House drawn as a "G": roof, left wall, floor, and a hook coming back in on the right -->
+  <path d="M40 30 V20 L24 7 L8 20 V52 C8 55 10 57 13 57 H35 C38 57 40 55 40 52 V42 H31" fill="none" stroke="#F0832A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Sprout: two outlined leaves on a stem -->
+  <path d="M24 49 V36" stroke="#1d1d1b" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M24 37 C17 37 13 31 13 24 C20 24 24 29 24 37 Z" fill="none" stroke="#1d1d1b" stroke-width="2.6" stroke-linejoin="round"/>
+  <path d="M24 37 C31 37 35 31 35 24 C28 24 24 29 24 37 Z" fill="none" stroke="#1d1d1b" stroke-width="2.6" stroke-linejoin="round"/>
+  <circle cx="45" cy="7" r="3.2" fill="none" stroke="#1d1d1b" stroke-width="1"/>
+  <text x="45" y="8.6" text-anchor="middle" font-family="Arial, sans-serif" font-size="4" font-weight="700" fill="#1d1d1b">R</text>
+  <text x="54" y="29" font-family="'Oswald','Arial Narrow','Roboto Condensed',Arial,sans-serif" font-size="25" font-weight="600" fill="#F0832A" textLength="96" lengthAdjust="spacingAndGlyphs">GHORER</text>
+  <text x="54" y="55" font-family="'Oswald','Arial Narrow','Roboto Condensed',Arial,sans-serif" font-size="25" font-weight="600" fill="#F0832A" textLength="82" lengthAdjust="spacingAndGlyphs">BAZAR</text>
+</svg>
