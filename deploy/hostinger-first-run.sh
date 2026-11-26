@@ -110,7 +110,8 @@ rm -f bootstrap/cache/packages.php bootstrap/cache/services.php
 step "$PHP" artisan package:discover --ansi
 step "$PHP" artisan migrate --force --seed
 step "$PHP" artisan db:seed --class=GhorerbazarSeeder --force
-"$PHP" artisan storage:link || echo "storage:link failed (images in storage/app/public will not show)"
+# artisan storage:link needs exec(), which is blocked on Hostinger, so fall back to ln
+"$PHP" artisan storage:link 2>/dev/null || ln -sfn "$APP/storage/app/public" "$APP/public/storage"
 step "$PHP" artisan optimize:clear
 step "$PHP" artisan config:cache
 step "$PHP" artisan route:cache
