@@ -291,3 +291,9 @@ body.gb-store .gb-card-wide .gb-card-media { position: relative; }
 body.gb-store .gb-brand { aspect-ratio: auto; height: 72px; padding: 1px 8px; display: flex; align-items: center; justify-content: center; border-color: #EEEEEE; }
 body.gb-store .gb-brand img { height: 100%; width: auto; max-width: 100%; max-height: 100%; object-fit: contain; }
 @media (min-width: 640px) { body.gb-store .gb-brand { height: 90px; } }
+
+/* Wide Top Selling card badge, measured on ghorerbazar.com: top right corner of the card, #FF3F33,
+   Open Sans 12px bold, 4px 8px padding, corners 2px 8px, 12px flame icon with a 4px gap */
+body.gb-store .gb-card-wide { position: relative; border-radius: 8px; }
+body.gb-store .gb-card-wide .gb-ribbon { position: absolute; top: 0; right: 0; left: auto; z-index: 3; display: flex; align-items: center; gap: 4px; background: #FF3F33; color: #fff; font-family: 'Open Sans', sans-serif; font-size: 12px; font-weight: 700; line-height: 14.4px; padding: 4px 8px; border-radius: 2px 8px; }
+body.gb-store .gb-card-wide .gb-ribbon svg { width: 12px; height: 12px; flex-shrink: 0; }
