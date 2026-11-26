@@ -308,3 +308,10 @@ body.gb-store .gb-card .gb-card-media img { transition: transform .3s; }
 body.gb-store .gb-card:hover .gb-card-media img { transform: scale(1.04); }
 body.gb-store .gb-card-wide .gb-card-media img { transition: transform .4s; }
 body.gb-store .gb-card-wide:hover .gb-card-media img { transform: scale(1.06); }
+
+/* Card buttons on hover, as on ghorerbazar.com: Add To Cart fills orange with white text (.4s),
+   Buy now turns dark green #041F1E (.3s) */
+body.gb-store .gb-card .gb-btn-outline { transition: background-color .4s, color .4s, border-color .4s; }
+body.gb-store .gb-card .gb-btn-outline:hover { background: var(--brand-primary, #F48721); color: #fff; border-color: transparent; }
+body.gb-store .gb-card .gb-btn-solid { transition: background-color .3s, border-color .3s; }
+body.gb-store .gb-card .gb-btn-solid:hover { background: var(--brand-dark, #041F1E) !important; border-color: var(--brand-dark, #041F1E) !important; }
