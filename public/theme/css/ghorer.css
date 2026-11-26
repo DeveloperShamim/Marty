@@ -278,3 +278,12 @@ section[data-reveal]:has(.categoriesSwiper) .gb-heading-center h2 { font-size: 2
 .gb-store #galleryMain { border: 1px solid #E5E5E5; border-radius: 6px; }
 /* The Wide page setting holds the banner at 430px; ghorerbazar.com keeps it at 5:2 (869x348) */
 @media (min-width: 1024px) { body.gb-store [data-hero-main] { height: auto !important; aspect-ratio: 5 / 2 !important; } }
+
+/* Tags as on ghorerbazar.com: small orange flag 6px from the top left of the picture, on grid and wide cards */
+body.gb-store .gb-tag { top: 6px; left: 6px; font-size: 10px; font-weight: 400; line-height: 16px; padding: 2px 6px; border-radius: 4px; }
+body.gb-store .gb-card-wide .gb-card-media { position: relative; }
+
+/* Brand tiles: every tile the same height (90px on desktop), logo fitted inside */
+body.gb-store .gb-brand { aspect-ratio: auto; height: 72px; padding: 1px 8px; display: flex; align-items: center; justify-content: center; border-color: #EEEEEE; }
+body.gb-store .gb-brand img { height: 100%; width: auto; max-width: 100%; max-height: 100%; object-fit: contain; }
+@media (min-width: 640px) { body.gb-store .gb-brand { height: 90px; } }
