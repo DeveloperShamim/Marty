@@ -297,3 +297,14 @@ body.gb-store .gb-brand img { height: 100%; width: auto; max-width: 100%; max-he
 body.gb-store .gb-card-wide { position: relative; border-radius: 8px; }
 body.gb-store .gb-card-wide .gb-ribbon { position: absolute; top: 0; right: 0; left: auto; z-index: 3; display: flex; align-items: center; gap: 4px; background: #FF3F33; color: #fff; font-family: 'Open Sans', sans-serif; font-size: 12px; font-weight: 700; line-height: 14.4px; padding: 4px 8px; border-radius: 2px 8px; }
 body.gb-store .gb-card-wide .gb-ribbon svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+/* Card hover as on ghorerbazar.com: the card itself stays still (no lift, shadow or border change);
+   only the product picture zooms a little (grid 1.04 over .3s, wide Top Selling card 1.06 over .4s) */
+body.gb-store .gb-card.fk-card:hover, body.gb-store .gb-card:hover { transform: none; box-shadow: none; }
+body.gb-store .gb-card:hover { border-color: #EEEAE3; }
+@media (min-width: 768px) { body.gb-store .gb-card-wide:hover { border-color: transparent; } }
+@media (min-width: 1024px) { body.gb-store .gb-card:not(.gb-card-wide):hover { border-color: #CCCCCC; } }
+body.gb-store .gb-card .gb-card-media img { transition: transform .3s; }
+body.gb-store .gb-card:hover .gb-card-media img { transform: scale(1.04); }
+body.gb-store .gb-card-wide .gb-card-media img { transition: transform .4s; }
+body.gb-store .gb-card-wide:hover .gb-card-media img { transform: scale(1.06); }
