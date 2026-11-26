@@ -276,3 +276,5 @@ section[data-reveal]:has(.categoriesSwiper) .gb-heading-center h2 { font-size: 2
 .gb-store .gb-buy-rows #mainProductActions { grid-column: 1 / -1; display: grid !important; grid-template-columns: 1fr 1fr; gap: 12px !important; }
 .gb-store .gb-buy-rows #mainProductActions > * { width: 100%; }
 .gb-store #galleryMain { border: 1px solid #E5E5E5; border-radius: 6px; }
+/* The Wide page setting holds the banner at 430px; ghorerbazar.com keeps it at 5:2 (869x348) */
+@media (min-width: 1024px) { body.gb-store [data-hero-main] { height: auto !important; aspect-ratio: 5 / 2 !important; } }
