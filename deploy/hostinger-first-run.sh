@@ -2,13 +2,14 @@
 # First-time setup of this Laravel shop on Hostinger shared hosting, run from a cron job
 # (the deploy tool there cannot run composer). Safe to run again: it stops once setup.done exists.
 #
-#   SETUP_DB_NAME=... SETUP_DB_USER=... SETUP_DB_PASSWORD=... SETUP_APP_URL=https://... \
-#   SETUP_ADMIN_EMAIL=... /bin/bash deploy/hostinger-first-run.sh
+#   /bin/bash deploy/hostinger-first-run.sh <db name and user> <db password> <https://site-url> <admin email>
+# (Hostinger cron commands are limited to 255 characters, hence the short arguments.)
 #
 # It writes .env (when missing) with a random APP_KEY and a random admin password (ADMIN_PASSWORD in .env),
 # installs PHP packages, migrates, seeds the Ghorer Bazar catalogue and builds the caches.
 # Progress goes to storage/logs/setup.log.
 set -u
+SETUP_DB_NAME="${1:-}"; SETUP_DB_USER="${1:-}"; SETUP_DB_PASSWORD="${2:-}"; SETUP_APP_URL="${3:-}"; SETUP_ADMIN_EMAIL="${4:-}"
 APP="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$APP" || exit 1
 LOG="$APP/storage/logs/setup.log"
@@ -22,7 +23,7 @@ PHP="${PHP:-$(command -v php)}"
 echo "PHP: $PHP ($("$PHP" -r 'echo PHP_VERSION;'))"
 
 if [ ! -f .env ]; then
-    : "${SETUP_DB_NAME:?}" "${SETUP_DB_USER:?}" "${SETUP_DB_PASSWORD:?}" "${SETUP_APP_URL:?}" "${SETUP_ADMIN_EMAIL:?}"
+    [ -n "$SETUP_DB_NAME" ] && [ -n "$SETUP_DB_PASSWORD" ] && [ -n "$SETUP_APP_URL" ] && [ -n "$SETUP_ADMIN_EMAIL" ] || { echo "No .env and missing arguments"; exit 1; }
     ADMIN_PW="$("$PHP" -r 'echo substr(str_replace(["+","/","="],"",base64_encode(random_bytes(24))),0,16);')"
     APP_KEY="base64:$("$PHP" -r 'echo base64_encode(random_bytes(32));')"
     HOST="$(echo "$SETUP_APP_URL" | sed -E 's#^https?://##; s#/.*$##')"
