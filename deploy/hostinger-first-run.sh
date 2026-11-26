@@ -103,7 +103,9 @@ fi
 export COMPOSER_HOME="$APP/storage/composer-home"
 
 step() { echo "-> $*"; "$@" || { echo "FAILED: $*"; exit 1; }; }
-step "${COMPOSER[@]}" install --no-dev --optimize-autoloader --no-interaction
+# --no-scripts: proc_open is disabled for cron PHP here, so run the package discovery ourselves
+step "${COMPOSER[@]}" install --no-dev --optimize-autoloader --no-interaction --no-scripts
+step "$PHP" artisan package:discover --ansi
 step "$PHP" artisan migrate --force --seed
 step "$PHP" artisan db:seed --class=GhorerbazarSeeder --force
 "$PHP" artisan storage:link || echo "storage:link failed (images in storage/app/public will not show)"
