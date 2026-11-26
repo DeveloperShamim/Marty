@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap');
 /* Ghorer Bazar storefront look (layout, header, product cards, homepage sections).
    Colours come from Admin → Settings → Brand & theme: --brand-primary (orange), --brand-dark (menu bar green),
    --brand-surface (warm off-white page). */
@@ -280,7 +281,10 @@ section[data-reveal]:has(.categoriesSwiper) .gb-heading-center h2 { font-size: 2
 @media (min-width: 1024px) { body.gb-store [data-hero-main] { height: auto !important; aspect-ratio: 5 / 2 !important; } }
 
 /* Tags as on ghorerbazar.com: small orange flag 6px from the top left of the picture, on grid and wide cards */
-body.gb-store .gb-tag { top: 6px; left: 6px; font-size: 10px; font-weight: 400; line-height: 16px; padding: 2px 6px; border-radius: 4px; }
+body.gb-store .gb-tag, body.gb-store .gb-save-tag { top: 6px; font-family: 'Poppins', sans-serif; font-size: 10px; font-weight: 400; line-height: 16px; height: 20px; padding: 2px 6px; border-radius: 4px; letter-spacing: normal; text-transform: none; color: #fff; }
+body.gb-store .gb-tag { left: 6px; background: #F48721; }
+body.gb-store .gb-tag-out { background: #555; }
+body.gb-store .gb-save-tag { right: 6px; background: #34BE82; }
 body.gb-store .gb-card-wide .gb-card-media { position: relative; }
 
 /* Brand tiles: every tile the same height (90px on desktop), logo fitted inside */
