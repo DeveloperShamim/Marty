@@ -261,3 +261,18 @@ section[data-reveal]:has(.categoriesSwiper) .gb-heading-center h2 { font-size: 2
 .gb-store #pdDiscountBadge { font-size: 11px !important; padding: 3px 6px !important; border-radius: 4px !important; }
 /* Phones: header shows menu, logo and cart only (search sits in the bottom bar), as on ghorerbazar.com */
 @media (max-width: 767px) { .gb-head-row [data-toggle-search] { display: none !important; } }
+/* Width and banner height, second pass: beat the store-width rule; the side card takes the slider's height (5:2) */
+.gb-store .max-w-7xl { max-width: 1362px !important; }
+@media (min-width: 1024px) {
+  .gb-hero-grid > :not([data-hero-main]) { position: relative; aspect-ratio: auto !important; min-height: 0 !important; height: auto !important; overflow: hidden; }
+  .gb-hero-grid > :not([data-hero-main]) > * { position: absolute !important; inset: 0; width: 100%; height: 100% !important; }
+  .gb-hero-grid > :not([data-hero-main]) img { width: 100%; height: 100%; object-fit: cover; }
+}
+/* Product page buying block, as on ghorerbazar.com: a line, "Quantity:" with the stepper on its own row,
+   then ADD TO CART | BUY NOW half and half, then WhatsApp | Call */
+.gb-store .gb-buy-rows { display: grid !important; grid-template-columns: auto 1fr; align-items: center; gap: 14px 16px !important; }
+.gb-store .gb-qty-label { display: inline !important; font-size: 14px; color: #222831; }
+.gb-store .gb-buy-rows [data-stepper] { justify-self: start; height: 36px !important; width: 98px !important; border-radius: 4px !important; background: #fff !important; }
+.gb-store .gb-buy-rows #mainProductActions { grid-column: 1 / -1; display: grid !important; grid-template-columns: 1fr 1fr; gap: 12px !important; }
+.gb-store .gb-buy-rows #mainProductActions > * { width: 100%; }
+.gb-store #galleryMain { border: 1px solid #E5E5E5; border-radius: 6px; }
