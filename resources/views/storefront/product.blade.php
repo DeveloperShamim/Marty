@@ -198,7 +198,7 @@
     <div class="w-full lg:flex-1 min-w-0 space-y-4">
       <div>
         {{-- Clean Category & Stock Line --}}
-        <div class="flex items-center justify-between gap-3 text-xs text-stone-500 font-medium pb-1.5">
+        <div data-pdp-meta class="flex items-center justify-between gap-3 text-xs text-stone-500 font-medium pb-1.5">
           <div class="flex items-center gap-2 flex-wrap">
             @if($brandObj)
               <a href="{{ route('shop.brand', $brandObj) }}" class="font-bold text-stone-900 hover:text-brand-600 transition-colors uppercase tracking-wider text-xs">{{ $brandObj->name }}</a>
@@ -231,7 +231,7 @@
         </div>
 
         {{-- Product Title --}}
-        <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-stone-900 tracking-tight leading-snug">{{ $product->name }}</h1>
+        <h1 id="pdTitle" class="text-xl sm:text-2xl lg:text-3xl font-bold text-stone-900 tracking-tight leading-snug">{{ $product->name }}</h1>
 
         {{-- Star rating: only once there is at least one approved review --}}
         @if($ratingCount > 0)
@@ -243,7 +243,7 @@
         @endif
 
         {{-- Authentic & SKU Row --}}
-        <div class="flex items-center gap-2 sm:gap-2.5 mt-1.5 sm:mt-2 text-xs text-stone-500 flex-wrap">
+        <div data-pdp-meta class="flex items-center gap-2 sm:gap-2.5 mt-1.5 sm:mt-2 text-xs text-stone-500 flex-wrap">
           @if($authenticLabel !== '')
             <span class="inline-flex items-center gap-1 text-[13px] text-emerald-700 font-semibold" data-pdp-authentic>
               <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
@@ -273,7 +273,7 @@
           <span id="pdRegularPrice" class="text-stone-400 line-through text-sm sm:text-base font-normal {{ $product->on_sale ? '' : 'hidden' }}" data-base-regular="{{ (float) ($product->regular_price ?? 0) }}">{{ money($product->regular_price) }}</span>
           @if($product->on_sale)
             <span id="pdDiscountBadge" class="inline-flex items-center text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2.5 py-0.5 rounded-full">
-              Save {{ money($savings) }} ({{ $product->discount_percent }}% OFF)
+              Save {{ $product->discount_percent }}%
             </span>
           @else
             <span id="pdDiscountBadge" class="hidden inline-flex items-center text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-2.5 py-0.5 rounded-full"></span>
@@ -431,7 +431,7 @@
           ['Fast delivery', 'M13 10V3L4 14h7v7l9-11h-7z'],
         ]));
       @endphp
-      <ul class="grid grid-cols-2 sm:flex sm:flex-wrap gap-x-3 sm:gap-x-5 gap-y-2.5 pt-3 text-xs text-stone-700">
+      <ul data-pdp-trust class="grid grid-cols-2 sm:flex sm:flex-wrap gap-x-3 sm:gap-x-5 gap-y-2.5 pt-3 text-xs text-stone-700">
         @foreach($trustPoints as [$label, $path])
           <li class="flex items-center gap-2 min-w-0">
             <svg class="w-4 h-4 text-brand-600 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $path }}"/></svg>
@@ -1564,7 +1564,7 @@ function syncPdpVariantStockAndPrice(lastClickedVal) {
   // Update "Save X%" Badge next to price
   if (badgeEl) {
     if (hasDiscount && discPercent > 0) {
-      badgeEl.textContent = `Save ${formatMoney(savedAmount)} (${discPercent}% OFF)`;
+      badgeEl.textContent = `Save ${discPercent}%`;
       badgeEl.classList.remove('hidden');
     } else {
       badgeEl.classList.add('hidden');

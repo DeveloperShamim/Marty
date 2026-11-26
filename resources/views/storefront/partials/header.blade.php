@@ -82,7 +82,7 @@
        relative z-20 keeps this row (and the Account menu that drops out of it) above the category bar below;
        backdrop-blur makes the row its own stacking layer, so without it row 2 painted over the menu. --}}
   <div class="relative z-20 bg-white/95 backdrop-blur-md border-b border-stone-200/80 shadow-2xs">
-    <div class="max-w-7xl mx-auto pl-1.5 pr-2.5 sm:px-6 py-1.5 sm:py-3 flex items-center justify-between gap-1 sm:gap-6">
+    <div class="gb-head-row max-w-7xl mx-auto pl-1.5 pr-2.5 sm:px-6 py-1.5 sm:py-3 flex items-center justify-between gap-1 sm:gap-6">
 
       {{-- Phones: menu + search on the left --}}
       <div class="flex items-center shrink-0 max-md:flex-1 lg:hidden">

@@ -213,3 +213,51 @@ body.gb-store { background-color: var(--brand-surface, #FAF9F5); color: #1f2421;
 #pdTitle { font-size: 24px !important; font-weight: 500 !important; letter-spacing: 0 !important; }
 #pdPrice { font-size: 26px !important; }
 #pdImageDiscountBadge { display: none !important; }
+
+/* ===== Measured against ghorerbazar.com at 1440px (Nov 26) ===== */
+/* Page width: content 1314px wide, 56px from each edge */
+.gb-store .max-w-7xl { max-width: 1362px; }
+@media (min-width: 1024px) {
+  /* Header: 87px white row, 120x48 logo, 446x47 search */
+  .gb-head-row { min-height: 87px; padding-top: 0 !important; padding-bottom: 0 !important; }
+  .gb-head-row img { height: 48px !important; max-height: 48px; width: auto; max-width: 120px !important; }
+  .gb-head-row .gb-search { height: 47px; max-width: 446px; }
+  .nav-dark .h-11 { height: 50px; }
+  .nav-dark [data-nav-cat] > a, .nav-dark [data-menu-item] > a, .nav-dark [data-nav-more-btn] { font-weight: 400 !important; color: #fff !important; }
+  [data-nav-hotline] { display: none !important; }
+  /* Banner: slider 869 and side card 425 with a 20px gap, 8px corners, 20px under the menu bar */
+  .gb-hero-grid { grid-template-columns: 869fr 425fr !important; gap: 20px !important; }
+  .gb-hero-grid > * { grid-column: auto !important; grid-row: auto !important; border-radius: 8px !important; }
+  .gb-hero-grid > * > *, .gb-hero-grid img { border-radius: 8px; }
+  section:has(> .gb-hero-grid) { padding-top: 20px !important; }
+  /* Featured Categories: 22px medium title, 142px tiles with 20px corners, 16px names */
+  .gb-heading-center:first-child h2, section .gb-heading-center h2 { line-height: 1.2; }
+  .gb-cat-tile { border-radius: 20px; border: 0; box-shadow: none; max-width: 142px; margin: 0 auto; padding: 0; overflow: hidden; }
+  .gb-cat-tile img { object-fit: cover; }
+  .gb-cat-name { font-size: 16px; font-weight: 500; color: #222831; margin-top: 10px; }
+  /* Row headings 20px bold */
+  .gb-heading-row h2 { font-size: 20px; color: #222831; }
+  /* Grid cards: 1px #ccc border, 4px corners, 9px inner padding, 16px name and price, 40px button */
+  .gb-card:not(.gb-card-wide) { border: 1px solid #CCCCCC; border-radius: 4px; }
+  .gb-card:not(.gb-card-wide) .gb-card-media { padding: 9px 9px 0; aspect-ratio: 229 / 215; }
+  .gb-card:not(.gb-card-wide) .gb-card-body { padding: 14px 9px 9px; }
+  .gb-card:not(.gb-card-wide) .gb-card-title { font-size: 16px; font-weight: 500; color: #222831; -webkit-line-clamp: 2; }
+  .gb-card:not(.gb-card-wide) .gb-price-now { font-size: 16px; font-weight: 600; }
+  .gb-card:not(.gb-card-wide) .gb-price { margin: 8px 0 12px; }
+  .gb-actions-one .gb-btn { height: 40px; font-size: 14px; font-weight: 600; border-radius: 4px; }
+  .gb-save-tag { background: #34BE82; font-size: 10px; font-weight: 400; border-radius: 4px; padding: 5px 6px; }
+  .gb-tag { font-size: 10px; font-weight: 400; border-radius: 4px; padding: 5px 6px; }
+}
+/* Featured Categories title: 22px medium on every screen */
+section[data-reveal]:has(.categoriesSwiper) .gb-heading-center h2 { font-size: 22px; font-weight: 500; color: #222831; }
+
+/* Product page as on ghorerbazar.com: title, price and buying only. No brand/stock line, SKU row, delivery panel
+   or trust row (the brand box under the buttons stays); bordered photo; "Quantity:" stepper */
+.gb-store [data-pdp-meta], .gb-store [data-pdp-trust], .gb-store [data-pdp-fold] { display: none !important; }
+.gb-store #galleryMain { object-fit: contain !important; }
+.gb-store #galleryMain { background: #fff; }
+.gb-store #pdTitle, .gb-store h1#pdTitle { color: #222831 !important; }
+.gb-store #pdRegularPrice { font-size: 20px !important; color: #999 !important; }
+.gb-store #pdDiscountBadge { font-size: 11px !important; padding: 3px 6px !important; border-radius: 4px !important; }
+/* Phones: header shows menu, logo and cart only (search sits in the bottom bar), as on ghorerbazar.com */
+@media (max-width: 767px) { .gb-head-row [data-toggle-search] { display: none !important; } }
