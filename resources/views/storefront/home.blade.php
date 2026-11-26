@@ -21,7 +21,7 @@
   {{-- 1. HERO SHOWCASE --}}
   @if($hasHero)
     <section class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 pt-3 sm:pt-4 pb-2" data-reveal>
-      <div class="grid grid-cols-2 lg:grid-cols-10 gap-2.5 sm:gap-3.5 lg:gap-4">
+      <div class="gb-hero-grid grid grid-cols-2 lg:grid-cols-10 gap-2.5 sm:gap-3.5 lg:gap-4">
 
         {{-- Main Hero Slider --}}
         @php
@@ -301,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
         480: { slidesPerView: 4, spaceBetween: 12 },
         640: { slidesPerView: 5, spaceBetween: 12 },
         768: { slidesPerView: 6, spaceBetween: 14 },
-        1024: { slidesPerView: 6, spaceBetween: 22 },
+        1024: { slidesPerView: 7, spaceBetween: 24 },
 @if(\App\Support\StoreStyle::isWide())
         1280: { slidesPerView: 8, spaceBetween: 16 }, // Wide page width: one more category in the row
 @endif
