@@ -320,8 +320,9 @@
 
       {{-- Unified Action Bar: Quantity + Add to Cart + Buy Now --}}
       <div class="space-y-2.5 pt-1">
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
-          {{-- Quantity Stepper --}}
+        <div class="gb-buy-rows flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3">
+          {{-- Quantity Stepper ("Quantity:" label shows on the Ghorer Bazar theme, where the stepper has its own row) --}}
+          <span class="gb-qty-label hidden">Quantity:</span>
           <div data-qty data-stepper class="inline-flex items-center justify-between border border-stone-200 rounded-xl bg-stone-50/50 hover:bg-white overflow-hidden shrink-0 h-11 sm:h-12 shadow-2xs self-start sm:self-auto w-32 sm:w-auto">
             <button type="button" data-dec class="w-9 sm:w-10 h-full text-stone-600 hover:text-stone-950 font-extrabold text-base hover:bg-stone-100 transition-colors focus:outline-none cursor-pointer flex items-center justify-center select-none" aria-label="Decrease quantity">−</button>
             <input id="pdQty" value="1" min="1" max="3" class="w-8 text-center border-0 font-bold text-stone-900 focus:outline-none text-sm bg-transparent" readonly />
