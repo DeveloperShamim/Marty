@@ -105,6 +105,8 @@ export COMPOSER_HOME="$APP/storage/composer-home"
 step() { echo "-> $*"; "$@" || { echo "FAILED: $*"; exit 1; }; }
 # --no-scripts: proc_open is disabled for cron PHP here, so run the package discovery ourselves
 step "${COMPOSER[@]}" install --no-dev --optimize-autoloader --no-interaction --no-scripts
+# Drop package caches left by an earlier install with dev packages, then rebuild them
+rm -f bootstrap/cache/packages.php bootstrap/cache/services.php
 step "$PHP" artisan package:discover --ansi
 step "$PHP" artisan migrate --force --seed
 step "$PHP" artisan db:seed --class=GhorerbazarSeeder --force
